@@ -53,3 +53,19 @@
 | Identité, Menu, Slogan | CONFIRMÉ | À conserver | L'identité rouge/orange et le menu complet reflètent un contenu riche à migrer tel quel. |
 | Performance Mobile | CONFIRMÉ | À moderniser | LCP mesuré à 3.6s en 4G lente. Un passage sous les 2.5s recommandés est à cibler. |
 | Carte des distributeurs | NON VÉRIFIABLE | À moderniser | Toute carte devra s'appuyer sur une solution robuste (Leaflet/PostGIS). |
+## 2. Vérification de l'audit préliminaire (Croisement avec docs/00-sources/01-audit-preliminaire.md)
+
+L'audit fourni par les équipes produit a été confronté à l'analyse technique (PageSpeed / HTML). Voici le verdict par affirmation :
+
+| Affirmation de l'audit préliminaire | Verdict | Preuve / Explication |
+|---|---|---|
+| Application SPA construite avec React + Vite | **CONFIRMÉ** | Inspection du code source HTML : `<div id="root"></div>`, `<script type="module" src="/assets/index-*.js"></script>`. |
+| Multilingue (FR/EN) présent | **CONFIRMÉ** | Inspection des captures d'écran et du DOM : sélecteur de langue présent, textes bilingues observés. |
+| Palette rouge/orange + slogan "Always Full Cylinders" | **CONFIRMÉ** | Constaté visuellement sur la capture du header/hero section. |
+| Présence des menus "About", "Products", "FAQ", "Blog" | **CONFIRMÉ** | Liens observés dans l'arborescence de navigation sur les captures. |
+| Présence d'un espace "My account" | **CONFIRMÉ** | Bouton de connexion identifié visuellement sur le site. |
+| Design responsive de bonne facture | **CONFIRMÉ** | Scores PageSpeed Mobile/Desktop très solides, prouvant l'adaptabilité structurelle. |
+| Protection anti-bot agressive (Cloudflare-like) | **NON VÉRIFIABLE** | Aucune interception HTTP 403 / Captcha Cloudflare observée lors de l'analyse passive, ni dans les en-têtes analysables sans navigation active. |
+| Carte des points de vente interactive | **NON VÉRIFIABLE** | Un lien existe mais la fonctionnalité de carte interactive nécessite une navigation que l'analyse passive ne peut confirmer. |
+| Catalogue exact (6kg = 16 120 Fcfa, etc.) | **NON VÉRIFIÉ (À CONFIRMER)**| Les prix et données de stock réelles doivent être certifiés par PLEINGAZ avant utilisation. |
+| Services : Livraison 24h, cartes de fidélité, pro | **NON VÉRIFIABLE** | Mentions marketing probables, mais pas de flux métier e-commerce sous-jacent détecté. |
