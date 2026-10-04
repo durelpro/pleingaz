@@ -3,10 +3,10 @@
 ## ADR D1 : Architecture Frontend (Migration Next.js vs Vite)
 - **Statut** : PROPOSÉ
 - **Options comparées** :
-  1. Conservation de Vite (SPA) avec pré-rendu (SSG).
+  1. Conservation de Vite (SPA) avec ajout d'un système de pré-rendu (SSG). Limites : complexité de pré-générer des milliers de pages (villes, distributeurs, stocks) et de les maintenir à jour en temps réel.
   2. Migration progressive vers Next.js (App Router).
 - **Recommandation** : **Migration vers Next.js (App Router)**.
-- **Justification** : L'audit PageSpeed révèle un score SEO perfectible (83) et de graves erreurs de crawling (`robots.txt` renvoyant l'accueil). Le SEO local (par ville et par distributeur) étant crucial, Next.js permet le rendu côté serveur (SSR) et la génération native des balises meta dynamiques. Cela corrigera d'emblée l'indexation sans recourir à des hacks de pré-rendu en SPA.
+- **Justification** : Le SEO local dynamique (par ville et par distributeur) et la performance mobile sont les piliers du projet. Next.js permet le rendu côté serveur (SSR) des pages publiques et des balises meta dynamiques, ce qui est indispensable pour ce type d'annuaire localisé, contrairement à une SPA pure. *Note : ce choix repose uniquement sur des considérations d'architecture liées au rendu dynamique. Il reste une part d'incertitude sur la lourdeur du framework sur des réseaux très instables par rapport à l'existant.*
 
 ## ADR D2 : Stratégie d'hébergement et CDN
 - **Statut** : PROPOSÉ
@@ -14,7 +14,7 @@
   1. Hébergement cloud régional (ex. Afrique du Sud) direct.
   2. VPS en Europe + CDN Cloudflare.
 - **Recommandation** : **VPS Européen + Cloudflare (Offre Gratuite / Pro)**.
-- **Justification** : L'audit montre un LCP mobile de 3.6s en réseau bridé (Cameroun). Cloudflare permettra de rapprocher les ressources statiques via ses PoP locaux, réduisant le LCP sous les 2.5s recommandés. Seules les requêtes API (stock, paiement) toucheront le VPS.
+- **Justification** : Cloudflare permet de rapprocher les ressources statiques via ses PoP locaux, visant à optimiser le LCP mobile en réseau bridé sans les coûts d'une présence cloud physique en Afrique. Seules les requêtes API (stock, paiement) toucheront le VPS.
 
 ## ADR D3 : Cartographie, Tuiles et Géocodage
 - **Statut** : PROPOSÉ

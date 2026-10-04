@@ -13,37 +13,34 @@
 - **Couleurs & Identité** : Dominante rouge et orange (dégradés). Le logo "PLEINGAZ" est accompagné du slogan "Bouteilles toujours pleines" (ou "Always Full Cylinders").
 - **Bilinguisme** : Un sélecteur de langue (FR/EN) est présent. La page d'accueil affiche des textes bilingues (ex: menu "Français", mais texte "Always Full Cylinders").
 - **Navigation** : Le menu desktop contient : Home, About, Products, Services, Contact, FAQ, Blog, et un bouton "Your review".
-- **Composants d'action** : Boutons "Discover our offers", barre de recherche, et liens flottants vers les réseaux sociaux (Facebook, Instagram, LinkedIn).
+- **Composants d'action** : Boutons "Discover our offers", barre de recherche, et liens flottants vers les réseaux sociaux.
 
 **Performance (PageSpeed Insights, 4 Oct 2026, Lighthouse 13.5.0) :**
 - **Mobile** (Émulation Moto G Power, Slow 4G) :
   - **Scores** : Performance 84, Accessibilité 76, Best Practices 100, SEO 83.
-  - **Métriques** : LCP 3.6 s, FCP 3.0 s, TBT 0 ms, Speed Index 3.6 s, CLS 0.
+  - **Métriques** : LCP mesuré à 3.6 s (le seuil recommandé pour un bon LCP est inférieur à 2.5 s), FCP 3.0 s, TBT 0 ms, Speed Index 3.6 s, CLS 0.
 - **Desktop** :
   - **Scores** : Performance 93, Accessibilité 76, Best Practices 100, SEO 83.
   - **Métriques** : LCP 1.2 s, FCP 1.1 s, TBT 0 ms, Speed Index 1.6 s, CLS 0.002.
-  - *Note : L'accessibilité (76) et le SEO (83) sont perfectibles (contraste, balises meta description manquantes, erreurs robots.txt).*
 
 **SEO et Crawling :**
-- **Robots.txt et Sitemap.xml** : Il est confirmé via requêtes `curl` (et signalé par l'audit SEO de Lighthouse) que ces fichiers renvoient le code HTML de la page d'accueil (HTTP 200). Le routage statique Nginx est mal configuré.
+- **Robots.txt et Sitemap.xml** : Il est confirmé via requêtes HTTP que ces fichiers renvoient le code HTML de la page d'accueil (HTTP 200). Le routage statique Nginx est mal configuré.
 
-**Données NON VÉRIFIABLES :**
-- **Catalogue et Prix** : Les prix, horaires et fiches produits détaillées n'étaient pas visibles sur les captures d'accueil fournies. Ces données restent à confirmer.
-- **Distributeurs et Carte** : Aucune carte Leaflet ou répertoire de points de vente n'est visible sur les captures de l'accueil.
-- **Hébergeur, CI/CD et Analytics** : Impossible d'identifier l'hébergeur physique exact, la pipeline de déploiement, ou les outils statistiques en place sans un accès au backend/serveur.
+**Données NON VÉRIFIÉES, À CONFIRMER avec PLEINGAZ :**
+- **Catalogue et Prix** : Les prix, horaires et fiches produits détaillées n'étaient pas visibles sur les captures fournies. Toute donnée issue de l'audit préliminaire reste "NON VÉRIFIÉ, À CONFIRMER avec PLEINGAZ". *Interdiction de les utiliser dans le code, les seeds ou les données de démonstration tant qu'ils ne sont pas confirmés.*
+- **Distributeurs et Carte** : Aucun point de vente ou carte (Leaflet/Maps) n'est visible.
+- **Infrastructure** : Hébergeur, pipeline de déploiement (CI/CD) et Analytics inaccessibles sans accès au backend.
 
-## 2. RECOMMANDÉ (Propositions architecturales)
+## 2. CORRECTIFS RAPIDES SUR L'EXISTANT
+*Ces correctifs peuvent être appliqués immédiatement, indépendamment de toute refonte d'architecture :*
+- **Routage Nginx** : Corriger la configuration Nginx pour renvoyer un véritable HTTP 404 (ou les bons fichiers) sur `/robots.txt` et `/sitemap.xml`, au lieu d'une redirection "catch-all" vers l'accueil.
+- **Accessibilité visuelle** : Corriger les ratios de contraste des textes sur fond rouge/orange signalés par Lighthouse pour améliorer le score d'accessibilité (actuellement à 76).
+- **Balises Meta manquantes** : Ajouter au moins une balise `<meta name="description">` globale dans le `index.html` existant pour résoudre l'alerte SEO de base de Lighthouse.
 
-- **Correction immédiate du routage Nginx** : Servir de vrais fichiers 404 pour les ressources inexistantes (robots, sitemap) afin de nettoyer l'indexation par les moteurs de recherche.
-- **Migration vers Next.js** : La SPA Vite pénalise le SEO (score de 83, metas manquantes). Next.js permettra un Server-Side Rendering (SSR) essentiel pour que chaque produit ou distributeur ait une meta description propre.
-- **Amélioration de l'Accessibilité (a11y)** : Corriger les contrastes des textes sur les fonds rouge/orange et structurer la hiérarchie des titres (H1, H2) pour remonter le score de 76 à >90.
-- **Hébergement et CDN** : Mise en place de Cloudflare avec des règles strictes de cache (pages publiques en cache, API exclue) pour améliorer le LCP mobile au Cameroun (actuellement à 3.6s en 4G).
-
-## 3. À CONFIRMER (Validation par PLEINGAZ)
-
-- Accès au code source complet pour vérifier les composants internes.
-- Prix exacts des produits, tarifs de livraison et politiques de consigne.
-- Liste des outils statistiques et pipelines CI/CD existants.
+## 3. RECOMMANDÉ (Propositions architecturales)
+- **Migration vers Next.js** : Passer au Server-Side Rendering (SSR) pour permettre le rendu serveur des pages dynamiques publiques et des pages locales de points de vente.
+- **Amélioration de l'Accessibilité (a11y)** : Structurer la hiérarchie des titres (H1, H2) et revoir les cibles tactiles.
+- **Hébergement et CDN** : Mise en place de Cloudflare pour rapprocher les ressources et optimiser le LCP mobile depuis le Cameroun.
 
 ---
 
@@ -51,9 +48,8 @@
 
 | Élément | Statut de l'audit | Décision (R3) | Justification |
 |---|---|---|---|
-| SPA React + Vite | CONFIRMÉ | À remplacer | L'architecture SPA montre ses limites SEO (robots.txt invalide, metas manquantes, score SEO 83). Le SSR de Next.js est requis pour le SEO local. |
-| Routage Nginx | CONFIRMÉ | À moderniser | La redirection sauvage de `robots.txt` vers l'accueil doit être corrigée par un routage backend standard. |
-| Identité, Textes, Menu (FAQ, Blog) | CONFIRMÉ | À conserver | Le rouge/orange, le slogan, et le menu complet (About, Products, FAQ) prouvent l'existence d'un contenu riche qu'il faut impérativement migrer tel quel. |
-| Performance Mobile (LCP 3.6s) | CONFIRMÉ | À moderniser | Le LCP de 3.6s en 4G bridée est correct mais peut être ramené sous 2.5s avec Next.js Image Optimization et le CDN. |
-| Carte des distributeurs | NON VÉRIFIABLE | À moderniser | (Supposition basée sur le projet cible) Toute carte existante devra passer sur une solution robuste (Leaflet/PostGIS) pour la montée en charge. |
-| Accessibilité (Score 76) | CONFIRMÉ | À moderniser | Le design devra intégrer des contrastes WCAG valides et des cibles tactiles plus larges. |
+| SPA React + Vite | CONFIRMÉ | À remplacer | L'architecture SPA pure ne permet pas un SEO local dynamique efficace (rendu serveur nécessaire par ville/distributeur). |
+| Routage Nginx (robots) | CONFIRMÉ | À moderniser | Doit faire l'objet d'un correctif rapide indépendant de la refonte. |
+| Identité, Menu, Slogan | CONFIRMÉ | À conserver | L'identité rouge/orange et le menu complet reflètent un contenu riche à migrer tel quel. |
+| Performance Mobile | CONFIRMÉ | À moderniser | LCP mesuré à 3.6s en 4G lente. Un passage sous les 2.5s recommandés est à cibler. |
+| Carte des distributeurs | NON VÉRIFIABLE | À moderniser | Toute carte devra s'appuyer sur une solution robuste (Leaflet/PostGIS). |
