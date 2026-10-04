@@ -27,3 +27,8 @@ Ces questions sont fondamentales et bloquent les choix d'architecture des Phases
 - [ ] Souscrire et valider le compte **WhatsApp Business API** via Meta.
 - [ ] Créer les environnements **Sandbox de paiement** (Agrégateur ou MTN/Orange) pour le développeur.
 - [ ] Vérifier la disponibilité et l'accès au **domaine et DNS**.
+- [ ] Rédiger les **textes légaux** (CGV, Mentions Légales) et la page "Sécurité d'utilisation du gaz".
+
+## 5. Cadrage UX et Rôles (Nouvelles Questions)
+14. **Délais (Timeouts)** : Quel délai (en minutes) le distributeur a-t-il pour accepter une commande entrante avant qu'elle ne soit annulée ? Quel est le délai de réservation du stock laissé au client pour finaliser son paiement ?
+15. **Sous-comptes Boutique** : Confirmez-vous que le gérant d'un point de vente pourra créer des accès restreints (employés) qui peuvent gérer le stock et les commandes mais pas voir les finances ?
