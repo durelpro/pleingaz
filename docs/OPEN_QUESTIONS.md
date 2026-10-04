@@ -61,3 +61,11 @@ Ces questions sont fondamentales et bloquent les choix d'architecture des Phases
 27. **Mentions Fiscales** : Quelles mentions légales (TVA, numéro d'immatriculation) doivent obligatoirement figurer sur les factures et reçus PDF générés ?
 28. **Rétention des données et IA** : Quelle est la durée légale de conservation des logs de conversations (LLM) et des données de paiement, compte tenu du contexte légal (À valider par un juriste) ?
 29. **Fourchettes de Coûts LLM et API** : Validation des budgets mensuels prévisionnels alloués aux appels IA (OpenAI/Anthropic) et aux frais WhatsApp Business (messages template).
+
+## 10. Décisions Urgentes (Tâche 5 - Données Personnelles et Légal)
+30. **Cadre Légal Cyber et Notification** : Quelles sont les obligations locales précises de PLEINGAZ en cas de fuite de données au Cameroun (Délai de notification à l'ANTIC, information aux utilisateurs) ?
+31. **Durées de Conservation Officielles** : Validation des délais légaux pour les factures (10 ans ?), les CNI rejetées, et les logs serveurs.
+32. **Propriété intellectuelle / LLM** : Confirmation de la clause interdisant aux fournisseurs IA (OpenAI, Anthropic) d'utiliser les données des clients camerounais pour entraîner leurs modèles publics.
+33. **Cookies et Traqueurs** : PLEINGAZ compte-t-elle utiliser des outils externes d'audience (Google Analytics, Meta Pixel) ? Si oui, le bandeau de consentement devra être complexe.
+34. **Gouvernance des données** : Nom et fonction du futur "Responsable des Données Personnelles" chez PLEINGAZ en charge du registre des traitements.
+35. **Objectifs RPO / RTO** : Validation des budgets nécessaires pour garantir une perte de données maximale de 1 heure (RPO) et un temps de redémarrage de 4 heures (RTO).
