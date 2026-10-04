@@ -29,6 +29,12 @@ Ces questions sont fondamentales et bloquent les choix d'architecture des Phases
 - [ ] Vérifier la disponibilité et l'accès au **domaine et DNS**.
 - [ ] Rédiger les **textes légaux** (CGV, Mentions Légales) et la page "Sécurité d'utilisation du gaz".
 
-## 5. Cadrage UX et Rôles (Nouvelles Questions)
+## 5. Cadrage UX et Rôles (Tâche 1)
 14. **Délais (Timeouts)** : Quel délai (en minutes) le distributeur a-t-il pour accepter une commande entrante avant qu'elle ne soit annulée ? Quel est le délai de réservation du stock laissé au client pour finaliser son paiement ?
 15. **Sous-comptes Boutique** : Confirmez-vous que le gérant d'un point de vente pourra créer des accès restreints (employés) qui peuvent gérer le stock et les commandes mais pas voir les finances ?
+
+## 6. Modèle Économique (Tâche 2)
+16. **Consigne et Gestion des bouteilles (Urgent)** : Vendez-vous uniquement le gaz (échange de bouteille vide) ou le client paie-t-il un "dépôt" pour une nouvelle consigne ? Si consigne, appartient-elle au distributeur ou à PLEINGAZ ?
+17. **Liberté des prix (StoreProductOffer)** : Les distributeurs ont-ils le droit de fixer leur propre prix de vente par produit, ou le prix public est-il strict et national ?
+18. **Recouvrement Espèces** : Lorsqu'un client paie en espèces au distributeur, le distributeur accumule une "dette" (commission due à PLEINGAZ). Comment cette dette est-elle recouvrée (Settlement) ?
+19. **Logistique** : Les coursiers sont-ils des employés de la boutique, des indépendants, ou des livreurs PLEINGAZ ?

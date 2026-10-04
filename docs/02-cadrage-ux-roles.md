@@ -174,6 +174,15 @@ Les sous-comptes boutique permettent au propriétaire (Distributor) de délégue
 
 *Note: L'unique différence entre ADMIN et SUPER_ADMIN est la capacité pour le Super Admin de modifier les rôles, les configurations globales et d'accéder aux logs système ineffaçables.*
 
+### 3.3 Évolution du jeu MVP vers les 8 rôles complets
+Le jeu MVP présenté ci-dessus repose sur des "Rôles" qui ne sont en réalité que des aggrégats nommés de "Permissions" stockés en base de données (ex: table `Role` et `RolePermission`).
+Pour passer de ce jeu restreint aux 8 rôles complets (ajoutant par exemple `LOGISTICS_MANAGER`, `FINANCE_MANAGER`, etc.), **aucune migration lourde de code n'est nécessaire**. 
+Il suffira au `SUPER_ADMIN` de :
+1. Créer une nouvelle entrée dans la table `Role` (ex: `FINANCE_MANAGER`).
+2. Lui attacher les permissions granulaires existantes (ex: `invoice:view_any`, `payment:refund`).
+3. Assigner ce rôle aux utilisateurs concernés.
+L'application continuera de fonctionner en vérifiant les permissions (ex: `@RequirePermission('payment:refund')`) sans jamais se soucier du nom du rôle.
+
 ---
 
 ## 4. Décisions à confirmer avec PLEINGAZ (Urgentes)
