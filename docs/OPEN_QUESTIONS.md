@@ -38,3 +38,8 @@ Ces questions sont fondamentales et bloquent les choix d'architecture des Phases
 17. **Liberté des prix (StoreProductOffer)** : Les distributeurs ont-ils le droit de fixer leur propre prix de vente par produit, ou le prix public est-il strict et national ?
 18. **Recouvrement Espèces** : Lorsqu'un client paie en espèces au distributeur, le distributeur accumule une "dette" (commission due à PLEINGAZ). Comment cette dette est-elle recouvrée (Settlement) ?
 19. **Logistique** : Les coursiers sont-ils des employés de la boutique, des indépendants, ou des livreurs PLEINGAZ ?
+
+## 7. Architecture Technique (Tâche 3)
+20. **Facturation Internationale** : Le VPS européen (ADR D2) implique des factures en Euro/USD. PLEINGAZ possède-t-elle les moyens de paiement internationaux nécessaires pour cet hébergement ?
+21. **Confidentialité et CDN** : L'utilisation d'un CDN comme Cloudflare doit être validée juridiquement et mentionnée dans vos politiques de confidentialité. Confirmez-vous ?
+22. **Serveur de Tuiles (Budget)** : Quel est le budget mensuel alloué à l'affichage de la carte, pour provisionner l'achat de tuiles chez un fournisseur comme Mapbox ou JawgMaps ?
