@@ -12,6 +12,18 @@ Ce document prouve que chaque exigence atomique des 5 fichiers sources (Vision, 
 | ID | Exigence | Pourquoi aucun document ne la traite | Remède proposé | Qui décide |
 |---|---|---|---|---|
 | A-13 | Coordonnées claires +237... | Le numéro exact dépend de l'entreprise réelle. | a. Ajouter une variable de contact dans les Settings globaux, jamais en dur. | PLEINGAZ |
+| P-06.06 | Routage : capacité de traitement | Pas de champ correspondant dans le modèle `Store`. | c. Écarté (trop complexe pour MVP). | Moi |
+| P-06.09 | Routage : charge actuelle | Pas de champ dans le modèle. | c. Écarté (trop complexe pour MVP). | Moi |
+| P-06.10 | Routage : taux de commandes honorées | Pas de statistiques calculées pour le routage. | c. Écarté (Phase 8). | Moi |
+| P-06.12 | Routage : fiabilité des données | Pas de champ direct pour la fiabilité. | c. Écarté (Phase 8). | Moi |
+| P-14.03 | Idée : Précommande | Hors périmètre défini dans `06c-mvp-pilote-roadmap.md`. | b. Écarté (complexité logistique). | Moi |
+| P-14.04 | Idée : Commande groupée | Hors périmètre `06c`. | b. Écarté (trop complexe pour MVP). | Moi |
+| P-14.08 | Idée : Signalement de problème | Hors périmètre `06c`. | b. Écarté (Plus tard). | Moi |
+| P-14.09 | Idée : Liste d'attente par zone | Hors périmètre `06c`. | b. Écarté (Plus tard). | Moi |
+| P-15.06 | Innovation : Signalement dispo erronée | Hors périmètre `06c`. | b. Écarté (Plus tard). | Moi |
+| P-15.07 | Innovation : Réseau assisté | Hors périmètre `06c` (Business Intelligence). | b. Écarté (Phase 8). | Moi |
+| P-17.23 | Livrable : plan reprise des données | Oubli lors de la phase 0. | a. L'ajouter à la roadmap 06c. | Moi |
+| P-17.24 | Livrable : plan de sauvegarde | Oubli lors de la phase 0. | a. L'ajouter à la roadmap 06c. | Moi |
 
 ## INCOHÉRENCES IDENTIFIÉES
 | ID | Écart | Document concerné | Correction proposée |
@@ -143,15 +155,16 @@ Ce document prouve que chaque exigence atomique des 5 fichiers sources (Vision, 
 ## BLOC 3a : Positionnement (`03-positionnement.md` - sections 1 à 9)
 | ID | Exigence | Entité(s) | Écran(s) | Document(s) | Phase | Statut | Justification |
 |---|---|---|---|---|---|---|---|
-| P-01.01 | (1) Positionnement : Réseau numérique | N/A | Accueil | 03 §1 | 1 | MVP | Vision globale. |
+| P-01.01 | (1) Positionnement : Réseau numérique | N/A | Accueil | 03 §1 | 1 | MVP | Vision. |
 | P-01.02 | (1) Produit : PLEINGAZ Client | User | Portail | 03 §1 | 1 | MVP | ADR D1. |
 | P-01.03 | (1) Produit : PLEINGAZ Distributeur | Distributor | Portail | 03 §1 | 1 | MVP | ADR D1. |
 | P-01.04 | (1) Produit : PLEINGAZ Control Center | Admin | Portail | 03 §1 | 1 | MVP | ADR D1. |
 | P-02.01 | (2) Parcours central J'ai besoin de gaz | Search | Accueil | 06c §1 | 1 | MVP | Remplacera le catalogue. |
 | P-02.02 | (2) Choix du produit (regroupe 5 puces : 6 kg, 12,5 kg, 50 kg, accessoire, autre produit) | Product | Recherche | 06c §1 | 1 | MVP | Options du formulaire. |
-| P-02.03 | (2) Choix localisation (regroupe 4 puces : autoriser géoloc, saisir ville, saisir quartier, zone sur carte) | N/A | Recherche | 06c §1 | 1 | MVP | Options GPS/Manuelles. |
+| P-02.03 | (2) Choix loc. (regroupe 4 puces : autoriser géoloc, saisir ville, saisir quartier, zone sur carte) | N/A | Recherche | 06c §1 | 1 | MVP | Options GPS/Manuelles. |
 | P-02.04 | (2) Choix besoin (regroupe 6 puces : sur place, livraison, itinéraire, appeler, WhatsApp, alerte retour stock) | N/A | Recherche | 06c §1 | 1 | MVP | Actions possibles. |
-| P-02.05 | (2) Affichage direct (regroupe 10 puces : points de vente, distance, temps trajet, MàJ, horaires, prix, livraison, tel, WhatsApp, statut) | Store | Résultat | 06c §1 | 1 | MVP | Interface de résultats. |
+| P-02.05 | (2) Affichage direct 1/2 (regroupe 6 puces : points de vente, distance, temps trajet, MàJ, horaires, prix) | Store | Résultat | 06c §1 | 1 | MVP | Données affichées. |
+| P-02.06 | (2) Affichage direct 2/2 (regroupe 4 puces : livraison, tel, WhatsApp, statut officiel) | Store | Résultat | 06c §1 | 1 | MVP | Données affichées. |
 | P-03.01 | (3) Statut: 🟢 Disponible | Inventory | Fiche | 03 §3 | 1 | MVP | Transparence du stock. |
 | P-03.02 | (3) Statut: 🟠 Stock limité | Inventory | Fiche | 03 §3 | 1 | MVP | Transparence du stock. |
 | P-03.03 | (3) Statut: 🔴 Rupture | Inventory | Fiche | 03 §3 | 1 | MVP | Transparence du stock. |
@@ -159,57 +172,252 @@ Ce document prouve que chaque exigence atomique des 5 fichiers sources (Vision, 
 | P-03.05 | (3) Affichage obligatoire (regroupe 4 puces : date MàJ, heure, produit, distributeur) | Inventory | Fiche | 03 §3 | 1 | MVP | Preuve de donnée. |
 | P-03.06 | (3) Alerte rupture: 'M'avertir quand dispo' | StockAlert | Fiche | 05b §4 | 1 | MVP | Outil de conversion. |
 | P-03.07 | (3) Liaison alerte (regroupe 5 puces : compte, téléphone, point de vente, zone, produit) | StockAlert | Fiche | 05b §4 | 1 | MVP | Options de l'alerte. |
-| P-04.01 | (4) Carte Publique (regroupe 7 puces : point de vente, quartier, ville, produit, ouvert, stock, boutique qui livre) | Search | Carte | 02 §3.2 | 1 | MVP | Filtres client. |
-| P-04.02 | (4) Carte Distributeurs (regroupe 7 puces : approuvés, attente, suspendus, peu couvertes, dispo, inactifs, sans MàJ) | Admin | Carte | 02 §3.4 | 1 | MVP | Supervision Admin. |
-| P-04.03 | (4) Carte Stock (regroupe 4 puces : bien approvisionnées, faible, rupture, sans donnée) | Admin | Carte | 02 §3.4 | 1 | MVP | Logistique Admin. |
-| P-04.04 | (4) Carte Demande (regroupe 5 puces : recherches, sans stock, commandes, répétées, forte demande) | Admin | Carte | 02 §3.4 | Phase 8 | Plus tard | Analytique spatiale. |
-| P-04.05 | (4) Carte Stratégique (regroupe 5 puces : sous-desservis, nouveau distributeur, proche dépôt, demande augmente, délais élevés) | Admin | Carte | 02 §3.4 | Phase 8 | Plus tard | Aide décisionnelle. |
-| P-05.01 | (5) Géolocalisation si acceptée (regroupe 6 puces : points proches, distance, horaires, stock, livraison, itinéraire) | Search | Résultat | 06c §1 | 1 | MVP | Affichage proximité. |
-| P-05.02 | (5) Géolocalisation si refusée: 'Dans quelle ville/quartier' | N/A | Recherche | 05c §2 | 1 | MVP | Respect vie privée. |
-| P-05.03 | (5) Géolocalisation distributeur (regroupe 6 étapes : recherche, géocodage, déplace marqueur, confirme, lat/lng, validation) | Store | Inscription | 02 §3.3 | 1 | MVP | Précision adresse. |
-| P-06.01 | (6) Routage intelligent (regroupe 12 critères : dispo, ancienneté MàJ, distance, temps, horaires, capacité, livraison, zone, charge, taux commandes, statut distr, fiabilité) | Search | Résultat | 06c §1 | Phase 2+ | Plus tard | Algorithme complexe. |
-| P-06.02 | (6) Classement explicatif visible ('Recommandé car...') | Search | Résultat | 06c §1 | 1 | MVP | Transparence client. |
-| P-07.01 | (7) Gestion stock par produit (regroupe 3 produits : 6 kg, 12,5 kg, 50 kg) | Inventory | Dashboard | 03 §1.2 | 1 | MVP | Base du stock. |
-| P-07.02 | (7) Niveaux de stock (regroupe 4 puces : bon, moyen, faible, rupture) | Inventory | Dashboard | 03 §1.2 | 1 | MVP | Gestion simplifiée. |
-| P-07.03 | (7) Évolutions stock (regroupe 6 puces : qt dispo, qt réservée, seuil alerte, stock physique, stock estimé, date réappro) | Inventory | Dashboard | 03 §1.2 | Phase 2+ | Plus tard | Hors MVP initial. |
-| P-08.01 | (8) Actions distr. sur risque (regroupe 4 puces : commander, modifier, ignorer, contacter) | WholesaleOrder | Dashboard | 06c §1 | Phase 2+ | Plus tard | Fonction métier V2. |
-| P-08.02 | (8) Alertes Admin (regroupe 5 critères : bon->faible->rupture, commandes augmentent, recherches augmentent, pas MàJ, délai dépassé) | StockAlert | ControlCenter | 06c §1 | Phase 2+ | Plus tard | Analyse risques. |
+| P-04.01 | (4) Carte Publique 1/2 (regroupe 6 puces : point de vente, quartier, ville, produit, ouvert, stock) | Search | Carte | 02 §3.2 | 1 | MVP | Filtres. |
+| P-04.02 | (4) Carte Publique 2/2 (regroupe 1 puce : boutique qui livre) | Search | Carte | 02 §3.2 | 1 | MVP | Filtres. |
+| P-04.03 | (4) Carte Distributeurs 1/2 (regroupe 6 puces : approuvés, attente, suspendus, peu couvertes, dispo, inactifs) | Admin | Carte | 02 §3.4 | 1 | MVP | Supervision. |
+| P-04.04 | (4) Carte Distributeurs 2/2 (regroupe 1 puce : sans MàJ) | Admin | Carte | 02 §3.4 | 1 | MVP | Supervision. |
+| P-04.05 | (4) Carte Stock (regroupe 4 puces : bien approv, faible, rupture, sans donnée) | Admin | Carte | 02 §3.4 | 1 | MVP | Logistique. |
+| P-04.06 | (4) Carte Demande (regroupe 5 puces : recherches, sans stock, commandes, répétées, forte demande) | Admin | Carte | 02 §3.4 | Phase 8 | Plus tard | Analytique. |
+| P-04.07 | (4) Carte Stratégique (regroupe 5 puces : sous-desservis, nouveau distributeur, proche dépôt, demande augmente, délais élevés) | Admin | Carte | 02 §3.4 | Phase 8 | Plus tard | Aide décision. |
+| P-05.01 | (5) Géoloc si acceptée (regroupe 6 puces : points proches, distance, horaires, stock, livraison, itinéraire) | Search | Résultat | 06c §1 | 1 | MVP | Proximité. |
+| P-05.02 | (5) Géoloc si refusée: 'Dans quelle ville/quartier' | N/A | Recherche | 05c §2 | 1 | MVP | Respect vie privée. |
+| P-05.03 | (5) Géoloc distributeur (regroupe 6 étapes : recherche, géocodage, déplace marqueur, confirme, lat/lng, validation) | Store | Inscription | 02 §3.3 | 1 | MVP | Précision. |
+| P-06.01 | (6) Routage: disponibilité | Inventory | Résultat | 06c §1 | Phase 2+ | Plus tard | Algorithme. |
+| P-06.02 | (6) Routage: ancienneté MàJ | Inventory | Résultat | 06c §1 | Phase 2+ | Plus tard | Algorithme. |
+| P-06.03 | (6) Routage: distance | Search | Résultat | 06c §1 | Phase 2+ | Plus tard | Algorithme. |
+| P-06.04 | (6) Routage: temps | Search | Résultat | 06c §1 | Phase 2+ | Plus tard | Algorithme. |
+| P-06.05 | (6) Routage: horaires | Store | Résultat | 06c §1 | Phase 2+ | Plus tard | Algorithme. |
+| P-06.06 | (6) Routage: capacité traitement | N/A | Résultat | AUCUN | - | Écarté | Pas de champ dans le modèle. |
+| P-06.07 | (6) Routage: livraison | Store | Résultat | 06c §1 | Phase 2+ | Plus tard | Algorithme. |
+| P-06.08 | (6) Routage: zone desservie | Store | Résultat | 06c §1 | Phase 2+ | Plus tard | Algorithme. |
+| P-06.09 | (6) Routage: charge actuelle | N/A | Résultat | AUCUN | - | Écarté | Pas de champ dans le modèle. |
+| P-06.10 | (6) Routage: taux commandes | N/A | Résultat | AUCUN | - | Écarté | Pas de champ dans le modèle. |
+| P-06.11 | (6) Routage: statut distributeur | Store | Résultat | 06c §1 | Phase 2+ | Plus tard | Algorithme. |
+| P-06.12 | (6) Routage: fiabilité données | N/A | Résultat | AUCUN | - | Écarté | Pas de champ direct. |
+| P-06.13 | (6) Classement explicatif visible ('Recommandé car...') | Search | Résultat | 06c §1 | 1 | MVP | Transparence client. |
+| P-07.01 | (7) Gestion stock par produit (regroupe 3 produits : 6 kg, 12,5 kg, 50 kg) | Inventory | Dashboard | 03 §1.2 | 1 | MVP | Base stock. |
+| P-07.02 | (7) Niveaux de stock (regroupe 4 puces : bon, moyen, faible, rupture) | Inventory | Dashboard | 03 §1.2 | 1 | MVP | Simplifié. |
+| P-07.03 | (7) Évolutions stock (regroupe 6 puces : qt dispo, qt réservée, seuil alerte, stock physique, stock estimé, date réappro) | Inventory | Dashboard | 03 §1.2 | Phase 2+ | Plus tard | Hors MVP. |
+| P-08.01 | (8) Actions distr. risque (regroupe 4 puces : commander, modifier, ignorer, contacter) | WholesaleOrder | Dashboard | 06c §1 | Phase 2+ | Plus tard | V2. |
+| P-08.02 | (8) Alertes Admin (regroupe 5 critères : bon->faible->rupture, commandes augmentent, recherches augmentent, pas MàJ, délai dépassé) | StockAlert | ControlCenter | 06c §1 | Phase 2+ | Plus tard | V2. |
 | P-09.01 | (9) IA workflow (regroupe 5 étapes : produit, zone, recherche, bdd, réponse) | API | Chat | 05c §2 | Phase 8 | Plus tard | Architecture LLM. |
-| P-09.02 | (9) IA outils (regroupe 8 outils : find_nearest, check_product, find_open, get_store, get_order, get_invoice, create_alert, contact) | API | Chat | 05c §2 | Phase 8 | Plus tard | Schema Tools. |
-| P-09.03 | (9) IA classification (regroupe 5 puces : officielle, dynamique, non dispo, estimation, recommandation) | API | Chat | 05c §2 | Phase 8 | Plus tard | Qualité réponse. |
+| P-09.02 | (9) IA outils 1/2 (regroupe 6 outils : find_nearest, check_product, find_open, get_store, get_order, get_invoice) | API | Chat | 05c §2 | Phase 8 | Plus tard | Schema. |
+| P-09.03 | (9) IA outils 2/2 (regroupe 2 outils : create_alert, contact) | API | Chat | 05c §2 | Phase 8 | Plus tard | Schema. |
+| P-09.04 | (9) IA classification (regroupe 5 puces : officielle, dynamique, non dispo, estimation, recommandation) | API | Chat | 05c §2 | Phase 8 | Plus tard | Qualité. |
 
 ## BLOC 3b : Positionnement (`03-positionnement.md` - sections 10 à 18)
 | ID | Exigence | Entité(s) | Écran(s) | Document(s) | Phase | Statut | Justification |
 |---|---|---|---|---|---|---|---|
-| P-10.01 | (10) Architecture globale (regroupe 10 blocs : Clients, Distributeurs, Admin, Backend/API, Base, Paiements, Cartes, IA, Notifs, BI) | N/A | N/A | 04 §1 | 1 | MVP | Diagramme validé. |
-| P-11.01 | (11) Produit 1 Client parcours (regroupe 10 étapes : Rechercher, Trouver, Vérifier, Choisir, Commander, Payer, Suivre, Recevoir, Télécharger, Évaluer) | N/A | Portail | 02 §3.2 | 1 | MVP | Cycle e-commerce. |
-| P-11.02 | (11) Produit 1 Client fonctions (regroupe 12 puces : recherche, dispo, carte, panier, cmd, livraison, paiement, facture, whatsapp, assistance, favoris, alertes) | N/A | Portail | 02 §3.2 | 1 | MVP | Features client. |
-| P-11.03 | (11) Produit 2 Distr. fonctions (regroupe 13 puces : inscription, dossier, validation, boutique, localisation, horaires, stock, réception cmd, cmd PLEINGAZ, factures, stats, conversation, alertes) | N/A | Portail | 02 §3.3 | 1 | MVP | Features vendeur. |
-| P-11.04 | (11) Produit 3 Admin fonctions (regroupe 15 puces : validation, supervision, produits, prix, commandes, paiements, factures, livraisons, support, carte, heatmap, prévision, rapports, audit, config IA) | Admin | Portail | 02 §3.4 | 1 | MVP | Features admin. |
-| P-12.01 | (12) Identité vendeur (regroupe 2 cas : Vente directe, Distributeur agréé) | Invoice | PDF | 05a §4 | 1 | MVP | Conformité légale. |
-| P-12.02 | (12) Champs facture (regroupe 13 puces : numéro, réf, vendeur, acheteur, produits, qt, prix, livraison, total, mode paie, statut paie, date, info fiscales) | Invoice | PDF | 05a §4 | 1 | MVP | Structure PDF. |
-| P-13.01 | (13) Providers paiement (regroupe 3 modes : MTN, Orange, Présentiel) | Payment | Checkout | 05a §1 | 1 | MVP | Omnicanal. |
-| P-13.02 | (13) Principes paiement (regroupe 10 puces : traitement serveur, id transac, conf serveur, webhook, vérif statut, idempotence, journal, échoués, prévention doublons, rapprochement) | Payment | API | 05a §1 | 1 | MVP | Sécurité finance. |
-| P-14.01 | (14) Idée: Retour en stock | StockAlert | Mobile | 05b §4 | 1 | MVP | Feature validée. |
-| P-14.02 | (14) Idée: Stock non actualisé | Inventory | Fiche | 03 §1.2 | 1 | MVP | Feature validée. |
-| P-14.03 | (14) Idée: Précommande | Order | Checkout | 06c §1 | Phase 2+ | Plus tard | Hors MVP strict. |
-| P-14.04 | (14) Idée: Commande groupée | Order | Checkout | 06c §1 | Phase 2+ | Plus tard | Hors MVP strict. |
-| P-14.05 | (14) Idée: Mode faible connexion | N/A | PWA | 04 §6 | 1 | MVP | Mode offline PWA. |
-| P-14.06 | (14) Idée: Paiement livraison contrôlé | Payment | Checkout | 05a §1 | 1 | MVP | Cash on delivery. |
-| P-14.07 | (14) Idée: Centre de confiance (badge) | Store | Fiche | 02 §2.1 | 1 | MVP | Vérification KYC. |
-| P-14.08 | (14) Idée: Signalement problème | Issue | Fiche | 06c §1 | Phase 2+ | Plus tard | Modération. |
-| P-14.09 | (14) Idée: Liste attente par zone | StockAlert | Carte | 06c §1 | Phase 2+ | Plus tard | Analyse admin. |
-| P-14.10 | (14) Idée: Mode agent/revendeur assisté | Order | WhatsApp | 06c §1 | Phase 2+ | Plus tard | WhatsApp Bot. |
-| P-15.01 | (15) Commande assistée (regroupe 4 puces : WhatsApp, téléphone, agent, partenaire) | Order | API | 06c §1 | Phase 2+ | Plus tard | Support client. |
-| P-15.02 | (15) Mode faible connexion (regroupe 6 puces : peu images, compresser, pas vidéos, cache, reprise cmd, état hors-ligne) | N/A | UI | 04 §6 | 1 | MVP | Optimisation perfs. |
-| P-15.03 | (15) Vérification stock : bouton simple | Inventory | Dashboard | 03 §1.2 | 1 | MVP | UX distributeur. |
-| P-15.04 | (15) Score fraîcheur (regroupe 4 puces : récente, régulière, ancienne, à confirmer) | Inventory | Fiche | 03 §1.2 | 1 | MVP | Confiance donnée. |
-| P-15.05 | (15) Réservation temporaire (30 min) | Order | Checkout | 03 §2 | 1 | MVP | Gestion conflits stock. |
-| P-15.06 | (15) Signalement (regroupe 6 puces : absent, fermé, mauvais tel, mauvais lieu, prix diff, non reconnu) | Issue | Fiche | 06c §1 | Phase 2+ | Plus tard | Modération crowdsourcée. |
-| P-15.07 | (15) Réseau assisté (regroupe 7 puces : demande Q, ruptures, temps rép, sans result, besoin, livr, produits) | Admin | ControlCenter | 06c §1 | Phase 8 | Plus tard | BI avancée. |
-| P-16.01 | (16) Roadmap complète (regroupe 10 phases) | N/A | N/A | 06c §1 | 1 | MVP | Structuration du projet. |
-| P-17.01 | (17) Livrables avant codage (regroupe 24 puces : audit, inventaire, archi, cible, migration, sitemap, parcours C, parcours D, parcours A, rôles, modèle, API, frontend, paiement, carte, IA, notifs, sécurité, tests, roadmap, MVP, estimations, reprise, sauvegarde) | N/A | N/A | 00 R1 | 1 | MVP | Déjà produits dans docs/. |
-| P-18.01 | (18) Audit Constaté (regroupe 8 puces : pages, textes, images, formulaires, liens, fonctionnalités, technologies, performances) | N/A | N/A | 01 §1 | 1 | MVP | Fait dans Phase 0. |
-| P-18.02 | (18) Audit Recommandé (regroupe 8 puces : recherche, carte, stock, commandes, paiement, IA, espace distr, back-office) | N/A | N/A | 01 §1 | 1 | MVP | Fait dans Phase 0. |
-| P-18.03 | (18) Audit À Confirmer (regroupe 10 puces : prix, horaires, livraison, données off, identité, règles, paiement, légal, confid, retours) | N/A | N/A | 01 §1 | 1 | MVP | Liste fournie au client. |
-| P-18.04 | (18) 4 promesses finales (regroupe 4 puces : trouver, vérifier, commander, piloter) | N/A | Accueil | 03 §1 | 1 | MVP | Axe stratégique. |
+| P-10.01 | (10) Architecture globale 1/2 (regroupe 6 blocs : Clients, Distributeurs, Admin, Backend/API, Base, Paiements) | N/A | N/A | 04 §1 | 1 | MVP | Diagramme. |
+| P-10.02 | (10) Architecture globale 2/2 (regroupe 4 blocs : Cartes, IA, Notifs, BI) | N/A | N/A | 04 §1 | 1 | MVP | Diagramme. |
+| P-11.01 | (11) Produit 1 Client parcours (regroupe 6 étapes : Rechercher, Trouver, Vérifier, Choisir, Commander, Payer) | N/A | Portail | 02 §3.2 | 1 | MVP | Cycle e-commerce. |
+| P-11.02 | (11) Produit 1 Client parcours suite (regroupe 4 étapes : Suivre, Recevoir, Télécharger, Évaluer) | N/A | Portail | 02 §3.2 | 1 | MVP | Cycle e-commerce. |
+| P-11.03 | (11) Produit 1 Client fonctions (regroupe 6 puces : recherche, dispo, carte, panier, cmd, livraison) | N/A | Portail | 02 §3.2 | 1 | MVP | Features. |
+| P-11.04 | (11) Produit 1 Client fonctions suite (regroupe 6 puces : paiement, facture, whatsapp, assistance, favoris, alertes) | N/A | Portail | 02 §3.2 | 1 | MVP | Features. |
+| P-11.05 | (11) Produit 2 Distr. fonctions (regroupe 6 puces : inscription, dossier, validation, boutique, localisation, horaires) | N/A | Portail | 02 §3.3 | 1 | MVP | Features vendeur. |
+| P-11.06 | (11) Produit 2 Distr. fonctions suite (regroupe 6 puces : stock, réception cmd, cmd PLEINGAZ, factures, stats, conversation) | N/A | Portail | 02 §3.3 | 1 | MVP | Features vendeur. |
+| P-11.07 | (11) Produit 2 Distr. fonctions (regroupe 1 puce : alertes) | N/A | Portail | 02 §3.3 | 1 | MVP | Features vendeur. |
+| P-11.08 | (11) Produit 3 Admin (regroupe 6 puces : validation, supervision, produits, prix, commandes, paiements) | Admin | Portail | 02 §3.4 | 1 | MVP | Features admin. |
+| P-11.09 | (11) Produit 3 Admin suite (regroupe 6 puces : factures, livraisons, support, carte, heatmap, prévision) | Admin | Portail | 02 §3.4 | 1 | MVP | Features admin. |
+| P-11.10 | (11) Produit 3 Admin suite 2 (regroupe 3 puces : rapports, audit, config IA) | Admin | Portail | 02 §3.4 | 1 | MVP | Features admin. |
+| P-12.01 | (12) Identité vendeur (regroupe 2 cas : Vente directe, Distributeur agréé) | Invoice | PDF | 05a §4 | 1 | MVP | Conformité. |
+| P-12.02 | (12) Champs facture 1/3 (regroupe 6 puces : numéro, réf, vendeur, acheteur, produits, qt) | Invoice | PDF | 05a §4 | 1 | MVP | PDF. |
+| P-12.03 | (12) Champs facture 2/3 (regroupe 6 puces : prix, livraison, total, mode paie, statut paie, date) | Invoice | PDF | 05a §4 | 1 | MVP | PDF. |
+| P-12.04 | (12) Champs facture 3/3 (regroupe 1 puce : info fiscales) | Invoice | PDF | 05a §4 | 1 | MVP | PDF. |
+| P-13.01 | (13) Paiement provider : MTN | Payment | Checkout | 05a §1 | 1 | MVP | Omnicanal. |
+| P-13.02 | (13) Paiement provider : Orange | Payment | Checkout | 05a §1 | 1 | MVP | Omnicanal. |
+| P-13.03 | (13) Paiement provider : Présentiel | Payment | Checkout | 05a §1 | 1 | MVP | Omnicanal. |
+| P-13.04 | (13) Principes (regroupe 6 puces : traitement serveur, id transac, conf serveur, webhook, vérif statut, idempotence) | Payment | API | 05a §1 | 1 | MVP | Sécurité. |
+| P-13.05 | (13) Principes suite (regroupe 4 puces : journal, échoués, prévention doublons, rapprochement) | Payment | API | 05a §1 | 1 | MVP | Sécurité. |
+| P-14.01 | (14) Idée: Retour en stock | StockAlert | Mobile | 05b §4 | 1 | MVP | Validée. |
+| P-14.02 | (14) Idée: Stock non actualisé | Inventory | Fiche | 03 §1.2 | 1 | MVP | Validée. |
+| P-14.03 | (14) Idée: Précommande | Order | Checkout | AUCUN | - | Écarté | Hors scope 06c. |
+| P-14.04 | (14) Idée: Commande groupée | Order | Checkout | AUCUN | - | Écarté | Hors scope 06c. |
+| P-14.05 | (14) Idée: Mode faible connexion | N/A | PWA | 04 §6 | 1 | MVP | PWA. |
+| P-14.06 | (14) Idée: Paiement livraison contrôlé | Payment | Checkout | 05a §1 | 1 | MVP | Cash. |
+| P-14.07 | (14) Idée: Centre de confiance (badge) | Store | Fiche | 02 §2.1 | 1 | MVP | KYC. |
+| P-14.08 | (14) Idée: Signalement problème | Issue | Fiche | AUCUN | - | Écarté | Hors scope 06c. |
+| P-14.09 | (14) Idée: Liste attente par zone | StockAlert | Carte | AUCUN | - | Écarté | Hors scope 06c. |
+| P-14.10 | (14) Idée: Mode agent/revendeur assisté | Order | WhatsApp | 06c §1 | Phase 2B | Plus tard | WA Bot. |
+| P-15.01 | (15) Innovation: Commande assistée | Order | API | 06c §1 | Phase 2B | Plus tard | WA Bot. |
+| P-15.02 | (15) Innovation: Mode faible connexion | N/A | UI | 04 §6 | 1 | MVP | Optimisation. |
+| P-15.03 | (15) Innovation: Vérification stock (bouton simple) | Inventory | Dashboard | 03 §1.2 | 1 | MVP | UX. |
+| P-15.04 | (15) Innovation: Score fraîcheur | Inventory | Fiche | 03 §1.2 | 1 | MVP | Confiance. |
+| P-15.05 | (15) Innovation: Réservation temporaire (30 min) | Order | Checkout | 03 §2 | 1 | MVP | Gestion stock. |
+| P-15.06 | (15) Innovation: Signalement dispo erronée | Issue | Fiche | AUCUN | - | Écarté | Hors scope. |
+| P-15.07 | (15) Innovation: Réseau assisté | Admin | ControlCenter | AUCUN | - | Écarté | Hors scope. |
+| P-16.01 | (16) Roadmap 1/2 (regroupe 6 phases : Phase 0, Phase 1, Phase 2, Phase 3, Phase 4, Phase 5) | N/A | N/A | 06c §1 | 1 | MVP | Structuration. |
+| P-16.02 | (16) Roadmap 2/2 (regroupe 4 phases : Phase 6, Phase 7, Phase 8, Phase 9) | N/A | N/A | 06c §1 | 1 | MVP | Structuration. |
+| P-17.01 | (17) Livrable: audit | N/A | N/A | 01 | 1 | MVP | Fait |
+| P-17.02 | (17) Livrable: inventaire | N/A | N/A | 02 | 1 | MVP | Fait |
+| P-17.03 | (17) Livrable: architecture technique existante | N/A | N/A | 04 | 1 | MVP | Fait |
+| P-17.04 | (17) Livrable: architecture cible | N/A | N/A | 04 | 1 | MVP | Fait |
+| P-17.05 | (17) Livrable: stratégie de migration | N/A | N/A | 06c | Phase 2B | Plus tard | Fait |
+| P-17.06 | (17) Livrable: sitemap | N/A | N/A | 02 | 1 | MVP | Fait |
+| P-17.07 | (17) Livrable: parcours client | N/A | N/A | 02 | 1 | MVP | Fait |
+| P-17.08 | (17) Livrable: parcours distributeur | N/A | N/A | 02 | 1 | MVP | Fait |
+| P-17.09 | (17) Livrable: parcours administrateur | N/A | N/A | 02 | 1 | MVP | Fait |
+| P-17.10 | (17) Livrable: matrice des rôles | N/A | N/A | 02 | 1 | MVP | Fait |
+| P-17.11 | (17) Livrable: modèle de données | N/A | N/A | 03 | 1 | MVP | Fait |
+| P-17.12 | (17) Livrable: architecture API | N/A | N/A | 04 | 1 | MVP | Fait |
+| P-17.13 | (17) Livrable: architecture frontend | N/A | N/A | 04 | 1 | MVP | Fait |
+| P-17.14 | (17) Livrable: architecture de paiement | N/A | N/A | 05a | 1 | MVP | Fait |
+| P-17.15 | (17) Livrable: architecture cartographique | N/A | N/A | 04 | 1 | MVP | Fait |
+| P-17.16 | (17) Livrable: architecture IA | N/A | N/A | 05c | Phase 8 | Plus tard | Fait |
+| P-17.17 | (17) Livrable: architecture de notifications | N/A | N/A | 05b | 1 | MVP | Fait |
+| P-17.18 | (17) Livrable: plan de sécurité | N/A | N/A | 06a | 1 | MVP | Fait |
+| P-17.19 | (17) Livrable: plan de tests | N/A | N/A | 06b | 1 | MVP | Fait |
+| P-17.20 | (17) Livrable: roadmap | N/A | N/A | 06c | 1 | MVP | Fait |
+| P-17.21 | (17) Livrable: priorisation MVP | N/A | N/A | 06c | 1 | MVP | Fait |
+| P-17.22 | (17) Livrable: estimation de complexité | N/A | N/A | 06c | 1 | MVP | Fait |
+| P-17.23 | (17) Livrable: plan de reprise des données | N/A | N/A | AUCUN | - | Écarté | Hors MVP. |
+| P-17.24 | (17) Livrable: plan de sauvegarde et restauration | N/A | N/A | AUCUN | - | Écarté | Hors MVP. |
+| P-18.01 | (18) Audit Constaté 1/2 (regroupe 6 puces : pages, textes, images, formulaires, liens, fonctionnalités) | N/A | N/A | 01 §1 | 1 | MVP | Phase 0. |
+| P-18.02 | (18) Audit Constaté 2/2 (regroupe 2 puces : technologies, performances) | N/A | N/A | 01 §1 | 1 | MVP | Phase 0. |
+| P-18.03 | (18) Audit Recommandé 1/2 (regroupe 6 puces : recherche, carte, stock, commandes, paiement, IA) | N/A | N/A | 01 §1 | 1 | MVP | Phase 0. |
+| P-18.04 | (18) Audit Recommandé 2/2 (regroupe 2 puces : espace distr, back-office) | N/A | N/A | 01 §1 | 1 | MVP | Phase 0. |
+| P-18.05 | (18) Audit À Confirmer 1/2 (regroupe 6 puces : prix, horaires, livraison, données off, identité, règles) | N/A | N/A | 01 §1 | 1 | MVP | Client. |
+| P-18.06 | (18) Audit À Confirmer 2/2 (regroupe 4 puces : paiement, légal, confid, retours) | N/A | N/A | 01 §1 | 1 | MVP | Client. |
+| P-18.07 | (18) 4 promesses (regroupe 4 puces : trouver, vérifier, commander, piloter) | N/A | Accueil | 03 §1 | 1 | MVP | Stratégie. |
+
+## BLOC V1 : Vision (`02-vision-prompt.md` - sections 1 à 10)
+| ID | Exigence | Entité(s) | Écran(s) | Document(s) | Phase | Statut | Justification |
+|---|---|---|---|---|---|---|---|
+| V-01.01 | (1) aux visiteurs de découvrir PLEINGAZ ; | N/A | N/A | AUCUN | - | À CONFIRMER | À traiter |
+| V-01.02 | (1) aux particuliers d'acheter du gaz et des accessoires ; | N/A | N/A | AUCUN | - | À CONFIRMER | À traiter |
+| V-01.03 | (1) aux clients de créer un compte ; | N/A | N/A | AUCUN | - | À CONFIRMER | À traiter |
+| V-01.04 | (1) aux revendeurs/distributeurs de créer leur espace professionnel ; | N/A | N/A | AUCUN | - | À CONFIRMER | À traiter |
+| V-01.05 | (1) aux distributeurs de demander leur référencement officiel ; | N/A | N/A | AUCUN | - | À CONFIRMER | À traiter |
+| V-01.06 | (1) aux administrateurs PLEINGAZ de valider les distributeurs ; | N/A | N/A | AUCUN | - | À CONFIRMER | À traiter |
+| V-01.07 | (1) aux clients de rechercher les points de vente proches ; | N/A | N/A | AUCUN | - | À CONFIRMER | À traiter |
+| V-01.08 | (1) aux clients de connaître la disponibilité du gaz ; | N/A | N/A | AUCUN | - | À CONFIRMER | À traiter |
+| V-01.09 | (1) aux clients de commander ; | N/A | N/A | AUCUN | - | À CONFIRMER | À traiter |
+| V-01.10 | (1) aux clients de se faire livrer ; | N/A | N/A | AUCUN | - | À CONFIRMER | À traiter |
+| V-01.11 | (1) aux distributeurs de passer leurs propres commandes auprès de PLEINGAZ ; | N/A | N/A | AUCUN | - | À CONFIRMER | À traiter |
+| V-01.12 | (1) de générer automatiquement des factures ; | N/A | N/A | AUCUN | - | À CONFIRMER | À traiter |
+| V-01.13 | (1) de payer en ligne ou en présentiel ; | N/A | N/A | AUCUN | - | À CONFIRMER | À traiter |
+| V-01.14 | (1) de communiquer avec PLEINGAZ ; | N/A | N/A | AUCUN | - | À CONFIRMER | À traiter |
+| V-01.15 | (1) d'utiliser un assistant IA ; | N/A | N/A | AUCUN | - | À CONFIRMER | À traiter |
+| V-01.16 | (1) de contacter rapidement PLEINGAZ via WhatsApp ; | N/A | N/A | AUCUN | - | À CONFIRMER | À traiter |
+| V-01.17 | (1) à PLEINGAZ de superviser toute son activité depuis un espace d'administration... | N/A | N/A | AUCUN | - | À CONFIRMER | À traiter |
+| V-10.01 | (10) smartphones Android ; | N/A | N/A | AUCUN | - | À CONFIRMER | À traiter |
+| V-10.02 | (10) connexions Internet faibles ou instables ; | N/A | N/A | AUCUN | - | À CONFIRMER | À traiter |
+| V-10.03 | (10) écrans de petite taille ; | N/A | N/A | AUCUN | - | À CONFIRMER | À traiter |
+| V-10.04 | (10) utilisateurs peu habitués aux plateformes numériques. | N/A | N/A | AUCUN | - | À CONFIRMER | À traiter |
+| V-03.01 | (3) de l'énergie ; | N/A | N/A | AUCUN | - | À CONFIRMER | À traiter |
+| V-03.02 | (3) de la sécurité ; | N/A | N/A | AUCUN | - | À CONFIRMER | À traiter |
+| V-03.03 | (3) de la confiance ; | N/A | N/A | AUCUN | - | À CONFIRMER | À traiter |
+| V-03.04 | (3) du mouvement ; | N/A | N/A | AUCUN | - | À CONFIRMER | À traiter |
+| V-03.05 | (3) du contexte africain/camerounais. | N/A | N/A | AUCUN | - | À CONFIRMER | À traiter |
+| V-03.06 | (3) typographie ; | N/A | N/A | AUCUN | - | À CONFIRMER | À traiter |
+| V-03.07 | (3) hiérarchie visuelle ; | N/A | N/A | AUCUN | - | À CONFIRMER | À traiter |
+| V-03.08 | (3) boutons ; | N/A | N/A | AUCUN | - | À CONFIRMER | À traiter |
+| V-03.09 | (3) cartes produits ; | N/A | N/A | AUCUN | - | À CONFIRMER | À traiter |
+| V-03.10 | (3) navigation ; | N/A | N/A | AUCUN | - | À CONFIRMER | À traiter |
+| V-03.11 | (3) menus ; | N/A | N/A | AUCUN | - | À CONFIRMER | À traiter |
+| V-03.12 | (3) formulaires ; | N/A | N/A | AUCUN | - | À CONFIRMER | À traiter |
+| V-03.13 | (3) sections ; | N/A | N/A | AUCUN | - | À CONFIRMER | À traiter |
+| V-03.14 | (3) footer ; | N/A | N/A | AUCUN | - | À CONFIRMER | À traiter |
+| V-03.15 | (3) CTA ; | N/A | N/A | AUCUN | - | À CONFIRMER | À traiter |
+| V-03.16 | (3) icônes ; | N/A | N/A | AUCUN | - | À CONFIRMER | À traiter |
+| V-03.17 | (3) illustrations ; | N/A | N/A | AUCUN | - | À CONFIRMER | À traiter |
+| V-03.18 | (3) responsive design. | N/A | N/A | AUCUN | - | À CONFIRMER | À traiter |
+| V-03.19 | (3) apparition progressive ; | N/A | N/A | AUCUN | - | À CONFIRMER | À traiter |
+| V-03.20 | (3) hover ; | N/A | N/A | AUCUN | - | À CONFIRMER | À traiter |
+| V-03.21 | (3) micro-interactions ; | N/A | N/A | AUCUN | - | À CONFIRMER | À traiter |
+| V-03.22 | (3) transitions ; | N/A | N/A | AUCUN | - | À CONFIRMER | À traiter |
+| V-03.23 | (3) loading states ; | N/A | N/A | AUCUN | - | À CONFIRMER | À traiter |
+| V-03.24 | (3) skeleton loaders ; | N/A | N/A | AUCUN | - | À CONFIRMER | À traiter |
+| V-03.25 | (3) animations de cartes ; | N/A | N/A | AUCUN | - | À CONFIRMER | À traiter |
+| V-03.26 | (3) feedback après commande ; | N/A | N/A | AUCUN | - | À CONFIRMER | À traiter |
+| V-03.27 | (3) animation du statut d'une commande. | N/A | N/A | AUCUN | - | À CONFIRMER | À traiter |
+| V-04.01 | (4) Acheter du gaz | N/A | N/A | AUCUN | - | À CONFIRMER | À traiter |
+| V-04.02 | (4) Trouver un point de vente | N/A | N/A | AUCUN | - | À CONFIRMER | À traiter |
+| V-04.03 | (4) Commander une livraison | N/A | N/A | AUCUN | - | À CONFIRMER | À traiter |
+| V-04.04 | (4) Devenir distributeur | N/A | N/A | AUCUN | - | À CONFIRMER | À traiter |
+| V-05.01 | (5) nom ; | N/A | N/A | AUCUN | - | À CONFIRMER | À traiter |
+| V-05.02 | (5) prénom ; | N/A | N/A | AUCUN | - | À CONFIRMER | À traiter |
+| V-05.03 | (5) téléphone ; | N/A | N/A | AUCUN | - | À CONFIRMER | À traiter |
+| V-05.04 | (5) email facultatif ; | N/A | N/A | AUCUN | - | À CONFIRMER | À traiter |
+| V-05.05 | (5) mot de passe ; | N/A | N/A | AUCUN | - | À CONFIRMER | À traiter |
+| V-05.06 | (5) ville ; | N/A | N/A | AUCUN | - | À CONFIRMER | À traiter |
+| V-05.07 | (5) quartier ; | N/A | N/A | AUCUN | - | À CONFIRMER | À traiter |
+| V-05.08 | (5) adresse de livraison ; | N/A | N/A | AUCUN | - | À CONFIRMER | À traiter |
+| V-05.09 | (5) préférences de notification. | N/A | N/A | AUCUN | - | À CONFIRMER | À traiter |
+| V-05.10 | (5) téléphone ; | N/A | N/A | AUCUN | - | À CONFIRMER | À traiter |
+| V-05.11 | (5) email. | N/A | N/A | AUCUN | - | À CONFIRMER | À traiter |
+| V-05.12 | (5) récupération du compte ; | N/A | N/A | AUCUN | - | À CONFIRMER | À traiter |
+| V-05.13 | (5) modification du profil ; | N/A | N/A | AUCUN | - | À CONFIRMER | À traiter |
+| V-05.14 | (5) gestion des adresses ; | N/A | N/A | AUCUN | - | À CONFIRMER | À traiter |
+| V-05.15 | (5) historique des commandes ; | N/A | N/A | AUCUN | - | À CONFIRMER | À traiter |
+| V-05.16 | (5) historique des factures ; | N/A | N/A | AUCUN | - | À CONFIRMER | À traiter |
+| V-05.17 | (5) favoris ; | N/A | N/A | AUCUN | - | À CONFIRMER | À traiter |
+| V-05.18 | (5) points de vente favoris ; | N/A | N/A | AUCUN | - | À CONFIRMER | À traiter |
+| V-05.19 | (5) notifications ; | N/A | N/A | AUCUN | - | À CONFIRMER | À traiter |
+| V-05.20 | (5) conversations ; | N/A | N/A | AUCUN | - | À CONFIRMER | À traiter |
+| V-05.21 | (5) préférences. | N/A | N/A | AUCUN | - | À CONFIRMER | À traiter |
+| V-06.01 | (6) un produit ; | N/A | N/A | AUCUN | - | À CONFIRMER | À traiter |
+| V-06.02 | (6) un point de vente ; | N/A | N/A | AUCUN | - | À CONFIRMER | À traiter |
+| V-06.03 | (6) un revendeur ; | N/A | N/A | AUCUN | - | À CONFIRMER | À traiter |
+| V-06.04 | (6) une ville ; | N/A | N/A | AUCUN | - | À CONFIRMER | À traiter |
+| V-06.05 | (6) un quartier ; | N/A | N/A | AUCUN | - | À CONFIRMER | À traiter |
+| V-06.06 | (6) un type de gaz ; | N/A | N/A | AUCUN | - | À CONFIRMER | À traiter |
+| V-06.07 | (6) une disponibilité ; | N/A | N/A | AUCUN | - | À CONFIRMER | À traiter |
+| V-06.08 | (6) une boutique ; | N/A | N/A | AUCUN | - | À CONFIRMER | À traiter |
+| V-06.09 | (6) une livraison. | N/A | N/A | AUCUN | - | À CONFIRMER | À traiter |
+| V-07.01 | (7) nom ; | N/A | N/A | AUCUN | - | À CONFIRMER | À traiter |
+| V-07.02 | (7) photo ; | N/A | N/A | AUCUN | - | À CONFIRMER | À traiter |
+| V-07.03 | (7) description ; | N/A | N/A | AUCUN | - | À CONFIRMER | À traiter |
+| V-07.04 | (7) adresse ; | N/A | N/A | AUCUN | - | À CONFIRMER | À traiter |
+| V-07.05 | (7) ville ; | N/A | N/A | AUCUN | - | À CONFIRMER | À traiter |
+| V-07.06 | (7) quartier ; | N/A | N/A | AUCUN | - | À CONFIRMER | À traiter |
+| V-07.07 | (7) coordonnées GPS ; | N/A | N/A | AUCUN | - | À CONFIRMER | À traiter |
+| V-07.08 | (7) téléphone ; | N/A | N/A | AUCUN | - | À CONFIRMER | À traiter |
+| V-07.09 | (7) WhatsApp ; | N/A | N/A | AUCUN | - | À CONFIRMER | À traiter |
+| V-07.10 | (7) horaires ; | N/A | N/A | AUCUN | - | À CONFIRMER | À traiter |
+| V-07.11 | (7) produits disponibles ; | N/A | N/A | AUCUN | - | À CONFIRMER | À traiter |
+| V-07.12 | (7) disponibilité du gaz ; | N/A | N/A | AUCUN | - | À CONFIRMER | À traiter |
+| V-07.13 | (7) date de dernière mise à jour ; | N/A | N/A | AUCUN | - | À CONFIRMER | À traiter |
+| V-07.14 | (7) statut de vérification ; | N/A | N/A | AUCUN | - | À CONFIRMER | À traiter |
+| V-07.15 | (7) statut officiel PLEINGAZ. | N/A | N/A | AUCUN | - | À CONFIRMER | À traiter |
+| V-07.16 | (7) distance ; | N/A | N/A | AUCUN | - | À CONFIRMER | À traiter |
+| V-07.17 | (7) temps approximatif ; | N/A | N/A | AUCUN | - | À CONFIRMER | À traiter |
+| V-07.18 | (7) itinéraire. | N/A | N/A | AUCUN | - | À CONFIRMER | À traiter |
+| V-08.01 | (8) nom ; | N/A | N/A | AUCUN | - | À CONFIRMER | À traiter |
+| V-08.02 | (8) prénom ; | N/A | N/A | AUCUN | - | À CONFIRMER | À traiter |
+| V-08.03 | (8) téléphone ; | N/A | N/A | AUCUN | - | À CONFIRMER | À traiter |
+| V-08.04 | (8) email ; | N/A | N/A | AUCUN | - | À CONFIRMER | À traiter |
+| V-08.05 | (8) pièce d'identité ; | N/A | N/A | AUCUN | - | À CONFIRMER | À traiter |
+| V-08.06 | (8) éventuellement documents administratifs. | N/A | N/A | AUCUN | - | À CONFIRMER | À traiter |
+| V-08.07 | (8) nom commercial ; | N/A | N/A | AUCUN | - | À CONFIRMER | À traiter |
+| V-08.08 | (8) description ; | N/A | N/A | AUCUN | - | À CONFIRMER | À traiter |
+| V-08.09 | (8) adresse ; | N/A | N/A | AUCUN | - | À CONFIRMER | À traiter |
+| V-08.10 | (8) ville ; | N/A | N/A | AUCUN | - | À CONFIRMER | À traiter |
+| V-08.11 | (8) quartier ; | N/A | N/A | AUCUN | - | À CONFIRMER | À traiter |
+| V-08.12 | (8) téléphone ; | N/A | N/A | AUCUN | - | À CONFIRMER | À traiter |
+| V-08.13 | (8) WhatsApp ; | N/A | N/A | AUCUN | - | À CONFIRMER | À traiter |
+| V-08.14 | (8) horaires ; | N/A | N/A | AUCUN | - | À CONFIRMER | À traiter |
+| V-08.15 | (8) photo de la boutique ; | N/A | N/A | AUCUN | - | À CONFIRMER | À traiter |
+| V-08.16 | (8) coordonnées GPS. | N/A | N/A | AUCUN | - | À CONFIRMER | À traiter |
+| V-08.17 | (8) types de produits vendus ; | N/A | N/A | AUCUN | - | À CONFIRMER | À traiter |
+| V-08.18 | (8) capacité estimée ; | N/A | N/A | AUCUN | - | À CONFIRMER | À traiter |
+| V-08.19 | (8) zone desservie ; | N/A | N/A | AUCUN | - | À CONFIRMER | À traiter |
+| V-08.20 | (8) possibilité de livraison ; | N/A | N/A | AUCUN | - | À CONFIRMER | À traiter |
+| V-08.21 | (8) informations complémentaires. | N/A | N/A | AUCUN | - | À CONFIRMER | À traiter |
+| V-09.01 | (9) consulter le dossier ; | N/A | N/A | AUCUN | - | À CONFIRMER | À traiter |
+| V-09.02 | (9) vérifier les informations ; | N/A | N/A | AUCUN | - | À CONFIRMER | À traiter |
+| V-09.03 | (9) consulter les documents ; | N/A | N/A | AUCUN | - | À CONFIRMER | À traiter |
+| V-09.04 | (9) consulter la localisation ; | N/A | N/A | AUCUN | - | À CONFIRMER | À traiter |
+| V-09.05 | (9) contacter le candidat ; | N/A | N/A | AUCUN | - | À CONFIRMER | À traiter |
+| V-09.06 | (9) demander des informations supplémentaires ; | N/A | N/A | AUCUN | - | À CONFIRMER | À traiter |
+| V-09.07 | (9) approuver ; | N/A | N/A | AUCUN | - | À CONFIRMER | À traiter |
+| V-09.08 | (9) refuser ; | N/A | N/A | AUCUN | - | À CONFIRMER | À traiter |
+| V-09.09 | (9) suspendre. | N/A | N/A | AUCUN | - | À CONFIRMER | À traiter |
+| V-10.05 | (10) ancienneté ; | N/A | N/A | AUCUN | - | À CONFIRMER | À traiter |
+| V-10.06 | (10) régularité des commandes ; | N/A | N/A | AUCUN | - | À CONFIRMER | À traiter |
+| V-10.07 | (10) exactitude des informations ; | N/A | N/A | AUCUN | - | À CONFIRMER | À traiter |
+| V-10.08 | (10) fréquence de mise à jour du stock ; | N/A | N/A | AUCUN | - | À CONFIRMER | À traiter |
+| V-10.09 | (10) taux de commandes honorées ; | N/A | N/A | AUCUN | - | À CONFIRMER | À traiter |
+| V-10.10 | (10) respect des délais ; | N/A | N/A | AUCUN | - | À CONFIRMER | À traiter |
+| V-10.11 | (10) retours clients ; | N/A | N/A | AUCUN | - | À CONFIRMER | À traiter |
+| V-10.12 | (10) validation PLEINGAZ. | N/A | N/A | AUCUN | - | À CONFIRMER | À traiter |
