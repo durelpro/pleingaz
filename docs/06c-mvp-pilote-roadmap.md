@@ -42,7 +42,7 @@ Le pilote est le premier test grandeur nature sur une cible restreinte pour ajus
 |---|---|---|---|
 | **MVP (1-2)** | Core : Auth, Stock, BDD, Commandes, PWA. | L | Validation Juridique, Accès OTP. |
 | **Pilote** | Déploiement terrain, Paiement, Factures. | M | Comptes Marchands MTN/Orange validés. |
-| **Phase 2B** | Avis clients, WhatsApp Business API. | M | Compte Meta Officiel, Validation Modèles. |
+| **Phase 2B** | Migration des pages existantes (About, FAQ, Blog, Contact, Services, Products, Engagements), cahier des charges (docs/screens/), Avis clients, WhatsApp API. | M | Compte Meta Officiel. |
 | **Phase 3** | Payout automatisé aux distributeurs. | H | Intégration API de décaissement (Opérateur). |
 | **Phase 4-5** | Cartographie avancée (Auto-hébergement). | H | Coûts serveurs dédiés géospatiaux. |
 | **Phase 6-7** | BI, Dashboards avancés, Reporting fiscal. | M | Outils d'export / Data Lake léger. |

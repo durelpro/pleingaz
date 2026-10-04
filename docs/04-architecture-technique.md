@@ -207,3 +207,41 @@ Tous les ADR restent au statut **PROPOSÉ**. Ce tableau indique quels choix tech
 2. **Confidentialité et CDN** : L'utilisation de Cloudflare (US) doit être validée juridiquement et inscrite dans les mentions légales.
 3. **Fournisseur de Tuiles (Budget)** : Valider l'enveloppe budgétaire pour JawgMaps, Mapbox ou un auto-hébergement de tuiles OSM.
 4. **Environnements Cloud** : Accord sur la séparation des coûts pour financer une vraie Pré-production identique à la Prod.
+
+## 14. Stack technique retenue
+La stack de l'audit préliminaire (04-stack.md) a été validée pour le MVP, ajustée par nos ADRs :
+
+| Domaine | Technologie | Statut |
+|---|---|---|
+| Langage principal | TypeScript | Retenu MVP |
+| Frontend | Next.js + React | **PROPOSÉ** (ADR D1) |
+| Style et interface | Tailwind CSS | Retenu MVP |
+| Composants UI | shadcn/ui | Retenu MVP |
+| Icônes | Lucide React | Retenu MVP |
+| Backend | NestJS | Retenu MVP |
+| Base de données | PostgreSQL | Retenu MVP |
+| Géolocalisation | PostGIS | Retenu MVP |
+| ORM | Prisma | Retenu MVP |
+| Requêtes géographiques | SQL paramétré | Retenu MVP |
+| Cache | Redis | Retenu MVP |
+| Tâches en arrière-plan | BullMQ | Retenu MVP |
+| Cartes | Leaflet + React Leaflet | **PROPOSÉ** (ADR D3) |
+| Authentification | JWT + cookies HttpOnly | Retenu MVP |
+| Mots de passe | Argon2id | Retenu MVP |
+| Permissions | RBAC | Retenu MVP |
+| Validation | Zod + ValidationPipe NestJS | Retenu MVP |
+| Paiements | PaymentProvider (abstrait) | **PROPOSÉ** (ADR D4) |
+| Fichiers | Stockage compatible S3 | Retenu MVP |
+| Notifications | Email + WhatsApp | Retenu MVP |
+| Temps réel | WebSocket / Socket.IO | Plus tard |
+| Recherche initiale | PostgreSQL | Retenu MVP |
+| Recherche avancée | OpenSearch | Plus tard |
+| IA | LLM + RAG + outils internes | Plus tard |
+| Tests unitaires | Jest | Retenu MVP |
+| Tests API | Supertest | Retenu MVP |
+| Tests navigateur | Playwright | Retenu MVP |
+| Conteneurisation | Docker + Compose | Retenu MVP |
+| Serveur | Ubuntu Linux | **PROPOSÉ** (ADR D2) |
+| Reverse proxy | Nginx | Retenu MVP |
+| Gestion du code | Git + GitHub | Retenu MVP |
+| Monitoring | Sentry + Uptime Kuma | Retenu MVP |
