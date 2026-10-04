@@ -12,18 +12,18 @@ Ce document prouve que chaque exigence atomique des 5 fichiers sources (Vision, 
 | ID | Exigence | Pourquoi aucun document ne la traite | Remède proposé | Qui décide |
 |---|---|---|---|---|
 | A-13 | Coordonnées claires +237... | Le numéro exact dépend de l'entreprise réelle. | a. Ajouter une variable de contact dans les Settings globaux, jamais en dur. | PLEINGAZ |
-| P-06.06 | Routage : capacité de traitement | Pas de champ correspondant dans le modèle `Store`. | c. Écarté (trop complexe pour MVP). | Moi |
-| P-06.09 | Routage : charge actuelle | Pas de champ dans le modèle. | c. Écarté (trop complexe pour MVP). | Moi |
-| P-06.10 | Routage : taux de commandes honorées | Pas de statistiques calculées pour le routage. | c. Écarté (Phase 8). | Moi |
-| P-06.12 | Routage : fiabilité des données | Pas de champ direct pour la fiabilité. | c. Écarté (Phase 8). | Moi |
-| P-14.03 | Idée : Précommande | Hors périmètre défini dans `06c-mvp-pilote-roadmap.md`. | b. Écarté (complexité logistique). | Moi |
+| P-06.06 | Routage : capacité de traitement | Pas de champ correspondant dans le modèle `Store`. | c. Plus tard (trop complexe pour MVP). | Moi |
+| P-06.09 | Routage : charge actuelle | Pas de champ dans le modèle. | c. Plus tard (trop complexe pour MVP). | Moi |
+| P-06.10 | Routage : taux de commandes honorées | Pas de statistiques calculées pour le routage. | c. Plus tard (Phase 8). | Moi |
+| P-06.12 | Routage : fiabilité des données | Pas de champ direct pour la fiabilité. | c. Plus tard (Phase 8). | Moi |
+| P-14.03 | Idée : Précommande | Hors périmètre défini dans `06c-mvp-pilote-roadmap.md`. | b. Plus tard (complexité logistique). | Moi |
 | P-14.04 | Idée : Commande groupée | Hors périmètre `06c`. | b. Écarté (trop complexe pour MVP). | Moi |
-| P-14.08 | Idée : Signalement de problème | Hors périmètre `06c`. | b. Écarté (Plus tard). | Moi |
-| P-14.09 | Idée : Liste d'attente par zone | Hors périmètre `06c`. | b. Écarté (Plus tard). | Moi |
-| P-15.06 | Innovation : Signalement dispo erronée | Hors périmètre `06c`. | b. Écarté (Plus tard). | Moi |
-| P-15.07 | Innovation : Réseau assisté | Hors périmètre `06c` (Business Intelligence). | b. Écarté (Phase 8). | Moi |
-| P-17.23 | Livrable : plan reprise des données | Oubli lors de la phase 0. | a. L'ajouter à la roadmap 06c. | Moi |
-| P-17.24 | Livrable : plan de sauvegarde | Oubli lors de la phase 0. | a. L'ajouter à la roadmap 06c. | Moi |
+| P-14.08 | Idée : Signalement de problème | Hors périmètre `06c`. | b. Plus tard (Hors MVP immédiat). | Moi |
+| P-14.09 | Idée : Liste d'attente par zone | Hors périmètre `06c`. | b. Plus tard (Hors MVP immédiat). | Moi |
+| P-15.06 | Innovation : Signalement dispo erronée | Hors périmètre `06c`. | b. Plus tard (Hors MVP immédiat). | Moi |
+| P-15.07 | Innovation : Réseau assisté | Hors périmètre `06c` (Business Intelligence). | b. Plus tard (Phase 8). | Moi |
+
+
 
 ## INCOHÉRENCES IDENTIFIÉES
 | ID | Écart | Document concerné | Correction proposée |
@@ -187,13 +187,13 @@ Ce document prouve que chaque exigence atomique des 5 fichiers sources (Vision, 
 | P-06.03 | (6) Routage: distance | Search | Résultat | 06c §1 | Phase 2+ | Plus tard | Algorithme. |
 | P-06.04 | (6) Routage: temps | Search | Résultat | 06c §1 | Phase 2+ | Plus tard | Algorithme. |
 | P-06.05 | (6) Routage: horaires | Store | Résultat | 06c §1 | Phase 2+ | Plus tard | Algorithme. |
-| P-06.06 | (6) Routage: capacité traitement | N/A | Résultat | AUCUN | - | Écarté | Pas de champ dans le modèle. |
+| P-06.06 | (6) Routage: capacité traitement | N/A | Résultat | AUCUN | Phase 2+ | Plus tard | Pas de champ dans le modèle. |
 | P-06.07 | (6) Routage: livraison | Store | Résultat | 06c §1 | Phase 2+ | Plus tard | Algorithme. |
 | P-06.08 | (6) Routage: zone desservie | Store | Résultat | 06c §1 | Phase 2+ | Plus tard | Algorithme. |
-| P-06.09 | (6) Routage: charge actuelle | N/A | Résultat | AUCUN | - | Écarté | Pas de champ dans le modèle. |
-| P-06.10 | (6) Routage: taux commandes | N/A | Résultat | AUCUN | - | Écarté | Pas de champ dans le modèle. |
+| P-06.09 | (6) Routage: charge actuelle | N/A | Résultat | AUCUN | Phase 2+ | Plus tard | Pas de champ dans le modèle. |
+| P-06.10 | (6) Routage: taux commandes | N/A | Résultat | AUCUN | Phase 2+ | Plus tard | Pas de champ dans le modèle. |
 | P-06.11 | (6) Routage: statut distributeur | Store | Résultat | 06c §1 | Phase 2+ | Plus tard | Algorithme. |
-| P-06.12 | (6) Routage: fiabilité données | N/A | Résultat | AUCUN | - | Écarté | Pas de champ direct. |
+| P-06.12 | (6) Routage: fiabilité données | N/A | Résultat | AUCUN | Phase 2+ | Plus tard | Pas de champ direct. |
 | P-06.13 | (6) Classement explicatif visible ('Recommandé car...') | Search | Résultat | 06c §1 | 1 | MVP | Transparence client. |
 | P-07.01 | (7) Gestion stock par produit (regroupe 3 produits : 6 kg, 12,5 kg, 50 kg) | Inventory | Dashboard | 03 §1.2 | 1 | MVP | Base stock. |
 | P-07.02 | (7) Niveaux de stock (regroupe 4 puces : bon, moyen, faible, rupture) | Inventory | Dashboard | 03 §1.2 | 1 | MVP | Simplifié. |
@@ -213,13 +213,13 @@ Ce document prouve que chaque exigence atomique des 5 fichiers sources (Vision, 
 | P-11.01 | (11) Produit 1 Client parcours (regroupe 6 étapes : Rechercher, Trouver, Vérifier, Choisir, Commander, Payer) | N/A | Portail | 02 §3.2 | 1 | MVP | Cycle e-commerce. |
 | P-11.02 | (11) Produit 1 Client parcours suite (regroupe 4 étapes : Suivre, Recevoir, Télécharger, Évaluer) | N/A | Portail | 02 §3.2 | 1 | MVP | Cycle e-commerce. |
 | P-11.03 | (11) Produit 1 Client fonctions (regroupe 6 puces : recherche, dispo, carte, panier, cmd, livraison) | N/A | Portail | 02 §3.2 | 1 | MVP | Features. |
-| P-11.04 | (11) Produit 1 Client fonctions suite (regroupe 6 puces : paiement, facture, whatsapp, assistance, favoris, alertes) | N/A | Portail | 02 §3.2 | 1 | MVP | Features. |
+| P-11.04 | (11) Produit 1 Client fonctions suite (regroupe 6 puces : paiement, facture, whatsapp, assistance, favoris, alertes) | N/A | Portail | 02 §3.2 | Phase 2B | Plus tard | WhatsApp/Assistance hors MVP strict. |
 | P-11.05 | (11) Produit 2 Distr. fonctions (regroupe 6 puces : inscription, dossier, validation, boutique, localisation, horaires) | N/A | Portail | 02 §3.3 | 1 | MVP | Features vendeur. |
-| P-11.06 | (11) Produit 2 Distr. fonctions suite (regroupe 6 puces : stock, réception cmd, cmd PLEINGAZ, factures, stats, conversation) | N/A | Portail | 02 §3.3 | 1 | MVP | Features vendeur. |
+| P-11.06 | (11) Produit 2 Distr. fonctions suite (regroupe 6 puces : stock, réception cmd, cmd PLEINGAZ, factures, stats, conversation) | N/A | Portail | 02 §3.3 | Phase 2+ | Plus tard | cmd PLEINGAZ et stats hors MVP. |
 | P-11.07 | (11) Produit 2 Distr. fonctions (regroupe 1 puce : alertes) | N/A | Portail | 02 §3.3 | 1 | MVP | Features vendeur. |
 | P-11.08 | (11) Produit 3 Admin (regroupe 6 puces : validation, supervision, produits, prix, commandes, paiements) | Admin | Portail | 02 §3.4 | 1 | MVP | Features admin. |
-| P-11.09 | (11) Produit 3 Admin suite (regroupe 6 puces : factures, livraisons, support, carte, heatmap, prévision) | Admin | Portail | 02 §3.4 | 1 | MVP | Features admin. |
-| P-11.10 | (11) Produit 3 Admin suite 2 (regroupe 3 puces : rapports, audit, config IA) | Admin | Portail | 02 §3.4 | 1 | MVP | Features admin. |
+| P-11.09 | (11) Produit 3 Admin suite (regroupe 6 puces : factures, livraisons, support, carte, heatmap, prévision) | Admin | Portail | 02 §3.4 | Phase 8 | Plus tard | Heatmap et prévision Phase 8. |
+| P-11.10 | (11) Produit 3 Admin suite 2 (regroupe 3 puces : rapports, audit, config IA) | Admin | Portail | 02 §3.4 | Phase 8 | Plus tard | IA et BI Phase 8. |
 | P-12.01 | (12) Identité vendeur (regroupe 2 cas : Vente directe, Distributeur agréé) | Invoice | PDF | 05a §4 | 1 | MVP | Conformité. |
 | P-12.02 | (12) Champs facture 1/3 (regroupe 6 puces : numéro, réf, vendeur, acheteur, produits, qt) | Invoice | PDF | 05a §4 | 1 | MVP | PDF. |
 | P-12.03 | (12) Champs facture 2/3 (regroupe 6 puces : prix, livraison, total, mode paie, statut paie, date) | Invoice | PDF | 05a §4 | 1 | MVP | PDF. |
@@ -231,21 +231,21 @@ Ce document prouve que chaque exigence atomique des 5 fichiers sources (Vision, 
 | P-13.05 | (13) Principes suite (regroupe 4 puces : journal, échoués, prévention doublons, rapprochement) | Payment | API | 05a §1 | 1 | MVP | Sécurité. |
 | P-14.01 | (14) Idée: Retour en stock | StockAlert | Mobile | 05b §4 | 1 | MVP | Validée. |
 | P-14.02 | (14) Idée: Stock non actualisé | Inventory | Fiche | 03 §1.2 | 1 | MVP | Validée. |
-| P-14.03 | (14) Idée: Précommande | Order | Checkout | AUCUN | - | Écarté | Hors scope 06c. |
-| P-14.04 | (14) Idée: Commande groupée | Order | Checkout | AUCUN | - | Écarté | Hors scope 06c. |
+| P-14.03 | (14) Idée: Précommande | Order | Checkout | AUCUN | Phase 2+ | Plus tard | Hors scope 06c. |
+| P-14.04 | (14) Idée: Commande groupée | Order | Checkout | AUCUN | Phase 2+ | Plus tard | Hors scope 06c. |
 | P-14.05 | (14) Idée: Mode faible connexion | N/A | PWA | 04 §6 | 1 | MVP | PWA. |
 | P-14.06 | (14) Idée: Paiement livraison contrôlé | Payment | Checkout | 05a §1 | 1 | MVP | Cash. |
 | P-14.07 | (14) Idée: Centre de confiance (badge) | Store | Fiche | 02 §2.1 | 1 | MVP | KYC. |
-| P-14.08 | (14) Idée: Signalement problème | Issue | Fiche | AUCUN | - | Écarté | Hors scope 06c. |
-| P-14.09 | (14) Idée: Liste attente par zone | StockAlert | Carte | AUCUN | - | Écarté | Hors scope 06c. |
+| P-14.08 | (14) Idée: Signalement problème | Issue | Fiche | AUCUN | Phase 2+ | Plus tard | Hors scope 06c. |
+| P-14.09 | (14) Idée: Liste attente par zone | StockAlert | Carte | AUCUN | Phase 2+ | Plus tard | Hors scope 06c. |
 | P-14.10 | (14) Idée: Mode agent/revendeur assisté | Order | WhatsApp | 06c §1 | Phase 2B | Plus tard | WA Bot. |
 | P-15.01 | (15) Innovation: Commande assistée | Order | API | 06c §1 | Phase 2B | Plus tard | WA Bot. |
 | P-15.02 | (15) Innovation: Mode faible connexion | N/A | UI | 04 §6 | 1 | MVP | Optimisation. |
 | P-15.03 | (15) Innovation: Vérification stock (bouton simple) | Inventory | Dashboard | 03 §1.2 | 1 | MVP | UX. |
 | P-15.04 | (15) Innovation: Score fraîcheur | Inventory | Fiche | 03 §1.2 | 1 | MVP | Confiance. |
 | P-15.05 | (15) Innovation: Réservation temporaire (30 min) | Order | Checkout | 03 §2 | 1 | MVP | Gestion stock. |
-| P-15.06 | (15) Innovation: Signalement dispo erronée | Issue | Fiche | AUCUN | - | Écarté | Hors scope. |
-| P-15.07 | (15) Innovation: Réseau assisté | Admin | ControlCenter | AUCUN | - | Écarté | Hors scope. |
+| P-15.06 | (15) Innovation: Signalement dispo erronée | Issue | Fiche | AUCUN | Phase 2+ | Plus tard | Hors scope. |
+| P-15.07 | (15) Innovation: Réseau assisté | Admin | ControlCenter | AUCUN | Phase 2+ | Plus tard | Hors scope. |
 | P-16.01 | (16) Roadmap 1/2 (regroupe 6 phases : Phase 0, Phase 1, Phase 2, Phase 3, Phase 4, Phase 5) | N/A | N/A | 06c §1 | 1 | MVP | Structuration. |
 | P-16.02 | (16) Roadmap 2/2 (regroupe 4 phases : Phase 6, Phase 7, Phase 8, Phase 9) | N/A | N/A | 06c §1 | 1 | MVP | Structuration. |
 | P-17.01 | (17) Livrable: audit | N/A | N/A | 01 | 1 | MVP | Fait |
@@ -270,8 +270,8 @@ Ce document prouve que chaque exigence atomique des 5 fichiers sources (Vision, 
 | P-17.20 | (17) Livrable: roadmap | N/A | N/A | 06c | 1 | MVP | Fait |
 | P-17.21 | (17) Livrable: priorisation MVP | N/A | N/A | 06c | 1 | MVP | Fait |
 | P-17.22 | (17) Livrable: estimation de complexité | N/A | N/A | 06c | 1 | MVP | Fait |
-| P-17.23 | (17) Livrable: plan de reprise des données | N/A | N/A | AUCUN | - | Écarté | Hors MVP. |
-| P-17.24 | (17) Livrable: plan de sauvegarde et restauration | N/A | N/A | AUCUN | - | Écarté | Hors MVP. |
+| P-17.23 | (17) Livrable: plan de reprise des données | N/A | N/A | AUCUN | Phase 2+ | Plus tard | Hors MVP. |
+| P-17.24 | (17) Livrable: plan de sauvegarde et restauration | N/A | N/A | AUCUN | Phase 2+ | Plus tard | Hors MVP. |
 | P-18.01 | (18) Audit Constaté 1/2 (regroupe 6 puces : pages, textes, images, formulaires, liens, fonctionnalités) | N/A | N/A | 01 §1 | 1 | MVP | Phase 0. |
 | P-18.02 | (18) Audit Constaté 2/2 (regroupe 2 puces : technologies, performances) | N/A | N/A | 01 §1 | 1 | MVP | Phase 0. |
 | P-18.03 | (18) Audit Recommandé 1/2 (regroupe 6 puces : recherche, carte, stock, commandes, paiement, IA) | N/A | N/A | 01 §1 | 1 | MVP | Phase 0. |
@@ -280,144 +280,92 @@ Ce document prouve que chaque exigence atomique des 5 fichiers sources (Vision, 
 | P-18.06 | (18) Audit À Confirmer 2/2 (regroupe 4 puces : paiement, légal, confid, retours) | N/A | N/A | 01 §1 | 1 | MVP | Client. |
 | P-18.07 | (18) 4 promesses (regroupe 4 puces : trouver, vérifier, commander, piloter) | N/A | Accueil | 03 §1 | 1 | MVP | Stratégie. |
 
-## BLOC V1 : Vision (`02-vision-prompt.md` - sections 1 à 10)
+## BLOC V1a : Vision (`02-vision-prompt.md` - sections 1 à 5)
 | ID | Exigence | Entité(s) | Écran(s) | Document(s) | Phase | Statut | Justification |
 |---|---|---|---|---|---|---|---|
-| V-01.01 | (1) aux visiteurs de découvrir PLEINGAZ ; | N/A | N/A | AUCUN | - | À CONFIRMER | À traiter |
-| V-01.02 | (1) aux particuliers d'acheter du gaz et des accessoires ; | N/A | N/A | AUCUN | - | À CONFIRMER | À traiter |
-| V-01.03 | (1) aux clients de créer un compte ; | N/A | N/A | AUCUN | - | À CONFIRMER | À traiter |
-| V-01.04 | (1) aux revendeurs/distributeurs de créer leur espace professionnel ; | N/A | N/A | AUCUN | - | À CONFIRMER | À traiter |
-| V-01.05 | (1) aux distributeurs de demander leur référencement officiel ; | N/A | N/A | AUCUN | - | À CONFIRMER | À traiter |
-| V-01.06 | (1) aux administrateurs PLEINGAZ de valider les distributeurs ; | N/A | N/A | AUCUN | - | À CONFIRMER | À traiter |
-| V-01.07 | (1) aux clients de rechercher les points de vente proches ; | N/A | N/A | AUCUN | - | À CONFIRMER | À traiter |
-| V-01.08 | (1) aux clients de connaître la disponibilité du gaz ; | N/A | N/A | AUCUN | - | À CONFIRMER | À traiter |
-| V-01.09 | (1) aux clients de commander ; | N/A | N/A | AUCUN | - | À CONFIRMER | À traiter |
-| V-01.10 | (1) aux clients de se faire livrer ; | N/A | N/A | AUCUN | - | À CONFIRMER | À traiter |
-| V-01.11 | (1) aux distributeurs de passer leurs propres commandes auprès de PLEINGAZ ; | N/A | N/A | AUCUN | - | À CONFIRMER | À traiter |
-| V-01.12 | (1) de générer automatiquement des factures ; | N/A | N/A | AUCUN | - | À CONFIRMER | À traiter |
-| V-01.13 | (1) de payer en ligne ou en présentiel ; | N/A | N/A | AUCUN | - | À CONFIRMER | À traiter |
-| V-01.14 | (1) de communiquer avec PLEINGAZ ; | N/A | N/A | AUCUN | - | À CONFIRMER | À traiter |
-| V-01.15 | (1) d'utiliser un assistant IA ; | N/A | N/A | AUCUN | - | À CONFIRMER | À traiter |
-| V-01.16 | (1) de contacter rapidement PLEINGAZ via WhatsApp ; | N/A | N/A | AUCUN | - | À CONFIRMER | À traiter |
-| V-01.17 | (1) à PLEINGAZ de superviser toute son activité depuis un espace d'administration... | N/A | N/A | AUCUN | - | À CONFIRMER | À traiter |
-| V-10.01 | (10) smartphones Android ; | N/A | N/A | AUCUN | - | À CONFIRMER | À traiter |
-| V-10.02 | (10) connexions Internet faibles ou instables ; | N/A | N/A | AUCUN | - | À CONFIRMER | À traiter |
-| V-10.03 | (10) écrans de petite taille ; | N/A | N/A | AUCUN | - | À CONFIRMER | À traiter |
-| V-10.04 | (10) utilisateurs peu habitués aux plateformes numériques. | N/A | N/A | AUCUN | - | À CONFIRMER | À traiter |
-| V-03.01 | (3) de l'énergie ; | N/A | N/A | AUCUN | - | À CONFIRMER | À traiter |
-| V-03.02 | (3) de la sécurité ; | N/A | N/A | AUCUN | - | À CONFIRMER | À traiter |
-| V-03.03 | (3) de la confiance ; | N/A | N/A | AUCUN | - | À CONFIRMER | À traiter |
-| V-03.04 | (3) du mouvement ; | N/A | N/A | AUCUN | - | À CONFIRMER | À traiter |
-| V-03.05 | (3) du contexte africain/camerounais. | N/A | N/A | AUCUN | - | À CONFIRMER | À traiter |
-| V-03.06 | (3) typographie ; | N/A | N/A | AUCUN | - | À CONFIRMER | À traiter |
-| V-03.07 | (3) hiérarchie visuelle ; | N/A | N/A | AUCUN | - | À CONFIRMER | À traiter |
-| V-03.08 | (3) boutons ; | N/A | N/A | AUCUN | - | À CONFIRMER | À traiter |
-| V-03.09 | (3) cartes produits ; | N/A | N/A | AUCUN | - | À CONFIRMER | À traiter |
-| V-03.10 | (3) navigation ; | N/A | N/A | AUCUN | - | À CONFIRMER | À traiter |
-| V-03.11 | (3) menus ; | N/A | N/A | AUCUN | - | À CONFIRMER | À traiter |
-| V-03.12 | (3) formulaires ; | N/A | N/A | AUCUN | - | À CONFIRMER | À traiter |
-| V-03.13 | (3) sections ; | N/A | N/A | AUCUN | - | À CONFIRMER | À traiter |
-| V-03.14 | (3) footer ; | N/A | N/A | AUCUN | - | À CONFIRMER | À traiter |
-| V-03.15 | (3) CTA ; | N/A | N/A | AUCUN | - | À CONFIRMER | À traiter |
-| V-03.16 | (3) icônes ; | N/A | N/A | AUCUN | - | À CONFIRMER | À traiter |
-| V-03.17 | (3) illustrations ; | N/A | N/A | AUCUN | - | À CONFIRMER | À traiter |
-| V-03.18 | (3) responsive design. | N/A | N/A | AUCUN | - | À CONFIRMER | À traiter |
-| V-03.19 | (3) apparition progressive ; | N/A | N/A | AUCUN | - | À CONFIRMER | À traiter |
-| V-03.20 | (3) hover ; | N/A | N/A | AUCUN | - | À CONFIRMER | À traiter |
-| V-03.21 | (3) micro-interactions ; | N/A | N/A | AUCUN | - | À CONFIRMER | À traiter |
-| V-03.22 | (3) transitions ; | N/A | N/A | AUCUN | - | À CONFIRMER | À traiter |
-| V-03.23 | (3) loading states ; | N/A | N/A | AUCUN | - | À CONFIRMER | À traiter |
-| V-03.24 | (3) skeleton loaders ; | N/A | N/A | AUCUN | - | À CONFIRMER | À traiter |
-| V-03.25 | (3) animations de cartes ; | N/A | N/A | AUCUN | - | À CONFIRMER | À traiter |
-| V-03.26 | (3) feedback après commande ; | N/A | N/A | AUCUN | - | À CONFIRMER | À traiter |
-| V-03.27 | (3) animation du statut d'une commande. | N/A | N/A | AUCUN | - | À CONFIRMER | À traiter |
-| V-04.01 | (4) Acheter du gaz | N/A | N/A | AUCUN | - | À CONFIRMER | À traiter |
-| V-04.02 | (4) Trouver un point de vente | N/A | N/A | AUCUN | - | À CONFIRMER | À traiter |
-| V-04.03 | (4) Commander une livraison | N/A | N/A | AUCUN | - | À CONFIRMER | À traiter |
-| V-04.04 | (4) Devenir distributeur | N/A | N/A | AUCUN | - | À CONFIRMER | À traiter |
-| V-05.01 | (5) nom ; | N/A | N/A | AUCUN | - | À CONFIRMER | À traiter |
-| V-05.02 | (5) prénom ; | N/A | N/A | AUCUN | - | À CONFIRMER | À traiter |
-| V-05.03 | (5) téléphone ; | N/A | N/A | AUCUN | - | À CONFIRMER | À traiter |
-| V-05.04 | (5) email facultatif ; | N/A | N/A | AUCUN | - | À CONFIRMER | À traiter |
-| V-05.05 | (5) mot de passe ; | N/A | N/A | AUCUN | - | À CONFIRMER | À traiter |
-| V-05.06 | (5) ville ; | N/A | N/A | AUCUN | - | À CONFIRMER | À traiter |
-| V-05.07 | (5) quartier ; | N/A | N/A | AUCUN | - | À CONFIRMER | À traiter |
-| V-05.08 | (5) adresse de livraison ; | N/A | N/A | AUCUN | - | À CONFIRMER | À traiter |
-| V-05.09 | (5) préférences de notification. | N/A | N/A | AUCUN | - | À CONFIRMER | À traiter |
-| V-05.10 | (5) téléphone ; | N/A | N/A | AUCUN | - | À CONFIRMER | À traiter |
-| V-05.11 | (5) email. | N/A | N/A | AUCUN | - | À CONFIRMER | À traiter |
-| V-05.12 | (5) récupération du compte ; | N/A | N/A | AUCUN | - | À CONFIRMER | À traiter |
-| V-05.13 | (5) modification du profil ; | N/A | N/A | AUCUN | - | À CONFIRMER | À traiter |
-| V-05.14 | (5) gestion des adresses ; | N/A | N/A | AUCUN | - | À CONFIRMER | À traiter |
-| V-05.15 | (5) historique des commandes ; | N/A | N/A | AUCUN | - | À CONFIRMER | À traiter |
-| V-05.16 | (5) historique des factures ; | N/A | N/A | AUCUN | - | À CONFIRMER | À traiter |
-| V-05.17 | (5) favoris ; | N/A | N/A | AUCUN | - | À CONFIRMER | À traiter |
-| V-05.18 | (5) points de vente favoris ; | N/A | N/A | AUCUN | - | À CONFIRMER | À traiter |
-| V-05.19 | (5) notifications ; | N/A | N/A | AUCUN | - | À CONFIRMER | À traiter |
-| V-05.20 | (5) conversations ; | N/A | N/A | AUCUN | - | À CONFIRMER | À traiter |
-| V-05.21 | (5) préférences. | N/A | N/A | AUCUN | - | À CONFIRMER | À traiter |
-| V-06.01 | (6) un produit ; | N/A | N/A | AUCUN | - | À CONFIRMER | À traiter |
-| V-06.02 | (6) un point de vente ; | N/A | N/A | AUCUN | - | À CONFIRMER | À traiter |
-| V-06.03 | (6) un revendeur ; | N/A | N/A | AUCUN | - | À CONFIRMER | À traiter |
-| V-06.04 | (6) une ville ; | N/A | N/A | AUCUN | - | À CONFIRMER | À traiter |
-| V-06.05 | (6) un quartier ; | N/A | N/A | AUCUN | - | À CONFIRMER | À traiter |
-| V-06.06 | (6) un type de gaz ; | N/A | N/A | AUCUN | - | À CONFIRMER | À traiter |
-| V-06.07 | (6) une disponibilité ; | N/A | N/A | AUCUN | - | À CONFIRMER | À traiter |
-| V-06.08 | (6) une boutique ; | N/A | N/A | AUCUN | - | À CONFIRMER | À traiter |
-| V-06.09 | (6) une livraison. | N/A | N/A | AUCUN | - | À CONFIRMER | À traiter |
-| V-07.01 | (7) nom ; | N/A | N/A | AUCUN | - | À CONFIRMER | À traiter |
-| V-07.02 | (7) photo ; | N/A | N/A | AUCUN | - | À CONFIRMER | À traiter |
-| V-07.03 | (7) description ; | N/A | N/A | AUCUN | - | À CONFIRMER | À traiter |
-| V-07.04 | (7) adresse ; | N/A | N/A | AUCUN | - | À CONFIRMER | À traiter |
-| V-07.05 | (7) ville ; | N/A | N/A | AUCUN | - | À CONFIRMER | À traiter |
-| V-07.06 | (7) quartier ; | N/A | N/A | AUCUN | - | À CONFIRMER | À traiter |
-| V-07.07 | (7) coordonnées GPS ; | N/A | N/A | AUCUN | - | À CONFIRMER | À traiter |
-| V-07.08 | (7) téléphone ; | N/A | N/A | AUCUN | - | À CONFIRMER | À traiter |
-| V-07.09 | (7) WhatsApp ; | N/A | N/A | AUCUN | - | À CONFIRMER | À traiter |
-| V-07.10 | (7) horaires ; | N/A | N/A | AUCUN | - | À CONFIRMER | À traiter |
-| V-07.11 | (7) produits disponibles ; | N/A | N/A | AUCUN | - | À CONFIRMER | À traiter |
-| V-07.12 | (7) disponibilité du gaz ; | N/A | N/A | AUCUN | - | À CONFIRMER | À traiter |
-| V-07.13 | (7) date de dernière mise à jour ; | N/A | N/A | AUCUN | - | À CONFIRMER | À traiter |
-| V-07.14 | (7) statut de vérification ; | N/A | N/A | AUCUN | - | À CONFIRMER | À traiter |
-| V-07.15 | (7) statut officiel PLEINGAZ. | N/A | N/A | AUCUN | - | À CONFIRMER | À traiter |
-| V-07.16 | (7) distance ; | N/A | N/A | AUCUN | - | À CONFIRMER | À traiter |
-| V-07.17 | (7) temps approximatif ; | N/A | N/A | AUCUN | - | À CONFIRMER | À traiter |
-| V-07.18 | (7) itinéraire. | N/A | N/A | AUCUN | - | À CONFIRMER | À traiter |
-| V-08.01 | (8) nom ; | N/A | N/A | AUCUN | - | À CONFIRMER | À traiter |
-| V-08.02 | (8) prénom ; | N/A | N/A | AUCUN | - | À CONFIRMER | À traiter |
-| V-08.03 | (8) téléphone ; | N/A | N/A | AUCUN | - | À CONFIRMER | À traiter |
-| V-08.04 | (8) email ; | N/A | N/A | AUCUN | - | À CONFIRMER | À traiter |
-| V-08.05 | (8) pièce d'identité ; | N/A | N/A | AUCUN | - | À CONFIRMER | À traiter |
-| V-08.06 | (8) éventuellement documents administratifs. | N/A | N/A | AUCUN | - | À CONFIRMER | À traiter |
-| V-08.07 | (8) nom commercial ; | N/A | N/A | AUCUN | - | À CONFIRMER | À traiter |
-| V-08.08 | (8) description ; | N/A | N/A | AUCUN | - | À CONFIRMER | À traiter |
-| V-08.09 | (8) adresse ; | N/A | N/A | AUCUN | - | À CONFIRMER | À traiter |
-| V-08.10 | (8) ville ; | N/A | N/A | AUCUN | - | À CONFIRMER | À traiter |
-| V-08.11 | (8) quartier ; | N/A | N/A | AUCUN | - | À CONFIRMER | À traiter |
-| V-08.12 | (8) téléphone ; | N/A | N/A | AUCUN | - | À CONFIRMER | À traiter |
-| V-08.13 | (8) WhatsApp ; | N/A | N/A | AUCUN | - | À CONFIRMER | À traiter |
-| V-08.14 | (8) horaires ; | N/A | N/A | AUCUN | - | À CONFIRMER | À traiter |
-| V-08.15 | (8) photo de la boutique ; | N/A | N/A | AUCUN | - | À CONFIRMER | À traiter |
-| V-08.16 | (8) coordonnées GPS. | N/A | N/A | AUCUN | - | À CONFIRMER | À traiter |
-| V-08.17 | (8) types de produits vendus ; | N/A | N/A | AUCUN | - | À CONFIRMER | À traiter |
-| V-08.18 | (8) capacité estimée ; | N/A | N/A | AUCUN | - | À CONFIRMER | À traiter |
-| V-08.19 | (8) zone desservie ; | N/A | N/A | AUCUN | - | À CONFIRMER | À traiter |
-| V-08.20 | (8) possibilité de livraison ; | N/A | N/A | AUCUN | - | À CONFIRMER | À traiter |
-| V-08.21 | (8) informations complémentaires. | N/A | N/A | AUCUN | - | À CONFIRMER | À traiter |
-| V-09.01 | (9) consulter le dossier ; | N/A | N/A | AUCUN | - | À CONFIRMER | À traiter |
-| V-09.02 | (9) vérifier les informations ; | N/A | N/A | AUCUN | - | À CONFIRMER | À traiter |
-| V-09.03 | (9) consulter les documents ; | N/A | N/A | AUCUN | - | À CONFIRMER | À traiter |
-| V-09.04 | (9) consulter la localisation ; | N/A | N/A | AUCUN | - | À CONFIRMER | À traiter |
-| V-09.05 | (9) contacter le candidat ; | N/A | N/A | AUCUN | - | À CONFIRMER | À traiter |
-| V-09.06 | (9) demander des informations supplémentaires ; | N/A | N/A | AUCUN | - | À CONFIRMER | À traiter |
-| V-09.07 | (9) approuver ; | N/A | N/A | AUCUN | - | À CONFIRMER | À traiter |
-| V-09.08 | (9) refuser ; | N/A | N/A | AUCUN | - | À CONFIRMER | À traiter |
-| V-09.09 | (9) suspendre. | N/A | N/A | AUCUN | - | À CONFIRMER | À traiter |
-| V-10.05 | (10) ancienneté ; | N/A | N/A | AUCUN | - | À CONFIRMER | À traiter |
-| V-10.06 | (10) régularité des commandes ; | N/A | N/A | AUCUN | - | À CONFIRMER | À traiter |
-| V-10.07 | (10) exactitude des informations ; | N/A | N/A | AUCUN | - | À CONFIRMER | À traiter |
-| V-10.08 | (10) fréquence de mise à jour du stock ; | N/A | N/A | AUCUN | - | À CONFIRMER | À traiter |
-| V-10.09 | (10) taux de commandes honorées ; | N/A | N/A | AUCUN | - | À CONFIRMER | À traiter |
-| V-10.10 | (10) respect des délais ; | N/A | N/A | AUCUN | - | À CONFIRMER | À traiter |
-| V-10.11 | (10) retours clients ; | N/A | N/A | AUCUN | - | À CONFIRMER | À traiter |
-| V-10.12 | (10) validation PLEINGAZ. | N/A | N/A | AUCUN | - | À CONFIRMER | À traiter |
+| V-01.01 | (1) visiteurs découvrir PLEINGAZ | N/A | Accueil | 02 §1 | 1 | MVP | Mapping complet |
+| V-01.02 | (1) particuliers acheter gaz | Order | Checkout | 02 §3.2 | 1 | MVP | Mapping complet |
+| V-01.03 | (1) clients créer compte | User | Auth | 02 §3.2 | 1 | MVP | Mapping complet |
+| V-01.04 | (1) revendeurs créer espace pro | Distributor | Auth | 02 §3.3 | 1 | MVP | Mapping complet |
+| V-01.05 | (1) distrib dmd référencement | Distributor | KYC | 02 §3.3 | 1 | MVP | Mapping complet |
+| V-01.06 | (1) admin valider distrib | Admin | ControlCenter | 02 §3.4 | 1 | MVP | Mapping complet |
+| V-01.07 | (1) clients rechercher pdv proches | Search | Accueil | 06c §1 | 1 | MVP | Mapping complet |
+| V-01.08 | (1) clients dispo gaz | Inventory | Fiche | 03 §3 | 1 | MVP | Mapping complet |
+| V-01.09 | (1) clients commander | Order | Checkout | 03 §2 | 1 | MVP | Mapping complet |
+| V-01.10 | (1) clients se faire livrer | Order | Checkout | 03 §2 | 1 | MVP | Mapping complet |
+| V-01.11 | (1) distrib commandes PLEINGAZ | WholesaleOrder | Dashboard | 06c §1 | Phase 2+ | Plus tard | Mapping complet |
+| V-01.12 | (1) factures | Invoice | PDF | 05a §4 | 1 | MVP | Mapping complet |
+| V-01.13 | (1) payer ligne ou présentiel | Payment | Checkout | 05a §1 | 1 | MVP | Mapping complet |
+| V-01.14 | (1) communiquer PLEINGAZ | N/A | Contact | 02 §1 | Phase 2B | Plus tard | Mapping complet |
+| V-01.15 | (1) assistant IA | API | Chat | 05c §1 | Phase 8 | Plus tard | Mapping complet |
+| V-01.16 | (1) WhatsApp | N/A | WhatsApp | 06c §1 | Phase 2B | Plus tard | Mapping complet |
+| V-01.17 | (1) admin superviser | Admin | ControlCenter | 02 §3.4 | 1 | MVP | Mapping complet |
+| V-02.01 | (2) simplicité | N/A | Tous | 04 §6 | 1 | MVP | Mapping complet |
+| V-02.02 | (2) rapidité | N/A | Tous | 04 §9 | 1 | MVP | Mapping complet |
+| V-02.03 | (2) confiance | Store | Fiche | 02 §2.1 | 1 | MVP | Mapping complet |
+| V-02.04 | (2) disponibilité du gaz | Inventory | Fiche | 03 §3 | 1 | MVP | Mapping complet |
+| V-02.05 | (2) proximité géographique | Search | Résultat | 06c §1 | 1 | MVP | Mapping complet |
+| V-02.06 | (2) sécurité | N/A | Backend | 06a M10 | 1 | MVP | Mapping complet |
+| V-02.07 | (2) transparence | N/A | Tous | 03 §1 | 1 | MVP | Mapping complet |
+| V-02.08 | (2) traçabilité | N/A | Backend | 06a | 1 | MVP | Mapping complet |
+| V-02.09 | (2) automatisation | N/A | Backend | 04 §8 | 1 | MVP | Mapping complet |
+| V-02.10 | (2) expérience mobile-first | N/A | Tous | 04 §6 | 1 | MVP | Mapping complet |
+| V-02.11 | (2) smartphones Android | N/A | Tous | 04 §6 | 1 | MVP | Mapping complet |
+| V-02.12 | (2) connexions Internet faibles | N/A | PWA | 04 §6 | 1 | MVP | Mapping complet |
+| V-02.13 | (2) écrans de petite taille | N/A | Tous | 04 §6 | 1 | MVP | Mapping complet |
+| V-02.14 | (2) utilisateurs peu habitués | N/A | Tous | 04 §6 | 1 | MVP | Mapping complet |
+| V-03.01 | (3) énergie | N/A | UI | 04 §6 | 1 | MVP | Mapping complet |
+| V-03.02 | (3) sécurité (design) | N/A | UI | 04 §6 | 1 | MVP | Mapping complet |
+| V-03.03 | (3) confiance (design) | N/A | UI | 04 §6 | 1 | MVP | Mapping complet |
+| V-03.04 | (3) mouvement | N/A | UI | 04 §6 | 1 | MVP | Mapping complet |
+| V-03.05 | (3) contexte africain | N/A | UI | 04 §6 | 1 | MVP | Mapping complet |
+| V-03.06 | (3) typographie | N/A | UI | 04 §14 | 1 | MVP | Mapping complet |
+| V-03.07 | (3) hiérarchie visuelle | N/A | UI | 04 §14 | 1 | MVP | Mapping complet |
+| V-03.08 | (3) boutons | N/A | UI | 04 §14 | 1 | MVP | Mapping complet |
+| V-03.09 | (3) cartes produits | N/A | UI | 04 §14 | 1 | MVP | Mapping complet |
+| V-03.10 | (3) navigation | N/A | UI | 04 §14 | 1 | MVP | Mapping complet |
+| V-03.11 | (3) menus | N/A | UI | 04 §14 | 1 | MVP | Mapping complet |
+| V-03.12 | (3) formulaires | N/A | UI | 04 §14 | 1 | MVP | Mapping complet |
+| V-03.13 | (3) sections | N/A | UI | 04 §14 | 1 | MVP | Mapping complet |
+| V-03.14 | (3) footer | N/A | UI | 04 §14 | 1 | MVP | Mapping complet |
+| V-03.15 | (3) CTA | N/A | UI | 04 §14 | 1 | MVP | Mapping complet |
+| V-03.16 | (3) icônes | N/A | UI | 04 §14 | 1 | MVP | Mapping complet |
+| V-03.17 | (3) illustrations | N/A | UI | 04 §14 | 1 | MVP | Mapping complet |
+| V-03.18 | (3) apparition progressive | N/A | UI | 04 §6 | 1 | MVP | Mapping complet |
+| V-03.19 | (3) hover | N/A | UI | 04 §6 | 1 | MVP | Mapping complet |
+| V-03.20 | (3) micro-interactions | N/A | UI | 04 §6 | 1 | MVP | Mapping complet |
+| V-03.21 | (3) transitions | N/A | UI | 04 §6 | 1 | MVP | Mapping complet |
+| V-03.22 | (3) loading states | N/A | UI | 04 §6 | 1 | MVP | Mapping complet |
+| V-03.23 | (3) skeleton loaders | N/A | UI | 04 §6 | 1 | MVP | Mapping complet |
+| V-03.24 | (3) animations de cartes | N/A | UI | 04 §6 | 1 | MVP | Mapping complet |
+| V-03.25 | (3) feedback après commande | Order | Checkout | 04 §6 | 1 | MVP | Mapping complet |
+| V-03.26 | (3) animation du statut cmd | Order | Checkout | 04 §6 | 1 | MVP | Mapping complet |
+| V-04.01 | (4) Acheter du gaz | N/A | Accueil | 06c §1 | 1 | MVP | Mapping complet |
+| V-04.02 | (4) Trouver un point de vente | N/A | Accueil | 06c §1 | 1 | MVP | Mapping complet |
+| V-04.03 | (4) Commander une livraison | N/A | Accueil | 06c §1 | 1 | MVP | Mapping complet |
+| V-04.04 | (4) Devenir distributeur | N/A | Accueil | 02 §3.3 | 1 | MVP | Mapping complet |
+| V-04.05 | (4) Recherche: Gaz 12,5 kg | Product | Recherche | 06c §1 | 1 | MVP | Mapping complet |
+| V-04.06 | (4) Recherche: Point de vente près | Search | Recherche | 06c §1 | 1 | MVP | Mapping complet |
+| V-04.07 | (4) Recherche: Revendeur Yaoundé | Search | Recherche | 06c §1 | 1 | MVP | Mapping complet |
+| V-04.08 | (4) Recherche: Gaz dispo à prox | Search | Recherche | 06c §1 | 1 | MVP | Mapping complet |
+| V-05.01 | (5) nom | User | Auth | 03 §2 | 1 | MVP | Mapping complet |
+| V-05.02 | (5) prénom | User | Auth | 03 §2 | 1 | MVP | Mapping complet |
+| V-05.03 | (5) téléphone | User | Auth | 03 §2 | 1 | MVP | Mapping complet |
+| V-05.04 | (5) email facultatif | User | Auth | 03 §2 | 1 | MVP | Mapping complet |
+| V-05.05 | (5) mot de passe | User | Auth | 06a | 1 | MVP | Mapping complet |
+| V-05.06 | (5) ville | User | Profil | 03 §2 | 1 | MVP | Mapping complet |
+| V-05.07 | (5) quartier | User | Profil | 03 §2 | 1 | MVP | Mapping complet |
+| V-05.08 | (5) adresse de livraison | User | Profil | 03 §2 | 1 | MVP | Mapping complet |
+| V-05.09 | (5) préférences de notification | User | Profil | 03 §2 | 1 | MVP | Mapping complet |
+| V-05.10 | (5) connexion téléphone | User | Auth | 03 §2 | 1 | MVP | Mapping complet |
+| V-05.11 | (5) connexion email | User | Auth | 03 §2 | 1 | MVP | Mapping complet |
+| V-05.12 | (5) récupération du compte | User | Auth | 06a | 1 | MVP | Mapping complet |
+| V-05.13 | (5) modification du profil | User | Profil | 03 §2 | 1 | MVP | Mapping complet |
+| V-05.14 | (5) gestion des adresses | User | Profil | 03 §2 | 1 | MVP | Mapping complet |
+| V-05.15 | (5) historique des commandes | Order | Profil | 03 §2 | 1 | MVP | Mapping complet |
+| V-05.16 | (5) historique des factures | Invoice | Profil | 05a §4 | 1 | MVP | Mapping complet |
+| V-05.17 | (5) favoris | User | Profil | AUCUN | Phase 2+ | Plus tard | Mapping complet |
+| V-05.18 | (5) points de vente favoris | User | Profil | AUCUN | Phase 2+ | Plus tard | Mapping complet |
+| V-05.19 | (5) notifications | User | Profil | 05b §4 | 1 | MVP | Mapping complet |
+| V-05.20 | (5) conversations | Conversation | Chat | AUCUN | Phase 8 | Plus tard | Mapping complet |
+| V-05.21 | (5) préférences | User | Profil | 03 §2 | 1 | MVP | Mapping complet |
