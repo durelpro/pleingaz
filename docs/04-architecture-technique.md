@@ -36,8 +36,9 @@ graph TD
 ## 2. Hébergement et CDN (ADR D2)
 **Statut de l'ADR D2 : PROPOSÉ.**
 La plateforme doit équilibrer les coûts et la performance depuis le Cameroun.
-- **Option A : Hébergement local/régional (ex: Afrique du Sud)**. Latence très faible (50-80ms). Coût élevé, facturation en USD souvent premium, support variable, conformité forte des données locales.
-- **Option B : VPS Européen + Cloudflare (Recommandé)**. Latence moyenne (120-150ms) pour les requêtes API, mais statiques servis ultra-rapidement via le cache edge de Cloudflare. Coût faible/moyen, support robuste.
+- **Option A : Hébergement local/régional (ex: Afrique du Sud)**. Latence très faible (50-80ms). Coût élevé, facturation en devise locale (XAF) rare ou premium USD, support variable, conformité forte des données (souveraineté locale).
+- **Option B : VPS Européen + Cloudflare (Recommandation de conception)**. Latence API moyenne (120-150ms depuis le Cameroun), mais statiques servis très rapidement via le cache edge de Cloudflare. Coût faible/moyen, facturation en EUR/USD, support mondial robuste, conformité à analyser (transfert de données).
+- **Décision** : Le choix est laissé au client, l'Option B est recommandée pour le MVP.
 - **Paramétrage Cloudflare** : Anti-bot configuré pour ne pas bloquer les vrais utilisateurs/API. Origine verrouillée sur le trafic CDN. IP réelle via `True-Client-IP`.
 
 ## 3. Stratégie de Cache (TTL et Durée de cache)
@@ -50,8 +51,14 @@ Il est critique de séparer les contenus statiques des contenus dynamiques (stoc
 - **Redis** : Utilisé pour les caches temporaires (TTL courts, ex: 5 min pour une recherche sans géolocalisation), le rate limiting et le TTL des OTP (ex: 5 minutes).
 
 ## 4. API REST et Recherche
-- **Standards** : `/api/v1`, OpenAPI (Swagger) généré depuis le code, erreurs standardisées (RFC 7807), CORS restrictif. Politique de dépréciation sur 6 mois.
-- **Rate Limiting** : Limites par endpoint via Redis (ex: `POST /otp` limité à 3/heure ; `POST /orders` limité à 5/heure ; `GET /search` limité à 30/minute).
+- **Standards** : API versionnée (`/api/v1`). Documentation OpenAPI (Swagger) générée automatiquement depuis le code. Erreurs standardisées (RFC 7807), CORS restrictif. 
+- **Politique de Versionnement** : Ajouts permis. Casseurs de compatibilité = `/api/v2`. Dépréciation annoncée 6 mois à l'avance via un en-tête `Deprecation: true`.
+- **Rate Limiting** : Limites strictes par endpoint via Redis pour contrer le flood :
+  - `POST /otp` (Génération) : 3/heure.
+  - `POST /login` (Connexion) : 10/heure.
+  - `GET /search` (Recherche) : 30/minute.
+  - `POST /orders` (Création de commande) : 5/heure.
+  - `POST /webhooks/*` : 100/minute (avec vérification stricte de signature).
 - **Recherche** : Dans un premier temps, recherche PostgreSQL (extensions `pg_trgm`, `unaccent`, gestion des synonymes de quartiers). La bascule vers OpenSearch ne sera envisagée que si la recherche textuelle dépasse 500ms sur des millions de requêtes ou nécessite des filtres à facettes très complexes.
 
 ## 5. Stockage S3 et Fichiers
@@ -70,20 +77,24 @@ Il est critique de séparer les contenus statiques des contenus dynamiques (stoc
 ## 7. Cartographie, Géocodage et Tuiles (ADR D3)
 **Statut de l'ADR D3 : PROPOSÉ.**
 - **Géocodage** : Le distributeur cible son adresse à l'inscription. Nominatim utilisé en backend via file d'attente (1 req/sec, User-Agent identifié, cache base de données). Interface `GeocodingProvider` pour changer de fournisseur. Source de vérité = Marqueur validé manuellement + repère texte. Pas d'autocomplétion à la frappe.
-- **Tuiles de la carte** : Le serveur public OSM est interdit pour ce trafic. Il faut basculer sur un fournisseur commercial adapté (Mapbox, JawgMaps) ou auto-héberger.
-- **Liste de secours** : Si la carte ne charge pas (échec réseau ou timeout fournisseur), une liste textuelle ordonnée par distance s'affiche obligatoirement.
+- **Tuiles de la carte** : Le serveur public OSM est interdit pour ce trafic.
+  - *Option commerciale (Mapbox/JawgMaps)* : Fiable, SLA garanti, mais coût par vue.
+  - *Auto-hébergement OSM* : Gratuit à l'usage, mais charge de maintenance serveur complexe (à faire plus tard).
+  - *Impact data* : Le chargement vectoriel/raster d'une carte consomme environ **1.5 Mo par écran de carte**. C'est un coût en données (Ko) important au Cameroun.
+- **Liste de secours** : Si la carte ne charge pas (échec réseau, blocage pub, ou timeout fournisseur), une **liste textuelle de secours** ordonnée par distance s'affiche obligatoirement. L'impact réseau chute alors à ~20 Ko (JSON pur).
 
 ## 8. Tâches en Arrière-plan (Workers)
 Gestion des processus asynchrones via files d'attente (ex: BullMQ sur Redis).
 - **Files** : Notifications, PDF generation, Webhooks de paiement, Expiration des réservations, Alertes de stock.
-- **Résilience** : Reprises (retries) exponentielles, idempotence, file des échecs (Dead Letter Queue) et déclenchement d'alertes Slack/Email pour les admins.
+- **Résilience** : Reprises automatiques (retries exponentiels), exécution garantie de manière idempotente.
+- **File des échecs (Dead Letter Queue)** : Les tâches ayant échoué N fois tombent dans une *dead letter queue* (file des échecs) qui déclenche une alerte critique (Slack/Email) pour inspection manuelle.
 
-## 9. Budgets de Performance (Contrôlés en CI)
-Mesures ciblées pour les connexions bridées (Slow 3G/4G Cameroun).
-- **Poids de la page initiale** : < 300 Ko (gzippé/brotli).
-- **Nombre de requêtes initiales** : < 20 requêtes.
-- **Taille de la carte (Tuiles)** : Limité aux tuiles visibles uniquement, chargement paresseux.
-- **LCP cible** : < 2.5 secondes.
+## 9. Budgets de Performance
+L'audit a mesuré un LCP dégradé de **3,6 s** en mobile (3G bridée). L'objectif est d'atteindre un LCP **< 2,5 s**.
+Pour garantir cela, des budgets de performance sont fixés et **seront contrôlés en CI** (via Lighthouse CI et bundlesize) lors de chaque Pull Request :
+- **Page SANS carte (ex: Accueil, Liste)** : Poids cible < 300 Ko (gzippé), < 20 requêtes.
+- **Page AVEC carte** : Poids cible < 1.5 Mo. Tuiles limitées au viewport visible, chargement paresseux (Lazy Loading).
+- **LCP Cible (Slow 4G)** : < 2,5 s.
 
 ## 10. Diagrammes de Séquence (Processus Critiques)
 
@@ -176,7 +187,22 @@ sequenceDiagram
 
 ---
 
-## 11. Décisions Urgentes à Confirmer (Ajoutées à OPEN_QUESTIONS.md)
+## 11. Correctifs Rapides Existants (Indépendants)
+Les correctifs identifiés lors de l'audit initial (notamment le comportement défectueux de Nginx renvoyant des 200 OK sur les fichiers `robots.txt` et `sitemap.xml` non trouvés) sont **indépendants de cette refonte technique globale**. Ils peuvent et doivent être corrigés immédiatement sur l'infrastructure actuelle sans attendre la migration vers Next.js.
+
+## 12. Dépendances des ADR
+Tous les ADR restent au statut **PROPOSÉ**. Ce tableau indique quels choix techniques devront être revus si un ADR est finalement rejeté.
+
+| ADR | Sujet | Statut | Choix techniques dépendants |
+|---|---|---|---|
+| **D1** | Migration Next.js (SSR) | PROPOSÉ | Architecture Frontend (Next.js), hébergement Node.js, pré-rendu SEO. |
+| **D2** | Hébergement (VPS + CF) | PROPOSÉ | Stratégie de Cache Edge Cloudflare, latence cible, IP filtering. |
+| **D3** | Tuiles de la carte | PROPOSÉ | Budget d'affichage, gestion des écrans de secours (texte pur), consommation data. |
+| **D4** | Agrégateur Paiement | PROPOSÉ | Webhooks `LATE_SUCCESS`, UX de paiement redirigé vs intégré. |
+
+---
+
+## 13. Décisions Urgentes à Confirmer (Ajoutées à OPEN_QUESTIONS.md)
 1. **Hébergement et Devises** : Le VPS européen (ADR D2) implique des factures en Euro/USD. L'entreprise PLEINGAZ peut-elle régler ces frais internationaux ?
 2. **Confidentialité et CDN** : L'utilisation de Cloudflare (US) doit être validée juridiquement et inscrite dans les mentions légales.
 3. **Fournisseur de Tuiles (Budget)** : Valider l'enveloppe budgétaire pour JawgMaps, Mapbox ou un auto-hébergement de tuiles OSM.
