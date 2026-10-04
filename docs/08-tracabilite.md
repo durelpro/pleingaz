@@ -143,32 +143,73 @@ Ce document prouve que chaque exigence atomique des 5 fichiers sources (Vision, 
 ## BLOC 3a : Positionnement (`03-positionnement.md` - sections 1 à 9)
 | ID | Exigence | Entité(s) | Écran(s) | Document(s) | Phase | Statut | Justification |
 |---|---|---|---|---|---|---|---|
-| P-01.1 | Positionnement: "Réseau numérique de distribution" | N/A | Accueil | 03 §1 | 1 | MVP | Vision globale acceptée. |
-| P-01.2 | Trois produits (Client, Distributeur, Control Center) | N/A | Architecture | 03 §1 | 1 | MVP | Organisation des accès (ADR D1). |
-| P-02.1 | Parcours central "J'ai besoin de gaz" | Search | Accueil | 06c §1 | 1 | MVP | Remplacera le catalogue statique. |
-| P-02.2 | Choix du produit (6kg, 12.5kg, 50kg, accessoire) | Product | Recherche | 06c §1 | 1 | MVP | Options de base du formulaire. |
-| P-02.3 | Choix localisation (GPS, ville, quartier, carte) | N/A | Recherche | 06c §1 | 1 | MVP | Flexibilité de géolocalisation. |
-| P-02.4 | Choix besoin (acheter, livrer, itinéraire, appeler...) | N/A | Recherche | 06c §1 | 1 | MVP | Actions directes depuis la recherche. |
-| P-02.5 | Affichage direct: distance, trajet, MàJ, horaires... | Store | Résultat | 06c §1 | 1 | MVP | Interface de résultats. |
-| P-03.1 | Statut "Disponible" (récent) | Inventory | Fiche | 03 §1.2 | 1 | MVP | Transparence du stock. |
-| P-03.2 | Statut "Stock limité" | Inventory | Fiche | 03 §1.2 | 1 | MVP | Transparence du stock. |
-| P-03.3 | Statut "Rupture" | Inventory | Fiche | 03 §1.2 | 1 | MVP | Transparence du stock. |
-| P-03.4 | Statut "Information ancienne" | Inventory | Fiche | 03 §1.2 | 1 | MVP | Gestion de la fraîcheur. |
-| P-03.5 | Détails affichés: date/heure, produit, distributeur | Inventory | Fiche | 03 §1.2 | 1 | MVP | Preuve de la donnée. |
-| P-03.6 | Alerte "M'avertir quand dispo" en cas de rupture | StockAlert | Fiche | 05b §4 | 1 | MVP | Outil de conversion (Notifications). |
-| P-04.1 | Carte Publique (ville, stock, ouvert) | Search | Carte | 02 §3.2 | 1 | MVP | Carte frontend client. |
-| P-04.2 | Carte Distributeurs (approuvés, zones) | Admin | Carte | 02 §3.4 | 1 | MVP | Supervision du réseau. |
-| P-04.3 | Carte de stock (approvisionnement, rupture) | Admin | Carte | 02 §3.4 | 1 | MVP | Supervision logistique. |
-| P-04.4 | Carte de demande (recherches, non satisfaites) | Admin | Carte | 02 §3.4 | Phase 8 | Plus tard | Analytique avancée. |
-| P-04.5 | Carte stratégique (développement réseau, quartiers) | Admin | Carte | 02 §3.4 | Phase 8 | Plus tard | Stratégie d'entreprise. |
-| P-05.1 | Géolocalisation facultative (demander ville si refus) | N/A | Recherche | 05c §2 | 1 | MVP | Respect vie privée. |
-| P-05.2 | Géocodage + placement manuel pour distributeurs | Store | Inscription | 02 §3.3 | 1 | MVP | Précision des adresses. |
-| P-06.1 | Routage intelligent multicritères (dispo, distance...) | Search | Résultat | 06c §1 | 1 | MVP | Algorithme de tri des résultats. |
-| P-06.2 | Classement explicatif visible par le client | Search | Résultat | 06c §1 | 1 | MVP | Transparence algorithmique. |
-| P-07.1 | Gestion du stock distributeur par produit | Inventory | Dashboard | 03 §1.2 | 1 | MVP | Base du système. |
-| P-07.2 | Niveaux (Bon, Moyen, Faible, Rupture) | Inventory | Dashboard | 03 §1.2 | 1 | MVP | Version simplifiée du stock. |
-| P-08.1 | Réappro intelligent: alerte distributeur | StockAlert | Dashboard | 06c §1 | Phase 2+ | Plus tard | Historique nécessaire. |
-| P-08.2 | Réappro intelligent: détection risque côté Admin | Admin | ControlCenter | 06c §1 | Phase 2+ | Plus tard | Historique nécessaire. |
-| P-09.1 | IA connectée aux données réelles (ne pas inventer) | API | Chat | 05c §2 | Phase 8 | Plus tard | Architecture Agentique stricte. |
-| P-09.2 | Appel d'outils (find_nearest, check_availability...) | API | Chat | 05c §2 | Phase 8 | Plus tard | Tools JSON Schema. |
-| P-09.3 | IA distingue info officielle vs estimation | API | Chat | 05c §2 | Phase 8 | Plus tard | Prompt engineering. |
+| P-01.01 | (1) Positionnement : Réseau numérique | N/A | Accueil | 03 §1 | 1 | MVP | Vision globale. |
+| P-01.02 | (1) Produit : PLEINGAZ Client | User | Portail | 03 §1 | 1 | MVP | ADR D1. |
+| P-01.03 | (1) Produit : PLEINGAZ Distributeur | Distributor | Portail | 03 §1 | 1 | MVP | ADR D1. |
+| P-01.04 | (1) Produit : PLEINGAZ Control Center | Admin | Portail | 03 §1 | 1 | MVP | ADR D1. |
+| P-02.01 | (2) Parcours central J'ai besoin de gaz | Search | Accueil | 06c §1 | 1 | MVP | Remplacera le catalogue. |
+| P-02.02 | (2) Choix du produit (regroupe 5 puces : 6 kg, 12,5 kg, 50 kg, accessoire, autre produit) | Product | Recherche | 06c §1 | 1 | MVP | Options du formulaire. |
+| P-02.03 | (2) Choix localisation (regroupe 4 puces : autoriser géoloc, saisir ville, saisir quartier, zone sur carte) | N/A | Recherche | 06c §1 | 1 | MVP | Options GPS/Manuelles. |
+| P-02.04 | (2) Choix besoin (regroupe 6 puces : sur place, livraison, itinéraire, appeler, WhatsApp, alerte retour stock) | N/A | Recherche | 06c §1 | 1 | MVP | Actions possibles. |
+| P-02.05 | (2) Affichage direct (regroupe 10 puces : points de vente, distance, temps trajet, MàJ, horaires, prix, livraison, tel, WhatsApp, statut) | Store | Résultat | 06c §1 | 1 | MVP | Interface de résultats. |
+| P-03.01 | (3) Statut: 🟢 Disponible | Inventory | Fiche | 03 §3 | 1 | MVP | Transparence du stock. |
+| P-03.02 | (3) Statut: 🟠 Stock limité | Inventory | Fiche | 03 §3 | 1 | MVP | Transparence du stock. |
+| P-03.03 | (3) Statut: 🔴 Rupture | Inventory | Fiche | 03 §3 | 1 | MVP | Transparence du stock. |
+| P-03.04 | (3) Statut: ⚪ Information ancienne | Inventory | Fiche | 03 §3 | 1 | MVP | Gestion de la fraîcheur. |
+| P-03.05 | (3) Affichage obligatoire (regroupe 4 puces : date MàJ, heure, produit, distributeur) | Inventory | Fiche | 03 §3 | 1 | MVP | Preuve de donnée. |
+| P-03.06 | (3) Alerte rupture: 'M'avertir quand dispo' | StockAlert | Fiche | 05b §4 | 1 | MVP | Outil de conversion. |
+| P-03.07 | (3) Liaison alerte (regroupe 5 puces : compte, téléphone, point de vente, zone, produit) | StockAlert | Fiche | 05b §4 | 1 | MVP | Options de l'alerte. |
+| P-04.01 | (4) Carte Publique (regroupe 7 puces : point de vente, quartier, ville, produit, ouvert, stock, boutique qui livre) | Search | Carte | 02 §3.2 | 1 | MVP | Filtres client. |
+| P-04.02 | (4) Carte Distributeurs (regroupe 7 puces : approuvés, attente, suspendus, peu couvertes, dispo, inactifs, sans MàJ) | Admin | Carte | 02 §3.4 | 1 | MVP | Supervision Admin. |
+| P-04.03 | (4) Carte Stock (regroupe 4 puces : bien approvisionnées, faible, rupture, sans donnée) | Admin | Carte | 02 §3.4 | 1 | MVP | Logistique Admin. |
+| P-04.04 | (4) Carte Demande (regroupe 5 puces : recherches, sans stock, commandes, répétées, forte demande) | Admin | Carte | 02 §3.4 | Phase 8 | Plus tard | Analytique spatiale. |
+| P-04.05 | (4) Carte Stratégique (regroupe 5 puces : sous-desservis, nouveau distributeur, proche dépôt, demande augmente, délais élevés) | Admin | Carte | 02 §3.4 | Phase 8 | Plus tard | Aide décisionnelle. |
+| P-05.01 | (5) Géolocalisation si acceptée (regroupe 6 puces : points proches, distance, horaires, stock, livraison, itinéraire) | Search | Résultat | 06c §1 | 1 | MVP | Affichage proximité. |
+| P-05.02 | (5) Géolocalisation si refusée: 'Dans quelle ville/quartier' | N/A | Recherche | 05c §2 | 1 | MVP | Respect vie privée. |
+| P-05.03 | (5) Géolocalisation distributeur (regroupe 6 étapes : recherche, géocodage, déplace marqueur, confirme, lat/lng, validation) | Store | Inscription | 02 §3.3 | 1 | MVP | Précision adresse. |
+| P-06.01 | (6) Routage intelligent (regroupe 12 critères : dispo, ancienneté MàJ, distance, temps, horaires, capacité, livraison, zone, charge, taux commandes, statut distr, fiabilité) | Search | Résultat | 06c §1 | Phase 2+ | Plus tard | Algorithme complexe. |
+| P-06.02 | (6) Classement explicatif visible ('Recommandé car...') | Search | Résultat | 06c §1 | 1 | MVP | Transparence client. |
+| P-07.01 | (7) Gestion stock par produit (regroupe 3 produits : 6 kg, 12,5 kg, 50 kg) | Inventory | Dashboard | 03 §1.2 | 1 | MVP | Base du stock. |
+| P-07.02 | (7) Niveaux de stock (regroupe 4 puces : bon, moyen, faible, rupture) | Inventory | Dashboard | 03 §1.2 | 1 | MVP | Gestion simplifiée. |
+| P-07.03 | (7) Évolutions stock (regroupe 6 puces : qt dispo, qt réservée, seuil alerte, stock physique, stock estimé, date réappro) | Inventory | Dashboard | 03 §1.2 | Phase 2+ | Plus tard | Hors MVP initial. |
+| P-08.01 | (8) Actions distr. sur risque (regroupe 4 puces : commander, modifier, ignorer, contacter) | WholesaleOrder | Dashboard | 06c §1 | Phase 2+ | Plus tard | Fonction métier V2. |
+| P-08.02 | (8) Alertes Admin (regroupe 5 critères : bon->faible->rupture, commandes augmentent, recherches augmentent, pas MàJ, délai dépassé) | StockAlert | ControlCenter | 06c §1 | Phase 2+ | Plus tard | Analyse risques. |
+| P-09.01 | (9) IA workflow (regroupe 5 étapes : produit, zone, recherche, bdd, réponse) | API | Chat | 05c §2 | Phase 8 | Plus tard | Architecture LLM. |
+| P-09.02 | (9) IA outils (regroupe 8 outils : find_nearest, check_product, find_open, get_store, get_order, get_invoice, create_alert, contact) | API | Chat | 05c §2 | Phase 8 | Plus tard | Schema Tools. |
+| P-09.03 | (9) IA classification (regroupe 5 puces : officielle, dynamique, non dispo, estimation, recommandation) | API | Chat | 05c §2 | Phase 8 | Plus tard | Qualité réponse. |
+
+## BLOC 3b : Positionnement (`03-positionnement.md` - sections 10 à 18)
+| ID | Exigence | Entité(s) | Écran(s) | Document(s) | Phase | Statut | Justification |
+|---|---|---|---|---|---|---|---|
+| P-10.01 | (10) Architecture globale (regroupe 10 blocs : Clients, Distributeurs, Admin, Backend/API, Base, Paiements, Cartes, IA, Notifs, BI) | N/A | N/A | 04 §1 | 1 | MVP | Diagramme validé. |
+| P-11.01 | (11) Produit 1 Client parcours (regroupe 10 étapes : Rechercher, Trouver, Vérifier, Choisir, Commander, Payer, Suivre, Recevoir, Télécharger, Évaluer) | N/A | Portail | 02 §3.2 | 1 | MVP | Cycle e-commerce. |
+| P-11.02 | (11) Produit 1 Client fonctions (regroupe 12 puces : recherche, dispo, carte, panier, cmd, livraison, paiement, facture, whatsapp, assistance, favoris, alertes) | N/A | Portail | 02 §3.2 | 1 | MVP | Features client. |
+| P-11.03 | (11) Produit 2 Distr. fonctions (regroupe 13 puces : inscription, dossier, validation, boutique, localisation, horaires, stock, réception cmd, cmd PLEINGAZ, factures, stats, conversation, alertes) | N/A | Portail | 02 §3.3 | 1 | MVP | Features vendeur. |
+| P-11.04 | (11) Produit 3 Admin fonctions (regroupe 15 puces : validation, supervision, produits, prix, commandes, paiements, factures, livraisons, support, carte, heatmap, prévision, rapports, audit, config IA) | Admin | Portail | 02 §3.4 | 1 | MVP | Features admin. |
+| P-12.01 | (12) Identité vendeur (regroupe 2 cas : Vente directe, Distributeur agréé) | Invoice | PDF | 05a §4 | 1 | MVP | Conformité légale. |
+| P-12.02 | (12) Champs facture (regroupe 13 puces : numéro, réf, vendeur, acheteur, produits, qt, prix, livraison, total, mode paie, statut paie, date, info fiscales) | Invoice | PDF | 05a §4 | 1 | MVP | Structure PDF. |
+| P-13.01 | (13) Providers paiement (regroupe 3 modes : MTN, Orange, Présentiel) | Payment | Checkout | 05a §1 | 1 | MVP | Omnicanal. |
+| P-13.02 | (13) Principes paiement (regroupe 10 puces : traitement serveur, id transac, conf serveur, webhook, vérif statut, idempotence, journal, échoués, prévention doublons, rapprochement) | Payment | API | 05a §1 | 1 | MVP | Sécurité finance. |
+| P-14.01 | (14) Idée: Retour en stock | StockAlert | Mobile | 05b §4 | 1 | MVP | Feature validée. |
+| P-14.02 | (14) Idée: Stock non actualisé | Inventory | Fiche | 03 §1.2 | 1 | MVP | Feature validée. |
+| P-14.03 | (14) Idée: Précommande | Order | Checkout | 06c §1 | Phase 2+ | Plus tard | Hors MVP strict. |
+| P-14.04 | (14) Idée: Commande groupée | Order | Checkout | 06c §1 | Phase 2+ | Plus tard | Hors MVP strict. |
+| P-14.05 | (14) Idée: Mode faible connexion | N/A | PWA | 04 §6 | 1 | MVP | Mode offline PWA. |
+| P-14.06 | (14) Idée: Paiement livraison contrôlé | Payment | Checkout | 05a §1 | 1 | MVP | Cash on delivery. |
+| P-14.07 | (14) Idée: Centre de confiance (badge) | Store | Fiche | 02 §2.1 | 1 | MVP | Vérification KYC. |
+| P-14.08 | (14) Idée: Signalement problème | Issue | Fiche | 06c §1 | Phase 2+ | Plus tard | Modération. |
+| P-14.09 | (14) Idée: Liste attente par zone | StockAlert | Carte | 06c §1 | Phase 2+ | Plus tard | Analyse admin. |
+| P-14.10 | (14) Idée: Mode agent/revendeur assisté | Order | WhatsApp | 06c §1 | Phase 2+ | Plus tard | WhatsApp Bot. |
+| P-15.01 | (15) Commande assistée (regroupe 4 puces : WhatsApp, téléphone, agent, partenaire) | Order | API | 06c §1 | Phase 2+ | Plus tard | Support client. |
+| P-15.02 | (15) Mode faible connexion (regroupe 6 puces : peu images, compresser, pas vidéos, cache, reprise cmd, état hors-ligne) | N/A | UI | 04 §6 | 1 | MVP | Optimisation perfs. |
+| P-15.03 | (15) Vérification stock : bouton simple | Inventory | Dashboard | 03 §1.2 | 1 | MVP | UX distributeur. |
+| P-15.04 | (15) Score fraîcheur (regroupe 4 puces : récente, régulière, ancienne, à confirmer) | Inventory | Fiche | 03 §1.2 | 1 | MVP | Confiance donnée. |
+| P-15.05 | (15) Réservation temporaire (30 min) | Order | Checkout | 03 §2 | 1 | MVP | Gestion conflits stock. |
+| P-15.06 | (15) Signalement (regroupe 6 puces : absent, fermé, mauvais tel, mauvais lieu, prix diff, non reconnu) | Issue | Fiche | 06c §1 | Phase 2+ | Plus tard | Modération crowdsourcée. |
+| P-15.07 | (15) Réseau assisté (regroupe 7 puces : demande Q, ruptures, temps rép, sans result, besoin, livr, produits) | Admin | ControlCenter | 06c §1 | Phase 8 | Plus tard | BI avancée. |
+| P-16.01 | (16) Roadmap complète (regroupe 10 phases) | N/A | N/A | 06c §1 | 1 | MVP | Structuration du projet. |
+| P-17.01 | (17) Livrables avant codage (regroupe 24 puces : audit, inventaire, archi, cible, migration, sitemap, parcours C, parcours D, parcours A, rôles, modèle, API, frontend, paiement, carte, IA, notifs, sécurité, tests, roadmap, MVP, estimations, reprise, sauvegarde) | N/A | N/A | 00 R1 | 1 | MVP | Déjà produits dans docs/. |
+| P-18.01 | (18) Audit Constaté (regroupe 8 puces : pages, textes, images, formulaires, liens, fonctionnalités, technologies, performances) | N/A | N/A | 01 §1 | 1 | MVP | Fait dans Phase 0. |
+| P-18.02 | (18) Audit Recommandé (regroupe 8 puces : recherche, carte, stock, commandes, paiement, IA, espace distr, back-office) | N/A | N/A | 01 §1 | 1 | MVP | Fait dans Phase 0. |
+| P-18.03 | (18) Audit À Confirmer (regroupe 10 puces : prix, horaires, livraison, données off, identité, règles, paiement, légal, confid, retours) | N/A | N/A | 01 §1 | 1 | MVP | Liste fournie au client. |
+| P-18.04 | (18) 4 promesses finales (regroupe 4 puces : trouver, vérifier, commander, piloter) | N/A | Accueil | 03 §1 | 1 | MVP | Axe stratégique. |
