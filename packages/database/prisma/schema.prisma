@@ -32,6 +32,7 @@ model User {
   
   notifications   Notification[]
   reports         Report[]
+  sentMessages    ChatMessage[]    @relation("SentMessages")
 
   createdAt       DateTime         @default(now())
   updatedAt       DateTime         @updatedAt
@@ -557,4 +558,32 @@ model Report {
   isResolved Boolean     @default(false)
   
   createdAt DateTime     @default(now())
+}
+
+model ChatConversation {
+  id        String        @id @default(uuid())
+  participant1Id String
+  participant2Id String
+  
+  messages  ChatMessage[]
+  
+  createdAt DateTime      @default(now())
+  updatedAt DateTime      @updatedAt
+  
+  @@unique([participant1Id, participant2Id])
+}
+
+model ChatMessage {
+  id             String           @id @default(uuid())
+  conversationId String
+  conversation   ChatConversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
+  
+  senderId       String
+  sender         User             @relation("SentMessages", fields: [senderId], references: [id])
+  
+  content        String
+  attachmentUrl  String?
+  isRead         Boolean          @default(false)
+  
+  createdAt      DateTime         @default(now())
 }

@@ -14,6 +14,7 @@ import { DeliveriesModule } from './deliveries/deliveries.module';
 import { InvoicesModule } from './invoices/invoices.module';
 import { PaymentsModule } from './payments/payments.module';
 import { NotificationsModule } from './notifications/notifications.module';
+import { ChatModule } from './chat/chat.module';
 
 @Module({
   imports: [
@@ -31,6 +32,7 @@ import { NotificationsModule } from './notifications/notifications.module';
     InvoicesModule,
     PaymentsModule,
     NotificationsModule,
+    ChatModule,
     BullModule.forRoot({
       connection: {
         host: process.env.REDIS_HOST || 'localhost',
