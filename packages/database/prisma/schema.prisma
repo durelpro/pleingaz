@@ -25,6 +25,10 @@ model User {
   sessions        Session[]
   auditLogs       AuditLog[]       @relation("UserAuditLogs")
   demandAlerts    DemandAlert[]
+  
+  customerOrders  Order[]          @relation("CustomerOrders")
+  assistedOrders  Order[]          @relation("AssistedOrders")
+  driverDeliveries Delivery[]      @relation("DriverDeliveries")
 
   createdAt       DateTime         @default(now())
   updatedAt       DateTime         @updatedAt
@@ -206,6 +210,8 @@ model Store {
   isVisible       Boolean                @default(true)
   
   inventories     Inventory[]
+  orders          Order[]
+  stockReservations StockReservation[]
   
   createdAt       DateTime               @default(now())
   updatedAt       DateTime               @updatedAt
@@ -238,6 +244,8 @@ model Product {
   inventories     Inventory[]
   priceHistories  PriceHistory[]
   demandAlerts    DemandAlert[]
+  orderItems      OrderItem[]
+  stockReservations StockReservation[]
   
   createdAt       DateTime        @default(now())
   updatedAt       DateTime        @updatedAt
@@ -309,4 +317,130 @@ model DemandAlert {
   fulfilledAt DateTime?
   
   createdAt   DateTime @default(now())
+}
+
+// ==========================================
+// PHASE 5: COMMANDES & LIVRAISONS
+// ==========================================
+
+enum OrderType {
+  B2C_PICKUP
+  B2C_DELIVERY
+  B2B_DISTRIBUTOR // Commande distributeur vers PLEINGAZ
+}
+
+enum OrderStatus {
+  DRAFT
+  SUBMITTED
+  CONFIRMED
+  PREPARING
+  SHIPPED
+  DELIVERED
+  CANCELLED
+  FAILED
+}
+
+model Order {
+  id              String      @id @default(uuid())
+  orderNumber     String      @unique // Généré: ORD-20261006-XXXX
+  type            OrderType
+  status          OrderStatus @default(DRAFT)
+  
+  customerId      String
+  customer        User        @relation("CustomerOrders", fields: [customerId], references: [id])
+  
+  storeId         String?     // Nullable si B2B direct ou avant choix du store
+  store           Store?      @relation(fields: [storeId], references: [id])
+  
+  totalAmount     Float
+  
+  // Livraison
+  deliveryAddress String?
+  deliveryLat     Float?
+  deliveryLng     Float?
+  deliveryNotes   String?
+  deliverySlot    DateTime?
+  
+  // Assistance (Tâche 5.7)
+  assistedById    String?
+  assistedBy      User?       @relation("AssistedOrders", fields: [assistedById], references: [id])
+  
+  items           OrderItem[]
+  reservations    StockReservation[]
+  delivery        Delivery?
+  invoice         Invoice?
+  
+  createdAt       DateTime    @default(now())
+  updatedAt       DateTime    @updatedAt
+}
+
+model OrderItem {
+  id          String   @id @default(uuid())
+  orderId     String
+  order       Order    @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  productId   String
+  product     Product  @relation(fields: [productId], references: [id])
+  quantity    Int
+  unitPrice   Float
+  totalPrice  Float
+}
+
+model StockReservation {
+  id          String   @id @default(uuid())
+  orderId     String
+  order       Order    @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  storeId     String
+  store       Store    @relation(fields: [storeId], references: [id])
+  productId   String
+  product     Product  @relation(fields: [productId], references: [id])
+  quantity    Int
+  
+  expiresAt   DateTime // Expiration stricte (ex: +15 minutes)
+  isConsumed  Boolean  @default(false)
+  
+  createdAt   DateTime @default(now())
+}
+
+enum DeliveryStatus {
+  PENDING
+  ASSIGNED
+  PICKED_UP
+  IN_TRANSIT
+  DELIVERED
+  FAILED
+  CANCELLED
+}
+
+model Delivery {
+  id              String         @id @default(uuid())
+  orderId         String         @unique
+  order           Order          @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  
+  driverId        String?
+  driver          User?          @relation("DriverDeliveries", fields: [driverId], references: [id])
+  
+  status          DeliveryStatus @default(PENDING)
+  confirmationOtp String?        // Code OTP à remettre au client (Tâche 5.4)
+  
+  pickedUpAt      DateTime?
+  deliveredAt     DateTime?
+  failedReason    String?
+  
+  createdAt       DateTime       @default(now())
+  updatedAt       DateTime       @updatedAt
+}
+
+model Invoice {
+  id            String   @id @default(uuid())
+  invoiceNumber String   @unique // Numérotation unique par vendeur
+  orderId       String   @unique
+  order         Order    @relation(fields: [orderId], references: [id])
+  
+  sellerName    String   // "PLEINGAZ - Vente directe" ou "Distributeur agréé : X"
+  totalAmount   Float
+  pdfUrl        String?  // Facture immuable PDF
+  
+  isVoided      Boolean  @default(false) // Pour gestion des avoirs
+  
+  createdAt     DateTime @default(now())
 }
