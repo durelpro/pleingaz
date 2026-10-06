@@ -31,6 +31,10 @@ Ce document prouve que chaque exigence atomique des 5 fichiers sources (Vision, 
 | S-13 | La stack source exige **Leaflet** en recommandé. L'ADR D3 ne tranche pas l'outil frontend. | `04-architecture-technique.md` | Ajouter "React Leaflet" formellement dans l'ADR D3. |
 | Pages | Le maintien des pages existantes était listé, mais pas planifié explicitement. | `06c-mvp-pilote-roadmap.md` | Migration des pages ajoutée à la Phase 2B (correction effectuée). |
 
+## DÉCISIONS DU PROPRIÉTAIRE
+- **Mobile Money** : Sandbox en phase 6, le pilote démarre avec le paiement en présentiel confirmé par code.
+- **Exigences écartées** : Aucune exigence de la vision n'a été écartée sans décision explicite du propriétaire.
+
 ---
 
 ## BLOC 1 : Stack Technique (S) et Audit Préliminaire (A)
