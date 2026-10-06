@@ -48,7 +48,7 @@ Il est critique de séparer les contenus statiques des contenus dynamiques (stoc
 - **Pages Vitrines (SSR Next.js)** : Pré-rendues avec ISR (Incremental Static Regeneration). Durée de cache/TTL de 1 heure.
 - **Blocs Dynamiques (ex: Stock d'un point de vente)** : Le squelette de la page du distributeur est en cache, mais **le bloc affichant le stock est toujours chargé dynamiquement (Client-Side Fetch)** et porte un TTL de 0 seconde (pas de cache). Il affiche systématiquement la "date de dernière mise à jour".
 - **Données Sensibles (Factures, Profils)** : En-têtes HTTP `Cache-Control: no-store, no-cache, max-age=0`.
-- **Redis** : Utilisé pour les caches temporaires (TTL courts, ex: 5 min pour une recherche sans géolocalisation), le rate limiting et le TTL des OTP (ex: 5 minutes).
+- **Redis** : Utilisé pour les caches temporaires (TTL courts, ex: 5 min pour une recherche sans géolocalisation), le rate limiting et le TTL des OTP (ex: 5 minutes). **Règle absolue : jamais de données qui doivent survivre à un redémarrage.**
 
 ## 4. API REST et Recherche
 - **Standards** : API versionnée (`/api/v1`). Documentation OpenAPI (Swagger) générée automatiquement depuis le code. Erreurs standardisées (RFC 7807), CORS restrictif. 
