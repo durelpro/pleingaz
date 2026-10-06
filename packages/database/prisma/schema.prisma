@@ -20,6 +20,8 @@ model User {
   lockedUntil     DateTime?
   roles           UserRole[]
   customerProfile CustomerProfile?
+  distributorApp  DistributorApplication?
+  stores          Store[]
   sessions        Session[]
   auditLogs       AuditLog[]       @relation("UserAuditLogs")
 
@@ -123,4 +125,85 @@ model AuditLog {
   user      User?    @relation("UserAuditLogs", fields: [userId], references: [id], onDelete: SetNull)
 
   createdAt DateTime @default(now())
+}
+
+enum ApplicationStatus {
+  DRAFT
+  PENDING
+  APPROVED
+  REJECTED
+  SUSPENDED
+}
+
+enum DocumentType {
+  CNI_FRONT
+  CNI_BACK
+  REGISTRE_COMMERCE
+  PLAN_LOCALISATION
+  PHOTO_BOUTIQUE
+}
+
+model DistributorApplication {
+  id              String            @id @default(uuid())
+  userId          String            @unique
+  user            User              @relation(fields: [userId], references: [id], onDelete: Cascade)
+  status          ApplicationStatus @default(DRAFT)
+  currentStep     Int               @default(1) // Pour la reprise du wizard
+  
+  businessName    String?
+  taxId           String?
+  
+  city            String?
+  neighborhood    String?
+  landmark        String?
+  latitude        Float?
+  longitude       Float?
+  whatsappNumber  String?
+  
+  documents       StoreDocument[]
+  
+  rejectionReason String?
+  verifiedAt      DateTime?
+  
+  createdAt       DateTime          @default(now())
+  updatedAt       DateTime          @updatedAt
+  
+  store           Store?
+}
+
+model StoreDocument {
+  id             String                 @id @default(uuid())
+  applicationId  String
+  application    DistributorApplication @relation(fields: [applicationId], references: [id], onDelete: Cascade)
+  type           DocumentType
+  fileUrl        String                 // Chemin ou URI privé
+  isValid        Boolean?
+  rejectedReason String?
+  
+  createdAt      DateTime               @default(now())
+  updatedAt      DateTime               @updatedAt
+}
+
+model Store {
+  id              String                 @id @default(uuid())
+  applicationId   String                 @unique
+  application     DistributorApplication @relation(fields: [applicationId], references: [id])
+  ownerId         String
+  owner           User                   @relation(fields: [ownerId], references: [id])
+  
+  name            String
+  city            String
+  neighborhood    String
+  landmark        String?
+  latitude        Float?
+  longitude       Float?
+  
+  whatsappNumber  String?
+  openingHours    Json?                  // ex: { monday: "08:00-18:00" }
+  
+  isVerifiedBadge Boolean                @default(true)
+  isVisible       Boolean                @default(true)
+  
+  createdAt       DateTime               @default(now())
+  updatedAt       DateTime               @updatedAt
 }
