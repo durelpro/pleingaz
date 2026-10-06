@@ -35,6 +35,8 @@ model User {
   sentMessages    ChatMessage[]    @relation("SentMessages")
   aiChatSessions  AiChatSession[]
   aiUsageMetrics  AiUsageMetric[]
+  loyaltyPoints   Int              @default(0)
+  loyaltyTx       LoyaltyTransaction[]
 
   createdAt       DateTime         @default(now())
   updatedAt       DateTime         @updatedAt
@@ -215,6 +217,9 @@ model Store {
   isVerifiedBadge Boolean                @default(true)
   isVisible       Boolean                @default(true)
   
+  reliabilityScore Float                 @default(100) // Tâche 9.4
+  badges          Json?                  // ["FAST", "TOP_RATED"]
+  
   // Paiements (Numéros de réception des fonds du distributeur)
   momoReceiverNumber   String?
   orangeReceiverNumber String?
@@ -381,6 +386,7 @@ model Order {
   payments        Payment[]
   delivery        Delivery?
   invoice         Invoice?
+  review          Review?
   
   createdAt       DateTime    @default(now())
   updatedAt       DateTime    @updatedAt
@@ -629,4 +635,45 @@ model AiUsageMetric {
   estimatedCostUsd Float   @default(0)
   
   createdAt       DateTime @default(now())
+}
+
+// ==========================================
+// PHASE 9: PILOTAGE & ANALYTIQUES
+// ==========================================
+
+model HeatmapEvent {
+  id          String   @id @default(uuid())
+  type        HeatmapEventType // 'DEMAND', 'NO_RESULT', 'OUT_OF_STOCK'
+  latitude    Float
+  longitude   Float
+  gridId      String   // ID de grille (ex: "lat_lng_hash") pour anonymisation
+  metadata    Json?    // Ex: marque recherchée, poids
+  createdAt   DateTime @default(now())
+}
+
+enum HeatmapEventType {
+  DEMAND
+  NO_RESULT
+  OUT_OF_STOCK
+}
+
+model Review {
+  id          String   @id @default(uuid())
+  orderId     String   @unique
+  order       Order    @relation(fields: [orderId], references: [id])
+  
+  rating      Int      // 1-5
+  comment     String?
+  isModerated Boolean  @default(false)
+  
+  createdAt   DateTime @default(now())
+}
+
+model LoyaltyTransaction {
+  id          String   @id @default(uuid())
+  userId      String
+  user        User     @relation(fields: [userId], references: [id])
+  points      Int      // Positif (gagné) ou négatif (dépensé)
+  description String
+  createdAt   DateTime @default(now())
 }
