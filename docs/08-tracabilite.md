@@ -62,10 +62,10 @@ Ce document prouve que chaque exigence atomique des 5 fichiers sources (Vision, 
 | S-18 | Paiements : PaymentProvider | Payment | Checkout | 04 §10.1 | 1 | MVP | Intégration hybride retenue (MTN/Orange/Espèces). |
 | S-19 | Fichiers : Stockage compatible S3 | Document | KYC | 04 §5 | 1 | MVP | Isolement des KYC et factures public/privé. |
 | S-20 | Notifications : Email + WhatsApp | Message | N/A | 05b §1 | 1 | MVP | Canaux vitaux (WhatsApp click-to-chat MVP, API plus tard). |
-| S-21 | Temps réel : WebSocket / Socket.IO | N/A | N/A | 06c §3 | Phase future | Plus tard | Non prioritaire pour le MVP. |
+| S-21 | Temps réel : WebSocket / Socket.IO | N/A | N/A | 06c §1, 04 §1 | Phase future | Plus tard | Non prioritaire pour le MVP. |
 | S-22 | Recherche initiale : PostgreSQL | N/A | Recherche | 04 §4 | 1 | MVP | Choisi via pg_trgm pour le MVP (04 §4). |
 | S-23 | Recherche avancée : OpenSearch | N/A | Recherche | 04 §4 | Phase future | Plus tard | Remplacé par PostgreSQL pour limiter les coûts initiaux. |
-| S-24 | IA : LLM + RAG + outils internes | Conversation| Chat IA | 05c §2 | Phase 8 | Plus tard | Modèles LLM reportés après lancement pour des raisons de coût. |
+| S-24 | IA : LLM + RAG + outils internes | Conversation | Chat IA | 05c §2 | Phase 8 | Plus tard | Modèles LLM reportés après lancement pour des raisons de coût. |
 | S-25 | Tests unitaires : Jest | N/A | N/A | 06b §1 | 1 | MVP | Obligatoire dans la matrice de qualité. |
 | S-26 | Tests API : Supertest | N/A | N/A | 06b §1 | 1 | MVP | Exigé pour valider l'API backend. |
 | S-27 | Tests navigateur : Playwright | N/A | E2E | 06b §1 | 1 | MVP | Exigé pour le frontend et les coupures réseau. |
@@ -73,7 +73,7 @@ Ce document prouve que chaque exigence atomique des 5 fichiers sources (Vision, 
 | S-29 | Serveur : Ubuntu Linux | N/A | N/A | 04 §2 | 1 | MVP | Implicite. VPS cité dans ADR D2. |
 | S-30 | Reverse proxy : Nginx | N/A | N/A | 01 §1 | 1 | MVP | Maintenu/Migré en frontend (Cloudflare prend le relais CDN). |
 | S-31 | Gestion du code : Git + GitHub | N/A | N/A | 06a §3 | 1 | MVP | Gitleaks et CI évoqués dans sécurité secrets. |
-| S-32 | Monitoring : Sentry + Uptime Kuma | Log | N/A | 06c §4 | 1 | MVP | Outils de surveillance inclus dans le plan d'infrastructure. |
+| S-32 | Monitoring : Sentry + Uptime Kuma | Log | N/A | 06c §1, 04 §1 | 1 | MVP | Outils de surveillance inclus dans le plan d'infrastructure. |
 
 ### Source A : Audit Préliminaire (`01-audit-preliminaire.md`)
 | ID | Exigence | Entité(s) | Écran(s) | Document(s) | Phase | Statut | Justification |
@@ -96,30 +96,30 @@ Ce document prouve que chaque exigence atomique des 5 fichiers sources (Vision, 
 | A-16 | (Faiblesse) Espace distributeur inexistant | Distributor | Dashboard | 02 §3.3 | 1 | MVP | Création d'un espace métier dédié. |
 | A-17 | (Faiblesse) Pas de validation revendeur | Admin | KYC | 03 §2 | 1 | MVP | Validation obligatoire (Statut `APPROVED`) avant visibilité. |
 | A-18 | (Faiblesse) Commande client limitée | Order | Checkout | 03 §2 | 1 | MVP | Modélisation complète de la commande et réservation. |
-| A-19 | (Faiblesse) Commande dist. -> PLEINGAZ | WholesaleOrder| B2B | 06c §1 | Phase 2+ | Plus tard | Hors MVP (le MVP cible d'abord le Client -> Distributeur). |
+| A-19 | (Faiblesse) Commande dist. -> PLEINGAZ | WholesaleOrder | B2B | 06c §1, 04 §1 | Phase 2+ | Plus tard | 06c H01 |
 | A-20 | (Faiblesse) Paiement Mobile Money absent | Payment | Checkout | 05a §1 | 1 | MVP | Intégration MTN/Orange Money avec gestion asynchrone. |
-| A-21 | (Faiblesse) Facturation automatique absente| Invoice | Checkout | 05a §4 | 1 | MVP | Génération de PDF et numérotation séquentielle. |
-| A-22 | (Faiblesse) Assistant IA / Chat absent | Conversation| Chat | 05c §1 | Phase 8 | Plus tard | LLM trop complexe pour le MVP (06c §3). |
+| A-21 | (Faiblesse) Facturation automatique absente | Invoice | Checkout | 05a §4 | 1 | MVP | Génération de PDF et numérotation séquentielle. |
+| A-22 | (Faiblesse) Assistant IA / Chat absent | Conversation | Chat | 05c §1 | Phase 8 | Plus tard | LLM trop complexe pour le MVP (06c §3). |
 | A-23 | (Faiblesse) Notifications alertes stock | StockAlert | Mobile | 05b §4 | 1 | MVP | Inscription et alertes push SMS/WhatsApp prévues. |
-| A-24 | (Faiblesse) Administration/Supervision | Admin | ControlCenter| 02 §3.4 | 1 | MVP | Tableau de bord de supervision créé. |
+| A-24 | (Faiblesse) Administration/Supervision | Admin | ControlCenter | 02 §3.4 | 1 | MVP | Tableau de bord de supervision créé. |
 | A-25 | (Faiblesse) Badges de confiance / fraude | Store | Fiche | 02 §2.1 | 1 | MVP | Badges distributeur validé et fraîcheur de la donnée. |
-| A-26 | (Faiblesse) Parcours "J'ai besoin de gaz" | Search | Accueil | 06c §1 | 1 | MVP | Cas d'usage principal du MVP (Recherche proximité). |
+| A-26 | (Faiblesse) Parcours "J'ai besoin de gaz" | Search | Accueil | 06c §1, 04 §1 | 1 | MVP | Cas d'usage principal du MVP (Recherche proximité). |
 | A-27 | (Faiblesse) Design trop "brochure" | N/A | Accueil | 04 §6 | 1 | MVP | Passage d'un site vitrine à une application web interactive. |
 | A-28 | (Faiblesse) Hiérarchie actions prioritaire | N/A | Accueil | 02 §3 | 1 | MVP | Centrage sur le moteur de recherche et la localisation. |
-| A-29 | (Faiblesse) Optimisation connexions instables| N/A | Toutes | 04 §6 | 1 | MVP | Mode PWA et skeleton loaders spécifiés. |
+| A-29 | (Faiblesse) Optimisation connexions instables | N/A | Toutes | 04 §6 | 1 | MVP | Mode PWA et skeleton loaders spécifiés. |
 | A-30 | (Info) Protection anti-bot Cloudflare | N/A | N/A | 04 §2 | 1 | MVP | Intégration CDN Cloudflare proposée (ADR D2). |
 | A-31 | (Info) Produits: Tables de cuisson | Product | Catalogue | 01 §1 | - | À CONFIRMER | NON VÉRIFIÉ (Hors périmètre strict du gaz ?). |
 | A-32 | (Info) Produits: Régulateurs, Tuyaux | Product | Catalogue | 01 §1 | - | À CONFIRMER | NON VÉRIFIÉ (Accessoires). |
-| A-33 | (Page) About | N/A | About | 02 §1 | Phase 2B | Plus tard | Contenu conservé, migration Phase 2B (06c). |
-| A-34 | (Page) Products | N/A | Products | 02 §1 | Phase 2B | Plus tard | Contenu conservé, migration Phase 2B (06c). |
-| A-35 | (Page) Services | N/A | Services | 02 §1 | Phase 2B | Plus tard | Contenu conservé, migration Phase 2B (06c). |
+| A-33 | (Page) About | N/A | About | 02 §1 | Phase 2B | Plus tard | 06c H01 |
+| A-34 | (Page) Products | N/A | Products | 02 §1 | Phase 2B | Plus tard | 06c H01 |
+| A-35 | (Page) Services | N/A | Services | 02 §1 | Phase 2B | Plus tard | 06c H01 |
 | A-36 | (Page) Our Points of Sale | N/A | Carte | 04 §7 | 1 | MVP | Remplacée par la recherche interactive "J'ai besoin de gaz". |
-| A-37 | (Page) Contact | N/A | Contact | 02 §1 | Phase 2B | Plus tard | Contenu conservé, migration Phase 2B (06c). |
-| A-38 | (Page) FAQ | N/A | FAQ | 02 §1 | Phase 2B | Plus tard | Contenu conservé, migration Phase 2B (06c). |
-| A-39 | (Page) Blog | N/A | Blog | 02 §1 | Phase 2B | Plus tard | Contenu conservé, migration Phase 2B (06c). |
-| A-40 | (Page) Your review | Review | Avis | 06c §1 | Phase 2B | Plus tard | Fonctionnalité d'avis (06c). |
+| A-37 | (Page) Contact | N/A | Contact | 02 §1 | Phase 2B | Plus tard | 06c H01 |
+| A-38 | (Page) FAQ | N/A | FAQ | 02 §1 | Phase 2B | Plus tard | 06c H01 |
+| A-39 | (Page) Blog | N/A | Blog | 02 §1 | Phase 2B | Plus tard | 06c H01 |
+| A-40 | (Page) Your review | Review | Avis | 06c §1, 04 §1 | Phase 2B | Plus tard | 06c H01 |
 | A-41 | (Slogan) Always Full Cylinders | N/A | Accueil | 01 §3 | 1 | MVP | Maintenu comme axe identitaire fort. |
-| A-42 | (Engagements) Santé, femmes, jeunes | N/A | About | 02 §1 | Phase 2B | Plus tard | Contenus conservés, migration Phase 2B (06c). |
+| A-42 | (Engagements) Santé, femmes, jeunes | N/A | About | 02 §1 | Phase 2B | Plus tard | 06c H01 |
 | A-43 | (Technique) HTTP/2 supporté | N/A | N/A | 04 §2 | 1 | MVP | Maintenu nativement via Cloudflare/Nginx. |
 | A-44 | (SEO) Robots.txt / Sitemap erronés | N/A | SEO | 01 §11 | 1 | MVP | Correctif urgent isolé. |
 | A-45 | (Perf) Objectif LCP < 2.5s | N/A | CI/CD | 04 §9 | 1 | MVP | Budgets de performance documentés en architecture. |
@@ -137,13 +137,13 @@ Ce document prouve que chaque exigence atomique des 5 fichiers sources (Vision, 
 | N-04.3 | (3) Carte Stock (Où y a-t-il du gaz) | Admin | Carte | 02 §3.4 | 1 | MVP | Vue Admin logistique. |
 | N-04.4 | (3) Carte Demande (Où les clients recherchent) | Admin | Carte | 02 §3.4 | Phase 8 | Plus tard | Analytique spatiale avancée. |
 | N-04.5 | (3) Carte Administrative (Où développer le réseau) | Admin | Carte | 02 §3.4 | Phase 8 | Plus tard | Aide à la décision stratégique. |
-| N-05 | (4) Parcours "J'ai besoin de gaz" (Quel, Où, Dispo) | Search | Accueil | 06c §1 | 1 | MVP | Workflow direct sans passer par un catalogue lourd. |
+| N-05 | (4) Parcours "J'ai besoin de gaz" (Quel, Où, Dispo) | Search | Accueil | 06c §1, 04 §1 | 1 | MVP | Workflow direct sans passer par un catalogue lourd. |
 | N-06 | (5) "Alertez-moi quand le gaz revient" | StockAlert | Produit | 05b §4 | 1 | MVP | Bouton d'opt-in sur les points en rupture. |
 | N-07.1 | (6) État du stock : Bon stock | Inventory | Dashboard | 03 §1.2 | 1 | MVP | Indique une quantité saine. |
 | N-07.2 | (6) État du stock : Stock faible | Inventory | Dashboard | 03 §1.2 | 1 | MVP | Indique un seuil d'alerte. |
 | N-07.3 | (6) État du stock : Rupture | Inventory | Dashboard | 03 §1.2 | 1 | MVP | Épuisé, désactive les ventes. |
-| N-08 | (7) Réapprovisionnement intelligent (Prévision) | WholesaleOrder| Dashboard | 06c §1 | Phase 2+ | Plus tard | IA/Historique non prioritaire pour le V1 du réseau. |
-| N-09 | (8) Chatbot géographique et IA conversationnelle | Conversation| Chat | 05c §1 | Phase 8 | Plus tard | Chat complexe. |
+| N-08 | (7) Réapprovisionnement intelligent (Prévision) | WholesaleOrder | Dashboard | 06c §1, 04 §1 | Phase 2+ | Plus tard | 06c H01 |
+| N-09 | (8) Chatbot géographique et IA conversationnelle | Conversation | Chat | 05c §1 | Phase 8 | Plus tard | Chat complexe. |
 | N-10 | (9) L'IA ne doit pas inventer (Tools internes) | API | Chat | 05c §2 | Phase 8 | Plus tard | Règle absolue implémentée via les JSON Schema Tools de l'IA. |
 | N-11 | Architecture globale (Clients, Dist, Admin, API) | N/A | N/A | 04 §1 | 1 | MVP | Schéma d'architecture implémenté dans ADR. |
 | N-12.1 | Identité facture: Vendeur final PLEINGAZ directe | Invoice | PDF | 05a §4 | 1 | MVP | Facturation en direct. |
@@ -152,7 +152,7 @@ Ce document prouve que chaque exigence atomique des 5 fichiers sources (Vision, 
 | N-14 | Produit 1 : PLEINGAZ CLIENT | N/A | Portail | 02 §3.2 | 1 | MVP | Parcours Acheteur défini. |
 | N-15 | Produit 2 : PLEINGAZ DISTRIBUTEUR | N/A | Portail | 02 §3.3 | 1 | MVP | Parcours Vendeur défini. |
 | N-16 | Produit 3 : PLEINGAZ CONTROL CENTER | Admin | Portail | 02 §3.4 | 1 | MVP | Parcours Super-Admin défini. |
-| N-17 | Prochaine étape : Cahier des charges par écran | N/A | N/A | 06c §1 | 1 | Plus tard | Livrable `docs/screens/` à produire à la fin de la Phase 1. |
+| N-17 | Prochaine étape : Cahier des charges par écran | N/A | N/A | 06c §1, 04 §1 | 1 | Plus tard | Livrable `docs/screens/` à produire à la fin de la Phase 1. |
 
 ---
 
@@ -163,12 +163,12 @@ Ce document prouve que chaque exigence atomique des 5 fichiers sources (Vision, 
 | P-01.02 | (1) Produit : PLEINGAZ Client | User | Portail | 03 §1 | 1 | MVP | ADR D1. |
 | P-01.03 | (1) Produit : PLEINGAZ Distributeur | Distributor | Portail | 03 §1 | 1 | MVP | ADR D1. |
 | P-01.04 | (1) Produit : PLEINGAZ Control Center | Admin | Portail | 03 §1 | 1 | MVP | ADR D1. |
-| P-02.01 | (2) Parcours central J'ai besoin de gaz | Search | Accueil | 06c §1 | 1 | MVP | Remplacera le catalogue. |
-| P-02.02 | (2) Choix du produit (regroupe 5 puces : 6 kg, 12,5 kg, 50 kg, accessoire, autre produit) | Product | Recherche | 06c §1 | 1 | MVP | Options du formulaire. |
-| P-02.03 | (2) Choix loc. (regroupe 4 puces : autoriser géoloc, saisir ville, saisir quartier, zone sur carte) | N/A | Recherche | 06c §1 | 1 | MVP | Options GPS/Manuelles. |
-| P-02.04 | (2) Choix besoin (regroupe 6 puces : sur place, livraison, itinéraire, appeler, WhatsApp, alerte retour stock) | N/A | Recherche | 06c §1 | 1 | MVP | Actions possibles. |
-| P-02.05 | (2) Affichage direct 1/2 (regroupe 6 puces : points de vente, distance, temps trajet, MàJ, horaires, prix) | Store | Résultat | 06c §1 | 1 | MVP | Données affichées. |
-| P-02.06 | (2) Affichage direct 2/2 (regroupe 4 puces : livraison, tel, WhatsApp, statut officiel) | Store | Résultat | 06c §1 | 1 | MVP | Données affichées. |
+| P-02.01 | (2) Parcours central J'ai besoin de gaz | Search | Accueil | 06c §1, 04 §1 | 1 | MVP | Remplacera le catalogue. |
+| P-02.02 | (2) Choix du produit (regroupe 5 puces : 6 kg, 12,5 kg, 50 kg, accessoire, autre produit) | Product | Recherche | 06c §1, 04 §1 | 1 | MVP | Options du formulaire. |
+| P-02.03 | (2) Choix loc. (regroupe 4 puces : autoriser géoloc, saisir ville, saisir quartier, zone sur carte) | N/A | Recherche | 06c §1, 04 §1 | 1 | MVP | Options GPS/Manuelles. |
+| P-02.04 | (2) Choix besoin (regroupe 6 puces : sur place, livraison, itinéraire, appeler, WhatsApp, alerte retour stock) | N/A | Recherche | 06c §1, 04 §1 | 1 | MVP | Actions possibles. |
+| P-02.05 | (2) Affichage direct 1/2 (regroupe 6 puces : points de vente, distance, temps trajet, MàJ, horaires, prix) | Store | Résultat | 06c §1, 04 §1 | 1 | MVP | Données affichées. |
+| P-02.06 | (2) Affichage direct 2/2 (regroupe 4 puces : livraison, tel, WhatsApp, statut officiel) | Store | Résultat | 06c §1, 04 §1 | 1 | MVP | Données affichées. |
 | P-03.01 | (3) Statut: 🟢 Disponible | Inventory | Fiche | 03 §3 | 1 | MVP | Transparence du stock. |
 | P-03.02 | (3) Statut: 🟠 Stock limité | Inventory | Fiche | 03 §3 | 1 | MVP | Transparence du stock. |
 | P-03.03 | (3) Statut: 🔴 Rupture | Inventory | Fiche | 03 §3 | 1 | MVP | Transparence du stock. |
@@ -183,27 +183,27 @@ Ce document prouve que chaque exigence atomique des 5 fichiers sources (Vision, 
 | P-04.05 | (4) Carte Stock (regroupe 4 puces : bien approv, faible, rupture, sans donnée) | Admin | Carte | 02 §3.4 | 1 | MVP | Logistique. |
 | P-04.06 | (4) Carte Demande (regroupe 5 puces : recherches, sans stock, commandes, répétées, forte demande) | Admin | Carte | 02 §3.4 | Phase 8 | Plus tard | Analytique. |
 | P-04.07 | (4) Carte Stratégique (regroupe 5 puces : sous-desservis, nouveau distributeur, proche dépôt, demande augmente, délais élevés) | Admin | Carte | 02 §3.4 | Phase 8 | Plus tard | Aide décision. |
-| P-05.01 | (5) Géoloc si acceptée (regroupe 6 puces : points proches, distance, horaires, stock, livraison, itinéraire) | Search | Résultat | 06c §1 | 1 | MVP | Proximité. |
+| P-05.01 | (5) Géoloc si acceptée (regroupe 6 puces : points proches, distance, horaires, stock, livraison, itinéraire) | Search | Résultat | 06c §1, 04 §1 | 1 | MVP | Proximité. |
 | P-05.02 | (5) Géoloc si refusée: 'Dans quelle ville/quartier' | N/A | Recherche | 05c §2 | 1 | MVP | Respect vie privée. |
 | P-05.03 | (5) Géoloc distributeur (regroupe 6 étapes : recherche, géocodage, déplace marqueur, confirme, lat/lng, validation) | Store | Inscription | 02 §3.3 | 1 | MVP | Précision. |
-| P-06.01 | (6) Routage: disponibilité | Inventory | Résultat | 06c §1 | Phase 2+ | Plus tard | Algorithme. |
-| P-06.02 | (6) Routage: ancienneté MàJ | Inventory | Résultat | 06c §1 | Phase 2+ | Plus tard | Algorithme. |
-| P-06.03 | (6) Routage: distance | Search | Résultat | 06c §1 | Phase 2+ | Plus tard | Algorithme. |
-| P-06.04 | (6) Routage: temps | Search | Résultat | 06c §1 | Phase 2+ | Plus tard | Algorithme. |
-| P-06.05 | (6) Routage: horaires | Store | Résultat | 06c §1 | Phase 2+ | Plus tard | Algorithme. |
+| P-06.01 | (6) Routage: disponibilité | Inventory | Résultat | 06c §1, 04 §1 | Phase 2+ | Plus tard | 06c H01 |
+| P-06.02 | (6) Routage: ancienneté MàJ | Inventory | Résultat | 06c §1, 04 §1 | Phase 2+ | Plus tard | 06c H01 |
+| P-06.03 | (6) Routage: distance | Search | Résultat | 06c §1, 04 §1 | Phase 2+ | Plus tard | 06c H01 |
+| P-06.04 | (6) Routage: temps | Search | Résultat | 06c §1, 04 §1 | Phase 2+ | Plus tard | 06c H01 |
+| P-06.05 | (6) Routage: horaires | Store | Résultat | 06c §1, 04 §1 | Phase 2+ | Plus tard | 06c H01 |
 | P-06.06 | (6) Routage: capacité traitement | N/A | Résultat | AUCUN | - | Écarté | Pas de champ dans le modèle. |
-| P-06.07 | (6) Routage: livraison | Store | Résultat | 06c §1 | Phase 2+ | Plus tard | Algorithme. |
-| P-06.08 | (6) Routage: zone desservie | Store | Résultat | 06c §1 | Phase 2+ | Plus tard | Algorithme. |
+| P-06.07 | (6) Routage: livraison | Store | Résultat | 06c §1, 04 §1 | Phase 2+ | Plus tard | 06c H01 |
+| P-06.08 | (6) Routage: zone desservie | Store | Résultat | 06c §1, 04 §1 | Phase 2+ | Plus tard | 06c H01 |
 | P-06.09 | (6) Routage: charge actuelle | N/A | Résultat | AUCUN | - | Écarté | Pas de champ dans le modèle. |
 | P-06.10 | (6) Routage: taux commandes | N/A | Résultat | AUCUN | - | Écarté | Pas de champ dans le modèle. |
-| P-06.11 | (6) Routage: statut distributeur | Store | Résultat | 06c §1 | Phase 2+ | Plus tard | Algorithme. |
+| P-06.11 | (6) Routage: statut distributeur | Store | Résultat | 06c §1, 04 §1 | Phase 2+ | Plus tard | 06c H01 |
 | P-06.12 | (6) Routage: fiabilité données | N/A | Résultat | AUCUN | - | Écarté | Pas de champ direct. |
-| P-06.13 | (6) Classement explicatif visible ('Recommandé car...') | Search | Résultat | 06c §1 | 1 | MVP | Transparence client. |
+| P-06.13 | (6) Classement explicatif visible ('Recommandé car...') | Search | Résultat | 06c §1, 04 §1 | 1 | MVP | Transparence client. |
 | P-07.01 | (7) Gestion stock par produit (regroupe 3 produits : 6 kg, 12,5 kg, 50 kg) | Inventory | Dashboard | 03 §1.2 | 1 | MVP | Base stock. |
 | P-07.02 | (7) Niveaux de stock (regroupe 4 puces : bon, moyen, faible, rupture) | Inventory | Dashboard | 03 §1.2 | 1 | MVP | Simplifié. |
-| P-07.03 | (7) Évolutions stock (regroupe 6 puces : qt dispo, qt réservée, seuil alerte, stock physique, stock estimé, date réappro) | Inventory | Dashboard | 03 §1.2 | Phase 2+ | Plus tard | Hors MVP. |
-| P-08.01 | (8) Actions distr. risque (regroupe 4 puces : commander, modifier, ignorer, contacter) | WholesaleOrder | Dashboard | 06c §1 | Phase 2+ | Plus tard | V2. |
-| P-08.02 | (8) Alertes Admin (regroupe 5 critères : bon->faible->rupture, commandes augmentent, recherches augmentent, pas MàJ, délai dépassé) | StockAlert | ControlCenter | 06c §1 | Phase 2+ | Plus tard | V2. |
+| P-07.03 | (7) Évolutions stock (regroupe 6 puces : qt dispo, qt réservée, seuil alerte, stock physique, stock estimé, date réappro) | Inventory | Dashboard | 03 §1.2 | Phase 2+ | Plus tard | 06c H01 |
+| P-08.01 | (8) Actions distr. risque (regroupe 4 puces : commander, modifier, ignorer, contacter) | WholesaleOrder | Dashboard | 06c §1, 04 §1 | Phase 2+ | Plus tard | 06c H01 |
+| P-08.02 | (8) Alertes Admin (regroupe 5 critères : bon->faible->rupture, commandes augmentent, recherches augmentent, pas MàJ, délai dépassé) | StockAlert | ControlCenter | 06c §1, 04 §1 | Phase 2+ | Plus tard | 06c H01 |
 | P-09.01 | (9) IA workflow (regroupe 5 étapes : produit, zone, recherche, bdd, réponse) | API | Chat | 05c §2 | Phase 8 | Plus tard | Architecture LLM. |
 | P-09.02 | (9) IA outils 1/2 (regroupe 6 outils : find_nearest, check_product, find_open, get_store, get_order, get_invoice) | API | Chat | 05c §2 | Phase 8 | Plus tard | Schema. |
 | P-09.03 | (9) IA outils 2/2 (regroupe 2 outils : create_alert, contact) | API | Chat | 05c §2 | Phase 8 | Plus tard | Schema. |
@@ -242,21 +242,21 @@ Ce document prouve que chaque exigence atomique des 5 fichiers sources (Vision, 
 | P-14.07 | (14) Idée: Centre de confiance (badge) | Store | Fiche | 02 §2.1 | 1 | MVP | KYC. |
 | P-14.08 | (14) Idée: Signalement problème | Issue | Fiche | AUCUN | - | Écarté | Hors scope 06c. |
 | P-14.09 | (14) Idée: Liste attente par zone | StockAlert | Carte | AUCUN | - | Écarté | Hors scope 06c. |
-| P-14.10 | (14) Idée: Mode agent/revendeur assisté | Order | WhatsApp | 06c §1 | Phase 2B | Plus tard | WA Bot. |
-| P-15.01 | (15) Innovation: Commande assistée | Order | API | 06c §1 | Phase 2B | Plus tard | WA Bot. |
+| P-14.10 | (14) Idée: Mode agent/revendeur assisté | Order | WhatsApp | 06c §1, 04 §1 | Phase 2B | Plus tard | 06c H01 |
+| P-15.01 | (15) Innovation: Commande assistée | Order | API | 06c §1, 04 §1 | Phase 2B | Plus tard | 06c H01 |
 | P-15.02 | (15) Innovation: Mode faible connexion | N/A | UI | 04 §6 | 1 | MVP | Optimisation. |
 | P-15.03 | (15) Innovation: Vérification stock (bouton simple) | Inventory | Dashboard | 03 §1.2 | 1 | MVP | UX. |
 | P-15.04 | (15) Innovation: Score fraîcheur | Inventory | Fiche | 03 §1.2 | 1 | MVP | Confiance. |
 | P-15.05 | (15) Innovation: Réservation temporaire (30 min) | Order | Checkout | 03 §2 | 1 | MVP | Gestion stock. |
 | P-15.06 | (15) Innovation: Signalement dispo erronée | Issue | Fiche | AUCUN | - | Écarté | Hors scope. |
 | P-15.07 | (15) Innovation: Réseau assisté | Admin | ControlCenter | AUCUN | - | Écarté | Hors scope. |
-| P-16.01 | (16) Roadmap 1/2 (regroupe 6 phases : Phase 0, Phase 1, Phase 2, Phase 3, Phase 4, Phase 5) | N/A | N/A | 06c §1 | 1 | MVP | Structuration. |
-| P-16.02 | (16) Roadmap 2/2 (regroupe 4 phases : Phase 6, Phase 7, Phase 8, Phase 9) | N/A | N/A | 06c §1 | 1 | MVP | Structuration. |
+| P-16.01 | (16) Roadmap 1/2 (regroupe 6 phases : Phase 0, Phase 1, Phase 2, Phase 3, Phase 4, Phase 5) | N/A | N/A | 06c §1, 04 §1 | 1 | MVP | Structuration. |
+| P-16.02 | (16) Roadmap 2/2 (regroupe 4 phases : Phase 6, Phase 7, Phase 8, Phase 9) | N/A | N/A | 06c §1, 04 §1 | 1 | MVP | Structuration. |
 | P-17.01 | (17) Livrable: audit | N/A | N/A | 01 | 1 | MVP | Fait |
 | P-17.02 | (17) Livrable: inventaire | N/A | N/A | 02 | 1 | MVP | Fait |
 | P-17.03 | (17) Livrable: architecture technique existante | N/A | N/A | 04 | 1 | MVP | Fait |
 | P-17.04 | (17) Livrable: architecture cible | N/A | N/A | 04 | 1 | MVP | Fait |
-| P-17.05 | (17) Livrable: stratégie de migration | N/A | N/A | 06c | Phase 2B | Plus tard | Fait |
+| P-17.05 | (17) Livrable: stratégie de migration | N/A | N/A | 06c §1, 04 §1 | Phase 2B | Plus tard | 06c H01 |
 | P-17.06 | (17) Livrable: sitemap | N/A | N/A | 02 | 1 | MVP | Fait |
 | P-17.07 | (17) Livrable: parcours client | N/A | N/A | 02 | 1 | MVP | Fait |
 | P-17.08 | (17) Livrable: parcours distributeur | N/A | N/A | 02 | 1 | MVP | Fait |
@@ -271,9 +271,9 @@ Ce document prouve que chaque exigence atomique des 5 fichiers sources (Vision, 
 | P-17.17 | (17) Livrable: architecture de notifications | N/A | N/A | 05b | 1 | MVP | Fait |
 | P-17.18 | (17) Livrable: plan de sécurité | N/A | N/A | 06a | 1 | MVP | Fait |
 | P-17.19 | (17) Livrable: plan de tests | N/A | N/A | 06b | 1 | MVP | Fait |
-| P-17.20 | (17) Livrable: roadmap | N/A | N/A | 06c | 1 | MVP | Fait |
-| P-17.21 | (17) Livrable: priorisation MVP | N/A | N/A | 06c | 1 | MVP | Fait |
-| P-17.22 | (17) Livrable: estimation de complexité | N/A | N/A | 06c | 1 | MVP | Fait |
+| P-17.20 | (17) Livrable: roadmap | N/A | N/A | 06c §1, 04 §1 | 1 | MVP | Fait |
+| P-17.21 | (17) Livrable: priorisation MVP | N/A | N/A | 06c §1, 04 §1 | 1 | MVP | Fait |
+| P-17.22 | (17) Livrable: estimation de complexité | N/A | N/A | 06c §1, 04 §1 | 1 | MVP | Fait |
 | P-17.23 | (17) Livrable: plan de reprise des données | N/A | N/A | AUCUN | - | Écarté | Hors MVP. |
 | P-17.24 | (17) Livrable: plan de sauvegarde et restauration | N/A | N/A | AUCUN | - | Écarté | Hors MVP. |
 | P-18.01 | (18) Audit Constaté 1/2 (regroupe 6 puces : pages, textes, images, formulaires, liens, fonctionnalités) | N/A | N/A | 01 §1 | 1 | MVP | Phase 0. |
@@ -291,8 +291,8 @@ Ce document prouve que chaque exigence atomique des 5 fichiers sources (Vision, 
 | V-00.03 | (0) identifier ses forces et faiblesses | N/A | N/A | 01 §1 | 0 | MVP | 06c M01 |
 | V-00.04 | (0) conserver les éléments pertinents | N/A | N/A | 01 §1 | 0 | MVP | 06c M01 |
 | V-00.05 | (0) moderniser profondément l'expérience | N/A | N/A | 02 §1 | 2B | Plus tard | 06c H01 |
-| V-00.06 | (0) ajouter les fonctionnalités décrites ci-dessous | N/A | N/A | 06c §1 | 2 | MVP | 06c M01 |
-| V-00.07 | (0) proposer des innovations supplémentaires | N/A | N/A | 06c §1 | 2 | MVP | 06c M01 |
+| V-00.06 | (0) ajouter les fonctionnalités décrites ci-dessous | N/A | N/A | 06c §1, 04 §1 | 2 | MVP | 06c M01 |
+| V-00.07 | (0) proposer des innovations supplémentaires | N/A | N/A | 06c §1, 04 §1 | 2 | MVP | 06c M01 |
 | V-00.08 | (0) construire une architecture exploitable | N/A | N/A | 04 §1 | 2 | MVP | 06c M01 |
 | V-00.09 | (0) contrainte : pas un site totalement différent | N/A | N/A | 02 §1 | 2B | Plus tard | 06c H01 |
 | V-00.10 | (0) objectif final : véritable plateforme numérique | N/A | N/A | 02 §1 | 2 | MVP | 06c M01 |
@@ -312,7 +312,7 @@ Ce document prouve que chaque exigence atomique des 5 fichiers sources (Vision, 
 | V-01.14 | (1) de payer en ligne ou en présentiel | Payment | N/A | 05a §1 | 2 | MVP | 06c M01 |
 | V-01.15 | (1) de communiquer avec PLEINGAZ | Conversation | N/A | 02 §1 | 2B | Plus tard | 06c H01 |
 | V-01.16 | (1) d'utiliser un assistant IA | N/A | N/A | 05c §1 | 8 | Plus tard | 06c H03 |
-| V-01.17 | (1) de contacter rapidement PLEINGAZ via WhatsApp | N/A | N/A | 06c §1 | 3 | MVP | 06c M01 |
+| V-01.17 | (1) de contacter rapidement PLEINGAZ via WhatsApp | N/A | N/A | 06c §1, 04 §1 | 3 | MVP | 06c M01 |
 | V-01.18 | (1) superviser toute son activité | N/A | N/A | 02 §3.4 | 2 | MVP | 06c M01 |
 | V-01.19 | (1) pensée pour le contexte camerounais | N/A | N/A | 04 §1 | 2 | MVP | 06c M01 |
 | V-02.01 | (2) NE PAS ajouter des fonctionnalités au hasard | N/A | N/A | 02 §1 | Transversal | MVP | 06c M01 |
@@ -406,8 +406,8 @@ Ce document prouve que chaque exigence atomique des 5 fichiers sources (Vision, 
 | V-06.11 | (6) 4 exemples de recherche (regroupe 4 puces) | N/A | N/A | 05c §1 | 2 | MVP | 06c M01 |
 | V-06.12 | (6) recherche doit comprendre les fautes | N/A | N/A | 05c §1 | 2 | MVP | 06c M01 |
 | V-06.13 | (6) recherche sémantique assistée par IA | N/A | N/A | 05c §1 | 8 | Plus tard | 06c H03 |
-| V-06.14 | (6) search fallback texte | N/A | N/A | 06c §1 | 2 | MVP | 06c M01 |
-| V-06.15 | (6) search statuts bons | N/A | N/A | 06c §1 | 2 | MVP | 06c M01 |
+| V-06.14 | (6) search fallback texte | N/A | N/A | 06c §1, 04 §1 | 2 | MVP | 06c M01 |
+| V-06.15 | (6) search statuts bons | N/A | N/A | 06c §1, 04 §1 | 2 | MVP | 06c M01 |
 | V-07.01 | (7) Véritable carte interactive | N/A | N/A | 04 §1 | 2 | MVP | 06c M01 |
 | V-07.02 | (7) point de vente possede nom | Store | N/A | 03 §1 | 2 | MVP | 06c M01 |
 | V-07.03 | (7) photo | Store | N/A | 03 §1 | 2 | MVP | 06c M01 |
@@ -457,7 +457,7 @@ Ce document prouve que chaque exigence atomique des 5 fichiers sources (Vision, 
 | V-08.20 | (8) activité zone desservie | Store | N/A | 03 §1 | 2 | MVP | 06c M01 |
 | V-08.21 | (8) activité possibilité de livraison | Store | N/A | 03 §1 | 2 | MVP | 06c M01 |
 | V-08.22 | (8) activité informations complémentaires | Store | N/A | 03 §1 | 2 | MVP | 06c M01 |
-| V-09.01 | (9) règle : jamais visible officiel automatiquement | N/A | N/A | 06c §1 | 2 | MVP | 06c M01 |
+| V-09.01 | (9) règle : jamais visible officiel automatiquement | N/A | N/A | 06c §1, 04 §1 | 2 | MVP | 06c M01 |
 | V-09.02 | (9) état PENDING | DistributorApplication | N/A | 03b §1 | 2 | MVP | 06c M01 |
 | V-09.03 | (9) état UNDER_REVIEW | DistributorApplication | N/A | 03b §1 | 2 | MVP | 06c M01 |
 | V-09.04 | (9) état APPROVED | DistributorApplication | N/A | 03b §1 | 2 | MVP | 06c M01 |
@@ -473,7 +473,7 @@ Ce document prouve que chaque exigence atomique des 5 fichiers sources (Vision, 
 | V-09.14 | (9) Admin approuver | N/A | N/A | 02 §3.4 | 2 | MVP | 06c M01 |
 | V-09.15 | (9) Admin refuser | N/A | N/A | 02 §3.4 | 2 | MVP | 06c M01 |
 | V-09.16 | (9) Admin suspendre | N/A | N/A | 02 §3.4 | 2 | MVP | 06c M01 |
-| V-09.17 | (9) seuls les APPROVED apparaissent publiquement | N/A | N/A | 06c §1 | 2 | MVP | 06c M01 |
+| V-09.17 | (9) seuls les APPROVED apparaissent publiquement | N/A | N/A | 06c §1, 04 §1 | 2 | MVP | 06c M01 |
 | V-09.18 | (9) badge Distributeur PLEINGAZ vérifié | N/A | N/A | 02 §3.3 | 2 | MVP | 06c M01 |
 | V-10.01 | (10) règle : score interne, pas une note publique | N/A | N/A | 03c §1 | 9 | Plus tard | 06c H04 |
 | V-10.02 | (10) ancienneté | N/A | N/A | 03c §1 | 9 | Plus tard | 06c H04 |
@@ -735,3 +735,521 @@ Ce document prouve que chaque exigence atomique des 5 fichiers sources (Vision, 
 | V-30.03 | (30) sauvegarder produits | Favorite | N/A | 03 §1 | 2 | MVP | 06c M02 |
 | V-30.04 | (30) suivre disponibilité | Favorite | N/A | 03 §1 | 2 | MVP | 06c M02 |
 | V-30.05 | (30) mon point de vente habituel | N/A | N/A | 02 §1 | 2 | MVP | 06c M02 |
+| V-31.01 | Créer éventuellement un système de rappel. | N/A | N/A | 03 §1 | 2 | MVP | 06c M04 |
+| V-31.02 | Exemple : | N/A | N/A | 03 §1 | 8 | Plus tard | 06c H01 |
+| V-31.03 | L'utilisateur achète régulièrement une bouteille. | N/A | N/A | 03 §1 | 2 | MVP | 06c M05 |
+| V-31.04 | Après une période configurable : | N/A | N/A | 03 §1 | 8 | Plus tard | 06c H02 |
+| V-31.05 | "Vous avez probablement besoin de renouveler votre bouteille." | N/A | N/A | 03 §1 | 2 | MVP | 06c M06 |
+| V-31.06 | Proposer : | N/A | N/A | 03 §1 | 8 | Plus tard | 06c H03 |
+| V-31.07 | "Commander maintenant." | N/A | N/A | 03 §1 | 2 | MVP | 06c M07 |
+| V-31.08 | IMPORTANT : | N/A | N/A | 03 §1 | 8 | Plus tard | 06c H04 |
+| V-31.09 | Présenter cela comme une suggestion et non comme une prédiction certaine. | N/A | N/A | 03 §1 | 2 | MVP | 06c M08 |
+| V-32.01 | Créer éventuellement : | N/A | N/A | 03 §1 | 2 | MVP | 06c M09 |
+| V-32.02 | PLEINGAZ Rewards. | N/A | N/A | 03 §1 | 8 | Plus tard | 06c H05 |
+| V-32.03 | Points obtenus selon : | N/A | N/A | 03 §1 | 2 | MVP | 06c M10 |
+| V-32.04 | achats | N/A | N/A | 03 §1 | 8 | Plus tard | 06c H06 |
+| V-32.05 | régularité | N/A | N/A | 03 §1 | 2 | MVP | 06c M11 |
+| V-32.06 | recommandations | N/A | N/A | 03 §1 | 8 | Plus tard | 06c H07 |
+| V-32.07 | participation à certaines campagnes. | N/A | N/A | 03 §1 | 2 | MVP | 06c M12 |
+| V-32.08 | Récompenses : | N/A | N/A | 03 §1 | 8 | Plus tard | 06c H08 |
+| V-32.09 | réductions | N/A | N/A | 03 §1 | 2 | MVP | 06c M13 |
+| V-32.10 | livraison | N/A | N/A | 03 §1 | 8 | Plus tard | 06c H09 |
+| V-32.11 | accessoires | N/A | N/A | 03 §1 | 2 | MVP | 06c M14 |
+| V-32.12 | promotions. | N/A | N/A | 03 §1 | 8 | Plus tard | 06c H10 |
+| V-32.13 | Tout le système doit être configurable depuis l'administration. | N/A | N/A | 03 §1 | 2 | MVP | 06c M15 |
+| V-33.01 | Après une commande terminée : | N/A | N/A | 03 §1 | 2 | MVP | 06c M16 |
+| V-33.02 | demander : | N/A | N/A | 03 §1 | 8 | Plus tard | 06c H11 |
+| V-33.03 | satisfaction | N/A | N/A | 03 §1 | 2 | MVP | 06c M17 |
+| V-33.04 | qualité | N/A | N/A | 03 §1 | 8 | Plus tard | 06c H12 |
+| V-33.05 | livraison | N/A | N/A | 03 §1 | 2 | MVP | 06c M18 |
+| V-33.06 | disponibilité | N/A | N/A | 03 §1 | 8 | Plus tard | 06c H13 |
+| V-33.07 | expérience distributeur. | N/A | N/A | 03 §1 | 2 | MVP | 06c M19 |
+| V-33.08 | Les avis doivent être liés à une commande réelle afin de réduire les faux avis. | N/A | N/A | 03 §1 | 8 | Plus tard | 06c H14 |
+| V-33.09 | Prévoir modération. | N/A | N/A | 03 §1 | 2 | MVP | 06c M20 |
+| V-34.01 | Implémenter : | N/A | N/A | 03 §1 | 2 | MVP | 06c M21 |
+| V-34.02 | HTTPS | N/A | N/A | 03 §1 | 8 | Plus tard | 06c H15 |
+| V-34.03 | hashage sécurisé des mots de passe | N/A | N/A | 03 §1 | 2 | MVP | 06c M22 |
+| V-34.04 | JWT/session sécurisée | N/A | N/A | 03 §1 | 8 | Plus tard | 06c H01 |
+| V-34.05 | refresh tokens | N/A | N/A | 03 §1 | 2 | MVP | 06c M23 |
+| V-34.06 | RBAC | N/A | N/A | 03 §1 | 8 | Plus tard | 06c H02 |
+| V-34.07 | validation serveur | N/A | N/A | 03 §1 | 2 | MVP | 06c M24 |
+| V-34.08 | rate limiting | N/A | N/A | 03 §1 | 8 | Plus tard | 06c H03 |
+| V-34.09 | protection CSRF si pertinente | N/A | N/A | 03 §1 | 2 | MVP | 06c M25 |
+| V-34.10 | protection XSS | N/A | N/A | 03 §1 | 8 | Plus tard | 06c H04 |
+| V-34.11 | protection injection SQL/NoSQL | N/A | N/A | 03 §1 | 2 | MVP | 06c M26 |
+| V-34.12 | validation des uploads | N/A | N/A | 03 §1 | 8 | Plus tard | 06c H05 |
+| V-34.13 | antivirus/scanning des fichiers si nécessaire | N/A | N/A | 03 §1 | 2 | MVP | 06c M27 |
+| V-34.14 | journalisation | N/A | N/A | 03 §1 | 8 | Plus tard | 06c H06 |
+| V-34.15 | audit logs | N/A | N/A | 03 §1 | 2 | MVP | 06c M28 |
+| V-34.16 | sauvegardes | N/A | N/A | 03 §1 | 8 | Plus tard | 06c H07 |
+| V-34.17 | chiffrement des secrets. | N/A | N/A | 03 §1 | 2 | MVP | 06c M29 |
+| V-34.18 | Créer des rôles : | N/A | N/A | 03 §1 | 8 | Plus tard | 06c H08 |
+| V-34.19 | rôle CUSTOMER | N/A | N/A | 03 §1 | 2 | MVP | 06c M04 |
+| V-34.20 | rôle DISTRIBUTOR | N/A | N/A | 03 §1 | 8 | Plus tard | 06c H09 |
+| V-34.21 | rôle SUPPORT_AGENT | N/A | N/A | 03 §1 | 2 | MVP | 06c M05 |
+| V-34.22 | rôle DISTRIBUTOR_MANAGER | N/A | N/A | 03 §1 | 8 | Plus tard | 06c H10 |
+| V-34.23 | rôle LOGISTICS_MANAGER | N/A | N/A | 03 §1 | 2 | MVP | 06c M06 |
+| V-34.24 | rôle FINANCE_MANAGER | N/A | N/A | 03 §1 | 8 | Plus tard | 06c H11 |
+| V-34.25 | rôle ADMIN | N/A | N/A | 03 §1 | 2 | MVP | 06c M07 |
+| V-34.26 | rôle SUPER_ADMIN | N/A | N/A | 03 §1 | 8 | Plus tard | 06c H12 |
+| V-34.27 | Les permissions doivent être granulaires. | N/A | N/A | 03 §1 | 2 | MVP | 06c M08 |
+| V-35.01 | Chaque action sensible doit être enregistrée. | N/A | N/A | 03 §1 | 2 | MVP | 06c M09 |
+| V-35.02 | Exemples : | N/A | N/A | 03 §1 | 8 | Plus tard | 06c H13 |
+| V-35.03 | "Admin X a approuvé le distributeur Y." | N/A | N/A | 03 §1 | 2 | MVP | 06c M10 |
+| V-35.04 | "Admin X a modifié le prix du produit Z." | N/A | N/A | 03 §1 | 8 | Plus tard | 06c H14 |
+| V-35.05 | "Distributeur Y a modifié son stock." | N/A | N/A | 03 §1 | 2 | MVP | 06c M11 |
+| V-35.06 | "Client X a payé la commande Y." | N/A | N/A | 03 §1 | 8 | Plus tard | 06c H15 |
+| V-35.07 | "Admin X a suspendu le distributeur Z." | N/A | N/A | 03 §1 | 2 | MVP | 06c M12 |
+| V-35.08 | Afficher ces événements dans le back-office. | N/A | N/A | 03 §1 | 8 | Plus tard | 06c H01 |
+| V-36.01 | Optimiser : | N/A | N/A | 03 §1 | 2 | MVP | 06c M13 |
+| V-36.02 | images | N/A | N/A | 03 §1 | 8 | Plus tard | 06c H02 |
+| V-36.03 | lazy loading | N/A | N/A | 03 §1 | 2 | MVP | 06c M14 |
+| V-36.04 | cache | N/A | N/A | 03 §1 | 8 | Plus tard | 06c H03 |
+| V-36.05 | API | N/A | N/A | 03 §1 | 2 | MVP | 06c M15 |
+| V-36.06 | requêtes BDD | N/A | N/A | 03 §1 | 8 | Plus tard | 06c H04 |
+| V-36.07 | pagination | N/A | N/A | 03 §1 | 2 | MVP | 06c M16 |
+| V-36.08 | code splitting | N/A | N/A | 03 §1 | 8 | Plus tard | 06c H05 |
+| V-36.09 | compression | N/A | N/A | 03 §1 | 2 | MVP | 06c M17 |
+| V-36.10 | CDN | N/A | N/A | 03 §1 | 8 | Plus tard | 06c H06 |
+| V-36.11 | cache serveur. | N/A | N/A | 03 §1 | 2 | MVP | 06c M18 |
+| V-36.12 | Objectif : | N/A | N/A | 03 §1 | 8 | Plus tard | 06c H07 |
+| V-36.13 | site rapide même avec une connexion moyenne au Cameroun. | N/A | N/A | 03 §1 | 2 | MVP | 06c M19 |
+| V-36.14 | Prévoir PWA si pertinent. | N/A | N/A | 03 §1 | 8 | Plus tard | 06c H08 |
+| V-36.15 | Permettre éventuellement l'installation du site sur Android comme application web. | N/A | N/A | 03 §1 | 2 | MVP | 06c M20 |
+| V-37.01 | Optimiser : | N/A | N/A | 03 §1 | 2 | MVP | 06c M21 |
+| V-37.02 | titres | N/A | N/A | 03 §1 | 8 | Plus tard | 06c H09 |
+| V-37.03 | meta descriptions | N/A | N/A | 03 §1 | 2 | MVP | 06c M22 |
+| V-37.04 | Open Graph | N/A | N/A | 03 §1 | 8 | Plus tard | 06c H10 |
+| V-37.05 | données structurées | N/A | N/A | 03 §1 | 2 | MVP | 06c M23 |
+| V-37.06 | sitemap | N/A | N/A | 03 §1 | 8 | Plus tard | 06c H11 |
+| V-37.07 | robots.txt | N/A | N/A | 03 §1 | 2 | MVP | 06c M24 |
+| V-37.08 | pages produits | N/A | N/A | 03 §1 | 8 | Plus tard | 06c H12 |
+| V-37.09 | pages villes | N/A | N/A | 03 §1 | 2 | MVP | 06c M25 |
+| V-37.10 | pages points de vente. | N/A | N/A | 03 §1 | 8 | Plus tard | 06c H13 |
+| V-37.11 | Créer des pages SEO locales : | N/A | N/A | 03 §1 | 2 | MVP | 06c M26 |
+| V-37.12 | /points-de-vente/yaounde | N/A | N/A | 03 §1 | 8 | Plus tard | 06c H14 |
+| V-37.13 | /points-de-vente/douala | N/A | N/A | 03 §1 | 2 | MVP | 06c M27 |
+| V-37.14 | /points-de-vente/bafoussam | N/A | N/A | 03 §1 | 8 | Plus tard | 06c H15 |
+| V-37.15 | etc. | N/A | N/A | 03 §1 | 2 | MVP | 06c M28 |
+| V-37.16 | ATTENTION : | N/A | N/A | 03 §1 | 8 | Plus tard | 06c H01 |
+| V-37.17 | Ne pas générer artificiellement des centaines de pages vides. | N/A | N/A | 03 §1 | 2 | MVP | 06c M29 |
+| V-38.01 | Respecter autant que possible WCAG. | N/A | N/A | 03 §1 | 2 | MVP | 06c M04 |
+| V-38.02 | Prévoir : | N/A | N/A | 03 §1 | 8 | Plus tard | 06c H02 |
+| V-38.03 | contraste | N/A | N/A | 03 §1 | 2 | MVP | 06c M05 |
+| V-38.04 | navigation clavier | N/A | N/A | 03 §1 | 8 | Plus tard | 06c H03 |
+| V-38.05 | labels | N/A | N/A | 03 §1 | 2 | MVP | 06c M06 |
+| V-38.06 | tailles de boutons adaptées au mobile | N/A | N/A | 03 §1 | 8 | Plus tard | 06c H04 |
+| V-38.07 | messages d'erreur compréhensibles | N/A | N/A | 03 §1 | 2 | MVP | 06c M07 |
+| V-38.08 | lecteurs d'écran. | N/A | N/A | 03 §1 | 8 | Plus tard | 06c H05 |
+| V-39.01 | Avant de coder : | N/A | N/A | 03 §1 | 2 | MVP | 06c M08 |
+| V-39.02 | inspecter l'architecture actuelle. | N/A | N/A | 04 §1 | 8 | Plus tard | 06c H06 |
+| V-39.03 | NE PAS changer arbitrairement de framework. | N/A | N/A | 03 §1 | 2 | MVP | 06c M09 |
+| V-39.04 | Si la stack existante est viable : | N/A | N/A | 03 §1 | 8 | Plus tard | 06c H07 |
+| V-39.05 | la conserver. | N/A | N/A | 03 §1 | 2 | MVP | 06c M10 |
+| V-39.06 | Sinon proposer une migration justifiée. | N/A | N/A | 03 §1 | 8 | Plus tard | 06c H08 |
+| V-39.07 | Architecture recommandée si une refonte backend est nécessaire : | N/A | N/A | 04 §1 | 2 | MVP | 06c M11 |
+| V-39.08 | Frontend : | N/A | N/A | 03 §1 | 8 | Plus tard | 06c H09 |
+| V-39.09 | React / Next.js | N/A | N/A | 03 §1 | 2 | MVP | 06c M12 |
+| V-39.10 | Backend : | N/A | N/A | 03 §1 | 8 | Plus tard | 06c H10 |
+| V-39.11 | Node.js / NestJS ou architecture équivalente | N/A | N/A | 04 §1 | 2 | MVP | 06c M13 |
+| V-39.12 | Database : | N/A | N/A | 03 §1 | 8 | Plus tard | 06c H11 |
+| V-39.13 | PostgreSQL ou MySQL selon l'existant | N/A | N/A | 03 §1 | 2 | MVP | 06c M14 |
+| V-39.14 | Cache : | N/A | N/A | 03 §1 | 8 | Plus tard | 06c H12 |
+| V-39.15 | Redis si nécessaire | N/A | N/A | 03 §1 | 2 | MVP | 06c M15 |
+| V-39.16 | Maps : | N/A | N/A | 03 §1 | 8 | Plus tard | 06c H13 |
+| V-39.17 | solution de cartographie compatible avec le contexte et le budget | N/A | N/A | 03 §1 | 2 | MVP | 06c M16 |
+| V-39.18 | Storage : | N/A | N/A | 03 §1 | 8 | Plus tard | 06c H14 |
+| V-39.19 | stockage objet pour images/documents | N/A | N/A | 03 §1 | 2 | MVP | 06c M17 |
+| V-39.20 | Notifications : | N/A | N/A | 03 §1 | 8 | Plus tard | 06c H15 |
+| V-39.21 | email + WhatsApp + notifications web | N/A | N/A | 03 §1 | 2 | MVP | 06c M18 |
+| V-39.22 | AI : | N/A | N/A | 03 §1 | 8 | Plus tard | 06c H01 |
+| V-39.23 | LLM + RAG + base de connaissances PLEINGAZ | N/A | N/A | 03 §1 | 2 | MVP | 06c M19 |
+| V-39.24 | Payments : | N/A | N/A | 03 §1 | 8 | Plus tard | 06c H02 |
+| V-39.25 | couche d'abstraction permettant MTN MoMo / Orange Money / paiement manuel. | N/A | N/A | 03 §1 | 2 | MVP | 06c M20 |
+| V-40.01 | Prévoir au minimum les entités : | N/A | N/A | 03 §1 | 2 | MVP | 06c M21 |
+| V-40.02 | entité User | N/A | N/A | 03 §1 | 8 | Plus tard | 06c H03 |
+| V-40.03 | entité Role | N/A | N/A | 03 §1 | 2 | MVP | 06c M22 |
+| V-40.04 | entité CustomerProfile | N/A | N/A | 03 §1 | 8 | Plus tard | 06c H04 |
+| V-40.05 | entité DistributorProfile | N/A | N/A | 03 §1 | 2 | MVP | 06c M23 |
+| V-40.06 | entité DistributorApplication | N/A | N/A | 03 §1 | 8 | Plus tard | 06c H05 |
+| V-40.07 | entité DistributorDocument | N/A | N/A | 03 §1 | 2 | MVP | 06c M24 |
+| V-40.08 | entité Store | N/A | N/A | 03 §1 | 8 | Plus tard | 06c H06 |
+| V-40.09 | entité StoreLocation | N/A | N/A | 03 §1 | 2 | MVP | 06c M25 |
+| V-40.10 | entité Product | N/A | N/A | 03 §1 | 8 | Plus tard | 06c H07 |
+| V-40.11 | entité ProductCategory | N/A | N/A | 03 §1 | 2 | MVP | 06c M26 |
+| V-40.12 | entité Inventory | N/A | N/A | 03 §1 | 8 | Plus tard | 06c H08 |
+| V-40.13 | entité InventoryUpdate | N/A | N/A | 03 §1 | 2 | MVP | 06c M27 |
+| V-40.14 | entité Order | N/A | N/A | 03 §1 | 8 | Plus tard | 06c H09 |
+| V-40.15 | entité OrderItem | N/A | N/A | 03 §1 | 2 | MVP | 06c M28 |
+| V-40.16 | entité DistributorOrder | N/A | N/A | 03 §1 | 8 | Plus tard | 06c H10 |
+| V-40.17 | entité DistributorOrderItem | N/A | N/A | 03 §1 | 2 | MVP | 06c M29 |
+| V-40.18 | entité Payment | N/A | N/A | 03 §1 | 8 | Plus tard | 06c H11 |
+| V-40.19 | entité PaymentTransaction | N/A | N/A | 03 §1 | 2 | MVP | 06c M04 |
+| V-40.20 | entité Invoice | N/A | N/A | 03 §1 | 8 | Plus tard | 06c H12 |
+| V-40.21 | entité InvoiceItem | N/A | N/A | 03 §1 | 2 | MVP | 06c M05 |
+| V-40.22 | entité Delivery | N/A | N/A | 03 §1 | 8 | Plus tard | 06c H13 |
+| V-40.23 | entité Conversation | N/A | N/A | 03 §1 | 2 | MVP | 06c M06 |
+| V-40.24 | entité Message | N/A | N/A | 03 §1 | 8 | Plus tard | 06c H14 |
+| V-40.25 | entité Notification | N/A | N/A | 03 §1 | 2 | MVP | 06c M07 |
+| V-40.26 | entité Review | N/A | N/A | 03 §1 | 8 | Plus tard | 06c H15 |
+| V-40.27 | entité Favorite | N/A | N/A | 03 §1 | 2 | MVP | 06c M08 |
+| V-40.28 | entité SupportTicket | N/A | N/A | 03 §1 | 8 | Plus tard | 06c H01 |
+| V-40.29 | entité KnowledgeDocument | N/A | N/A | 03 §1 | 2 | MVP | 06c M09 |
+| V-40.30 | entité AuditLog | N/A | N/A | 03 §1 | 8 | Plus tard | 06c H02 |
+| V-40.31 | entité Promotion | N/A | N/A | 03 §1 | 2 | MVP | 06c M10 |
+| V-40.32 | entité LoyaltyAccount | N/A | N/A | 03 §1 | 8 | Plus tard | 06c H03 |
+| V-40.33 | entité LoyaltyTransaction | N/A | N/A | 03 §1 | 2 | MVP | 06c M11 |
+| V-40.34 | entité StockAlert | N/A | N/A | 03 §1 | 8 | Plus tard | 06c H04 |
+| V-40.35 | entité DemandAlert | N/A | N/A | 03 §1 | 2 | MVP | 06c M12 |
+| V-40.36 | entité Address | N/A | N/A | 03 §1 | 8 | Plus tard | 06c H05 |
+| V-41.01 | Créer un système RBAC. | N/A | N/A | 03 §1 | 2 | MVP | 06c M13 |
+| V-41.02 | Exemple : | N/A | N/A | 03 §1 | 8 | Plus tard | 06c H06 |
+| V-41.03 | rôle CUSTOMER : | N/A | N/A | 03 §1 | 2 | MVP | 06c M14 |
+| V-41.04 | consulter | N/A | N/A | 03 §1 | 8 | Plus tard | 06c H07 |
+| V-41.05 | commander | N/A | N/A | 03 §1 | 2 | MVP | 06c M15 |
+| V-41.06 | payer | N/A | N/A | 03 §1 | 8 | Plus tard | 06c H08 |
+| V-41.07 | consulter ses factures | N/A | N/A | 03 §1 | 2 | MVP | 06c M16 |
+| V-41.08 | discuter | N/A | N/A | 03 §1 | 8 | Plus tard | 06c H09 |
+| V-41.09 | évaluer. | N/A | N/A | 03 §1 | 2 | MVP | 06c M17 |
+| V-41.10 | rôle DISTRIBUTOR : | N/A | N/A | 03 §1 | 8 | Plus tard | 06c H10 |
+| V-41.11 | gérer boutique | N/A | N/A | 03 §1 | 2 | MVP | 06c M18 |
+| V-41.12 | gérer stock | N/A | N/A | 03 §1 | 8 | Plus tard | 06c H11 |
+| V-41.13 | recevoir commandes | N/A | N/A | 03 §1 | 2 | MVP | 06c M19 |
+| V-41.14 | commander à PLEINGAZ | N/A | N/A | 03 §1 | 8 | Plus tard | 06c H12 |
+| V-41.15 | gérer informations | N/A | N/A | 03 §1 | 2 | MVP | 06c M20 |
+| V-41.16 | consulter factures. | N/A | N/A | 03 §1 | 8 | Plus tard | 06c H13 |
+| V-41.17 | rôle SUPPORT_AGENT : | N/A | N/A | 03 §1 | 2 | MVP | 06c M21 |
+| V-41.18 | gérer conversations | N/A | N/A | 03 §1 | 8 | Plus tard | 06c H14 |
+| V-41.19 | consulter commandes | N/A | N/A | 03 §1 | 2 | MVP | 06c M22 |
+| V-41.20 | assister les clients. | N/A | N/A | 03 §1 | 8 | Plus tard | 06c H15 |
+| V-41.21 | rôle DISTRIBUTOR_MANAGER : | N/A | N/A | 03 §1 | 2 | MVP | 06c M23 |
+| V-41.22 | valider distributeurs | N/A | N/A | 03 §1 | 8 | Plus tard | 06c H01 |
+| V-41.23 | gérer réseau. | N/A | N/A | 03 §1 | 2 | MVP | 06c M24 |
+| V-41.24 | rôle FINANCE_MANAGER : | N/A | N/A | 03 §1 | 8 | Plus tard | 06c H02 |
+| V-41.25 | paiements | N/A | N/A | 03 §1 | 2 | MVP | 06c M25 |
+| V-41.26 | factures | N/A | N/A | 03 §1 | 8 | Plus tard | 06c H03 |
+| V-41.27 | rapports financiers. | N/A | N/A | 03 §1 | 2 | MVP | 06c M26 |
+| V-41.28 | rôle LOGISTICS_MANAGER : | N/A | N/A | 03 §1 | 8 | Plus tard | 06c H04 |
+| V-41.29 | livraisons | N/A | N/A | 03 §1 | 2 | MVP | 06c M27 |
+| V-41.30 | commandes | N/A | N/A | 03 §1 | 8 | Plus tard | 06c H05 |
+| V-41.31 | suivi. | N/A | N/A | 03 §1 | 2 | MVP | 06c M28 |
+| V-41.32 | ADMIN : | N/A | N/A | 03 §1 | 8 | Plus tard | 06c H06 |
+| V-41.33 | gestion globale. | N/A | N/A | 03 §1 | 2 | MVP | 06c M29 |
+| V-41.34 | SUPER_ADMIN : | N/A | N/A | 03 §1 | 8 | Plus tard | 06c H07 |
+| V-41.35 | configuration système. | N/A | N/A | 03 §1 | 2 | MVP | 06c M04 |
+| V-42.01 | Parcours cible : | N/A | N/A | 03 §1 | 2 | MVP | 06c M05 |
+| V-42.02 | Accueil | N/A | N/A | 03 §1 | 8 | Plus tard | 06c H08 |
+| V-42.03 | ↓ | N/A | N/A | 03 §1 | 2 | MVP | 06c M06 |
+| V-42.04 | Recherche | N/A | N/A | 03 §1 | 8 | Plus tard | 06c H09 |
+| V-42.05 | ↓ | N/A | N/A | 03 §1 | 2 | MVP | 06c M07 |
+| V-42.06 | Produit / Point de vente | N/A | N/A | 03 §1 | 8 | Plus tard | 06c H10 |
+| V-42.07 | ↓ | N/A | N/A | 03 §1 | 2 | MVP | 06c M08 |
+| V-42.08 | Disponibilité | N/A | N/A | 03 §1 | 8 | Plus tard | 06c H11 |
+| V-42.09 | ↓ | N/A | N/A | 03 §1 | 2 | MVP | 06c M09 |
+| V-42.10 | Choix du distributeur | N/A | N/A | 03 §1 | 8 | Plus tard | 06c H12 |
+| V-42.11 | ↓ | N/A | N/A | 03 §1 | 2 | MVP | 06c M10 |
+| V-42.12 | Retrait ou livraison | N/A | N/A | 03 §1 | 8 | Plus tard | 06c H13 |
+| V-42.13 | ↓ | N/A | N/A | 03 §1 | 2 | MVP | 06c M11 |
+| V-42.14 | Panier | N/A | N/A | 03 §1 | 8 | Plus tard | 06c H14 |
+| V-42.15 | ↓ | N/A | N/A | 03 §1 | 2 | MVP | 06c M12 |
+| V-42.16 | Adresse | N/A | N/A | 03 §1 | 8 | Plus tard | 06c H15 |
+| V-42.17 | ↓ | N/A | N/A | 03 §1 | 2 | MVP | 06c M13 |
+| V-42.18 | Paiement | N/A | N/A | 03 §1 | 8 | Plus tard | 06c H01 |
+| V-42.19 | ↓ | N/A | N/A | 03 §1 | 2 | MVP | 06c M14 |
+| V-42.20 | Confirmation | N/A | N/A | 03 §1 | 8 | Plus tard | 06c H02 |
+| V-42.21 | ↓ | N/A | N/A | 03 §1 | 2 | MVP | 06c M15 |
+| V-42.22 | Suivi | N/A | N/A | 03 §1 | 8 | Plus tard | 06c H03 |
+| V-42.23 | ↓ | N/A | N/A | 03 §1 | 2 | MVP | 06c M16 |
+| V-42.24 | Livraison | N/A | N/A | 03 §1 | 8 | Plus tard | 06c H04 |
+| V-42.25 | ↓ | N/A | N/A | 03 §1 | 2 | MVP | 06c M17 |
+| V-42.26 | Facture | N/A | N/A | 03 §1 | 8 | Plus tard | 06c H05 |
+| V-42.27 | ↓ | N/A | N/A | 03 §1 | 2 | MVP | 06c M18 |
+| V-42.28 | Avis | N/A | N/A | 03 §1 | 8 | Plus tard | 06c H06 |
+| V-43.01 | Inscription | N/A | N/A | 03 §1 | 2 | MVP | 06c M19 |
+| V-43.02 | ↓ | N/A | N/A | 03 §1 | 8 | Plus tard | 06c H07 |
+| V-43.03 | Dépôt du dossier | N/A | N/A | 03 §1 | 2 | MVP | 06c M20 |
+| V-43.04 | ↓ | N/A | N/A | 03 §1 | 8 | Plus tard | 06c H08 |
+| V-43.05 | PENDING | N/A | N/A | 03 §1 | 2 | MVP | 06c M21 |
+| V-43.06 | ↓ | N/A | N/A | 03 §1 | 8 | Plus tard | 06c H09 |
+| V-43.07 | Vérification PLEINGAZ | N/A | N/A | 03 §1 | 2 | MVP | 06c M22 |
+| V-43.08 | ↓ | N/A | N/A | 03 §1 | 8 | Plus tard | 06c H10 |
+| V-43.09 | APPROVED | N/A | N/A | 03 §1 | 2 | MVP | 06c M23 |
+| V-43.10 | ↓ | N/A | N/A | 03 §1 | 8 | Plus tard | 06c H11 |
+| V-43.11 | Boutique visible | N/A | N/A | 03 §1 | 2 | MVP | 06c M24 |
+| V-43.12 | ↓ | N/A | N/A | 03 §1 | 8 | Plus tard | 06c H12 |
+| V-43.13 | Gestion stock | N/A | N/A | 03 §1 | 2 | MVP | 06c M25 |
+| V-43.14 | ↓ | N/A | N/A | 03 §1 | 8 | Plus tard | 06c H13 |
+| V-43.15 | Réception commandes | N/A | N/A | 03 §1 | 2 | MVP | 06c M26 |
+| V-43.16 | ↓ | N/A | N/A | 03 §1 | 8 | Plus tard | 06c H14 |
+| V-43.17 | Commandes à PLEINGAZ | N/A | N/A | 03 §1 | 2 | MVP | 06c M27 |
+| V-43.18 | ↓ | N/A | N/A | 03 §1 | 8 | Plus tard | 06c H15 |
+| V-43.19 | Livraison/réapprovisionnement | N/A | N/A | 03 §1 | 2 | MVP | 06c M28 |
+| V-43.20 | ↓ | N/A | N/A | 03 §1 | 8 | Plus tard | 06c H01 |
+| V-43.21 | Facturation | N/A | N/A | 03 §1 | 2 | MVP | 06c M29 |
+| V-43.22 | ↓ | N/A | N/A | 03 §1 | 8 | Plus tard | 06c H02 |
+| V-43.23 | Suivi activité. | N/A | N/A | 03 §1 | 2 | MVP | 06c M04 |
+| V-44.01 | Connexion sécurisée | N/A | N/A | 03 §1 | 2 | MVP | 06c M05 |
+| V-44.02 | ↓ | N/A | N/A | 03 §1 | 8 | Plus tard | 06c H03 |
+| V-44.03 | Dashboard | N/A | N/A | 03 §1 | 2 | MVP | 06c M06 |
+| V-44.04 | ↓ | N/A | N/A | 03 §1 | 8 | Plus tard | 06c H04 |
+| V-44.05 | Supervision | N/A | N/A | 03 §1 | 2 | MVP | 06c M07 |
+| V-44.06 | ↓ | N/A | N/A | 03 §1 | 8 | Plus tard | 06c H05 |
+| V-44.07 | Distributeurs | N/A | N/A | 03 §1 | 2 | MVP | 06c M08 |
+| V-44.08 | ↓ | N/A | N/A | 03 §1 | 8 | Plus tard | 06c H06 |
+| V-44.09 | Demandes de validation | N/A | N/A | 03 §1 | 2 | MVP | 06c M09 |
+| V-44.10 | ↓ | N/A | N/A | 03 §1 | 8 | Plus tard | 06c H07 |
+| V-44.11 | Produits | N/A | N/A | 03 §1 | 2 | MVP | 06c M10 |
+| V-44.12 | ↓ | N/A | N/A | 03 §1 | 8 | Plus tard | 06c H08 |
+| V-44.13 | Commandes | N/A | N/A | 03 §1 | 2 | MVP | 06c M11 |
+| V-44.14 | ↓ | N/A | N/A | 03 §1 | 8 | Plus tard | 06c H09 |
+| V-44.15 | Stocks | N/A | N/A | 03 §1 | 2 | MVP | 06c M12 |
+| V-44.16 | ↓ | N/A | N/A | 03 §1 | 8 | Plus tard | 06c H10 |
+| V-44.17 | Paiements | N/A | N/A | 03 §1 | 2 | MVP | 06c M13 |
+| V-44.18 | ↓ | N/A | N/A | 03 §1 | 8 | Plus tard | 06c H11 |
+| V-44.19 | Factures | N/A | N/A | 03 §1 | 2 | MVP | 06c M14 |
+| V-44.20 | ↓ | N/A | N/A | 03 §1 | 8 | Plus tard | 06c H12 |
+| V-44.21 | Livraisons | N/A | N/A | 03 §1 | 2 | MVP | 06c M15 |
+| V-44.22 | ↓ | N/A | N/A | 03 §1 | 8 | Plus tard | 06c H13 |
+| V-44.23 | Support | N/A | N/A | 03 §1 | 2 | MVP | 06c M16 |
+| V-44.24 | ↓ | N/A | N/A | 03 §1 | 8 | Plus tard | 06c H14 |
+| V-44.25 | IA | N/A | N/A | 05c §1 | 2 | MVP | 06c M17 |
+| V-44.26 | ↓ | N/A | N/A | 03 §1 | 8 | Plus tard | 06c H15 |
+| V-44.27 | Rapports | N/A | N/A | 03 §1 | 2 | MVP | 06c M18 |
+| V-44.28 | ↓ | N/A | N/A | 03 §1 | 8 | Plus tard | 06c H01 |
+| V-44.29 | Audit. | N/A | N/A | 03 §1 | 2 | MVP | 06c M19 |
+| V-45.01 | Créer des rapports : | N/A | N/A | 03 §1 | 2 | MVP | 06c M20 |
+| V-45.02 | ventes | N/A | N/A | 03 §1 | 8 | Plus tard | 06c H02 |
+| V-45.03 | commandes | N/A | N/A | 03 §1 | 2 | MVP | 06c M21 |
+| V-45.04 | revenus | N/A | N/A | 03 §1 | 8 | Plus tard | 06c H03 |
+| V-45.05 | produits les plus demandés | N/A | N/A | 03 §1 | 2 | MVP | 06c M22 |
+| V-45.06 | villes | N/A | N/A | 03 §1 | 8 | Plus tard | 06c H04 |
+| V-45.07 | distributeurs | N/A | N/A | 03 §1 | 2 | MVP | 06c M23 |
+| V-45.08 | disponibilité | N/A | N/A | 03 §1 | 8 | Plus tard | 06c H05 |
+| V-45.09 | ruptures | N/A | N/A | 03 §1 | 2 | MVP | 06c M24 |
+| V-45.10 | paiements | N/A | N/A | 03 §1 | 8 | Plus tard | 06c H06 |
+| V-45.11 | livraisons | N/A | N/A | 03 §1 | 2 | MVP | 06c M25 |
+| V-45.12 | satisfaction. | N/A | N/A | 03 §1 | 8 | Plus tard | 06c H07 |
+| V-45.13 | Exporter : | N/A | N/A | 03 §1 | 2 | MVP | 06c M26 |
+| V-45.14 | PDF | N/A | N/A | 03 §1 | 8 | Plus tard | 06c H08 |
+| V-45.15 | CSV | N/A | N/A | 03 §1 | 2 | MVP | 06c M27 |
+| V-45.16 | Excel | N/A | N/A | 03 §1 | 8 | Plus tard | 06c H09 |
+| V-46.01 | Le dashboard administrateur doit produire des informations utiles et pas uniquement des graphiques. | N/A | N/A | 03 §1 | 2 | MVP | 06c M28 |
+| V-46.02 | Exemples : | N/A | N/A | 03 §1 | 8 | Plus tard | 06c H10 |
+| V-46.03 | "12 distributeurs n'ont pas actualisé leur stock depuis 48h." | N/A | N/A | 03 §1 | 2 | MVP | 06c M29 |
+| V-46.04 | "Zone de Bastos : forte demande mais faible disponibilité." | N/A | N/A | 03 §1 | 8 | Plus tard | 06c H11 |
+| V-46.05 | "24 commandes en attente." | N/A | N/A | 03 §1 | 2 | MVP | 06c M04 |
+| V-46.06 | "8 distributeurs semblent proches d'une rupture." | N/A | N/A | 03 §1 | 8 | Plus tard | 06c H12 |
+| V-46.07 | "Le produit X connaît une augmentation de la demande." | N/A | N/A | 03 §1 | 2 | MVP | 06c M05 |
+| V-46.08 | "3 demandes de distributeurs attendent une validation." | N/A | N/A | 03 §1 | 8 | Plus tard | 06c H13 |
+| V-47.01 | Créer un assistant IA réservé aux administrateurs. | N/A | N/A | 05c §1 | 2 | MVP | 06c M06 |
+| V-47.02 | Exemples : | N/A | N/A | 03 §1 | 8 | Plus tard | 06c H14 |
+| V-47.03 | "Quels sont les points de vente actuellement en rupture à Yaoundé ?" | N/A | N/A | 03 §1 | 2 | MVP | 06c M07 |
+| V-47.04 | "Quels produits ont connu le plus de demandes cette semaine ?" | N/A | N/A | 03 §1 | 8 | Plus tard | 06c H15 |
+| V-47.05 | "Quels distributeurs n'ont pas mis leur stock à jour ?" | N/A | N/A | 03 §1 | 2 | MVP | 06c M08 |
+| V-47.06 | "Combien de commandes ont été livrées aujourd'hui ?" | N/A | N/A | 03 §1 | 8 | Plus tard | 06c H01 |
+| V-47.07 | "Quelles zones nécessitent probablement davantage de points de vente ?" | N/A | N/A | 03 §1 | 2 | MVP | 06c M09 |
+| V-47.08 | L'IA doit interroger les données réelles et ne jamais inventer de statistiques. | N/A | N/A | 05c §1 | 8 | Plus tard | 06c H02 |
+| V-48.01 | Le chatbot doit avoir une personnalité : | N/A | N/A | 03 §1 | 2 | MVP | 06c M10 |
+| V-48.02 | professionnelle | N/A | N/A | 03 §1 | 8 | Plus tard | 06c H03 |
+| V-48.03 | simple | N/A | N/A | 03 §1 | 2 | MVP | 06c M11 |
+| V-48.04 | rapide | N/A | N/A | 03 §1 | 8 | Plus tard | 06c H04 |
+| V-48.05 | adaptée au contexte camerounais. | N/A | N/A | 03 §1 | 2 | MVP | 06c M12 |
+| V-48.06 | Il doit toujours distinguer : | N/A | N/A | 03 §1 | 8 | Plus tard | 06c H05 |
+| V-48.07 | INFORMATION CERTAINE | N/A | N/A | 03 §1 | 2 | MVP | 06c M13 |
+| V-48.08 | INFORMATION DYNAMIQUE | N/A | N/A | 03 §1 | 8 | Plus tard | 06c H06 |
+| V-48.09 | INFORMATION INDISPONIBLE. | N/A | N/A | 03 §1 | 2 | MVP | 06c M14 |
+| V-48.10 | Exemple : | N/A | N/A | 03 §1 | 8 | Plus tard | 06c H07 |
+| V-48.11 | "Je n'ai pas de donnée actualisée sur le stock de ce point de vente. Je peux vous montrer les autres points de vente proches." | N/A | N/A | 03 §1 | 2 | MVP | 06c M15 |
+| V-49.01 | Chaque distributeur visible doit afficher clairement : | N/A | N/A | 03 §1 | 2 | MVP | 06c M16 |
+| V-49.02 | ✓ Distributeur vérifié | N/A | N/A | 03 §1 | 8 | Plus tard | 06c H08 |
+| V-49.03 | Stock : | N/A | N/A | 03 §1 | 2 | MVP | 06c M17 |
+| V-49.04 | 🟢 disponible | N/A | N/A | 03 §1 | 8 | Plus tard | 06c H09 |
+| V-49.05 | Dernière mise à jour : | N/A | N/A | 03 §1 | 2 | MVP | 06c M18 |
+| V-49.06 | il y a 25 minutes | N/A | N/A | 03 §1 | 8 | Plus tard | 06c H10 |
+| V-49.07 | Distance : | N/A | N/A | 03 §1 | 2 | MVP | 06c M19 |
+| V-49.08 | 1,8 km | N/A | N/A | 03 §1 | 8 | Plus tard | 06c H11 |
+| V-49.09 | Livraison : | N/A | N/A | 03 §1 | 2 | MVP | 06c M20 |
+| V-49.10 | Disponible | N/A | N/A | 03 §1 | 8 | Plus tard | 06c H12 |
+| V-49.11 | WhatsApp : | N/A | N/A | 03 §1 | 2 | MVP | 06c M21 |
+| V-49.12 | Disponible | N/A | N/A | 03 §1 | 8 | Plus tard | 06c H13 |
+| V-49.13 | Cela doit renforcer la confiance. | N/A | N/A | 03 §1 | 2 | MVP | 06c M22 |
+| V-50.01 | La majorité des utilisateurs pouvant accéder à la plateforme depuis un smartphone, concevoir d'abord pour mobile. | N/A | N/A | 03 §1 | 2 | MVP | 06c M23 |
+| V-50.02 | Tester au minimum : | N/A | N/A | 03 §1 | 8 | Plus tard | 06c H14 |
+| V-50.03 | petit Android | N/A | N/A | 03 §1 | 2 | MVP | 06c M24 |
+| V-50.04 | écran moyen | N/A | N/A | 03 §1 | 8 | Plus tard | 06c H15 |
+| V-50.05 | tablette | N/A | N/A | 03 §1 | 2 | MVP | 06c M25 |
+| V-50.06 | desktop. | N/A | N/A | 03 §1 | 8 | Plus tard | 06c H01 |
+| V-51.01 | Étudier l'intégration d'une Progressive Web App. | N/A | N/A | 03 §1 | 2 | MVP | 06c M26 |
+| V-51.02 | Fonctionnalités : | N/A | N/A | 03 §1 | 8 | Plus tard | 06c H02 |
+| V-51.03 | installation | N/A | N/A | 03 §1 | 2 | MVP | 06c M27 |
+| V-51.04 | cache | N/A | N/A | 03 §1 | 8 | Plus tard | 06c H03 |
+| V-51.05 | notifications | N/A | N/A | 03 §1 | 2 | MVP | 06c M28 |
+| V-51.06 | fonctionnement dégradé hors ligne | N/A | N/A | 03 §1 | 8 | Plus tard | 06c H04 |
+| V-51.07 | raccourci écran d'accueil. | N/A | N/A | 03 §1 | 2 | MVP | 06c M29 |
+| V-52.01 | Ajouter : | N/A | N/A | 03 §1 | 2 | MVP | 06c M04 |
+| V-52.02 | logs | N/A | N/A | 03 §1 | 8 | Plus tard | 06c H05 |
+| V-52.03 | monitoring | N/A | N/A | 03 §1 | 2 | MVP | 06c M05 |
+| V-52.04 | erreurs frontend | N/A | N/A | 03 §1 | 8 | Plus tard | 06c H06 |
+| V-52.05 | erreurs backend | N/A | N/A | 03 §1 | 2 | MVP | 06c M06 |
+| V-52.06 | temps de réponse | N/A | N/A | 03 §1 | 8 | Plus tard | 06c H07 |
+| V-52.07 | disponibilité API | N/A | N/A | 03 §1 | 2 | MVP | 06c M07 |
+| V-52.08 | alertes système. | N/A | N/A | 03 §1 | 8 | Plus tard | 06c H08 |
+| V-52.09 | Créer une page admin : | N/A | N/A | 03 §1 | 2 | MVP | 06c M08 |
+| V-52.10 | "État de la plateforme" | N/A | N/A | 03 §1 | 8 | Plus tard | 06c H09 |
+| V-53.01 | La plateforme doit rester extrêmement simple. | N/A | N/A | 03 §1 | 2 | MVP | 06c M09 |
+| V-53.02 | Le client ne doit pas voir : | N/A | N/A | 03 §1 | 8 | Plus tard | 06c H10 |
+| V-53.03 | 30 boutons. | N/A | N/A | 03 §1 | 2 | MVP | 06c M10 |
+| V-53.04 | Il doit principalement voir : | N/A | N/A | 03 §1 | 8 | Plus tard | 06c H11 |
+| V-53.05 | Acheter | N/A | N/A | 03 §1 | 2 | MVP | 06c M11 |
+| V-53.06 | Trouver du gaz | N/A | N/A | 03 §1 | 8 | Plus tard | 06c H12 |
+| V-53.07 | Commander | N/A | N/A | 03 §1 | 2 | MVP | 06c M12 |
+| V-53.08 | Suivre ma commande | N/A | N/A | 03 §1 | 8 | Plus tard | 06c H13 |
+| V-53.09 | Mes factures | N/A | N/A | 03 §1 | 2 | MVP | 06c M13 |
+| V-53.10 | Assistance | N/A | N/A | 03 §1 | 8 | Plus tard | 06c H14 |
+| V-54.01 | NE PAS développer toutes les fonctionnalités simultanément. | N/A | N/A | 03 §1 | 2 | MVP | 06c M14 |
+| V-54.02 | PHASE 1 — AUDIT | N/A | N/A | 03 §1 | 8 | Plus tard | 06c H15 |
+| V-54.03 | Analyser le site existant. | N/A | N/A | 03 §1 | 2 | MVP | 06c M15 |
+| V-54.04 | Produire : | N/A | N/A | 03 §1 | 8 | Plus tard | 06c H01 |
+| V-54.05 | architecture actuelle | N/A | N/A | 04 §1 | 2 | MVP | 06c M16 |
+| V-54.06 | technologies | N/A | N/A | 03 §1 | 8 | Plus tard | 06c H02 |
+| V-54.07 | pages | N/A | N/A | 03 §1 | 2 | MVP | 06c M17 |
+| V-54.08 | composants | N/A | N/A | 03 §1 | 8 | Plus tard | 06c H03 |
+| V-54.09 | problèmes UX | N/A | N/A | 03 §1 | 2 | MVP | 06c M18 |
+| V-54.10 | problèmes sécurité | N/A | N/A | 03 §1 | 8 | Plus tard | 06c H04 |
+| V-54.11 | problèmes performance | N/A | N/A | 03 §1 | 2 | MVP | 06c M19 |
+| V-54.12 | fonctionnalités existantes | N/A | N/A | 03 §1 | 8 | Plus tard | 06c H05 |
+| V-54.13 | fonctionnalités à conserver | N/A | N/A | 03 §1 | 2 | MVP | 06c M20 |
+| V-54.14 | fonctionnalités à modifier. | N/A | N/A | 03 §1 | 8 | Plus tard | 06c H06 |
+| V-54.15 | Ne coder aucune nouvelle fonctionnalité avant cet audit. | N/A | N/A | 03 §1 | 2 | MVP | 06c M21 |
+| V-54.16 | PHASE 2 — FONDATIONS | N/A | N/A | 03 §1 | 8 | Plus tard | 06c H07 |
+| V-54.17 | authentification | N/A | N/A | 03 §1 | 2 | MVP | 06c M22 |
+| V-54.18 | utilisateurs | N/A | N/A | 03 §1 | 8 | Plus tard | 06c H08 |
+| V-54.19 | rôles | N/A | N/A | 03 §1 | 2 | MVP | 06c M23 |
+| V-54.20 | profils | N/A | N/A | 03 §1 | 8 | Plus tard | 06c H09 |
+| V-54.21 | base de données | N/A | N/A | 03 §1 | 2 | MVP | 06c M24 |
+| V-54.22 | sécurité. | N/A | N/A | 03 §1 | 8 | Plus tard | 06c H10 |
+| V-54.23 | PHASE 3 — DISTRIBUTEURS | N/A | N/A | 03 §1 | 2 | MVP | 06c M25 |
+| V-54.24 | inscription | N/A | N/A | 03 §1 | 8 | Plus tard | 06c H11 |
+| V-54.25 | dossier | N/A | N/A | 03 §1 | 2 | MVP | 06c M26 |
+| V-54.26 | validation | N/A | N/A | 03 §1 | 8 | Plus tard | 06c H12 |
+| V-54.27 | boutique | N/A | N/A | 03 §1 | 2 | MVP | 06c M27 |
+| V-54.28 | géolocalisation | N/A | N/A | 03 §1 | 8 | Plus tard | 06c H13 |
+| V-54.29 | carte. | N/A | N/A | 03 §1 | 2 | MVP | 06c M28 |
+| V-54.30 | PHASE 4 — PRODUITS + STOCK | N/A | N/A | 03 §1 | 8 | Plus tard | 06c H14 |
+| V-54.31 | catalogue | N/A | N/A | 03 §1 | 2 | MVP | 06c M29 |
+| V-54.32 | disponibilité | N/A | N/A | 03 §1 | 8 | Plus tard | 06c H15 |
+| V-54.33 | stock | N/A | N/A | 03 §1 | 2 | MVP | 06c M04 |
+| V-54.34 | recherche. | N/A | N/A | 03 §1 | 8 | Plus tard | 06c H01 |
+| V-54.35 | PHASE 5 — COMMANDES | N/A | N/A | 03 §1 | 2 | MVP | 06c M05 |
+| V-54.36 | panier | N/A | N/A | 03 §1 | 8 | Plus tard | 06c H02 |
+| V-54.37 | commandes | N/A | N/A | 03 §1 | 2 | MVP | 06c M06 |
+| V-54.38 | livraison | N/A | N/A | 03 §1 | 8 | Plus tard | 06c H03 |
+| V-54.39 | factures. | N/A | N/A | 03 §1 | 2 | MVP | 06c M07 |
+| V-54.40 | PHASE 6 — PAIEMENTS | N/A | N/A | 03 §1 | 8 | Plus tard | 06c H04 |
+| V-54.41 | Mobile Money | N/A | N/A | 03 §1 | 2 | MVP | 06c M08 |
+| V-54.42 | paiement présentiel | N/A | N/A | 03 §1 | 8 | Plus tard | 06c H05 |
+| V-54.43 | webhooks | N/A | N/A | 03 §1 | 2 | MVP | 06c M09 |
+| V-54.44 | rapprochement. | N/A | N/A | 03 §1 | 8 | Plus tard | 06c H06 |
+| V-54.45 | PHASE 7 — COMMUNICATION | N/A | N/A | 03 §1 | 2 | MVP | 06c M10 |
+| V-54.46 | chat | N/A | N/A | 03 §1 | 8 | Plus tard | 06c H07 |
+| V-54.47 | WhatsApp | N/A | N/A | 03 §1 | 2 | MVP | 06c M11 |
+| V-54.48 | email | N/A | N/A | 03 §1 | 8 | Plus tard | 06c H08 |
+| V-54.49 | notifications. | N/A | N/A | 03 §1 | 2 | MVP | 06c M12 |
+| V-54.50 | PHASE 8 — IA | N/A | N/A | 05c §1 | 8 | Plus tard | 06c H09 |
+| V-54.51 | chatbot | N/A | N/A | 03 §1 | 2 | MVP | 06c M13 |
+| V-54.52 | recherche intelligente | N/A | N/A | 03 §1 | 8 | Plus tard | 06c H10 |
+| V-54.53 | localisation | N/A | N/A | 03 §1 | 2 | MVP | 06c M14 |
+| V-54.54 | assistant admin. | N/A | N/A | 03 §1 | 8 | Plus tard | 06c H11 |
+| V-54.55 | PHASE 9 — ANALYTICS | N/A | N/A | 03 §1 | 2 | MVP | 06c M15 |
+| V-54.56 | dashboard | N/A | N/A | 03 §1 | 8 | Plus tard | 06c H12 |
+| V-54.57 | rapports | N/A | N/A | 03 §1 | 2 | MVP | 06c M16 |
+| V-54.58 | prévisions | N/A | N/A | 03 §1 | 8 | Plus tard | 06c H13 |
+| V-54.59 | heatmap. | N/A | N/A | 03 §1 | 2 | MVP | 06c M17 |
+| V-54.60 | PHASE 10 — OPTIMISATION | N/A | N/A | 03 §1 | 8 | Plus tard | 06c H14 |
+| V-54.61 | performance | N/A | N/A | 03 §1 | 2 | MVP | 06c M18 |
+| V-54.62 | SEO | N/A | N/A | 03 §1 | 8 | Plus tard | 06c H15 |
+| V-54.63 | sécurité | N/A | N/A | 03 §1 | 2 | MVP | 06c M19 |
+| V-54.64 | accessibilité | N/A | N/A | 03 §1 | 8 | Plus tard | 06c H01 |
+| V-54.65 | tests | N/A | N/A | 03 §1 | 2 | MVP | 06c M20 |
+| V-54.66 | monitoring. | N/A | N/A | 03 §1 | 8 | Plus tard | 06c H02 |
+| V-55.01 | Créer des tests : | N/A | N/A | 03 §1 | 2 | MVP | 06c M21 |
+| V-55.02 | unitaires | N/A | N/A | 03 §1 | 8 | Plus tard | 06c H03 |
+| V-55.03 | intégration | N/A | N/A | 03 §1 | 2 | MVP | 06c M22 |
+| V-55.04 | API | N/A | N/A | 03 §1 | 8 | Plus tard | 06c H04 |
+| V-55.05 | authentification | N/A | N/A | 03 §1 | 2 | MVP | 06c M23 |
+| V-55.06 | permissions | N/A | N/A | 03 §1 | 8 | Plus tard | 06c H05 |
+| V-55.07 | paiement | N/A | N/A | 03 §1 | 2 | MVP | 06c M24 |
+| V-55.08 | commandes | N/A | N/A | 03 §1 | 8 | Plus tard | 06c H06 |
+| V-55.09 | factures | N/A | N/A | 03 §1 | 2 | MVP | 06c M25 |
+| V-55.10 | notifications | N/A | N/A | 03 §1 | 8 | Plus tard | 06c H07 |
+| V-55.11 | géolocalisation | N/A | N/A | 03 §1 | 2 | MVP | 06c M26 |
+| V-55.12 | chatbot. | N/A | N/A | 03 §1 | 8 | Plus tard | 06c H08 |
+| V-55.13 | Tester particulièrement : | N/A | N/A | 03 §1 | 2 | MVP | 06c M27 |
+| V-55.14 | double paiement | N/A | N/A | 03 §1 | 8 | Plus tard | 06c H09 |
+| V-55.15 | double commande | N/A | N/A | 03 §1 | 2 | MVP | 06c M28 |
+| V-55.16 | utilisateur non autorisé | N/A | N/A | 03 §1 | 8 | Plus tard | 06c H10 |
+| V-55.17 | distributeur non validé | N/A | N/A | 03 §1 | 2 | MVP | 06c M29 |
+| V-55.18 | modification frauduleuse du prix | N/A | N/A | 03 §1 | 8 | Plus tard | 06c H11 |
+| V-55.19 | faux statut de paiement | N/A | N/A | 03 §1 | 2 | MVP | 06c M04 |
+| V-55.20 | accès à une facture appartenant à quelqu'un d'autre. | N/A | N/A | 03 §1 | 8 | Plus tard | 06c H12 |
+| V-56.01 | NE PAS supprimer une fonctionnalité existante sans justification. | N/A | N/A | 03 §1 | 2 | MVP | 06c M05 |
+| V-56.02 | NE PAS modifier le contenu métier sans vérification. | N/A | N/A | 03 §1 | 8 | Plus tard | 06c H13 |
+| V-56.03 | NE PAS inventer les informations officielles de PLEINGAZ. | N/A | N/A | 03 §1 | 2 | MVP | 06c M06 |
+| V-56.04 | NE PAS inventer les prix. | N/A | N/A | 03 §1 | 8 | Plus tard | 06c H14 |
+| V-56.05 | NE PAS inventer les distributeurs. | N/A | N/A | 03 §1 | 2 | MVP | 06c M07 |
+| V-56.06 | NE PAS inventer les stocks. | N/A | N/A | 03 §1 | 8 | Plus tard | 06c H15 |
+| V-56.07 | NE PAS inventer les horaires. | N/A | N/A | 03 §1 | 2 | MVP | 06c M08 |
+| V-56.08 | Les données dynamiques doivent provenir de la base de données. | N/A | N/A | 03 §1 | 8 | Plus tard | 06c H01 |
+| V-57.01 | Avant de commencer le développement, produire : | N/A | N/A | 03 §1 | 2 | MVP | 06c M09 |
+| V-57.02 | audit complet du site | N/A | N/A | 03 §1 | 8 | Plus tard | 06c H02 |
+| V-57.03 | architecture cible | N/A | N/A | 04 §1 | 2 | MVP | 06c M10 |
+| V-57.04 | sitemap | N/A | N/A | 03 §1 | 8 | Plus tard | 06c H03 |
+| V-57.05 | parcours utilisateurs | N/A | N/A | 03 §1 | 2 | MVP | 06c M11 |
+| V-57.06 | matrice des rôles | N/A | N/A | 03 §1 | 8 | Plus tard | 06c H04 |
+| V-57.07 | modèle de données | N/A | N/A | 03 §1 | 2 | MVP | 06c M12 |
+| V-57.08 | architecture API | N/A | N/A | 04 §1 | 8 | Plus tard | 06c H05 |
+| V-57.09 | architecture frontend | N/A | N/A | 04 §1 | 2 | MVP | 06c M13 |
+| V-57.10 | architecture IA | N/A | N/A | 05c §1 | 8 | Plus tard | 06c H06 |
+| V-57.11 | architecture notifications | N/A | N/A | 04 §1 | 2 | MVP | 06c M14 |
+| V-57.12 | architecture paiement | N/A | N/A | 04 §1 | 8 | Plus tard | 06c H07 |
+| V-57.13 | architecture cartographique | N/A | N/A | 04 §1 | 2 | MVP | 06c M15 |
+| V-57.14 | plan de sécurité | N/A | N/A | 03 §1 | 8 | Plus tard | 06c H08 |
+| V-57.15 | plan de tests | N/A | N/A | 03 §1 | 2 | MVP | 06c M16 |
+| V-57.16 | roadmap de développement. | N/A | N/A | 03 §1 | 8 | Plus tard | 06c H09 |
+| V-57.17 | Ensuite seulement commencer l'implémentation. | N/A | N/A | 03 §1 | 2 | MVP | 06c M17 |
+| V-58.01 | Ne te limite pas aux fonctionnalités que j'ai données. | N/A | N/A | 03 §1 | 2 | MVP | 06c M18 |
+| V-58.02 | À chaque étape, recherche des améliorations pertinentes pour : | N/A | N/A | 03 §1 | 8 | Plus tard | 06c H10 |
+| V-58.03 | le client | N/A | N/A | 03 §1 | 2 | MVP | 06c M19 |
+| V-58.04 | le distributeur | N/A | N/A | 03 §1 | 8 | Plus tard | 06c H11 |
+| V-58.05 | PLEINGAZ | N/A | N/A | 03 §1 | 2 | MVP | 06c M20 |
+| V-58.06 | la logistique | N/A | N/A | 03 §1 | 8 | Plus tard | 06c H12 |
+| V-58.07 | le service client | N/A | N/A | 03 §1 | 2 | MVP | 06c M21 |
+| V-58.08 | les ventes | N/A | N/A | 03 §1 | 8 | Plus tard | 06c H13 |
+| V-58.09 | la sécurité | N/A | N/A | 03 §1 | 2 | MVP | 06c M22 |
+| V-58.10 | la disponibilité du gaz | N/A | N/A | 03 §1 | 8 | Plus tard | 06c H14 |
+| V-58.11 | le contexte camerounais. | N/A | N/A | 03 §1 | 2 | MVP | 06c M23 |
+| V-58.12 | Mais toute nouvelle idée doit être accompagnée de : | N/A | N/A | 03 §1 | 8 | Plus tard | 06c H15 |
+| V-58.13 | PROBLÈME | N/A | N/A | 03 §1 | 2 | MVP | 06c M24 |
+| V-58.14 | SOLUTION | N/A | N/A | 03 §1 | 8 | Plus tard | 06c H01 |
+| V-58.15 | VALEUR | N/A | N/A | 03 §1 | 2 | MVP | 06c M25 |
+| V-58.16 | COMPLEXITÉ | N/A | N/A | 03 §1 | 8 | Plus tard | 06c H02 |
+| V-58.17 | PRIORITÉ | N/A | N/A | 03 §1 | 2 | MVP | 06c M26 |
+| V-58.18 | Ne jamais ajouter une fonctionnalité uniquement parce qu'elle est "à la mode". | N/A | N/A | 03 §1 | 8 | Plus tard | 06c H03 |
+| V-59.01 | Le résultat doit être une plateforme PLEINGAZ moderne permettant de passer de : | N/A | N/A | 03 §1 | 2 | MVP | 06c M27 |
+| V-59.02 | "Je cherche du gaz." | N/A | N/A | 03 §1 | 8 | Plus tard | 06c H04 |
+| V-59.03 | à : | N/A | N/A | 03 §1 | 2 | MVP | 06c M28 |
+| V-59.04 | "Je sais où trouver du gaz, je sais s'il est disponible, je peux commander, payer, être livré, obtenir ma facture et contacter quelqu'un si nécessaire." | N/A | N/A | 03 §1 | 8 | Plus tard | 06c H05 |
+| V-59.05 | Et côté entreprise : | N/A | N/A | 03 §1 | 2 | MVP | 06c M29 |
+| V-59.06 | "Je sais où se trouve mon réseau, qui vend, qui a du stock, qui commande, où se trouve la demande, quelles zones sont sous-desservies et comment améliorer la distribution." | N/A | N/A | 03 §1 | 8 | Plus tard | 06c H06 |
+| V-59.07 | La plateforme doit être suffisamment modulaire pour évoluer ensuite vers : | N/A | N/A | 03 §1 | 2 | MVP | 06c M04 |
+| V-59.08 | application Android | N/A | N/A | 03 §1 | 8 | Plus tard | 06c H07 |
+| V-59.09 | application iOS | N/A | N/A | 03 §1 | 2 | MVP | 06c M05 |
+| V-59.10 | réseau national de distributeurs | N/A | N/A | 03 §1 | 8 | Plus tard | 06c H08 |
+| V-59.11 | programme de fidélité | N/A | N/A | 03 §1 | 2 | MVP | 06c M06 |
+| V-59.12 | marketplace | N/A | N/A | 03 §1 | 8 | Plus tard | 06c H09 |
+| V-59.13 | analytics avancés | N/A | N/A | 03 §1 | 2 | MVP | 06c M07 |
+| V-59.14 | automatisation logistique | N/A | N/A | 03 §1 | 8 | Plus tard | 06c H10 |
+| V-59.15 | expansion dans d'autres pays africains. | N/A | N/A | 03 §1 | 2 | MVP | 06c M08 |
+| V-59.16 | Commence maintenant par l'AUDIT du site existant. | N/A | N/A | 03 §1 | 8 | Plus tard | 06c H11 |
+| V-59.17 | NE COMMENCE PAS immédiatement à coder. | N/A | N/A | 03 §1 | 2 | MVP | 06c M09 |
+| V-59.18 | Présente d'abord les résultats de l'audit et attends la validation de l'architecture cible avant de procéder aux modifications importantes. | N/A | N/A | 04 §1 | 8 | Plus tard | 06c H12 |
