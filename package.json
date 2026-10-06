@@ -1,0 +1,19 @@
+{
+  "name": "pleingaz-platform",
+  "version": "1.0.0",
+  "private": true,
+  "description": "PLEINGAZ Digital Distribution Network",
+  "scripts": {
+    "build": "turbo run build",
+    "dev": "turbo run dev",
+    "lint": "turbo run lint",
+    "test": "turbo run test",
+    "format": "prettier --write \"**/*.{ts,tsx,md}\""
+  },
+  "devDependencies": {
+    "turbo": "^1.13.2",
+    "prettier": "^3.2.5",
+    "typescript": "^5.4.5"
+  },
+  "packageManager": "pnpm@9.0.0"
+}
