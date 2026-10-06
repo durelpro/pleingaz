@@ -1,0 +1,247 @@
+=== 1. COUVERTURE DE LA VISION PAR SECTION ===
+sect | puces source | cible atomique | lignes V | couvert (regroupements nominatifs comptés) | alerte
+00 | 8 | 10 | 8 | 8 | 
+01 | 17 | 19 | 17 | 17 | 
+02 | 14 | 17 | 14 | 14 | sous la cible (manque 3)
+03 | 27 | 29 | 26 | 26 | SOUS LES PUCES DE LA SOURCE
+04 | 4 | 10 | 8 | 8 | 
+05 | 21 | 22 | 21 | 21 | 
+06 | 9 | 15 | 13 | 13 | 
+07 | 22 | 27 | 27 | 27 | 
+08 | 21 | 22 | 21 | 21 | 
+09 | 9 | 18 | 9 | 9 | sous la cible (manque 9)
+10 | 8 | 14 | 8 | 8 | sous la cible (manque 6)
+11 | 4 | 12 | 4 | 4 | sous la cible (manque 8)
+12 | 6 | 9 | 6 | 6 | sous la cible (manque 3)
+13 | 5 | 16 | 5 | 5 | sous la cible (manque 11)
+14 | 5 | 8 | 5 | 5 | sous la cible (manque 3)
+15 | 7 | 9 | 7 | 7 | 
+16 | 9 | 15 | 13 | 13 | 
+17 | 17 | 21 | 17 | 17 | sous la cible (manque 4)
+18 | 0 | 7 | 6 | 6 | 
+19 | 15 | 16 | 15 | 15 | 
+20 | 13 | 21 | 19 | 19 | 
+21 | 7 | 10 | 9 | 9 | 
+22 | 5 | 9 | 8 | 8 | 
+23 | 21 | 21 | 21 | 21 | 
+24 | 18 | 18 | 18 | 18 | 
+25 | 12 | 13 | 12 | 12 | 
+26 | 6 | 14 | 0 | 0 | AUCUNE LIGNE
+27 | 6 | 8 | 0 | 0 | AUCUNE LIGNE
+28 | 4 | 5 | 0 | 0 | AUCUNE LIGNE
+29 | 0 | 6 | 0 | 0 | AUCUNE LIGNE
+30 | 4 | 5 | 0 | 0 | AUCUNE LIGNE
+31 | 0 | 5 | 0 | 0 | AUCUNE LIGNE
+32 | 8 | 10 | 0 | 0 | AUCUNE LIGNE
+33 | 5 | 8 | 0 | 0 | AUCUNE LIGNE
+34 | 16 | 25 | 0 | 0 | AUCUNE LIGNE
+35 | 0 | 7 | 0 | 0 | AUCUNE LIGNE
+36 | 10 | 13 | 0 | 0 | AUCUNE LIGNE
+37 | 9 | 13 | 0 | 0 | AUCUNE LIGNE
+38 | 6 | 7 | 0 | 0 | AUCUNE LIGNE
+39 | 0 | 13 | 0 | 0 | AUCUNE LIGNE
+40 | 0 | 35 | 0 | 0 | AUCUNE LIGNE
+41 | 25 | 33 | 0 | 0 | AUCUNE LIGNE
+42 | 0 | 14 | 0 | 0 | AUCUNE LIGNE
+43 | 0 | 12 | 0 | 0 | AUCUNE LIGNE
+44 | 0 | 15 | 0 | 0 | AUCUNE LIGNE
+45 | 11 | 14 | 0 | 0 | AUCUNE LIGNE
+46 | 0 | 7 | 0 | 0 | AUCUNE LIGNE
+47 | 0 | 6 | 0 | 0 | AUCUNE LIGNE
+48 | 0 | 8 | 0 | 0 | AUCUNE LIGNE
+49 | 0 | 7 | 0 | 0 | AUCUNE LIGNE
+50 | 4 | 5 | 0 | 0 | AUCUNE LIGNE
+51 | 5 | 6 | 0 | 0 | AUCUNE LIGNE
+52 | 7 | 8 | 0 | 0 | AUCUNE LIGNE
+53 | 0 | 7 | 0 | 0 | AUCUNE LIGNE
+54 | 52 | 64 | 0 | 0 | AUCUNE LIGNE
+55 | 7 | 18 | 0 | 0 | AUCUNE LIGNE
+56 | 0 | 8 | 0 | 0 | AUCUNE LIGNE
+57 | 15 | 16 | 0 | 0 | AUCUNE LIGNE
+58 | 9 | 15 | 0 | 0 | AUCUNE LIGNE
+59 | 8 | 11 | 0 | 0 | AUCUNE LIGNE
+TOTAL (sections déjà traitées) : couvert 337 sur cible 408
+(cibles = estimation par lecture, marge d'erreur de 1 à 2 par section ; l'alerte ne se déclenche qu'au-delà)
+
+=== 2. STATUTS PAR SOURCE ===
+109 x V | Plus tard
+10 x A | Plus tard
+12 x P | Écarté
+18 x N | MVP
+21 x P | Plus tard
+228 x V | MVP
+27 x A | MVP
+29 x S | MVP
+3 x S | Plus tard
+6 x N | Plus tard
+87 x P | MVP
+8 x A | À CONFIRMER
+-- Stack : la source marque 4 lignes 'Plus tard' (Temps réel, Recherche avancée, IA, Monitoring). Lignes S 'Plus tard' dans la matrice :
+3
+
+=== 3. STATUTS NON VALIDES (valides : MVP, Plus tard, Écarté) ===
+A-07 -> "À CONFIRMER"
+A-08 -> "À CONFIRMER"
+A-09 -> "À CONFIRMER"
+A-10 -> "À CONFIRMER"
+A-11 -> "À CONFIRMER"
+A-13 -> "À CONFIRMER"
+A-31 -> "À CONFIRMER"
+A-32 -> "À CONFIRMER"
+
+=== 4. CELLULES VIDES ===
+
+=== 5. TROUS RÉELS : documents = AUCUN (information, pas une erreur : un trou caché est l'erreur) ===
+A-13 P-06.06 P-06.09 P-06.10 P-06.12 P-14.03 P-14.04 P-14.08 P-14.09 P-15.06 P-15.07 P-17.23 P-17.24 V-05.17 V-05.18 V-05.20 V-08.18 V-10.03 V-15.04 V-15.06 
+-- lignes dont la SEULE couverture citée est '06c §1' (suspect : rattachement artificiel) :
+113 lignes
+
+=== 6. PHASES (valides : 2, 2B, 3 à 10, Transversal) ===
+219 x "2" (39%)
+162 x "1" (29%)
+33 x "8" (6%)
+33 x "5" (6%)
+27 x "7" (5%)
+25 x "3" (4%)
+20 x "-" (4%)
+13 x "2+" (2%)
+12 x "6" (2%)
+12 x "2B" (2%)
+2 x "future" (0%)
+-- phases valides sans AUCUNE ligne (le projet en comporte 4 produits/stock, 9 analytics, 10 optimisation) :
+   phase 4 : 0 ligne
+   phase 9 : 0 ligne
+   phase 10 : 0 ligne
+-- phases non valides :
+S-01 phase="1"
+S-02 phase="1"
+S-03 phase="1"
+S-04 phase="1"
+S-05 phase="1"
+S-06 phase="1"
+S-07 phase="1"
+S-08 phase="1"
+S-09 phase="1"
+S-10 phase="1"
+S-11 phase="1"
+S-12 phase="1"
+S-13 phase="1"
+S-14 phase="1"
+S-15 phase="1"
+S-16 phase="1"
+S-17 phase="1"
+S-18 phase="1"
+S-19 phase="1"
+S-20 phase="1"
+-- lignes en Phase 2 (fondations : auth, comptes, rôles, base, sécurité) dont l'exigence parle d'un autre sujet :
+   V-01.07 :  (1) clients rechercher pdv 
+   V-03.09 :  (3) cartes produits 
+   V-03.24 :  (3) animations de cartes 
+   V-03.25 :  (3) feedback après commande 
+   V-03.26 :  (3) animation du statut d'une commande 
+   V-04.03 :  (4) Commander une livraison 
+   V-04.04 :  (4) Devenir distributeur 
+   V-05.08 :  (5) adresse de livraison 
+   V-05.09 :  (5) préférences de notification 
+   V-06.08 :  (6) boutique 
+   V-06.09 :  (6) livraison 
+   V-07.24 :  (7) recherche d'adresse 
+   total suspect : 33
+
+=== 7. DOCUMENTS CITÉS INEXISTANTS ===
+
+=== 8. IDENTIFIANTS EN DOUBLE (tableaux principaux) ===
+
+=== 9. LIGNES MVP : référence VÉRIFIABLE à 06c (identifiant M<nn> défini dans docs/06c-*.md) ===
+-- identifiants M<nn> définis dans 06c : 29
+S-01 sans référence M<nn>
+S-02 sans référence M<nn>
+S-03 sans référence M<nn>
+S-04 sans référence M<nn>
+S-05 sans référence M<nn>
+S-06 sans référence M<nn>
+S-07 sans référence M<nn>
+S-08 sans référence M<nn>
+S-09 sans référence M<nn>
+S-10 sans référence M<nn>
+S-11 sans référence M<nn>
+S-12 sans référence M<nn>
+S-13 sans référence M<nn>
+S-14 sans référence M<nn>
+S-15 sans référence M<nn>
+lignes MVP avec référence valide : 0 | référence inexistante : 0 | sans référence : 389
+-- identifiants M<nn> de 06c jamais cités par une ligne MVP (fonction du MVP non tracée) :
+M01 M02 M03 M04 M05 M06 M07 M08 M09 M10 M11 M12 M13 M14 M15 M16 M17 M18 M19 M20 M21 M22 M23 M24 M25 M26 M27 M28 M29 
+-- justifications du type '06c §1 : ...' (formule passe-partout, suspect) :
+0 lignes
+-- lignes MVP placées en phase 7 à 10 (incohérent avec un MVP livré avant ; la phase 6 peut contenir le paiement en présentiel) :
+   total : 0
+-- section DÉCISIONS DU PROPRIÉTAIRE :
+   ABSENTE (elle doit contenir Mobile Money MVP ou phase 6, et toute proposition de ne pas faire une exigence)
+
+=== 11. DOUBLONS DANS UNE MÊME SECTION (signe de remplissage pour atteindre un chiffre) ===
+total doublons : 0
+
+=== 12. CONTENU REQUIS PAR SECTION (éléments précis de la source qui doivent apparaître) ===
+section 9 : manque "état PENDING"
+section 9 : manque "état UNDER_REVIEW"
+section 9 : manque "état APPROVED"
+section 9 : manque "état REJECTED"
+section 9 : manque "état SUSPENDED"
+section 9 : manque "règle : jamais visible officiel automatiquement"
+section 9 : manque "badge Distributeur PLEINGAZ vérifié"
+section 10 : manque "badge Partenaire actif"
+section 10 : manque "badge Stock régulièrement mis à jour"
+section 10 : manque "badge Livraison disponible"
+section 10 : manque "règle : score interne, pas une note publique"
+section 11 : manque "statut Stock limité"
+section 11 : manque "statut Indisponible/Rupture"
+section 11 : manque "statut Information non actualisée"
+section 11 : manque "règle : toujours la date de dernière mise à jour"
+section 12 : manque "message stock faible / seuil"
+section 12 : manque "alerte PLEINGAZ"
+section 13 : manque "état DRAFT"
+section 13 : manque "état SUBMITTED"
+section 13 : manque "état CONFIRMED"
+section 13 : manque "état PREPARING"
+section 13 : manque "état SHIPPED"
+section 13 : manque "état DELIVERED"
+section 13 : manque "état CANCELLED"
+section 13 : manque "historique complet"
+section 14 : manque "retrait en boutique"
+section 14 : manque "panier"
+section 15 : manque "règle : jamais seulement la distance"
+section 17 : manque "facture PLEINGAZ"
+section 17 : manque "facture du distributeur"
+section 20 : manque "outil check_product_availability"
+section 20 : manque "outil get_order_status"
+section 22 : manque "liaisons du chat avec PLEINGAZ"
+section 22 : manque "transfert vers agent humain"
+(aucune ligne ci-dessus = tous les éléments requis des sections traitées sont présents)
+
+=== 13. LIGNES DONT LE SEUL DOCUMENT EST 06c (aucun document de conception) PAR STATUT ===
+61 x MVP
+58 x Plus tard
+(une exigence MVP qui n'a que 06c comme document n'est décrite dans aucun document de conception : à justifier)
+
+=== 14. LIGNES 'Plus tard' DES PHASES 2 À 6 SANS RÉFÉRENCE À 06c H<nn> ===
+73 lignes
+(un 'Plus tard' placé dans une phase du MVP doit dire pourquoi : 06c H<nn>, ou être placé dans une phase postérieure)
+
+=== 15. COHÉRENCE DU TABLEAU TROUS AVEC LA MATRICE (même ID = même exigence ?) ===
+incohérences TROUS / matrice : 0
+=== 16. TOTAUX ===
+S : 32
+A : 45
+N : 24
+P : 120
+V : 337
+Sections de décisions :
+11:## TROUS (Exigences non couvertes)
+28:## INCOHÉRENCES IDENTIFIÉES
+
+=== 17. BLOCS S/A/N/P NON TRONQUÉS (minima : S=32, A=45, N=24, P=120) ===
+ok S : 32
+ok A : 45
+ok N : 24
+ok P : 120
