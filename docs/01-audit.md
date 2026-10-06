@@ -65,6 +65,7 @@ L'audit fourni par les équipes produit a été confronté à l'analyse techniqu
 | Présence des menus "About", "Products", "FAQ", "Blog" | **CONFIRMÉ** | Liens observés dans l'arborescence de navigation sur les captures. |
 | Présence d'un espace "My account" | **CONFIRMÉ** | Bouton de connexion identifié visuellement sur le site. |
 | Design responsive de bonne facture | **CONFIRMÉ** | Scores PageSpeed Mobile/Desktop très solides, prouvant l'adaptabilité structurelle. |
+| Validité des fichiers robots.txt et sitemap.xml | **INFIRMÉ** | Requêtes HTTP renvoyant le code HTML de la page d'accueil (SPA fallback). |
 | Protection anti-bot agressive (Cloudflare-like) | **NON VÉRIFIABLE** | Aucune interception HTTP 403 / Captcha Cloudflare observée lors de l'analyse passive, ni dans les en-têtes analysables sans navigation active. |
 | Carte des points de vente interactive | **NON VÉRIFIABLE** | Un lien existe mais la fonctionnalité de carte interactive nécessite une navigation que l'analyse passive ne peut confirmer. |
 | Catalogue exact (6kg = 16 120 Fcfa, etc.) | **NON VÉRIFIÉ (À CONFIRMER)**| Les prix et données de stock réelles doivent être certifiés par PLEINGAZ avant utilisation. |
