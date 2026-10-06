@@ -3,11 +3,23 @@
 :root {
   --background: #ffffff;
   --foreground: #171717;
+  
+  /* PLEINGAZ Colors */
+  --pleingaz-red: #D32F2F;
+  --pleingaz-orange: #F57C00;
+  
+  /* Skeleton Loading */
+  --skeleton-base: #e0e0e0;
+  --skeleton-highlight: #f5f5f5;
 }
 
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
+  --color-pleingaz-red: var(--pleingaz-red);
+  --color-pleingaz-orange: var(--pleingaz-orange);
+  --color-skeleton-base: var(--skeleton-base);
+  --color-skeleton-highlight: var(--skeleton-highlight);
   --font-sans: var(--font-geist-sans);
   --font-mono: var(--font-geist-mono);
 }
@@ -16,11 +28,13 @@
   :root {
     --background: #0a0a0a;
     --foreground: #ededed;
+    --skeleton-base: #2a2a2a;
+    --skeleton-highlight: #3a3a3a;
   }
 }
 
 body {
   background: var(--background);
   color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  font-family: var(--font-sans), Arial, Helvetica, sans-serif;
 }
