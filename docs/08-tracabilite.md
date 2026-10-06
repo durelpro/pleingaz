@@ -286,340 +286,452 @@ Ce document prouve que chaque exigence atomique des 5 fichiers sources (Vision, 
 ## BLOC V (`02-vision-prompt.md`)
 | ID | Exigence | Entité(s) | Écran(s) | Document(s) | Phase | Statut | Justification |
 |---|---|---|---|---|---|---|---|
-| V-00.01 | (0) analyser le site existant | N/A | N/A | 01 §1 | Phase 2 | MVP | Validé |
-| V-00.02 | (0) comprendre son architecture | N/A | N/A | 01 §1 | Phase 2 | MVP | Validé |
-| V-00.03 | (0) identifier ses forces et faiblesses | N/A | N/A | 01 §1 | Phase 2 | MVP | Validé |
-| V-00.04 | (0) conserver les éléments pertinents | N/A | N/A | 01 §1 | Phase 2 | MVP | Validé |
-| V-00.05 | (0) moderniser profondément l'expérience | N/A | N/A | 01 §1 | Phase 2 | MVP | Validé |
-| V-00.06 | (0) ajouter les fonctionnalités décrites ci-dessous | N/A | N/A | 01 §1 | Phase 2 | MVP | Validé |
-| V-00.07 | (0) proposer des innovations supplémentaires | N/A | N/A | 01 §1 | Phase 2 | MVP | Validé |
-| V-00.08 | (0) construire une architecture réellement exploitable | N/A | N/A | 01 §1 | Phase 2 | MVP | Validé |
-| V-01.01 | (1) visiteurs découvrir | N/A | Accueil | 02 §1 | Phase 2 | MVP | Validé |
-| V-01.02 | (1) particuliers acheter | Order | Checkout | 06c §1 | Phase 5 | Plus tard | Validé |
-| V-01.03 | (1) clients créer compte | User | Auth | 02 §3.2 | Phase 2 | MVP | Validé |
-| V-01.04 | (1) revendeurs créer espace | Distributor | Auth | 02 §3.3 | Phase 2 | MVP | Validé |
-| V-01.05 | (1) distrib dmd réf | Distributor | KYC | 02 §3.3 | Phase 2 | MVP | Validé |
-| V-01.06 | (1) admin valider distrib | Admin | ControlCenter | 02 §3.4 | Phase 2 | MVP | Validé |
-| V-01.07 | (1) clients rechercher pdv | Search | Accueil | 06c §1 | Phase 2 | MVP | Validé |
-| V-01.08 | (1) clients dispo gaz | Inventory | Fiche | 03 §3 | Phase 2 | MVP | Validé |
-| V-01.09 | (1) clients commander | Order | Checkout | 03 §2 | Phase 5 | Plus tard | Validé |
-| V-01.10 | (1) clients se faire livrer | Order | Checkout | 03 §2 | Phase 5 | Plus tard | Validé |
-| V-01.11 | (1) distrib commandes PG | WholesaleOrder | Dashboard | 06c §1 | Phase 5 | Plus tard | Validé |
-| V-01.12 | (1) générer factures | Invoice | PDF | 05a §4 | Phase 5 | Plus tard | Validé |
-| V-01.13 | (1) payer ligne présentiel | Payment | Checkout | 05a §1 | Phase 6 | Plus tard | Validé |
-| V-01.14 | (1) communiquer avec PG | N/A | Contact | 02 §1 | Phase 2B | MVP | Validé |
-| V-01.15 | (1) assistant IA | API | Chat | 05c §1 | Phase 8 | Plus tard | Validé |
-| V-01.16 | (1) WhatsApp | N/A | WhatsApp | 06c §1 | Phase 7 | Plus tard | Validé |
-| V-01.17 | (1) admin superviser | Admin | ControlCenter | 02 §3.4 | Phase 2 | MVP | Validé |
-| V-02.01 | (2) simplicité | N/A | Tous | 04 §6 | Phase 2 | MVP | Validé |
-| V-02.02 | (2) rapidité | N/A | Tous | 04 §6 | Phase 2 | MVP | Validé |
-| V-02.03 | (2) confiance | N/A | Tous | 04 §6 | Phase 2 | MVP | Validé |
-| V-02.04 | (2) disponibilité du gaz | N/A | Tous | 04 §6 | Phase 2 | MVP | Validé |
-| V-02.05 | (2) proximité géographique | N/A | Tous | 04 §6 | Phase 2 | MVP | Validé |
-| V-02.06 | (2) sécurité | N/A | Tous | 04 §6 | Phase 2 | MVP | Validé |
-| V-02.07 | (2) transparence | N/A | Tous | 04 §6 | Phase 2 | MVP | Validé |
-| V-02.08 | (2) traçabilité | N/A | Tous | 04 §6 | Phase 2 | MVP | Validé |
-| V-02.09 | (2) automatisation | N/A | Tous | 04 §6 | Phase 2 | MVP | Validé |
-| V-02.10 | (2) expérience mobile-first | N/A | Tous | 04 §6 | Phase 2 | MVP | Validé |
-| V-02.11 | (2) smartphones Android | N/A | Tous | 04 §6 | Phase 2 | MVP | Validé |
-| V-02.12 | (2) connexions Internet faibles | N/A | Tous | 04 §6 | Phase 2 | MVP | Validé |
-| V-02.13 | (2) écrans de petite taille | N/A | Tous | 04 §6 | Phase 2 | MVP | Validé |
-| V-02.14 | (2) utilisateurs peu habitués | N/A | Tous | 04 §6 | Phase 2 | MVP | Validé |
-| V-03.01 | (3) énergie | N/A | UI | 04 §14 | Phase 2 | MVP | Validé |
-| V-03.02 | (3) sécurité | N/A | UI | 04 §14 | Phase 2 | MVP | Validé |
-| V-03.03 | (3) confiance | N/A | UI | 04 §14 | Phase 2 | MVP | Validé |
-| V-03.04 | (3) mouvement | N/A | UI | 04 §14 | Phase 2 | MVP | Validé |
-| V-03.05 | (3) contexte africain | N/A | UI | 04 §14 | Phase 2 | MVP | Validé |
-| V-03.06 | (3) typographie | N/A | UI | 04 §14 | Phase 2 | MVP | Validé |
-| V-03.07 | (3) hiérarchie visuelle | N/A | UI | 04 §14 | Phase 2 | MVP | Validé |
-| V-03.08 | (3) boutons | N/A | UI | 04 §14 | Phase 2 | MVP | Validé |
-| V-03.09 | (3) cartes produits | N/A | UI | 04 §14 | Phase 2 | MVP | Validé |
-| V-03.10 | (3) navigation | N/A | UI | 04 §14 | Phase 2 | MVP | Validé |
-| V-03.11 | (3) menus | N/A | UI | 04 §14 | Phase 2 | MVP | Validé |
-| V-03.12 | (3) formulaires | N/A | UI | 04 §14 | Phase 2 | MVP | Validé |
-| V-03.13 | (3) sections | N/A | UI | 04 §14 | Phase 2 | MVP | Validé |
-| V-03.14 | (3) footer | N/A | UI | 04 §14 | Phase 2 | MVP | Validé |
-| V-03.15 | (3) CTA | N/A | UI | 04 §14 | Phase 2 | MVP | Validé |
-| V-03.16 | (3) icônes | N/A | UI | 04 §14 | Phase 2 | MVP | Validé |
-| V-03.17 | (3) illustrations | N/A | UI | 04 §14 | Phase 2 | MVP | Validé |
-| V-03.18 | (3) apparition progressive | N/A | UI | 04 §14 | Phase 2 | MVP | Validé |
-| V-03.19 | (3) hover | N/A | UI | 04 §14 | Phase 2 | MVP | Validé |
-| V-03.20 | (3) micro-interactions | N/A | UI | 04 §14 | Phase 2 | MVP | Validé |
-| V-03.21 | (3) transitions | N/A | UI | 04 §14 | Phase 2 | MVP | Validé |
-| V-03.22 | (3) loading states | N/A | UI | 04 §14 | Phase 2 | MVP | Validé |
-| V-03.23 | (3) skeleton loaders | N/A | UI | 04 §14 | Phase 2 | MVP | Validé |
-| V-03.24 | (3) animations de cartes | N/A | UI | 04 §14 | Phase 2 | MVP | Validé |
-| V-03.25 | (3) feedback après commande | N/A | UI | 04 §14 | Phase 2 | MVP | Validé |
-| V-03.26 | (3) animation du statut d'une commande | N/A | UI | 04 §14 | Phase 2 | MVP | Validé |
-| V-04.01 | (4) Acheter du gaz | N/A | Accueil | 06c §1 | Phase 2 | MVP | Validé |
-| V-04.02 | (4) Trouver un point de vente | N/A | Accueil | 06c §1 | Phase 2 | MVP | Validé |
-| V-04.03 | (4) Commander une livraison | N/A | Accueil | 06c §1 | Phase 2 | MVP | Validé |
-| V-04.04 | (4) Devenir distributeur | N/A | Accueil | 06c §1 | Phase 2 | MVP | Validé |
-| V-04.05 | (4) Gaz 12,5 kg | N/A | Accueil | 06c §1 | Phase 2 | MVP | Validé |
-| V-04.06 | (4) Point de vente près de moi | N/A | Accueil | 06c §1 | Phase 2 | MVP | Validé |
-| V-04.07 | (4) Revendeur à Yaoundé | N/A | Accueil | 06c §1 | Phase 2 | MVP | Validé |
-| V-04.08 | (4) Gaz disponible à proximité | N/A | Accueil | 06c §1 | Phase 2 | MVP | Validé |
-| V-05.01 | (5) nom | User | Auth | 03 §2 | Phase 2 | MVP | Validé |
-| V-05.02 | (5) prénom | User | Auth | 03 §2 | Phase 2 | MVP | Validé |
-| V-05.03 | (5) téléphone | User | Auth | 03 §2 | Phase 2 | MVP | Validé |
-| V-05.04 | (5) email facultatif | User | Auth | 03 §2 | Phase 2 | MVP | Validé |
-| V-05.05 | (5) mot de passe | User | Auth | 06a | Phase 2 | MVP | Validé |
-| V-05.06 | (5) ville | User | Profil | 03 §2 | Phase 2 | MVP | Validé |
-| V-05.07 | (5) quartier | User | Profil | 03 §2 | Phase 2 | MVP | Validé |
-| V-05.08 | (5) adresse de livraison | User | Profil | 03 §2 | Phase 2 | MVP | Validé |
-| V-05.09 | (5) préférences de notification | User | Profil | 03 §2 | Phase 2 | MVP | Validé |
-| V-05.10 | (5) connexion tel | User | Auth | 03 §2 | Phase 2 | MVP | Validé |
-| V-05.11 | (5) connexion email | User | Auth | 03 §2 | Phase 2 | MVP | Validé |
-| V-05.12 | (5) récupération compte | User | Auth | 06a | Phase 2 | MVP | Validé |
-| V-05.13 | (5) modification profil | User | Profil | 03 §2 | Phase 2 | MVP | Validé |
-| V-05.14 | (5) gestion adresses | User | Profil | 03 §2 | Phase 2 | MVP | Validé |
-| V-05.15 | (5) historique commandes | Order | Profil | 03 §2 | Phase 5 | Plus tard | Validé |
-| V-05.16 | (5) historique factures | Invoice | Profil | 05a §4 | Phase 5 | Plus tard | Validé |
-| V-05.17 | (5) favoris | User | Profil | AUCUN | Phase 3 | Plus tard | Validé |
-| V-05.18 | (5) points de vente favoris | User | Profil | AUCUN | Phase 3 | Plus tard | Validé |
-| V-05.19 | (5) notifications | User | Profil | 05b §4 | Phase 7 | Plus tard | Validé |
-| V-05.20 | (5) conversations | Conversation | Chat | AUCUN | Phase 7 | Plus tard | Validé |
-| V-05.21 | (5) préférences | User | Profil | 03 §2 | Phase 2 | MVP | Validé |
-| V-06.01 | (6) produit | Search | Recherche | 06c §1 | Phase 2 | MVP | Validé |
-| V-06.02 | (6) point de vente | Search | Recherche | 06c §1 | Phase 2 | MVP | Validé |
-| V-06.03 | (6) revendeur | Search | Recherche | 06c §1 | Phase 2 | MVP | Validé |
-| V-06.04 | (6) ville | Search | Recherche | 06c §1 | Phase 2 | MVP | Validé |
-| V-06.05 | (6) quartier | Search | Recherche | 06c §1 | Phase 2 | MVP | Validé |
-| V-06.06 | (6) type de gaz | Search | Recherche | 06c §1 | Phase 2 | MVP | Validé |
-| V-06.07 | (6) disponibilité | Search | Recherche | 06c §1 | Phase 2 | MVP | Validé |
-| V-06.08 | (6) boutique | Search | Recherche | 06c §1 | Phase 2 | MVP | Validé |
-| V-06.09 | (6) livraison | Search | Recherche | 06c §1 | Phase 2 | MVP | Validé |
-| V-06.10 | (6) Je cherche une bouteille de 12,5 kg | Search | Recherche | 06c §1 | Phase 2 | MVP | Validé |
-| V-06.11 | (6) où acheter du gaz à Bastos ? | Search | Recherche | 06c §1 | Phase 2 | MVP | Validé |
-| V-06.12 | (6) Quel revendeur est ouvert près de moi ? | Search | Recherche | 06c §1 | Phase 2 | MVP | Validé |
-| V-06.13 | (6) où trouver du PleinGaz 6 kg ? | Search | Recherche | 06c §1 | Phase 2 | MVP | Validé |
-| V-07.01 | (7) nom | Store | Fiche | 03 §2 | Phase 2 | MVP | Validé |
-| V-07.02 | (7) photo | Store | Fiche | 03 §2 | Phase 2 | MVP | Validé |
-| V-07.03 | (7) description | Store | Fiche | 03 §2 | Phase 2 | MVP | Validé |
-| V-07.04 | (7) adresse | Store | Fiche | 03 §2 | Phase 2 | MVP | Validé |
-| V-07.05 | (7) ville | Store | Fiche | 03 §2 | Phase 2 | MVP | Validé |
-| V-07.06 | (7) quartier | Store | Fiche | 03 §2 | Phase 2 | MVP | Validé |
-| V-07.07 | (7) coordonnées GPS | Store | Fiche | 03 §2 | Phase 2 | MVP | Validé |
-| V-07.08 | (7) téléphone | Store | Fiche | 03 §2 | Phase 2 | MVP | Validé |
-| V-07.09 | (7) WhatsApp | Store | Fiche | 03 §2 | Phase 3 | MVP | Validé |
-| V-07.10 | (7) horaires | Store | Fiche | 03 §2 | Phase 2 | MVP | Validé |
-| V-07.11 | (7) produits disponibles | Inventory | Fiche | 03 §2 | Phase 2 | MVP | Validé |
-| V-07.12 | (7) disponibilité du gaz | Inventory | Fiche | 03 §2 | Phase 2 | MVP | Validé |
-| V-07.13 | (7) date de dernière mise à jour | Inventory | Fiche | 03 §2 | Phase 2 | MVP | Validé |
-| V-07.14 | (7) statut de vérification | Store | Fiche | 03 §2 | Phase 2 | MVP | Validé |
-| V-07.15 | (7) statut officiel PLEINGAZ | Store | Fiche | 03 §2 | Phase 2 | MVP | Validé |
-| V-07.16 | (7) Points de vente autour de moi | Search | Résultat | 06c §1 | Phase 2 | MVP | Validé |
-| V-07.17 | (7) Points de vente à moins de 2 km | Search | Résultat | 06c §1 | Phase 2 | MVP | Validé |
-| V-07.18 | (7) Points de vente à moins de 5 km | Search | Résultat | 06c §1 | Phase 2 | MVP | Validé |
-| V-07.19 | (7) Points de vente ouverts maintenant | Search | Résultat | 06c §1 | Phase 2 | MVP | Validé |
-| V-07.20 | (7) Gaz disponible maintenant | Search | Résultat | 06c §1 | Phase 2 | MVP | Validé |
-| V-07.21 | (7) distance | Search | Résultat | 06c §1 | Phase 2 | MVP | Validé |
-| V-07.22 | (7) temps approximatif | Search | Résultat | 06c §1 | Phase 2 | MVP | Validé |
-| V-07.23 | (7) itinéraire | Search | Résultat | 06c §1 | Phase 2 | MVP | Validé |
-| V-07.24 | (7) recherche d'adresse | Store | Inscription | 02 §3.3 | Phase 2 | MVP | Validé |
-| V-07.25 | (7) géocoder l'adresse | Store | Inscription | 02 §3.3 | Phase 2 | MVP | Validé |
-| V-07.26 | (7) déplacer/confirmer le marqueur | Store | Inscription | 02 §3.3 | Phase 2 | MVP | Validé |
-| V-07.27 | (7) enregistrer latitude + longitude | Store | Inscription | 02 §3.3 | Phase 2 | MVP | Validé |
-| V-08.01 | (8) nom | Distributor | KYC | 03 §2 | Phase 2 | MVP | Validé |
-| V-08.02 | (8) prénom | Distributor | KYC | 03 §2 | Phase 2 | MVP | Validé |
-| V-08.03 | (8) téléphone | Distributor | KYC | 03 §2 | Phase 2 | MVP | Validé |
-| V-08.04 | (8) email | Distributor | KYC | 03 §2 | Phase 2 | MVP | Validé |
-| V-08.05 | (8) pièce d'identité | Distributor | KYC | 03 §2 | Phase 2 | MVP | Validé |
-| V-08.06 | (8) documents administratifs | Distributor | KYC | 03 §2 | Phase 2 | MVP | Validé |
-| V-08.07 | (8) nom commercial | Store | KYC | 03 §2 | Phase 2 | MVP | Validé |
-| V-08.08 | (8) description boutique | Store | KYC | 03 §2 | Phase 2 | MVP | Validé |
-| V-08.09 | (8) adresse | Store | KYC | 03 §2 | Phase 2 | MVP | Validé |
-| V-08.10 | (8) ville | Store | KYC | 03 §2 | Phase 2 | MVP | Validé |
-| V-08.11 | (8) quartier | Store | KYC | 03 §2 | Phase 2 | MVP | Validé |
-| V-08.12 | (8) téléphone boutique | Store | KYC | 03 §2 | Phase 2 | MVP | Validé |
-| V-08.13 | (8) WhatsApp boutique | Store | KYC | 03 §2 | Phase 3 | MVP | Validé |
-| V-08.14 | (8) horaires | Store | KYC | 03 §2 | Phase 2 | MVP | Validé |
-| V-08.15 | (8) photo boutique | Store | KYC | 03 §2 | Phase 2 | MVP | Validé |
-| V-08.16 | (8) coordonnées GPS | Store | KYC | 03 §2 | Phase 2 | MVP | Validé |
-| V-08.17 | (8) types de produits | Store | KYC | 03 §2 | Phase 2 | MVP | Validé |
-| V-08.18 | (8) capacité estimée | Store | KYC | AUCUN | Phase 3 | Plus tard | Validé |
-| V-08.19 | (8) zone desservie | Store | KYC | 03 §2 | Phase 2 | MVP | Validé |
-| V-08.20 | (8) possibilité livraison | Store | KYC | 03 §2 | Phase 2 | MVP | Validé |
-| V-08.21 | (8) infos complémentaires | Store | KYC | 03 §2 | Phase 2 | MVP | Validé |
-| V-09.01 | (9) validation admin | Admin | ControlCenter | 02 §3.4 | Phase 2 | MVP | Validé |
-| V-09.02 | (9) suspension | Admin | ControlCenter | 02 §3.4 | Phase 2 | MVP | Validé |
-| V-09.03 | (9) modification | Admin | ControlCenter | 02 §3.4 | Phase 2 | MVP | Validé |
-| V-09.04 | (9) carte pdv | Admin | ControlCenter | 02 §3.4 | Phase 2 | MVP | Validé |
-| V-09.05 | (9) tableau bord | Admin | ControlCenter | 02 §3.4 | Phase 2 | MVP | Validé |
-| V-09.06 | (9) commandes | Admin | ControlCenter | 02 §3.4 | Phase 2 | MVP | Validé |
-| V-09.07 | (9) paiements | Admin | ControlCenter | 02 §3.4 | Phase 2 | MVP | Validé |
-| V-09.08 | (9) support client | Admin | ControlCenter | 02 §3.4 | Phase 2 | MVP | Validé |
-| V-09.09 | (9) configuration globale | Admin | ControlCenter | 02 §3.4 | Phase 2 | MVP | Validé |
-| V-10.01 | (10) distrib signale besoin | WholesaleOrder | Dashboard | 06c §1 | Phase 5 | Plus tard | Validé |
-| V-10.02 | (10) PLEINGAZ consolide | WholesaleOrder | ControlCenter | 06c §1 | Phase 5 | Plus tard | Validé |
-| V-10.03 | (10) camions répartis | Logistics | ControlCenter | AUCUN | Phase 3 | Plus tard | Validé |
-| V-10.04 | (10) stock pdv màj | Inventory | Dashboard | 03 §1.2 | Phase 2 | MVP | Validé |
-| V-10.05 | (10) facture auto générée | Invoice | API | 05a §4 | Phase 5 | Plus tard | Validé |
-| V-10.06 | (10) client notifié dispo | StockAlert | API | 05b §4 | Phase 7 | Plus tard | Validé |
-| V-10.07 | (10) client commande paie | Order | Checkout | 03 §2 | Phase 5 | Plus tard | Validé |
-| V-10.08 | (10) cycle transparent | N/A | Tous | 03 §1 | Phase 2 | MVP | Validé |
-| V-11.01 | (11) 6 kg | Product | Fiche | 03 §2 | Phase 2 | MVP | Validé |
-| V-11.02 | (11) 12,5 kg | Product | Fiche | 03 §2 | Phase 2 | MVP | Validé |
-| V-11.03 | (11) 50 kg | Product | Fiche | 03 §2 | Phase 2 | MVP | Validé |
-| V-11.04 | (11) accessoires | Product | Fiche | 03 §2 | Phase 2 | MVP | Validé |
-| V-12.01 | (12) stock faible | StockAlert | Dashboard | 06c §1 | Phase 3 | Plus tard | Validé |
-| V-12.02 | (12) stock indisponible | StockAlert | Dashboard | 06c §1 | Phase 3 | Plus tard | Validé |
-| V-12.03 | (12) stock non mis à jour depuis X jours | StockAlert | Dashboard | 06c §1 | Phase 3 | Plus tard | Validé |
-| V-12.04 | (12) forte demande | StockAlert | Dashboard | 06c §1 | Phase 3 | Plus tard | Validé |
-| V-12.05 | (12) distributeur recherches augmentent | StockAlert | Dashboard | 06c §1 | Phase 3 | Plus tard | Validé |
-| V-12.06 | (12) commandes augmentent | StockAlert | Dashboard | 06c §1 | Phase 3 | Plus tard | Validé |
-| V-13.01 | (13) produit | WholesaleOrder | Formulaire | 06c §1 | Phase 5 | Plus tard | Validé |
-| V-13.02 | (13) quantité | WholesaleOrder | Formulaire | 06c §1 | Phase 5 | Plus tard | Validé |
-| V-13.03 | (13) lieu de livraison | WholesaleOrder | Formulaire | 06c §1 | Phase 5 | Plus tard | Validé |
-| V-13.04 | (13) date souhaitée | WholesaleOrder | Formulaire | 06c §1 | Phase 5 | Plus tard | Validé |
-| V-13.05 | (13) commentaire | WholesaleOrder | Formulaire | 06c §1 | Phase 5 | Plus tard | Validé |
-| V-14.01 | (14) disponibilité | Search | Résultat | 06c §1 | Phase 2 | MVP | Validé |
-| V-14.02 | (14) prix | Search | Résultat | 06c §1 | Phase 2 | MVP | Validé |
-| V-14.03 | (14) distance | Search | Résultat | 06c §1 | Phase 2 | MVP | Validé |
-| V-14.04 | (14) horaires | Search | Résultat | 06c §1 | Phase 2 | MVP | Validé |
-| V-14.05 | (14) livraison disponible | Search | Résultat | 06c §1 | Phase 2 | MVP | Validé |
-| V-15.01 | (15) distance | Search | API | 06c §1 | Phase 3 | Plus tard | Validé |
-| V-15.02 | (15) disponibilité | Search | API | 06c §1 | Phase 3 | Plus tard | Validé |
-| V-15.03 | (15) horaires | Search | API | 06c §1 | Phase 3 | Plus tard | Validé |
-| V-15.04 | (15) capacité | Search | API | AUCUN | Phase 3 | Plus tard | Validé |
-| V-15.05 | (15) livraison | Search | API | 06c §1 | Phase 3 | Plus tard | Validé |
-| V-15.06 | (15) charge actuelle | Search | API | AUCUN | Phase 3 | Plus tard | Validé |
-| V-15.07 | (15) statut | Search | API | 06c §1 | Phase 3 | Plus tard | Validé |
-| V-16.01 | (16) MTN Mobile Money | Payment | Checkout | 05a §1 | Phase 6 | Plus tard | Validé |
-| V-16.02 | (16) Orange Money | Payment | Checkout | 05a §1 | Phase 6 | Plus tard | Validé |
-| V-16.03 | (16) présentiel | Payment | Checkout | 05a §1 | Phase 2 | MVP | Validé |
-| V-16.04 | (16) carte bancaire | Payment | Checkout | 05a §1 | Phase 6 | Plus tard | Validé |
-| V-16.05 | (16) transaction ID | Payment | API | 05a §1 | Phase 6 | Plus tard | Validé |
-| V-16.06 | (16) webhook | Payment | API | 05a §1 | Phase 6 | Plus tard | Validé |
-| V-16.07 | (16) vérification serveur | Payment | API | 05a §1 | Phase 6 | Plus tard | Validé |
-| V-16.08 | (16) idempotence | Payment | API | 05a §1 | Phase 6 | Plus tard | Validé |
-| V-16.09 | (16) journal | Payment | API | 05a §1 | Phase 6 | Plus tard | Validé |
-| V-16.10 | (16) PaymentProvider | Payment | API | 05a §1 | Phase 6 | Plus tard | Validé |
-| V-16.11 | (16) MTNProvider | Payment | API | 05a §1 | Phase 6 | Plus tard | Validé |
-| V-16.12 | (16) OrangeProvider | Payment | API | 05a §1 | Phase 6 | Plus tard | Validé |
-| V-16.13 | (16) ManualPaymentProvider | Payment | API | 05a §1 | Phase 2 | MVP | Validé |
-| V-17.01 | (17) numéro unique | Invoice | PDF | 05a §4 | Phase 5 | Plus tard | Validé |
-| V-17.02 | (17) vendeur | Invoice | PDF | 05a §4 | Phase 5 | Plus tard | Validé |
-| V-17.03 | (17) acheteur | Invoice | PDF | 05a §4 | Phase 5 | Plus tard | Validé |
-| V-17.04 | (17) produits | Invoice | PDF | 05a §4 | Phase 5 | Plus tard | Validé |
-| V-17.05 | (17) quantités | Invoice | PDF | 05a §4 | Phase 5 | Plus tard | Validé |
-| V-17.06 | (17) prix | Invoice | PDF | 05a §4 | Phase 5 | Plus tard | Validé |
-| V-17.07 | (17) livraison | Invoice | PDF | 05a §4 | Phase 5 | Plus tard | Validé |
-| V-17.08 | (17) montant total | Invoice | PDF | 05a §4 | Phase 5 | Plus tard | Validé |
-| V-17.09 | (17) moyen de paiement | Invoice | PDF | 05a §4 | Phase 5 | Plus tard | Validé |
-| V-17.10 | (17) date | Invoice | PDF | 05a §4 | Phase 5 | Plus tard | Validé |
-| V-17.11 | (17) statut | Invoice | PDF | 05a §4 | Phase 5 | Plus tard | Validé |
-| V-17.12 | (17) référence de commande | Invoice | PDF | 05a §4 | Phase 5 | Plus tard | Validé |
-| V-17.13 | (17) consultation | Invoice | PDF | 05a §4 | Phase 5 | Plus tard | Validé |
-| V-17.14 | (17) téléchargement PDF | Invoice | PDF | 05a §4 | Phase 5 | Plus tard | Validé |
-| V-17.15 | (17) impression | Invoice | PDF | 05a §4 | Phase 5 | Plus tard | Validé |
-| V-17.16 | (17) envoi email | Invoice | PDF | 05a §4 | Phase 5 | Plus tard | Validé |
-| V-17.17 | (17) partage WhatsApp | Invoice | PDF | 05a §4 | Phase 5 | Plus tard | Validé |
-| V-18.01 | (18) Contacter ce point de vente | Store | Fiche | 02 §3.2 | Phase 3 | MVP | Validé |
-| V-18.02 | (18) Contacter PLEINGAZ | Admin | Contact | 02 §3.2 | Phase 3 | MVP | Validé |
-| V-18.03 | (18) Contacter le service client | Admin | Contact | 02 §3.2 | Phase 3 | MVP | Validé |
-| V-18.04 | (18) Suivre ma commande | Order | Profil | 06c §1 | Phase 3 | MVP | Validé |
-| V-18.05 | (18) message contextualisé | Store | Fiche | 02 §3.2 | Phase 3 | MVP | Validé |
-| V-18.06 | (18) Ne pas envoyer automatiquement | API | Backend | 05b §4 | Phase 3 | MVP | Validé |
-| V-19.01 | (19) notification web | Notification | API | 05b §4 | Phase 7 | Plus tard | Validé |
-| V-19.02 | (19) email | Notification | API | 05b §4 | Phase 7 | Plus tard | Validé |
-| V-19.03 | (19) WhatsApp | Notification | API | 05b §4 | Phase 7 | Plus tard | Validé |
-| V-19.04 | (19) SMS | Notification | API | 05b §4 | Phase 7 | Plus tard | Validé |
-| V-19.05 | (19) création de compte | Notification | API | 05b §4 | Phase 7 | Plus tard | Validé |
-| V-19.06 | (19) validation distributeur | Notification | API | 05b §4 | Phase 7 | Plus tard | Validé |
-| V-19.07 | (19) refus distributeur | Notification | API | 05b §4 | Phase 7 | Plus tard | Validé |
-| V-19.08 | (19) nouvelle commande | Notification | API | 05b §4 | Phase 7 | Plus tard | Validé |
-| V-19.09 | (19) commande confirmée | Notification | API | 05b §4 | Phase 7 | Plus tard | Validé |
-| V-19.10 | (19) commande livrée | Notification | API | 05b §4 | Phase 7 | Plus tard | Validé |
-| V-19.11 | (19) facture disponible | Notification | API | 05b §4 | Phase 7 | Plus tard | Validé |
-| V-19.12 | (19) paiement confirmé | Notification | API | 05b §4 | Phase 7 | Plus tard | Validé |
-| V-19.13 | (19) stock faible | Notification | API | 05b §4 | Phase 7 | Plus tard | Validé |
-| V-19.14 | (19) stock disponible | Notification | API | 05b §4 | Phase 7 | Plus tard | Validé |
-| V-19.15 | (19) message reçu | Notification | API | 05b §4 | Phase 7 | Plus tard | Validé |
-| V-20.01 | (20) produits | FAQ | API | 06c §1 | Phase 8 | Plus tard | Validé |
-| V-20.02 | (20) prix | FAQ | API | 06c §1 | Phase 8 | Plus tard | Validé |
-| V-20.03 | (20) disponibilité | FAQ | API | 06c §1 | Phase 8 | Plus tard | Validé |
-| V-20.04 | (20) points de vente | FAQ | API | 06c §1 | Phase 8 | Plus tard | Validé |
-| V-20.05 | (20) horaires | FAQ | API | 06c §1 | Phase 8 | Plus tard | Validé |
-| V-20.06 | (20) commandes | FAQ | API | 06c §1 | Phase 8 | Plus tard | Validé |
-| V-20.07 | (20) livraison | FAQ | API | 06c §1 | Phase 8 | Plus tard | Validé |
-| V-20.08 | (20) paiement | FAQ | API | 06c §1 | Phase 8 | Plus tard | Validé |
-| V-20.09 | (20) factures | FAQ | API | 06c §1 | Phase 8 | Plus tard | Validé |
-| V-20.10 | (20) fonctionnement | FAQ | API | 06c §1 | Phase 8 | Plus tard | Validé |
-| V-20.11 | (20) sécurité | FAQ | API | 06c §1 | Phase 8 | Plus tard | Validé |
-| V-20.12 | (20) FAQ | FAQ | API | 06c §1 | Phase 8 | Plus tard | Validé |
-| V-20.13 | (20) infos | FAQ | API | 06c §1 | Phase 8 | Plus tard | Validé |
-| V-20.14 | (20) find_nearest_store | FAQ | API | 06c §1 | Phase 8 | Plus tard | Validé |
-| V-20.15 | (20) check_product | FAQ | API | 06c §1 | Phase 8 | Plus tard | Validé |
-| V-20.16 | (20) get_order | FAQ | API | 06c §1 | Phase 8 | Plus tard | Validé |
-| V-20.17 | (20) get_invoice | FAQ | API | 06c §1 | Phase 8 | Plus tard | Validé |
-| V-20.18 | (20) find_open_store | FAQ | API | 06c §1 | Phase 8 | Plus tard | Validé |
-| V-20.19 | (20) contact_support | FAQ | API | 06c §1 | Phase 8 | Plus tard | Validé |
-| V-21.01 | (21) distance | Search | Résultat | 06c §1 | Phase 2 | MVP | Validé |
-| V-21.02 | (21) disponibilité | Search | Résultat | 06c §1 | Phase 2 | MVP | Validé |
-| V-21.03 | (21) horaires | Search | Résultat | 06c §1 | Phase 2 | MVP | Validé |
-| V-21.04 | (21) livraison | Search | Résultat | 06c §1 | Phase 2 | MVP | Validé |
-| V-21.05 | (21) téléphone | Search | Résultat | 06c §1 | Phase 2 | MVP | Validé |
-| V-21.06 | (21) WhatsApp | Search | Résultat | 06c §1 | Phase 2 | MVP | Validé |
-| V-21.07 | (21) itinéraire | Search | Résultat | 06c §1 | Phase 2 | MVP | Validé |
-| V-21.08 | (21) Voici les points... | Search | Résultat | 06c §1 | Phase 2 | MVP | Validé |
-| V-21.09 | (21) Dans quelle ville... | Search | Résultat | 06c §1 | Phase 2 | MVP | Validé |
-| V-22.01 | (22) messages | Conversation | Chat | 05c §2 | Phase 7 | Plus tard | Validé |
-| V-22.02 | (22) pièces jointes | Conversation | Chat | 05c §2 | Phase 7 | Plus tard | Validé |
-| V-22.03 | (22) statut lu/non lu | Conversation | Chat | 05c §2 | Phase 7 | Plus tard | Validé |
-| V-22.04 | (22) notifications | Conversation | Chat | 05c §2 | Phase 7 | Plus tard | Validé |
-| V-22.05 | (22) historique | Conversation | Chat | 05c §2 | Phase 7 | Plus tard | Validé |
-| V-22.06 | (22) Client-PG | Conversation | Chat | 05c §2 | Phase 7 | Plus tard | Validé |
-| V-22.07 | (22) Client-Distributeur | Conversation | Chat | 05c §2 | Phase 7 | Plus tard | Validé |
-| V-22.08 | (22) Distributeur-PG | Conversation | Chat | 05c §2 | Phase 7 | Plus tard | Validé |
-| V-23.01 | (23) CA | Admin | Dashboard | 02 §3.4 | Phase 2 | MVP | Validé |
-| V-23.02 | (23) commandes | Admin | Dashboard | 02 §3.4 | Phase 2 | MVP | Validé |
-| V-23.03 | (23) cmds en attente | Admin | Dashboard | 02 §3.4 | Phase 2 | MVP | Validé |
-| V-23.04 | (23) cmds livrées | Admin | Dashboard | 02 §3.4 | Phase 2 | MVP | Validé |
-| V-23.05 | (23) utilisateurs | Admin | Dashboard | 02 §3.4 | Phase 2 | MVP | Validé |
-| V-23.06 | (23) distributeurs | Admin | Dashboard | 02 §3.4 | Phase 2 | MVP | Validé |
-| V-23.07 | (23) distrib en attente | Admin | Dashboard | 02 §3.4 | Phase 2 | MVP | Validé |
-| V-23.08 | (23) stock déclaré | Admin | Dashboard | 02 §3.4 | Phase 2 | MVP | Validé |
-| V-23.09 | (23) produits | Admin | Dashboard | 02 §3.4 | Phase 2 | MVP | Validé |
-| V-23.10 | (23) factures | Admin | Dashboard | 02 §3.4 | Phase 2 | MVP | Validé |
-| V-23.11 | (23) paiements | Admin | Dashboard | 02 §3.4 | Phase 2 | MVP | Validé |
-| V-23.12 | (23) livraisons | Admin | Dashboard | 02 §3.4 | Phase 2 | MVP | Validé |
-| V-23.13 | (23) conversations | Admin | Dashboard | 02 §3.4 | Phase 2 | MVP | Validé |
-| V-23.14 | (23) incidents | Admin | Dashboard | 02 §3.4 | Phase 2 | MVP | Validé |
-| V-23.15 | (23) filtre jour | Admin | Dashboard | 02 §3.4 | Phase 2 | MVP | Validé |
-| V-23.16 | (23) filtre semaine | Admin | Dashboard | 02 §3.4 | Phase 2 | MVP | Validé |
-| V-23.17 | (23) filtre mois | Admin | Dashboard | 02 §3.4 | Phase 2 | MVP | Validé |
-| V-23.18 | (23) filtre année | Admin | Dashboard | 02 §3.4 | Phase 2 | MVP | Validé |
-| V-23.19 | (23) filtre ville | Admin | Dashboard | 02 §3.4 | Phase 2 | MVP | Validé |
-| V-23.20 | (23) filtre distrib | Admin | Dashboard | 02 §3.4 | Phase 2 | MVP | Validé |
-| V-23.21 | (23) filtre produit | Admin | Dashboard | 02 §3.4 | Phase 2 | MVP | Validé |
-| V-24.01 | (24) distrib | Admin | ControlCenter | 02 §3.4 | Phase 2 | MVP | Validé |
-| V-24.02 | (24) ville | Admin | ControlCenter | 02 §3.4 | Phase 2 | MVP | Validé |
-| V-24.03 | (24) statut | Admin | ControlCenter | 02 §3.4 | Phase 2 | MVP | Validé |
-| V-24.04 | (24) dispo | Admin | ControlCenter | 02 §3.4 | Phase 2 | MVP | Validé |
-| V-24.05 | (24) dernière activité | Admin | ControlCenter | 02 §3.4 | Phase 2 | MVP | Validé |
-| V-24.06 | (24) dernière commande | Admin | ControlCenter | 02 §3.4 | Phase 2 | MVP | Validé |
-| V-24.07 | (24) màj stock | Admin | ControlCenter | 02 §3.4 | Phase 2 | MVP | Validé |
-| V-24.08 | (24) consulter | Admin | ControlCenter | 02 §3.4 | Phase 2 | MVP | Validé |
-| V-24.09 | (24) valider | Admin | ControlCenter | 02 §3.4 | Phase 2 | MVP | Validé |
-| V-24.10 | (24) suspendre | Admin | ControlCenter | 02 §3.4 | Phase 2 | MVP | Validé |
-| V-24.11 | (24) réactiver | Admin | ControlCenter | 02 §3.4 | Phase 2 | MVP | Validé |
-| V-24.12 | (24) contacter | Admin | ControlCenter | 02 §3.4 | Phase 2 | MVP | Validé |
-| V-24.13 | (24) demander infos | Admin | ControlCenter | 02 §3.4 | Phase 2 | MVP | Validé |
-| V-24.14 | (24) état vérifié | Admin | ControlCenter | 02 §3.4 | Phase 2 | MVP | Validé |
-| V-24.15 | (24) état en attente | Admin | ControlCenter | 02 §3.4 | Phase 2 | MVP | Validé |
-| V-24.16 | (24) état suspendu | Admin | ControlCenter | 02 §3.4 | Phase 2 | MVP | Validé |
-| V-24.17 | (24) état stock dispo | Admin | ControlCenter | 02 §3.4 | Phase 2 | MVP | Validé |
-| V-24.18 | (24) état rupture | Admin | ControlCenter | 02 §3.4 | Phase 2 | MVP | Validé |
-| V-25.01 | (25) produit | Product | Dashboard | 03 §2 | Phase 2 | MVP | Validé |
-| V-25.02 | (25) photo | Product | Dashboard | 03 §2 | Phase 2 | MVP | Validé |
-| V-25.03 | (25) description | Product | Dashboard | 03 §2 | Phase 2 | MVP | Validé |
-| V-25.04 | (25) poids | Product | Dashboard | 03 §2 | Phase 2 | MVP | Validé |
-| V-25.05 | (25) prix | Product | Dashboard | 03 §2 | Phase 2 | MVP | Validé |
-| V-25.06 | (25) dispo | Product | Dashboard | 03 §2 | Phase 2 | MVP | Validé |
-| V-25.07 | (25) catégorie | Product | Dashboard | 03 §2 | Phase 2 | MVP | Validé |
-| V-25.08 | (25) caractéristiques | Product | Dashboard | 03 §2 | Phase 2 | MVP | Validé |
-| V-25.09 | (25) accessoires | Product | Dashboard | 03 §2 | Phase 2 | MVP | Validé |
-| V-25.10 | (25) prix public | Product | Dashboard | 03 §2 | Phase 2 | MVP | Validé |
-| V-25.11 | (25) prix distributeur | Product | Dashboard | 03 §2 | Phase 2 | MVP | Validé |
-| V-25.12 | (25) prix promotionnel | Product | Dashboard | 03 §2 | Phase 2 | MVP | Validé |
+| V-00.01 | (0) analyser le site existant | N/A | N/A | 01 §1 | 0 | MVP | 06c M01 |
+| V-00.02 | (0) comprendre son architecture, son contenu, son identité | N/A | N/A | 01 §1 | 0 | MVP | 06c M01 |
+| V-00.03 | (0) identifier ses forces et faiblesses | N/A | N/A | 01 §1 | 0 | MVP | 06c M01 |
+| V-00.04 | (0) conserver les éléments pertinents | N/A | N/A | 01 §1 | 0 | MVP | 06c M01 |
+| V-00.05 | (0) moderniser profondément l'expérience | N/A | N/A | 02 §1 | 2B | Plus tard | 06c H01 |
+| V-00.06 | (0) ajouter les fonctionnalités décrites ci-dessous | N/A | N/A | 06c §1 | 2 | MVP | 06c M01 |
+| V-00.07 | (0) proposer des innovations supplémentaires | N/A | N/A | 06c §1 | 2 | MVP | 06c M01 |
+| V-00.08 | (0) construire une architecture exploitable | N/A | N/A | 04 §1 | 2 | MVP | 06c M01 |
+| V-00.09 | (0) contrainte : pas un site totalement différent | N/A | N/A | 02 §1 | 2B | Plus tard | 06c H01 |
+| V-00.10 | (0) objectif final : véritable plateforme numérique | N/A | N/A | 02 §1 | 2 | MVP | 06c M01 |
+| V-01.01 | (1) Le point d'accès numérique officiel | N/A | N/A | 02 §1 | 2B | Plus tard | 06c H01 |
+| V-01.02 | (1) visiteurs de découvrir PLEINGAZ | N/A | N/A | 02 §1 | 2B | Plus tard | 06c H01 |
+| V-01.03 | (1) particuliers d'acheter du gaz et des accessoires | N/A | N/A | 03 §1 | 2 | MVP | 06c M01 |
+| V-01.04 | (1) clients de créer un compte | User | N/A | 02 §3.2 | 2 | MVP | 06c M01 |
+| V-01.05 | (1) revendeurs de créer leur espace professionnel | DistributorProfile | N/A | 02 §3.3 | 2 | MVP | 06c M01 |
+| V-01.06 | (1) distributeurs de demander leur référencement | DistributorApplication | N/A | 03 §1 | 2 | MVP | 06c M01 |
+| V-01.07 | (1) administrateurs de valider les distributeurs | DistributorApplication | N/A | 02 §3.4 | 2 | MVP | 06c M01 |
+| V-01.08 | (1) clients de rechercher les points de vente proches | N/A | N/A | 05c §1 | 2 | MVP | 06c M01 |
+| V-01.09 | (1) clients de connaître la disponibilité du gaz | Inventory | N/A | 03 §1 | 2 | MVP | 06c M01 |
+| V-01.10 | (1) clients de commander | Order | N/A | 03 §2 | 2 | MVP | 06c M01 |
+| V-01.11 | (1) clients de se faire livrer | Delivery | N/A | 03 §2 | 2 | MVP | 06c M01 |
+| V-01.12 | (1) distributeurs de passer leurs propres commandes | DistributorOrder | N/A | 03 §2 | 5 | Plus tard | 06c H02 |
+| V-01.13 | (1) de générer automatiquement des factures | Invoice | N/A | 05a §1 | 2 | MVP | 06c M01 |
+| V-01.14 | (1) de payer en ligne ou en présentiel | Payment | N/A | 05a §1 | 2 | MVP | 06c M01 |
+| V-01.15 | (1) de communiquer avec PLEINGAZ | Conversation | N/A | 02 §1 | 2B | Plus tard | 06c H01 |
+| V-01.16 | (1) d'utiliser un assistant IA | N/A | N/A | 05c §1 | 8 | Plus tard | 06c H03 |
+| V-01.17 | (1) de contacter rapidement PLEINGAZ via WhatsApp | N/A | N/A | 06c §1 | 3 | MVP | 06c M01 |
+| V-01.18 | (1) superviser toute son activité | N/A | N/A | 02 §3.4 | 2 | MVP | 06c M01 |
+| V-01.19 | (1) pensée pour le contexte camerounais | N/A | N/A | 04 §1 | 2 | MVP | 06c M01 |
+| V-02.01 | (2) NE PAS ajouter des fonctionnalités au hasard | N/A | N/A | 02 §1 | Transversal | MVP | 06c M01 |
+| V-02.02 | (2) répondre à un problème réel | N/A | N/A | 02 §1 | Transversal | MVP | 06c M01 |
+| V-02.03 | (2) priorité 1. simplicité | N/A | N/A | 02 §1 | Transversal | MVP | 06c M01 |
+| V-02.04 | (2) priorité 2. rapidité | N/A | N/A | 04 §1 | Transversal | MVP | 06c M01 |
+| V-02.05 | (2) priorité 3. confiance | N/A | N/A | 06a §1 | Transversal | MVP | 06c M01 |
+| V-02.06 | (2) priorité 4. disponibilité du gaz | N/A | N/A | 03 §1 | Transversal | MVP | 06c M01 |
+| V-02.07 | (2) priorité 5. proximité géographique | N/A | N/A | 03 §1 | Transversal | MVP | 06c M01 |
+| V-02.08 | (2) priorité 6. sécurité | N/A | N/A | 06a §1 | Transversal | MVP | 06c M01 |
+| V-02.09 | (2) priorité 7. transparence | N/A | N/A | 07 §1 | Transversal | MVP | 06c M01 |
+| V-02.10 | (2) priorité 8. traçabilité | N/A | N/A | 06a §1 | Transversal | MVP | 06c M01 |
+| V-02.11 | (2) priorité 9. automatisation | N/A | N/A | 04 §1 | Transversal | MVP | 06c M01 |
+| V-02.12 | (2) priorité 10. expérience mobile-first | N/A | N/A | 04 §1 | Transversal | MVP | 06c M01 |
+| V-02.13 | (2) smartphones Android | N/A | N/A | 04 §1 | Transversal | MVP | 06c M01 |
+| V-02.14 | (2) connexions Internet faibles ou instables | N/A | N/A | 04 §1 | Transversal | MVP | 06c M01 |
+| V-02.15 | (2) écrans de petite taille | N/A | N/A | 04 §1 | Transversal | MVP | 06c M01 |
+| V-02.16 | (2) utilisateurs peu habitués aux plateformes numériques | N/A | N/A | 02 §1 | Transversal | MVP | 06c M01 |
+| V-02.17 | (2) évolutive permettant plus tard de créer une application mobile | N/A | N/A | 04 §1 | Transversal | MVP | 06c M01 |
+| V-03.01 | (3) Repenser complètement l'interface | N/A | N/A | 02 §1 | 2B | Plus tard | 06c H01 |
+| V-03.02 | (3) identité visuelle inspirée de l'énergie | N/A | N/A | 02 §1 | 2B | Plus tard | 06c H01 |
+| V-03.03 | (3) identité visuelle inspirée de la sécurité | N/A | N/A | 02 §1 | 2B | Plus tard | 06c H01 |
+| V-03.04 | (3) identité visuelle inspirée de la confiance | N/A | N/A | 02 §1 | 2B | Plus tard | 06c H01 |
+| V-03.05 | (3) identité visuelle inspirée du mouvement | N/A | N/A | 02 §1 | 2B | Plus tard | 06c H01 |
+| V-03.06 | (3) identité visuelle inspirée du contexte africain | N/A | N/A | 02 §1 | 2B | Plus tard | 06c H01 |
+| V-03.07 | (3) Améliorer typographie | N/A | N/A | 02 §1 | 2B | Plus tard | 06c H01 |
+| V-03.08 | (3) Améliorer hiérarchie visuelle | N/A | N/A | 02 §1 | 2B | Plus tard | 06c H01 |
+| V-03.09 | (3) Améliorer boutons | N/A | N/A | 02 §1 | 2B | Plus tard | 06c H01 |
+| V-03.10 | (3) Améliorer cartes produits | N/A | N/A | 02 §1 | 2B | Plus tard | 06c H01 |
+| V-03.11 | (3) Améliorer navigation | N/A | N/A | 02 §1 | 2B | Plus tard | 06c H01 |
+| V-03.12 | (3) Améliorer menus | N/A | N/A | 02 §1 | 2B | Plus tard | 06c H01 |
+| V-03.13 | (3) Améliorer formulaires | N/A | N/A | 02 §1 | 2B | Plus tard | 06c H01 |
+| V-03.14 | (3) Améliorer sections | N/A | N/A | 02 §1 | 2B | Plus tard | 06c H01 |
+| V-03.15 | (3) Améliorer footer | N/A | N/A | 02 §1 | 2B | Plus tard | 06c H01 |
+| V-03.16 | (3) Améliorer CTA | N/A | N/A | 02 §1 | 2B | Plus tard | 06c H01 |
+| V-03.17 | (3) Améliorer icônes | N/A | N/A | 02 §1 | 2B | Plus tard | 06c H01 |
+| V-03.18 | (3) Améliorer illustrations | N/A | N/A | 02 §1 | 2B | Plus tard | 06c H01 |
+| V-03.19 | (3) Améliorer responsive design | N/A | N/A | 04 §1 | Transversal | MVP | 06c M01 |
+| V-03.20 | (3) animation apparition progressive | N/A | N/A | 02 §1 | 2B | Plus tard | 06c H01 |
+| V-03.21 | (3) animation hover | N/A | N/A | 02 §1 | 2B | Plus tard | 06c H01 |
+| V-03.22 | (3) animation micro-interactions | N/A | N/A | 02 §1 | 2B | Plus tard | 06c H01 |
+| V-03.23 | (3) animation transitions | N/A | N/A | 02 §1 | 2B | Plus tard | 06c H01 |
+| V-03.24 | (3) animation loading states | N/A | N/A | 02 §1 | 2B | Plus tard | 06c H01 |
+| V-03.25 | (3) animation skeleton loaders | N/A | N/A | 02 §1 | 2B | Plus tard | 06c H01 |
+| V-03.26 | (3) animations de cartes | N/A | N/A | 02 §1 | 2B | Plus tard | 06c H01 |
+| V-03.27 | (3) feedback après commande | N/A | N/A | 02 §1 | 2B | Plus tard | 06c H01 |
+| V-03.28 | (3) animation du statut d'une commande | N/A | N/A | 02 §1 | 2B | Plus tard | 06c H01 |
+| V-03.29 | (3) NE PAS utiliser des animations lourdes | N/A | N/A | 04 §1 | Transversal | MVP | 06c M01 |
+| V-04.01 | (4) Transformer la homepage | N/A | N/A | 02 §1 | 2B | Plus tard | 06c H01 |
+| V-04.02 | (4) Hero section: Votre gaz au bon endroit | N/A | N/A | 02 §1 | 2B | Plus tard | 06c H01 |
+| V-04.03 | (4) CTA Acheter du gaz | N/A | N/A | 02 §1 | 2B | Plus tard | 06c H01 |
+| V-04.04 | (4) CTA Trouver un point de vente | N/A | N/A | 02 §1 | 2B | Plus tard | 06c H01 |
+| V-04.05 | (4) CTA Commander une livraison | N/A | N/A | 02 §1 | 2B | Plus tard | 06c H01 |
+| V-04.06 | (4) CTA Devenir distributeur | N/A | N/A | 02 §1 | 2B | Plus tard | 06c H01 |
+| V-04.07 | (4) Ajouter une recherche centrale | N/A | N/A | 02 §1 | 2B | Plus tard | 06c H01 |
+| V-04.08 | (4) Exemple recherche Gaz 12,5 kg | N/A | N/A | 02 §1 | 2B | Plus tard | 06c H01 |
+| V-04.09 | (4) Exemple recherche Point de vente | N/A | N/A | 02 §1 | 2B | Plus tard | 06c H01 |
+| V-04.10 | (4) Exemple recherche Revendeur | N/A | N/A | 02 §1 | 2B | Plus tard | 06c H01 |
+| V-05.01 | (5) Créer une authentification client | User | N/A | 02 §3.2 | 2 | MVP | 06c M01 |
+| V-05.02 | (5) nom | CustomerProfile | N/A | 03 §1 | 2 | MVP | 06c M01 |
+| V-05.03 | (5) prénom | CustomerProfile | N/A | 03 §1 | 2 | MVP | 06c M01 |
+| V-05.04 | (5) téléphone | User | N/A | 03 §1 | 2 | MVP | 06c M01 |
+| V-05.05 | (5) email facultatif | User | N/A | 03 §1 | 2 | MVP | 06c M01 |
+| V-05.06 | (5) mot de passe | User | N/A | 03 §1 | 2 | MVP | 06c M01 |
+| V-05.07 | (5) ville | CustomerProfile | N/A | 03 §1 | 2 | MVP | 06c M01 |
+| V-05.08 | (5) quartier | CustomerProfile | N/A | 03 §1 | 2 | MVP | 06c M01 |
+| V-05.09 | (5) adresse de livraison | Address | N/A | 03 §1 | 2 | MVP | 06c M01 |
+| V-05.10 | (5) préférences de notification | CustomerProfile | N/A | 03 §1 | 2 | MVP | 06c M01 |
+| V-05.11 | (5) Connexion par téléphone | N/A | N/A | 02 §3.2 | 2 | MVP | 06c M01 |
+| V-05.12 | (5) Connexion par email | N/A | N/A | 02 §3.2 | 2 | MVP | 06c M01 |
+| V-05.13 | (5) récupération du compte | N/A | N/A | 02 §3.2 | 2 | MVP | 06c M01 |
+| V-05.14 | (5) modification du profil | N/A | N/A | 02 §3.2 | 2 | MVP | 06c M01 |
+| V-05.15 | (5) gestion des adresses | N/A | N/A | 02 §3.2 | 2 | MVP | 06c M01 |
+| V-05.16 | (5) historique des commandes | N/A | N/A | 02 §3.2 | 2 | MVP | 06c M01 |
+| V-05.17 | (5) historique des factures | N/A | N/A | 02 §3.2 | 2 | MVP | 06c M01 |
+| V-05.18 | (5) favoris | Favorite | N/A | 03 §1 | 2 | MVP | 06c M01 |
+| V-05.19 | (5) points de vente favoris | Favorite | N/A | 03 §1 | 2 | MVP | 06c M01 |
+| V-05.20 | (5) notifications | Notification | N/A | 05b §1 | 2 | MVP | 06c M01 |
+| V-05.21 | (5) conversations | Conversation | N/A | 02 §3.2 | 2B | Plus tard | 06c H01 |
+| V-05.22 | (5) préférences | CustomerProfile | N/A | 03 §1 | 2 | MVP | 06c M01 |
+| V-06.01 | (6) fonctionnalité principale de recherche | N/A | N/A | 05c §1 | 2 | MVP | 06c M01 |
+| V-06.02 | (6) rechercher un produit | N/A | N/A | 05c §1 | 2 | MVP | 06c M01 |
+| V-06.03 | (6) rechercher un point de vente | N/A | N/A | 05c §1 | 2 | MVP | 06c M01 |
+| V-06.04 | (6) rechercher un revendeur | N/A | N/A | 05c §1 | 2 | MVP | 06c M01 |
+| V-06.05 | (6) rechercher une ville | N/A | N/A | 05c §1 | 2 | MVP | 06c M01 |
+| V-06.06 | (6) rechercher un quartier | N/A | N/A | 05c §1 | 2 | MVP | 06c M01 |
+| V-06.07 | (6) rechercher un type de gaz | N/A | N/A | 05c §1 | 2 | MVP | 06c M01 |
+| V-06.08 | (6) rechercher une disponibilité | N/A | N/A | 05c §1 | 2 | MVP | 06c M01 |
+| V-06.09 | (6) rechercher une boutique | N/A | N/A | 05c §1 | 2 | MVP | 06c M01 |
+| V-06.10 | (6) rechercher une livraison | N/A | N/A | 05c §1 | 2 | MVP | 06c M01 |
+| V-06.11 | (6) 4 exemples de recherche (regroupe 4 puces) | N/A | N/A | 05c §1 | 2 | MVP | 06c M01 |
+| V-06.12 | (6) recherche doit comprendre les fautes | N/A | N/A | 05c §1 | 2 | MVP | 06c M01 |
+| V-06.13 | (6) recherche sémantique assistée par IA | N/A | N/A | 05c §1 | 8 | Plus tard | 06c H03 |
+| V-06.14 | (6) search fallback texte | N/A | N/A | 06c §1 | 2 | MVP | 06c M01 |
+| V-06.15 | (6) search statuts bons | N/A | N/A | 06c §1 | 2 | MVP | 06c M01 |
+| V-07.01 | (7) Véritable carte interactive | N/A | N/A | 04 §1 | 2 | MVP | 06c M01 |
+| V-07.02 | (7) point de vente possede nom | Store | N/A | 03 §1 | 2 | MVP | 06c M01 |
+| V-07.03 | (7) photo | Store | N/A | 03 §1 | 2 | MVP | 06c M01 |
+| V-07.04 | (7) description | Store | N/A | 03 §1 | 2 | MVP | 06c M01 |
+| V-07.05 | (7) adresse | StoreLocation | N/A | 03 §1 | 2 | MVP | 06c M01 |
+| V-07.06 | (7) ville | StoreLocation | N/A | 03 §1 | 2 | MVP | 06c M01 |
+| V-07.07 | (7) quartier | StoreLocation | N/A | 03 §1 | 2 | MVP | 06c M01 |
+| V-07.08 | (7) coordonnées GPS | StoreLocation | N/A | 03 §1 | 2 | MVP | 06c M01 |
+| V-07.09 | (7) téléphone | Store | N/A | 03 §1 | 2 | MVP | 06c M01 |
+| V-07.10 | (7) WhatsApp | Store | N/A | 03 §1 | 2 | MVP | 06c M01 |
+| V-07.11 | (7) horaires | Store | N/A | 03 §1 | 2 | MVP | 06c M01 |
+| V-07.12 | (7) produits disponibles | Inventory | N/A | 03 §1 | 2 | MVP | 06c M01 |
+| V-07.13 | (7) disponibilité du gaz | Inventory | N/A | 03 §1 | 2 | MVP | 06c M01 |
+| V-07.14 | (7) date de dernière mise à jour | Inventory | N/A | 03 §1 | 2 | MVP | 06c M01 |
+| V-07.15 | (7) statut de vérification | DistributorApplication | N/A | 03 §1 | 2 | MVP | 06c M01 |
+| V-07.16 | (7) statut officiel PLEINGAZ | DistributorProfile | N/A | 03 §1 | 2 | MVP | 06c M01 |
+| V-07.17 | (7) Afficher les points de vente sur une carte | N/A | N/A | 04 §1 | 2 | MVP | 06c M01 |
+| V-07.18 | (7) Permettre points autour de moi | N/A | N/A | 04 §1 | 2 | MVP | 06c M01 |
+| V-07.19 | (7) Permettre points à moins de 2 km | N/A | N/A | 04 §1 | 2 | MVP | 06c M01 |
+| V-07.20 | (7) Permettre points à moins de 5 km | N/A | N/A | 04 §1 | 2 | MVP | 06c M01 |
+| V-07.21 | (7) Permettre points ouverts maintenant | N/A | N/A | 04 §1 | 2 | MVP | 06c M01 |
+| V-07.22 | (7) Permettre gaz disponible maintenant | N/A | N/A | 04 §1 | 2 | MVP | 06c M01 |
+| V-07.23 | (7) Calculer distance | N/A | N/A | 04 §1 | 2 | MVP | 06c M01 |
+| V-07.24 | (7) Calculer temps approximatif | N/A | N/A | 04 §1 | 2 | MVP | 06c M01 |
+| V-07.25 | (7) Calculer itinéraire | N/A | N/A | 04 §1 | 2 | MVP | 06c M01 |
+| V-07.26 | (7) Ne pas déduire automatiquement | N/A | N/A | 04 §1 | 2 | MVP | 06c M01 |
+| V-07.27 | (7) distributeur renseigne (regroupe 4 puces: proposer, geocoder, deplacer, enregistrer) | N/A | N/A | 04 §1 | 2 | MVP | 06c M01 |
+| V-08.01 | (8) Créer un espace professionnel distributeurs | N/A | N/A | 02 §3.3 | 2 | MVP | 06c M01 |
+| V-08.02 | (8) identité nom | User | N/A | 03 §1 | 2 | MVP | 06c M01 |
+| V-08.03 | (8) identité prénom | User | N/A | 03 §1 | 2 | MVP | 06c M01 |
+| V-08.04 | (8) identité téléphone | User | N/A | 03 §1 | 2 | MVP | 06c M01 |
+| V-08.05 | (8) identité email | User | N/A | 03 §1 | 2 | MVP | 06c M01 |
+| V-08.06 | (8) identité pièce d'identité | DistributorDocument | N/A | 03 §1 | 2 | MVP | 06c M01 |
+| V-08.07 | (8) identité documents | DistributorDocument | N/A | 03 §1 | 2 | MVP | 06c M01 |
+| V-08.08 | (8) boutique nom commercial | Store | N/A | 03 §1 | 2 | MVP | 06c M01 |
+| V-08.09 | (8) boutique description | Store | N/A | 03 §1 | 2 | MVP | 06c M01 |
+| V-08.10 | (8) boutique adresse | StoreLocation | N/A | 03 §1 | 2 | MVP | 06c M01 |
+| V-08.11 | (8) boutique ville | StoreLocation | N/A | 03 §1 | 2 | MVP | 06c M01 |
+| V-08.12 | (8) boutique quartier | StoreLocation | N/A | 03 §1 | 2 | MVP | 06c M01 |
+| V-08.13 | (8) boutique téléphone | Store | N/A | 03 §1 | 2 | MVP | 06c M01 |
+| V-08.14 | (8) boutique WhatsApp | Store | N/A | 03 §1 | 2 | MVP | 06c M01 |
+| V-08.15 | (8) boutique horaires | Store | N/A | 03 §1 | 2 | MVP | 06c M01 |
+| V-08.16 | (8) boutique photo | Store | N/A | 03 §1 | 2 | MVP | 06c M01 |
+| V-08.17 | (8) boutique coordonnées GPS | StoreLocation | N/A | 03 §1 | 2 | MVP | 06c M01 |
+| V-08.18 | (8) activité types de produits | Store | N/A | 03 §1 | 2 | MVP | 06c M01 |
+| V-08.19 | (8) activité capacité estimée | Store | N/A | 03 §1 | 2 | MVP | 06c M01 |
+| V-08.20 | (8) activité zone desservie | Store | N/A | 03 §1 | 2 | MVP | 06c M01 |
+| V-08.21 | (8) activité possibilité de livraison | Store | N/A | 03 §1 | 2 | MVP | 06c M01 |
+| V-08.22 | (8) activité informations complémentaires | Store | N/A | 03 §1 | 2 | MVP | 06c M01 |
+| V-09.01 | (9) règle : jamais visible officiel automatiquement | N/A | N/A | 06c §1 | 2 | MVP | 06c M01 |
+| V-09.02 | (9) état PENDING | DistributorApplication | N/A | 03b §1 | 2 | MVP | 06c M01 |
+| V-09.03 | (9) état UNDER_REVIEW | DistributorApplication | N/A | 03b §1 | 2 | MVP | 06c M01 |
+| V-09.04 | (9) état APPROVED | DistributorApplication | N/A | 03b §1 | 2 | MVP | 06c M01 |
+| V-09.05 | (9) état REJECTED | DistributorApplication | N/A | 03b §1 | 2 | MVP | 06c M01 |
+| V-09.06 | (9) état SUSPENDED | DistributorApplication | N/A | 03b §1 | 2 | MVP | 06c M01 |
+| V-09.07 | (9) Votre demande est en cours de vérification par PLEINGAZ | N/A | N/A | 02 §3.3 | 2 | MVP | 06c M01 |
+| V-09.08 | (9) Admin consulter le dossier | N/A | N/A | 02 §3.4 | 2 | MVP | 06c M01 |
+| V-09.09 | (9) Admin vérifier les informations | N/A | N/A | 02 §3.4 | 2 | MVP | 06c M01 |
+| V-09.10 | (9) Admin consulter les documents | N/A | N/A | 02 §3.4 | 2 | MVP | 06c M01 |
+| V-09.11 | (9) Admin consulter la localisation | N/A | N/A | 02 §3.4 | 2 | MVP | 06c M01 |
+| V-09.12 | (9) Admin contacter le candidat | N/A | N/A | 02 §3.4 | 2 | MVP | 06c M01 |
+| V-09.13 | (9) Admin demander des informations supplémentaires | N/A | N/A | 02 §3.4 | 2 | MVP | 06c M01 |
+| V-09.14 | (9) Admin approuver | N/A | N/A | 02 §3.4 | 2 | MVP | 06c M01 |
+| V-09.15 | (9) Admin refuser | N/A | N/A | 02 §3.4 | 2 | MVP | 06c M01 |
+| V-09.16 | (9) Admin suspendre | N/A | N/A | 02 §3.4 | 2 | MVP | 06c M01 |
+| V-09.17 | (9) seuls les APPROVED apparaissent publiquement | N/A | N/A | 06c §1 | 2 | MVP | 06c M01 |
+| V-09.18 | (9) badge Distributeur PLEINGAZ vérifié | N/A | N/A | 02 §3.3 | 2 | MVP | 06c M01 |
+| V-10.01 | (10) règle : score interne, pas une note publique | N/A | N/A | 03c §1 | 9 | Plus tard | 06c H04 |
+| V-10.02 | (10) ancienneté | N/A | N/A | 03c §1 | 9 | Plus tard | 06c H04 |
+| V-10.03 | (10) régularité des commandes | N/A | N/A | 03c §1 | 9 | Plus tard | 06c H04 |
+| V-10.04 | (10) exactitude des informations | N/A | N/A | 03c §1 | 9 | Plus tard | 06c H04 |
+| V-10.05 | (10) fréquence de mise à jour du stock | N/A | N/A | 03c §1 | 9 | Plus tard | 06c H04 |
+| V-10.06 | (10) taux de commandes honorées | N/A | N/A | 03c §1 | 9 | Plus tard | 06c H04 |
+| V-10.07 | (10) respect des délais | N/A | N/A | 03c §1 | 9 | Plus tard | 06c H04 |
+| V-10.08 | (10) retours clients | N/A | N/A | 03c §1 | 9 | Plus tard | 06c H04 |
+| V-10.09 | (10) validation PLEINGAZ | N/A | N/A | 03c §1 | 9 | Plus tard | 06c H04 |
+| V-10.10 | (10) badge Distributeur vérifié | N/A | N/A | 02 §1 | 9 | Plus tard | 06c H04 |
+| V-10.11 | (10) badge Partenaire actif | N/A | N/A | 02 §1 | 9 | Plus tard | 06c H04 |
+| V-10.12 | (10) badge Stock régulièrement mis à jour | N/A | N/A | 02 §1 | 9 | Plus tard | 06c H04 |
+| V-10.13 | (10) badge Livraison disponible | N/A | N/A | 02 §1 | 9 | Plus tard | 06c H04 |
+| V-10.14 | (10) attribués selon des règles administratives explicites | N/A | N/A | 03c §1 | 9 | Plus tard | 06c H04 |
+| V-11.01 | (11) fonctionnalité centrale AVEC GAZ / RUPTURE | Inventory | N/A | 03 §1 | 2 | MVP | 06c M02 |
+| V-11.02 | (11) question avez-vous actuellement du gaz disponible | N/A | N/A | 02 §3.3 | 2 | MVP | 06c M02 |
+| V-11.03 | (11) OUI NON | N/A | N/A | 02 §3.3 | 2 | MVP | 06c M02 |
+| V-11.04 | (11) 6 kg | Product | N/A | 03 §1 | 2 | MVP | 06c M02 |
+| V-11.05 | (11) 12,5 kg | Product | N/A | 03 §1 | 2 | MVP | 06c M02 |
+| V-11.06 | (11) 50 kg | Product | N/A | 03 §1 | 2 | MVP | 06c M02 |
+| V-11.07 | (11) accessoires | Product | N/A | 03 §1 | 2 | MVP | 06c M02 |
+| V-11.08 | (11) distributeur doit pouvoir mettre à jour son stock | N/A | N/A | 02 §3.3 | 2 | MVP | 06c M02 |
+| V-11.09 | (11) statut Disponible | N/A | N/A | 02 §3.3 | 2 | MVP | 06c M02 |
+| V-11.10 | (11) statut Stock limité | N/A | N/A | 02 §3.3 | 2 | MVP | 06c M02 |
+| V-11.11 | (11) statut Indisponible/Rupture | N/A | N/A | 02 §3.3 | 2 | MVP | 06c M02 |
+| V-11.12 | (11) statut Information non actualisée | N/A | N/A | 02 §3.3 | 2 | MVP | 06c M02 |
+| V-11.13 | (11) règle : toujours la date de dernière mise à jour | N/A | N/A | 03 §1 | 2 | MVP | 06c M02 |
+| V-11.14 | (11) exemple Stock confirmé il y a 18 minutes | N/A | N/A | 02 §3.3 | 2 | MVP | 06c M02 |
+| V-12.01 | (12) système intelligent de stock | Inventory | N/A | 04 §1 | 4 | Plus tard | 06c H05 |
+| V-12.02 | (12) message stock faible / seuil | Notification | N/A | 05b §1 | 4 | Plus tard | 06c H05 |
+| V-12.03 | (12) proposer passer une nouvelle commande | N/A | N/A | 02 §3.3 | 4 | Plus tard | 06c H05 |
+| V-12.04 | (12) alerte PLEINGAZ | DemandAlert | N/A | 05b §1 | 4 | Plus tard | 06c H05 |
+| V-12.05 | (12) alerte stock faible | Notification | N/A | 05b §1 | 4 | Plus tard | 06c H05 |
+| V-12.06 | (12) alerte stock indisponible | Notification | N/A | 05b §1 | 4 | Plus tard | 06c H05 |
+| V-12.07 | (12) alerte stock non mis à jour depuis X jours | Notification | N/A | 05b §1 | 4 | Plus tard | 06c H05 |
+| V-12.08 | (12) alerte forte demande | DemandAlert | N/A | 05b §1 | 4 | Plus tard | 06c H05 |
+| V-12.09 | (12) alerte distributeur avec beaucoup de recherches | DemandAlert | N/A | 05b §1 | 4 | Plus tard | 06c H05 |
+| V-12.10 | (12) alerte distributeur dont les commandes augmentent | DemandAlert | N/A | 05b §1 | 4 | Plus tard | 06c H05 |
+| V-13.01 | (13) espace commander auprès de PLEINGAZ | N/A | N/A | 02 §3.3 | 5 | Plus tard | 06c H02 |
+| V-13.02 | (13) produit | DistributorOrder | N/A | 03 §1 | 5 | Plus tard | 06c H02 |
+| V-13.03 | (13) quantité | DistributorOrder | N/A | 03 §1 | 5 | Plus tard | 06c H02 |
+| V-13.04 | (13) lieu de livraison | DistributorOrder | N/A | 03 §1 | 5 | Plus tard | 06c H02 |
+| V-13.05 | (13) date souhaitée | DistributorOrder | N/A | 03 §1 | 5 | Plus tard | 06c H02 |
+| V-13.06 | (13) commentaire | DistributorOrder | N/A | 03 §1 | 5 | Plus tard | 06c H02 |
+| V-13.07 | (13) 3 exemples de quantités | N/A | N/A | 02 §3.3 | 5 | Plus tard | 06c H02 |
+| V-13.08 | (13) bouton Valider la commande | N/A | N/A | 02 §3.3 | 5 | Plus tard | 06c H02 |
+| V-13.09 | (13) état DRAFT | DistributorOrder | N/A | 03b §1 | 5 | Plus tard | 06c H02 |
+| V-13.10 | (13) état SUBMITTED | DistributorOrder | N/A | 03b §1 | 5 | Plus tard | 06c H02 |
+| V-13.11 | (13) état CONFIRMED | DistributorOrder | N/A | 03b §1 | 5 | Plus tard | 06c H02 |
+| V-13.12 | (13) état PREPARING | DistributorOrder | N/A | 03b §1 | 5 | Plus tard | 06c H02 |
+| V-13.13 | (13) état SHIPPED | DistributorOrder | N/A | 03b §1 | 5 | Plus tard | 06c H02 |
+| V-13.14 | (13) état DELIVERED | DistributorOrder | N/A | 03b §1 | 5 | Plus tard | 06c H02 |
+| V-13.15 | (13) état CANCELLED | DistributorOrder | N/A | 03b §1 | 5 | Plus tard | 06c H02 |
+| V-13.16 | (13) historique complet | N/A | N/A | 02 §3.3 | 5 | Plus tard | 06c H02 |
+| V-14.01 | (14) afficher disponibilité | N/A | N/A | 02 §1 | 5 | Plus tard | 06c H06 |
+| V-14.02 | (14) afficher prix | N/A | N/A | 02 §1 | 5 | Plus tard | 06c H06 |
+| V-14.03 | (14) afficher distance | N/A | N/A | 02 §1 | 5 | Plus tard | 06c H06 |
+| V-14.04 | (14) afficher horaires | N/A | N/A | 02 §1 | 5 | Plus tard | 06c H06 |
+| V-14.05 | (14) afficher livraison disponible ou non | N/A | N/A | 02 §1 | 5 | Plus tard | 06c H06 |
+| V-14.06 | (14) retrait en boutique | N/A | N/A | 02 §1 | 5 | Plus tard | 06c H06 |
+| V-14.07 | (14) se faire livrer | N/A | N/A | 02 §1 | 5 | Plus tard | 06c H06 |
+| V-14.08 | (14) panier | Order | N/A | 03 §1 | 5 | Plus tard | 06c H06 |
+| V-15.01 | (15) moteur choix automatique | N/A | N/A | 04 §1 | 10 | Plus tard | 06c H07 |
+| V-15.02 | (15) distance | N/A | N/A | 04 §1 | 10 | Plus tard | 06c H07 |
+| V-15.03 | (15) disponibilité | N/A | N/A | 04 §1 | 10 | Plus tard | 06c H07 |
+| V-15.04 | (15) horaires | N/A | N/A | 04 §1 | 10 | Plus tard | 06c H07 |
+| V-15.05 | (15) capacité | N/A | N/A | 04 §1 | 10 | Plus tard | 06c H07 |
+| V-15.06 | (15) livraison | N/A | N/A | 04 §1 | 10 | Plus tard | 06c H07 |
+| V-15.07 | (15) charge actuelle | N/A | N/A | 04 §1 | 10 | Plus tard | 06c H07 |
+| V-15.08 | (15) statut du distributeur | N/A | N/A | 04 §1 | 10 | Plus tard | 06c H07 |
+| V-15.09 | (15) règle : jamais seulement la distance | N/A | N/A | 04 §1 | 10 | Plus tard | 06c H07 |
+| V-16.01 | (16) MTN Mobile Money | Payment | N/A | 05a §1 | 6 | Plus tard | 06c H08 |
+| V-16.02 | (16) Orange Money | Payment | N/A | 05a §1 | 6 | Plus tard | 06c H08 |
+| V-16.03 | (16) paiement en présentiel | Payment | N/A | 05a §1 | 6 | Plus tard | 06c H08 |
+| V-16.04 | (16) carte bancaire plus tard | Payment | N/A | 05a §1 | 6 | Plus tard | 06c H08 |
+| V-16.05 | (16) traitement côté serveur | N/A | N/A | 05a §1 | 6 | Plus tard | 06c H08 |
+| V-16.06 | (16) règle : jamais payé parce que le frontend affiche succès | N/A | N/A | 05a §1 | 6 | Plus tard | 06c H08 |
+| V-16.07 | (16) transaction ID | PaymentTransaction | N/A | 03 §1 | 6 | Plus tard | 06c H08 |
+| V-16.08 | (16) webhook | N/A | N/A | 05a §1 | 6 | Plus tard | 06c H08 |
+| V-16.09 | (16) vérification serveur | N/A | N/A | 05a §1 | 6 | Plus tard | 06c H08 |
+| V-16.10 | (16) idempotence | N/A | N/A | 05a §1 | 6 | Plus tard | 06c H08 |
+| V-16.11 | (16) journal des transactions | PaymentTransaction | N/A | 03 §1 | 6 | Plus tard | 06c H08 |
+| V-16.12 | (16) PaymentProvider | N/A | N/A | 04 §1 | 6 | Plus tard | 06c H08 |
+| V-16.13 | (16) MTNProvider | N/A | N/A | 04 §1 | 6 | Plus tard | 06c H08 |
+| V-16.14 | (16) OrangeProvider | N/A | N/A | 04 §1 | 6 | Plus tard | 06c H08 |
+| V-16.15 | (16) ManualPaymentProvider | N/A | N/A | 04 §1 | 6 | Plus tard | 06c H08 |
+| V-17.01 | (17) facture unique par commande | Invoice | N/A | 05a §4 | 6 | Plus tard | 06c H08 |
+| V-17.02 | (17) ne jamais mélanger les factures | N/A | N/A | 05a §4 | 6 | Plus tard | 06c H08 |
+| V-17.03 | (17) numéro unique | Invoice | N/A | 03 §1 | 6 | Plus tard | 06c H08 |
+| V-17.04 | (17) vendeur | Invoice | N/A | 03 §1 | 6 | Plus tard | 06c H08 |
+| V-17.05 | (17) acheteur | Invoice | N/A | 03 §1 | 6 | Plus tard | 06c H08 |
+| V-17.06 | (17) produits | InvoiceItem | N/A | 03 §1 | 6 | Plus tard | 06c H08 |
+| V-17.07 | (17) quantités | InvoiceItem | N/A | 03 §1 | 6 | Plus tard | 06c H08 |
+| V-17.08 | (17) prix | InvoiceItem | N/A | 03 §1 | 6 | Plus tard | 06c H08 |
+| V-17.09 | (17) livraison | Invoice | N/A | 03 §1 | 6 | Plus tard | 06c H08 |
+| V-17.10 | (17) montant total | Invoice | N/A | 03 §1 | 6 | Plus tard | 06c H08 |
+| V-17.11 | (17) moyen de paiement | Invoice | N/A | 03 §1 | 6 | Plus tard | 06c H08 |
+| V-17.12 | (17) date | Invoice | N/A | 03 §1 | 6 | Plus tard | 06c H08 |
+| V-17.13 | (17) statut | Invoice | N/A | 03b §1 | 6 | Plus tard | 06c H08 |
+| V-17.14 | (17) référence de commande | Invoice | N/A | 03 §1 | 6 | Plus tard | 06c H08 |
+| V-17.15 | (17) facture PLEINGAZ | Invoice | N/A | 05a §4 | 6 | Plus tard | 06c H08 |
+| V-17.16 | (17) facture du distributeur | Invoice | N/A | 05a §4 | 6 | Plus tard | 06c H08 |
+| V-17.17 | (17) consultation | N/A | N/A | 02 §1 | 6 | Plus tard | 06c H08 |
+| V-17.18 | (17) téléchargement PDF | N/A | N/A | 02 §1 | 6 | Plus tard | 06c H08 |
+| V-17.19 | (17) impression | N/A | N/A | 02 §1 | 6 | Plus tard | 06c H08 |
+| V-17.20 | (17) envoi email | N/A | N/A | 05b §1 | 6 | Plus tard | 06c H08 |
+| V-17.21 | (17) partage WhatsApp | N/A | N/A | 02 §1 | 6 | Plus tard | 06c H08 |
+| V-18.01 | (18) bouton Contacter ce point de vente | N/A | N/A | 02 §1 | 3 | MVP | 06c M03 |
+| V-18.02 | (18) bouton Contacter PLEINGAZ | N/A | N/A | 02 §1 | 3 | MVP | 06c M03 |
+| V-18.03 | (18) bouton Contacter le service client | N/A | N/A | 02 §1 | 3 | MVP | 06c M03 |
+| V-18.04 | (18) bouton Suivre ma commande | N/A | N/A | 02 §1 | 3 | MVP | 06c M03 |
+| V-18.05 | (18) message prérempli | N/A | N/A | 02 §1 | 3 | MVP | 06c M03 |
+| V-18.06 | (18) exemple message WhatsApp | N/A | N/A | 02 §1 | 3 | MVP | 06c M03 |
+| V-18.07 | (18) règle : aucun envoi automatique | N/A | N/A | 04 §1 | 3 | MVP | 06c M03 |
+| V-19.01 | (19) centre de notifications | Notification | N/A | 05b §1 | 7 | Plus tard | 06c H09 |
+| V-19.02 | (19) notification web | N/A | N/A | 05b §1 | 7 | Plus tard | 06c H09 |
+| V-19.03 | (19) email | N/A | N/A | 05b §1 | 7 | Plus tard | 06c H09 |
+| V-19.04 | (19) WhatsApp | N/A | N/A | 05b §1 | 7 | Plus tard | 06c H09 |
+| V-19.05 | (19) SMS si disponible | N/A | N/A | 05b §1 | 7 | Plus tard | 06c H09 |
+| V-19.06 | (19) event création de compte | N/A | N/A | 05b §1 | 7 | Plus tard | 06c H09 |
+| V-19.07 | (19) event validation distributeur | N/A | N/A | 05b §1 | 7 | Plus tard | 06c H09 |
+| V-19.08 | (19) event refus distributeur | N/A | N/A | 05b §1 | 7 | Plus tard | 06c H09 |
+| V-19.09 | (19) event nouvelle commande | N/A | N/A | 05b §1 | 7 | Plus tard | 06c H09 |
+| V-19.10 | (19) event commande confirmée | N/A | N/A | 05b §1 | 7 | Plus tard | 06c H09 |
+| V-19.11 | (19) event commande livrée | N/A | N/A | 05b §1 | 7 | Plus tard | 06c H09 |
+| V-19.12 | (19) event facture disponible | N/A | N/A | 05b §1 | 7 | Plus tard | 06c H09 |
+| V-19.13 | (19) event paiement confirmé | N/A | N/A | 05b §1 | 7 | Plus tard | 06c H09 |
+| V-19.14 | (19) event stock faible | N/A | N/A | 05b §1 | 7 | Plus tard | 06c H09 |
+| V-19.15 | (19) event stock disponible | N/A | N/A | 05b §1 | 7 | Plus tard | 06c H09 |
+| V-19.16 | (19) event message reçu | N/A | N/A | 05b §1 | 7 | Plus tard | 06c H09 |
+| V-20.01 | (20) IA produits | N/A | N/A | 05c §1 | 8 | Plus tard | 06c H03 |
+| V-20.02 | (20) IA prix | N/A | N/A | 05c §1 | 8 | Plus tard | 06c H03 |
+| V-20.03 | (20) IA disponibilité | N/A | N/A | 05c §1 | 8 | Plus tard | 06c H03 |
+| V-20.04 | (20) IA points de vente | N/A | N/A | 05c §1 | 8 | Plus tard | 06c H03 |
+| V-20.05 | (20) IA horaires | N/A | N/A | 05c §1 | 8 | Plus tard | 06c H03 |
+| V-20.06 | (20) IA commandes | N/A | N/A | 05c §1 | 8 | Plus tard | 06c H03 |
+| V-20.07 | (20) IA livraison | N/A | N/A | 05c §1 | 8 | Plus tard | 06c H03 |
+| V-20.08 | (20) IA paiement | N/A | N/A | 05c §1 | 8 | Plus tard | 06c H03 |
+| V-20.09 | (20) IA factures | N/A | N/A | 05c §1 | 8 | Plus tard | 06c H03 |
+| V-20.10 | (20) IA fonctionnement de la plateforme | N/A | N/A | 05c §1 | 8 | Plus tard | 06c H03 |
+| V-20.11 | (20) IA sécurité d'utilisation | N/A | N/A | 05c §1 | 8 | Plus tard | 06c H03 |
+| V-20.12 | (20) IA FAQ | N/A | N/A | 05c §1 | 8 | Plus tard | 06c H03 |
+| V-20.13 | (20) IA informations officielles | N/A | N/A | 05c §1 | 8 | Plus tard | 06c H03 |
+| V-20.14 | (20) règle : ne pas inventer | N/A | N/A | 05c §1 | 8 | Plus tard | 06c H03 |
+| V-20.15 | (20) architecture Knowledge Base + RAG + LLM + outils | N/A | N/A | 04 §1 | 8 | Plus tard | 06c H03 |
+| V-20.16 | (20) outil find_nearest_store | N/A | N/A | 05c §1 | 8 | Plus tard | 06c H03 |
+| V-20.17 | (20) outil check_product_availability | N/A | N/A | 05c §1 | 8 | Plus tard | 06c H03 |
+| V-20.18 | (20) outil get_order_status | N/A | N/A | 05c §1 | 8 | Plus tard | 06c H03 |
+| V-20.19 | (20) outil get_invoice | N/A | N/A | 05c §1 | 8 | Plus tard | 06c H03 |
+| V-20.20 | (20) outil find_open_store | N/A | N/A | 05c §1 | 8 | Plus tard | 06c H03 |
+| V-20.21 | (20) outil contact_support | N/A | N/A | 05c §1 | 8 | Plus tard | 06c H03 |
+| V-21.01 | (21) capacité importante assistant géographique | N/A | N/A | 05c §1 | 8 | Plus tard | 06c H03 |
+| V-21.02 | (21) Voici les points de vente PLEINGAZ | N/A | N/A | 05c §1 | 8 | Plus tard | 06c H03 |
+| V-21.03 | (21) afficher distance | N/A | N/A | 05c §1 | 8 | Plus tard | 06c H03 |
+| V-21.04 | (21) afficher disponibilité | N/A | N/A | 05c §1 | 8 | Plus tard | 06c H03 |
+| V-21.05 | (21) afficher horaires | N/A | N/A | 05c §1 | 8 | Plus tard | 06c H03 |
+| V-21.06 | (21) afficher livraison | N/A | N/A | 05c §1 | 8 | Plus tard | 06c H03 |
+| V-21.07 | (21) afficher téléphone | N/A | N/A | 05c §1 | 8 | Plus tard | 06c H03 |
+| V-21.08 | (21) afficher WhatsApp | N/A | N/A | 05c §1 | 8 | Plus tard | 06c H03 |
+| V-21.09 | (21) afficher itinéraire | N/A | N/A | 05c §1 | 8 | Plus tard | 06c H03 |
+| V-21.10 | (21) demander ville ou quartier si pas localisé | N/A | N/A | 05c §1 | 8 | Plus tard | 06c H03 |
+| V-22.01 | (22) Client ↔ PLEINGAZ | Conversation | N/A | 02 §1 | 7 | Plus tard | 06c H09 |
+| V-22.02 | (22) Client ↔ Distributeur | Conversation | N/A | 02 §1 | 7 | Plus tard | 06c H09 |
+| V-22.03 | (22) Distributeur ↔ PLEINGAZ | Conversation | N/A | 02 §1 | 7 | Plus tard | 06c H09 |
+| V-22.04 | (22) liaisons du chat avec PLEINGAZ | Conversation | N/A | 02 §1 | 7 | Plus tard | 06c H09 |
+| V-22.05 | (22) messages | Message | N/A | 03 §1 | 7 | Plus tard | 06c H09 |
+| V-22.06 | (22) pièces jointes | Message | N/A | 03 §1 | 7 | Plus tard | 06c H09 |
+| V-22.07 | (22) statut lu/non lu | Message | N/A | 03 §1 | 7 | Plus tard | 06c H09 |
+| V-22.08 | (22) historique | Conversation | N/A | 03 §1 | 7 | Plus tard | 06c H09 |
+| V-22.09 | (22) transfert vers agent humain | N/A | N/A | 05c §1 | 8 | Plus tard | 06c H03 |
+| V-23.01 | (23) Dashboard complet | N/A | N/A | 02 §3.4 | 2 | MVP | 06c M02 |
+| V-23.02 | (23) chiffre d'affaires | N/A | N/A | 02 §3.4 | 9 | Plus tard | 06c H10 |
+| V-23.03 | (23) commandes | N/A | N/A | 02 §3.4 | 2 | MVP | 06c M02 |
+| V-23.04 | (23) commandes en attente | N/A | N/A | 02 §3.4 | 2 | MVP | 06c M02 |
+| V-23.05 | (23) commandes livrées | N/A | N/A | 02 §3.4 | 2 | MVP | 06c M02 |
+| V-23.06 | (23) utilisateurs | N/A | N/A | 02 §3.4 | 2 | MVP | 06c M02 |
+| V-23.07 | (23) distributeurs | N/A | N/A | 02 §3.4 | 2 | MVP | 06c M02 |
+| V-23.08 | (23) distributeurs en attente | N/A | N/A | 02 §3.4 | 2 | MVP | 06c M02 |
+| V-23.09 | (23) stock déclaré | N/A | N/A | 02 §3.4 | 2 | MVP | 06c M02 |
+| V-23.10 | (23) produits | N/A | N/A | 02 §3.4 | 2 | MVP | 06c M02 |
+| V-23.11 | (23) factures | N/A | N/A | 02 §3.4 | 6 | Plus tard | 06c H08 |
+| V-23.12 | (23) paiements | N/A | N/A | 02 §3.4 | 6 | Plus tard | 06c H08 |
+| V-23.13 | (23) livraisons | N/A | N/A | 02 §3.4 | 5 | Plus tard | 06c H06 |
+| V-23.14 | (23) conversations | N/A | N/A | 02 §3.4 | 7 | Plus tard | 06c H09 |
+| V-23.15 | (23) incidents | Report | N/A | 03 §1 | 9 | Plus tard | 06c H10 |
+| V-23.16 | (23) graphiques | N/A | N/A | 02 §3.4 | 9 | Plus tard | 06c H10 |
+| V-23.17 | (23) Filtre par jour | N/A | N/A | 02 §3.4 | 9 | Plus tard | 06c H10 |
+| V-23.18 | (23) Filtre par semaine/mois/année | N/A | N/A | 02 §3.4 | 9 | Plus tard | 06c H10 |
+| V-23.19 | (23) Filtre par ville | N/A | N/A | 02 §3.4 | 9 | Plus tard | 06c H10 |
+| V-23.20 | (23) Filtre par distributeur | N/A | N/A | 02 §3.4 | 9 | Plus tard | 06c H10 |
+| V-23.21 | (23) Filtre par produit | N/A | N/A | 02 §3.4 | 9 | Plus tard | 06c H10 |
+| V-24.01 | (24) interface dédiée | N/A | N/A | 02 §3.4 | 2 | MVP | 06c M02 |
+| V-24.02 | (24) liste distributeur | N/A | N/A | 02 §3.4 | 2 | MVP | 06c M02 |
+| V-24.03 | (24) liste ville | N/A | N/A | 02 §3.4 | 2 | MVP | 06c M02 |
+| V-24.04 | (24) liste statut | N/A | N/A | 02 §3.4 | 2 | MVP | 06c M02 |
+| V-24.05 | (24) liste disponibilité | N/A | N/A | 02 §3.4 | 2 | MVP | 06c M02 |
+| V-24.06 | (24) liste dernière activité | N/A | N/A | 02 §3.4 | 2 | MVP | 06c M02 |
+| V-24.07 | (24) liste dernière commande | N/A | N/A | 02 §3.4 | 2 | MVP | 06c M02 |
+| V-24.08 | (24) liste date mise à jour stock | N/A | N/A | 02 §3.4 | 2 | MVP | 06c M02 |
+| V-24.09 | (24) action consulter | N/A | N/A | 02 §3.4 | 2 | MVP | 06c M02 |
+| V-24.10 | (24) action valider | N/A | N/A | 02 §3.4 | 2 | MVP | 06c M02 |
+| V-24.11 | (24) action suspendre | N/A | N/A | 02 §3.4 | 2 | MVP | 06c M02 |
+| V-24.12 | (24) action réactiver | N/A | N/A | 02 §3.4 | 2 | MVP | 06c M02 |
+| V-24.13 | (24) action contacter | N/A | N/A | 02 §3.4 | 2 | MVP | 06c M02 |
+| V-24.14 | (24) action demander informations | N/A | N/A | 02 §3.4 | 2 | MVP | 06c M02 |
+| V-24.15 | (24) carte administrative | N/A | N/A | 02 §3.4 | 2 | MVP | 06c M02 |
+| V-24.16 | (24) état visuel vérifié | N/A | N/A | 02 §3.4 | 2 | MVP | 06c M02 |
+| V-24.17 | (24) état visuel en attente | N/A | N/A | 02 §3.4 | 2 | MVP | 06c M02 |
+| V-24.18 | (24) état visuel stock dispo/rupture | N/A | N/A | 02 §3.4 | 2 | MVP | 06c M02 |
+| V-25.01 | (25) Admin CRUD complet | Product | N/A | 03 §1 | 2 | MVP | 06c M02 |
+| V-25.02 | (25) CRUD photo | Product | N/A | 03 §1 | 2 | MVP | 06c M02 |
+| V-25.03 | (25) CRUD description | Product | N/A | 03 §1 | 2 | MVP | 06c M02 |
+| V-25.04 | (25) CRUD poids | Product | N/A | 03 §1 | 2 | MVP | 06c M02 |
+| V-25.05 | (25) CRUD prix | Product | N/A | 03 §1 | 2 | MVP | 06c M02 |
+| V-25.06 | (25) CRUD disponibilité | Product | N/A | 03 §1 | 2 | MVP | 06c M02 |
+| V-25.07 | (25) CRUD catégorie | ProductCategory | N/A | 03 §1 | 2 | MVP | 06c M02 |
+| V-25.08 | (25) CRUD caractéristiques | Product | N/A | 03 §1 | 2 | MVP | 06c M02 |
+| V-25.09 | (25) CRUD accessoires | Product | N/A | 03 §1 | 2 | MVP | 06c M02 |
+| V-25.10 | (25) tarif public | Product | N/A | 03 §1 | 2 | MVP | 06c M02 |
+| V-25.11 | (25) tarif distributeur | Product | N/A | 03 §1 | 5 | Plus tard | 06c H02 |
+| V-25.12 | (25) tarif promotionnel | Product | N/A | 03 §1 | 9 | Plus tard | 06c H11 |
+| V-25.13 | (25) produit | Product | N/A | 03 §1 | 2 | MVP | 06c M02 |
+| V-26.01 | (26) module livraison | Delivery | N/A | 03 §1 | 5 | Plus tard | 06c H06 |
+| V-26.02 | (26) statut PENDING | Delivery | N/A | 03b §1 | 5 | Plus tard | 06c H06 |
+| V-26.03 | (26) statut ASSIGNED | Delivery | N/A | 03b §1 | 5 | Plus tard | 06c H06 |
+| V-26.04 | (26) statut PICKED_UP | Delivery | N/A | 03b §1 | 5 | Plus tard | 06c H06 |
+| V-26.05 | (26) statut IN_TRANSIT | Delivery | N/A | 03b §1 | 5 | Plus tard | 06c H06 |
+| V-26.06 | (26) statut DELIVERED | Delivery | N/A | 03b §1 | 5 | Plus tard | 06c H06 |
+| V-26.07 | (26) statut FAILED | Delivery | N/A | 03b §1 | 5 | Plus tard | 06c H06 |
+| V-26.08 | (26) statut CANCELLED | Delivery | N/A | 03b §1 | 5 | Plus tard | 06c H06 |
+| V-26.09 | (26) adresse | Delivery | N/A | 03 §1 | 5 | Plus tard | 06c H06 |
+| V-26.10 | (26) téléphone | Delivery | N/A | 03 §1 | 5 | Plus tard | 06c H06 |
+| V-26.11 | (26) instructions | Delivery | N/A | 03 §1 | 5 | Plus tard | 06c H06 |
+| V-26.12 | (26) créneau | Delivery | N/A | 03 §1 | 5 | Plus tard | 06c H06 |
+| V-26.13 | (26) livreur | Delivery | N/A | 03 §1 | 5 | Plus tard | 06c H06 |
+| V-26.14 | (26) tracking GPS plus tard | N/A | N/A | 04 §1 | 10 | Plus tard | 06c H12 |
+| V-27.01 | (27) IA prévision demande | N/A | N/A | 05c §1 | 8 | Plus tard | 06c H03 |
+| V-27.02 | (27) analyser historique | N/A | N/A | 05c §1 | 8 | Plus tard | 06c H03 |
+| V-27.03 | (27) analyser saison | N/A | N/A | 05c §1 | 8 | Plus tard | 06c H03 |
+| V-27.04 | (27) analyser zone géographique | N/A | N/A | 05c §1 | 8 | Plus tard | 06c H03 |
+| V-27.05 | (27) analyser jours de semaine | N/A | N/A | 05c §1 | 8 | Plus tard | 06c H03 |
+| V-27.06 | (27) analyser produits | N/A | N/A | 05c §1 | 8 | Plus tard | 06c H03 |
+| V-27.07 | (27) analyser ruptures | N/A | N/A | 05c §1 | 8 | Plus tard | 06c H03 |
+| V-27.08 | (27) exemple hausse demande | N/A | N/A | 05c §1 | 8 | Plus tard | 06c H03 |
+| V-28.01 | (28) Heatmap demande | N/A | N/A | 02 §3.4 | 9 | Plus tard | 06c H10 |
+| V-28.02 | (28) zones forte demande | N/A | N/A | 02 §3.4 | 9 | Plus tard | 06c H10 |
+| V-28.03 | (28) zones peu distributeurs | N/A | N/A | 02 §3.4 | 9 | Plus tard | 06c H10 |
+| V-28.04 | (28) zones rupture | N/A | N/A | 02 §3.4 | 9 | Plus tard | 06c H10 |
+| V-28.05 | (28) zones forte recherche | N/A | N/A | 02 §3.4 | 9 | Plus tard | 06c H10 |
+| V-29.01 | (29) message indisponible | N/A | N/A | 02 §1 | 4 | Plus tard | 06c H05 |
+| V-29.02 | (29) proposer alerte | N/A | N/A | 02 §1 | 4 | Plus tard | 06c H05 |
+| V-29.03 | (29) activer alerte | DemandAlert | N/A | 03 §1 | 4 | Plus tard | 06c H05 |
+| V-29.04 | (29) notifier | Notification | N/A | 05b §1 | 4 | Plus tard | 06c H05 |
+| V-29.05 | (29) Demande sans stock | N/A | N/A | 02 §1 | 4 | Plus tard | 06c H05 |
+| V-29.06 | (29) Voulez-vous être averti | N/A | N/A | 02 §1 | 4 | Plus tard | 06c H05 |
+| V-30.01 | (30) sauvegarder distributeur | Favorite | N/A | 03 §1 | 2 | MVP | 06c M02 |
+| V-30.02 | (30) sauvegarder adresse | Address | N/A | 03 §1 | 2 | MVP | 06c M02 |
+| V-30.03 | (30) sauvegarder produits | Favorite | N/A | 03 §1 | 2 | MVP | 06c M02 |
+| V-30.04 | (30) suivre disponibilité | Favorite | N/A | 03 §1 | 2 | MVP | 06c M02 |
+| V-30.05 | (30) mon point de vente habituel | N/A | N/A | 02 §1 | 2 | MVP | 06c M02 |
