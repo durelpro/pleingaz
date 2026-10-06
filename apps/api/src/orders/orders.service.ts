@@ -168,4 +168,52 @@ export class OrdersService {
 
     return order;
   }
+
+  async getUserOrders(userId: string) {
+    return this.prisma.order.findMany({
+      where: { customerId: userId },
+      include: { items: true, delivery: true, review: true },
+      orderBy: { createdAt: 'desc' }
+    });
+  }
+
+  /**
+   * Tâche 9.6: Laisser un avis et gagner des points de fidélité
+   */
+  async leaveReview(userId: string, orderId: string, rating: number, comment?: string) {
+    const order = await this.prisma.order.findUnique({
+      where: { id: orderId },
+      include: { review: true }
+    });
+
+    if (!order) throw new NotFoundException('Commande introuvable');
+    if (order.customerId !== userId) throw new BadRequestException('Non autorisé');
+    if (order.status !== 'DELIVERED') throw new BadRequestException('Commande non livrée');
+    if (order.review) throw new BadRequestException('Avis déjà soumis');
+
+    // Enregistrer l'avis
+    const review = await this.prisma.review.create({
+      data: {
+        orderId,
+        rating,
+        comment,
+      }
+    });
+
+    // Programme de fidélité (Optionnel): +10 points pour un avis !
+    await this.prisma.user.update({
+      where: { id: userId },
+      data: { loyaltyPoints: { increment: 10 } }
+    });
+
+    await this.prisma.loyaltyTransaction.create({
+      data: {
+        userId,
+        points: 10,
+        description: \`Récompense pour l'avis sur la commande \${order.orderNumber}\`
+      }
+    });
+
+    return review;
+  }
 }

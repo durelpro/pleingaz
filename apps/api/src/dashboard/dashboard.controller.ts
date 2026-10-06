@@ -1,4 +1,5 @@
-import { Controller, Get, Query, UseGuards } from '@nestjs/common';
+import { Controller, Get, Query, UseGuards, Res } from '@nestjs/common';
+import { Response } from 'express';
 import { DashboardService } from './dashboard.service';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { RolesGuard } from '../auth/guards/roles.guard';
@@ -23,5 +24,15 @@ export class DashboardController {
   @Get('heatmap')
   async getHeatmap() {
     return this.dashboardService.getHeatmapData();
+  }
+
+  @Get('export/sales')
+  async exportSales(@Res() res: Response) {
+    const buffer = await this.dashboardService.exportSalesReportToExcel();
+    res.set({
+      'Content-Type': 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+      'Content-Disposition': 'attachment; filename=ventes-pleingaz.xlsx',
+    });
+    res.send(buffer);
   }
 }

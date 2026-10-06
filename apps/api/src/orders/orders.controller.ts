@@ -1,4 +1,4 @@
-import { Controller, Post, Body, Param, UseGuards, Request } from '@nestjs/common';
+import { Controller, Post, Get, Body, Param, UseGuards, Request } from '@nestjs/common';
 import { OrdersService } from './orders.service';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 
@@ -37,5 +37,19 @@ export class OrdersController {
       body.quantity,
       body.deliveryAddress,
     );
+  }
+
+  @Get()
+  async getMyOrders(@Request() req: any) {
+    return this.ordersService.getUserOrders(req.user.userId);
+  }
+
+  @Post(':id/review')
+  async leaveReview(
+    @Request() req: any,
+    @Param('id') orderId: string,
+    @Body() body: { rating: number; comment?: string }
+  ) {
+    return this.ordersService.leaveReview(req.user.userId, orderId, body.rating, body.comment);
   }
 }
