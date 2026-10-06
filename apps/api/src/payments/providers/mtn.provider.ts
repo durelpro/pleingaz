@@ -3,9 +3,9 @@ import { Injectable } from '@nestjs/common';
 
 @Injectable()
 export class MtnMomoProvider implements PaymentProvider {
-  async initiatePayment(amount: number, currency: string, phone: string, idempotencyKey: string): Promise<PaymentInitResult> {
+  async initiatePayment(amount: number, currency: string, clientPhone: string, receiverNumber: string, idempotencyKey: string): Promise<PaymentInitResult> {
     // Sandbox MTN MoMo implementation
-    console.log(\`[MTN MoMo Sandbox] Init payment \${amount} \${currency} for \${phone}\`);
+    console.log(\`[MTN MoMo Sandbox] Init payment \${amount} \${currency} from \${clientPhone} TO \${receiverNumber}\`);
     
     // On simule une réponse de l'API MTN
     return {

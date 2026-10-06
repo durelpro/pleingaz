@@ -209,6 +209,10 @@ model Store {
   isVerifiedBadge Boolean                @default(true)
   isVisible       Boolean                @default(true)
   
+  // Paiements (Numéros de réception des fonds du distributeur)
+  momoReceiverNumber   String?
+  orangeReceiverNumber String?
+  
   inventories     Inventory[]
   orders          Order[]
   stockReservations StockReservation[]
@@ -483,4 +487,12 @@ model Payment {
   
   createdAt       DateTime      @default(now())
   updatedAt       DateTime      @updatedAt
+}
+
+model PlatformSettings {
+  id                   String   @id @default("singleton")
+  adminMomoNumber      String?
+  adminOrangeNumber    String?
+  
+  updatedAt            DateTime @updatedAt
 }

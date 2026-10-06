@@ -3,9 +3,9 @@ import { Injectable } from '@nestjs/common';
 
 @Injectable()
 export class OrangeMoneyProvider implements PaymentProvider {
-  async initiatePayment(amount: number, currency: string, phone: string, idempotencyKey: string): Promise<PaymentInitResult> {
+  async initiatePayment(amount: number, currency: string, clientPhone: string, receiverNumber: string, idempotencyKey: string): Promise<PaymentInitResult> {
     // Sandbox Orange Money implementation
-    console.log(\`[Orange Money Sandbox] Init payment \${amount} \${currency} for \${phone}\`);
+    console.log(\`[Orange Money Sandbox] Init payment \${amount} \${currency} from \${clientPhone} TO \${receiverNumber}\`);
     
     return {
       providerTxId: \`orange_tx_\${Date.now()}\`,

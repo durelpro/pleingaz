@@ -6,9 +6,9 @@ export interface PaymentInitResult {
 
 export interface PaymentProvider {
   /**
-   * Initialise un paiement auprès de l'opérateur
+   * Initialise un paiement auprès de l'opérateur vers un numéro de réception donné
    */
-  initiatePayment(amount: number, currency: string, phone: string, idempotencyKey: string): Promise<PaymentInitResult>;
+  initiatePayment(amount: number, currency: string, clientPhone: string, receiverNumber: string, idempotencyKey: string): Promise<PaymentInitResult>;
 
   /**
    * Vérifie le statut d'un paiement (utile si le webhook n'est pas reçu)

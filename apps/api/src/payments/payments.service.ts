@@ -18,7 +18,10 @@ export class PaymentsService {
    * Tâche 6.2 : Initiation de paiement
    */
   async initiatePayment(userId: string, orderId: string, method: PaymentMethod, phone: string) {
-    const order = await this.prisma.order.findUnique({ where: { id: orderId } });
+    const order = await this.prisma.order.findUnique({ 
+      where: { id: orderId },
+      include: { store: true } 
+    });
     if (!order || order.status === 'CANCELLED') throw new BadRequestException('Commande invalide.');
 
     const idempotencyKey = \`PAY-\${orderId}-\${Date.now()}\`; // Prévention des doublons
@@ -37,13 +40,28 @@ export class PaymentsService {
 
     let providerTxId = null;
     let providerStatus = 'PENDING';
+    
+    // Déterminer le numéro du destinataire (B2C = Distributeur, B2B = Pleingaz)
+    let receiverMomo = null;
+    let receiverOrange = null;
+    
+    if (order.type === 'B2B_DISTRIBUTOR') {
+      const platformSettings = await this.prisma.platformSettings.findUnique({ where: { id: 'singleton' } });
+      receiverMomo = platformSettings?.adminMomoNumber;
+      receiverOrange = platformSettings?.adminOrangeNumber;
+    } else {
+      receiverMomo = order.store?.momoReceiverNumber;
+      receiverOrange = order.store?.orangeReceiverNumber;
+    }
 
     if (method === 'MTN_MOMO') {
-      const res = await this.mtnProvider.initiatePayment(order.totalAmount, 'XAF', phone, idempotencyKey);
+      if (!receiverMomo) throw new BadRequestException('Le marchand n\'a pas configuré son numéro MTN.');
+      const res = await this.mtnProvider.initiatePayment(order.totalAmount, 'XAF', phone, receiverMomo, idempotencyKey);
       providerTxId = res.providerTxId;
       providerStatus = res.status;
     } else if (method === 'ORANGE_MONEY') {
-      const res = await this.orangeProvider.initiatePayment(order.totalAmount, 'XAF', phone, idempotencyKey);
+      if (!receiverOrange) throw new BadRequestException('Le marchand n\'a pas configuré son numéro Orange.');
+      const res = await this.orangeProvider.initiatePayment(order.totalAmount, 'XAF', phone, receiverOrange, idempotencyKey);
       providerTxId = res.providerTxId;
       providerStatus = res.status;
     }
