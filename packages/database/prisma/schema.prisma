@@ -24,6 +24,7 @@ model User {
   stores          Store[]
   sessions        Session[]
   auditLogs       AuditLog[]       @relation("UserAuditLogs")
+  demandAlerts    DemandAlert[]
 
   createdAt       DateTime         @default(now())
   updatedAt       DateTime         @updatedAt
@@ -204,6 +205,108 @@ model Store {
   isVerifiedBadge Boolean                @default(true)
   isVisible       Boolean                @default(true)
   
+  inventories     Inventory[]
+  
   createdAt       DateTime               @default(now())
   updatedAt       DateTime               @updatedAt
+}
+
+// ==========================================
+// PHASE 4: PRODUITS, STOCKS & RECHERCHE
+// ==========================================
+
+model ProductCategory {
+  id          String    @id @default(uuid())
+  name        String    @unique
+  description String?
+  products    Product[]
+  
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+}
+
+model Product {
+  id              String          @id @default(uuid())
+  categoryId      String
+  category        ProductCategory @relation(fields: [categoryId], references: [id])
+  brand           String          // ex: SCTM, Camgaz, Tradex, BOCOM, OLA, GreenOil
+  weightKg        Float           // ex: 12.5, 6, 50
+  publicPrice     Float           // Prix public conseillé
+  distributorPrice Float          // Prix distributeur
+  promoPrice      Float?          // Prix promotionnel éventuel
+  
+  inventories     Inventory[]
+  priceHistories  PriceHistory[]
+  demandAlerts    DemandAlert[]
+  
+  createdAt       DateTime        @default(now())
+  updatedAt       DateTime        @updatedAt
+
+  @@unique([brand, weightKg])
+}
+
+model PriceHistory {
+  id               String   @id @default(uuid())
+  productId        String
+  product          Product  @relation(fields: [productId], references: [id], onDelete: Cascade)
+  oldPublicPrice   Float
+  newPublicPrice   Float
+  oldDistributorPrice Float
+  newDistributorPrice Float
+  changedByUserId  String?  // Admin ID
+  
+  createdAt        DateTime @default(now())
+}
+
+enum StockLevel {
+  HIGH
+  MEDIUM
+  LOW
+  OUT_OF_STOCK
+}
+
+model Inventory {
+  id               String     @id @default(uuid())
+  storeId          String
+  store            Store      @relation(fields: [storeId], references: [id], onDelete: Cascade)
+  productId        String
+  product          Product    @relation(fields: [productId], references: [id], onDelete: Cascade)
+  
+  level            StockLevel @default(OUT_OF_STOCK)
+  lastConfirmedAt  DateTime   @default(now()) // Pour le calcul d'ancienneté (Vert/Orange/Rouge/Gris)
+  
+  createdAt        DateTime   @default(now())
+  updatedAt        DateTime   @updatedAt
+
+  @@unique([storeId, productId])
+}
+
+model SearchEvent {
+  id            String   @id @default(uuid())
+  userId        String?
+  searchQuery   String?  // Terme recherché (ex: quartier)
+  latitude      Float?
+  longitude     Float?
+  radiusKm      Float?
+  resultsCount  Int
+  
+  createdAt     DateTime @default(now())
+}
+
+model DemandAlert {
+  id          String   @id @default(uuid())
+  userId      String
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  productId   String
+  product     Product  @relation(fields: [productId], references: [id], onDelete: Cascade)
+  
+  latitude    Float?
+  longitude   Float?
+  radiusKm    Float?
+  storeId     String?  // Si alerte sur une boutique spécifique
+  
+  isFulfilled Boolean  @default(false)
+  fulfilledAt DateTime?
+  
+  createdAt   DateTime @default(now())
 }
