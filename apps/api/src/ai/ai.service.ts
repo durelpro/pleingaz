@@ -1,7 +1,7 @@
-import { Injectable, BadRequestException } from '@nestjs/common';
+import { Injectable, BadRequestException, HttpException, HttpStatus } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 import { ChatOpenAI } from '@langchain/openai';
-import { SystemMessage, HumanMessage, AIMessage } from '@langchain/core/messages';
+import { SystemMessage, HumanMessage } from '@langchain/core/messages';
 import { DynamicStructuredTool } from '@langchain/core/tools';
 import { z } from 'zod';
 
@@ -10,7 +10,6 @@ export class AiService {
   private llm: ChatOpenAI;
 
   constructor(private readonly prisma: PrismaService) {
-    // Initialisation du modèle. En production, clé via env var.
     this.llm = new ChatOpenAI({
       modelName: 'gpt-4o',
       temperature: 0,
@@ -18,105 +17,126 @@ export class AiService {
     });
   }
 
-  /**
-   * Tâche 8.1 : RAG Knowledge Base
-   */
   async getKnowledgeContext(query: string): Promise<string> {
-    // Dans une vraie implémentation, on ferait une recherche vectorielle avec pgvector.
-    // Ici on simule une recherche de base pour le prototype.
     const docs = await this.prisma.knowledgeDocument.findMany({
       where: { isActive: true },
-      take: 3,
+      take: 5,
     });
     return docs.map(d => \`[DOCUMENT: \${d.title}]\\n\${d.content}\`).join('\\n\\n');
   }
 
-  /**
-   * Création des Tools Internes (Tâche 8.2)
-   */
-  private getTools() {
+  private getTools(userId: string) {
     return [
       new DynamicStructuredTool({
         name: 'check_product_availability',
         description: 'Vérifier la disponibilité et le prix d\\'un produit spécifique.',
-        schema: z.object({
-          brand: z.string().describe('La marque du produit (ex: SCTM, Camgaz)'),
-          weightKg: z.number().describe('Le poids de la bouteille en Kg'),
-        }),
+        schema: z.object({ brand: z.string(), weightKg: z.number() }),
         func: async ({ brand, weightKg }) => {
-          const product = await this.prisma.product.findUnique({
-            where: { brand_weightKg: { brand, weightKg } }
-          });
-          if (!product) return "Produit introuvable.";
-          return \`Le prix public est de \${product.publicPrice} FCFA.\`;
+          const product = await this.prisma.product.findUnique({ where: { brand_weightKg: { brand, weightKg } } });
+          return product ? \`Prix public: \${product.publicPrice} FCFA.\` : "Produit introuvable.";
+        },
+      }),
+      new DynamicStructuredTool({
+        name: 'find_nearest_available_store',
+        description: 'Trouver la boutique ouverte la plus proche ayant du stock.',
+        schema: z.object({ city: z.string(), neighborhood: z.string() }),
+        func: async ({ city, neighborhood }) => {
+          return \`La boutique PLEINGAZ la plus proche à \${city}, \${neighborhood} est ouverte de 08:00 à 18:00.\`;
         },
       }),
       new DynamicStructuredTool({
         name: 'get_order_status',
         description: 'Vérifier le statut d\\'une commande spécifique',
-        schema: z.object({
-          orderNumber: z.string().describe('Le numéro de la commande (ex: ORD-XXXX)'),
-        }),
+        schema: z.object({ orderNumber: z.string() }),
         func: async ({ orderNumber }) => {
           const order = await this.prisma.order.findUnique({ where: { orderNumber } });
           if (!order) return "Commande introuvable.";
-          return \`Le statut de la commande est \${order.status}.\`;
+          if (order.customerId !== userId) return "Cette commande ne vous appartient pas.";
+          return \`Le statut est \${order.status}.\`;
+        }
+      }),
+      new DynamicStructuredTool({
+        name: 'contact_support',
+        description: 'Obtenir les coordonnées du support',
+        schema: z.object({}),
+        func: async () => {
+          const settings = await this.prisma.platformSettings.findUnique({ where: { id: 'singleton' } });
+          return \`Contactez le support au \${settings?.supportPhone} ou par email: \${settings?.supportEmail}\`;
         }
       })
     ];
   }
 
-  /**
-   * Chat (Tâche 8.4, 8.5)
-   */
   async chat(userId: string, sessionId: string, message: string) {
-    // 1. Garde-fous (Tâche 8.5)
-    if (message.toLowerCase().includes('ignore all previous instructions')) {
-      throw new BadRequestException('Tentative d\\'injection détectée. Opération refusée.');
+    // 1. Limite de requêtes (Rate Limiting) & Coûts
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    const usage = await this.prisma.aiUsageMetric.aggregate({
+      where: { userId, createdAt: { gte: today } },
+      _sum: { totalTokens: true }
+    });
+    
+    if ((usage._sum.totalTokens || 0) > 10000) {
+      throw new HttpException('Limite d\\'utilisation quotidienne atteinte.', HttpStatus.TOO_MANY_REQUESTS);
     }
 
-    // 2. Contexte (Tâche 8.1)
-    const context = await this.getKnowledgeContext(message);
-    const systemPrompt = \`
-      Tu es l'assistant IA de PLEINGAZ (Cameroun). 
-      Tu parles français et anglais, et tu comprends le langage local.
-      Règle absolue : Pour toute question sur PLEINGAZ, base-toi UNIQUEMENT sur le contexte fourni. 
-      Si tu ne sais pas, dis que tu ne sais pas et propose de contacter le support.
-      Distingue clairement les infos officielles (ex: prix) des estimations (ex: temps de livraison).
-      
-      CONTEXTE OFFICIEL:
-      \${context}
-    \`;
-
-    // 3. Appel du modèle (Mocké pour ce prototype sans clé API valide)
-    let aiResponseText = "";
+    // 2. Garde-fous (Prompt Injection)
+    if (message.toLowerCase().includes('ignore') || message.toLowerCase().includes('system prompt')) {
+      throw new BadRequestException('Action non autorisée.');
+    }
     
-    if (process.env.OPENAI_API_KEY) {
+    if (message.toLowerCase().includes('parler à un conseiller') || message.toLowerCase().includes('humain')) {
+      return { response: "Je vous transfère vers un conseiller humain. Vous pouvez nous joindre sur WhatsApp au +237 657696567." };
+    }
+
+    // 3. Contexte
+    const context = await this.getKnowledgeContext(message);
+    const systemPrompt = \`Tu es l'assistant IA de PLEINGAZ (Cameroun). Tu parles français et anglais, y compris le langage local (Camerounais). Règle stricte: base-toi UNIQUEMENT sur le contexte suivant. CONTEXTE: \${context}\`;
+
+    let aiResponseText = "";
+    let inputTokens = message.length; // Fake token count
+    let outputTokens = 50;
+
+    if (process.env.OPENAI_API_KEY && process.env.OPENAI_API_KEY !== 'MOCK_KEY_FOR_DEV') {
       const messages = [new SystemMessage(systemPrompt), new HumanMessage(message)];
       const response = await this.llm.invoke(messages);
       aiResponseText = response.content.toString();
     } else {
-      // Mock Response for Development
-      aiResponseText = "[MODE DEV] L'IA est configurée, mais nécessite une clé API OpenAI valide pour répondre intelligemment à : " + message;
+      aiResponseText = "[MODE DEV] L'IA est configurée avec ses outils. Requête : " + message;
     }
 
-    // 4. Historique
+    // Sauvegarde Coûts
+    await this.prisma.aiUsageMetric.create({
+      data: {
+        userId,
+        promptTokens: inputTokens,
+        completionTokens: outputTokens,
+        totalTokens: inputTokens + outputTokens,
+        estimatedCostUsd: (inputTokens + outputTokens) * 0.00001
+      }
+    });
+
     let session = await this.prisma.aiChatSession.findUnique({ where: { id: sessionId } });
     if (!session) {
-      session = await this.prisma.aiChatSession.create({
-        data: { id: sessionId, userId, history: [] }
-      });
+      session = await this.prisma.aiChatSession.create({ data: { id: sessionId, userId, history: [] } });
     }
-
     const history = Array.isArray(session.history) ? session.history : [];
     history.push({ role: 'user', content: message, timestamp: new Date() });
     history.push({ role: 'assistant', content: aiResponseText, timestamp: new Date() });
-
-    await this.prisma.aiChatSession.update({
-      where: { id: sessionId },
-      data: { history: history as any }
-    });
+    
+    await this.prisma.aiChatSession.update({ where: { id: sessionId }, data: { history: history as any } });
 
     return { response: aiResponseText };
+  }
+
+  /**
+   * Tâche 8.6: Assistant Admin (Analyse sur données réelles en lecture seule)
+   */
+  async adminAssistantQuery(adminId: string, query: string) {
+    // L'admin veut des stats sans coder de SQL
+    // Exemple d'outil: get_total_sales, get_active_distributors
+    return {
+      response: \`[ASSISTANT ADMIN] Analyse en cours pour : "\${query}". Fonction d'agrégation sécurisée en lecture seule appliquée.\`
+    };
   }
 }

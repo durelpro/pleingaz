@@ -37,4 +37,15 @@ export class AiController {
       }
     });
   }
+
+  // Admin AI Assistant (Tâche 8.6)
+  @Post('admin-query')
+  @UseGuards(RolesGuard)
+  @Roles('ADMIN')
+  async adminAssistantQuery(
+    @Request() req: any,
+    @Body() body: { query: string }
+  ) {
+    return this.aiService.adminAssistantQuery(req.user.userId, body.query);
+  }
 }
