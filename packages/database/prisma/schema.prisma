@@ -367,6 +367,7 @@ model Order {
   
   items           OrderItem[]
   reservations    StockReservation[]
+  payments        Payment[]
   delivery        Delivery?
   invoice         Invoice?
   
@@ -443,4 +444,43 @@ model Invoice {
   isVoided      Boolean  @default(false) // Pour gestion des avoirs
   
   createdAt     DateTime @default(now())
+}
+
+// ==========================================
+// PHASE 6: PAIEMENTS & WALLETS
+// ==========================================
+
+enum PaymentMethod {
+  CASH
+  MTN_MOMO
+  ORANGE_MONEY
+}
+
+enum PaymentStatus {
+  PENDING
+  SUCCESS
+  FAILED
+  REFUNDED
+}
+
+model Payment {
+  id              String        @id @default(uuid())
+  orderId         String
+  order           Order         @relation(fields: [orderId], references: [id])
+  
+  method          PaymentMethod
+  status          PaymentStatus @default(PENDING)
+  
+  amount          Float
+  fee             Float         @default(0) // Frais de transaction
+  
+  // Idempotence & Fournisseur
+  idempotencyKey  String        @unique // Empêcher les doublons
+  providerTxId    String?       @unique // ID de transaction renvoyé par MTN/Orange
+  
+  // Webhooks
+  lastWebhookData Json?
+  
+  createdAt       DateTime      @default(now())
+  updatedAt       DateTime      @updatedAt
 }
