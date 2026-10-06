@@ -177,7 +177,7 @@ M01 M02 M03 M04 M05 M06 M07 M08 M09 M10 M11 M12 M13 M14 M15 M16 M17 M18 M19 M20 
 -- lignes MVP placées en phase 7 à 10 (incohérent avec un MVP livré avant ; la phase 6 peut contenir le paiement en présentiel) :
    total : 0
 -- section DÉCISIONS DU PROPRIÉTAIRE :
-   ABSENTE (elle doit contenir Mobile Money MVP ou phase 6, et toute proposition de ne pas faire une exigence)
+   présente
 
 === 11. DOUBLONS DANS UNE MÊME SECTION (signe de remplissage pour atteindre un chiffre) ===
 total doublons : 0
@@ -239,6 +239,7 @@ V : 337
 Sections de décisions :
 11:## TROUS (Exigences non couvertes)
 28:## INCOHÉRENCES IDENTIFIÉES
+34:## DÉCISIONS DU PROPRIÉTAIRE
 
 === 17. BLOCS S/A/N/P NON TRONQUÉS (minima : S=32, A=45, N=24, P=120) ===
 ok S : 32
