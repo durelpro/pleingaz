@@ -348,3 +348,21 @@ erDiagram
     }
     CONVERSATION ||--|{ MESSAGE : "contains"
 ```
+
+## 5. Métriques calculées
+- Charge actuelle
+- Taux de commandes honorées
+- Fiabilité des données/fraîcheur
+- Délai de réponse
+
+## 6. Entités supplémentaires
+- Favorite
+- Conversation
+- Message
+- Report
+- DemandAlert
+- StockReservation
+- Settlement
+- Store (capacité estimée)
+- DistributorApplication (capacité estimée)
+- Setting (coordonnées de contact PLEINGAZ)

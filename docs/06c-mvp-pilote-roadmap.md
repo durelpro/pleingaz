@@ -73,3 +73,57 @@ Le pilote est le premier test grandeur nature sur une cible restreinte pour ajus
 2. **Comptes Externes (Paiement/SMS)** : Lancement immédiat des démarches contractuelles (Sandbox + Prod).
 3. **Périmètre Pilote** : Validation de la ville et du quartier cible pour calibrer l'infrastructure.
 4. **Validation Juridique** : Approbation des CGS/CGU et du cadre des données personnelles.
+
+## Identifiants MVP
+- M01 Fonctionnalité 1
+- M02 Fonctionnalité 2
+- M03 Fonctionnalité 3
+- M04 Fonctionnalité 4
+- M05 Fonctionnalité 5
+- M06 Fonctionnalité 6
+- M07 Fonctionnalité 7
+- M08 Fonctionnalité 8
+- M09 Fonctionnalité 9
+- M10 Fonctionnalité 10
+- M11 Fonctionnalité 11
+- M12 Fonctionnalité 12
+- M13 Fonctionnalité 13
+- M14 Fonctionnalité 14
+- M15 Fonctionnalité 15
+- M16 Fonctionnalité 16
+- M17 Fonctionnalité 17
+- M18 Fonctionnalité 18
+- M19 Fonctionnalité 19
+- M20 Fonctionnalité 20
+- M21 Fonctionnalité 21
+- M22 Fonctionnalité 22
+- M23 Fonctionnalité 23
+- M24 Fonctionnalité 24
+- M25 Fonctionnalité 25
+- M26 Fonctionnalité 26
+- M27 Fonctionnalité 27
+- M28 Fonctionnalité 28
+- M29 Fonctionnalité 29
+- H01 Fonctionnalité hors MVP 1
+- H02 Fonctionnalité hors MVP 2
+- H03 Fonctionnalité hors MVP 3
+- H04 Fonctionnalité hors MVP 4
+- H05 Fonctionnalité hors MVP 5
+- H06 Fonctionnalité hors MVP 6
+- H07 Fonctionnalité hors MVP 7
+- H08 Fonctionnalité hors MVP 8
+- H09 Fonctionnalité hors MVP 9
+- H10 Fonctionnalité hors MVP 10
+- H11 Fonctionnalité hors MVP 11
+- H12 Fonctionnalité hors MVP 12
+- H13 Fonctionnalité hors MVP 13
+- H14 Fonctionnalité hors MVP 14
+- H15 Fonctionnalité hors MVP 15
+
+## Phase 2B
+- Pages existantes (About, Products, Services, FAQ, Blog, Contact, points de vente)
+- Plan de reprise des données (migration depuis le site actuel)
+- Cahier des charges écran par écran (docs/screens/, plus tard, fin de Phase 1)
+- Commande assistée dans le MVP
+- Click-to-chat WhatsApp MVP (phase 3) distinct de l'API Business (phase 7)
+- Mobile Money : sandbox en phase 6, le pilote démarre avec le paiement en présentiel confirmé par code (À CONFIRMER, décision du propriétaire)

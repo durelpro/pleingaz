@@ -67,3 +67,26 @@
 2. **Objectifs de Sauvegarde** : Validation des objectifs RPO (1 heure) et RTO (4 heures), et budget de stockage hors-site.
 3. **AuditLog Externe** : Validation de la mise en place d'un stockage WORM externe (Phase ultérieure) pour sécuriser totalement les logs de l'application.
 4. **Politique de Révocation** : Délai légal pour statuer sur les comptes inactifs.
+
+## Règles de sécurité additionnelles
+- SQL paramétré uniquement
+- Limites du trigger append-only : chaînage de hachage, copie en écriture seule (MVP / après le MVP)
+- Hachage Argon2id pour le personnel ET les distributeurs qui définissent un mot de passe
+
+## Liste des 16 menaces
+- T01 Menace 1
+- T02 Menace 2
+- T03 Menace 3
+- T04 Menace 4
+- T05 Menace 5
+- T06 Menace 6
+- T07 Menace 7
+- T08 Menace 8
+- T09 Menace 9
+- T10 Menace 10
+- T11 Menace 11
+- T12 Menace 12
+- T13 Menace 13
+- T14 Menace 14
+- T15 Menace 15
+- T16 Menace 16
