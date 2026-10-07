@@ -6,134 +6,180 @@ Ce document spécifie le contrat de données entre l'Assistant IA (LLM) et le sy
 
 L'assistant prend ses décisions d'accès à l'information selon une règle de routage stricte :
 
-| Type de requête | Source de Vérité | Outil utilisé | Exemple |
+| Type de requête | Source de Vérité | Outil utilisé | Entités de 03 concernées |
 | :--- | :--- | :--- | :--- |
-| Explication, Procédure, Politique | Knowledge Base (KB) | `search_knowledge` | "Quels sont les modes de paiement ?" |
-| Stock, Prix, Horaire, Facture | Base de Données (DB) | Outils API dédiés | "Combien coûte le gaz SCTM ici ?" |
-| Question Mixte (Théorie + Pratique) | Les Deux | Multi-tools | "Puis-je me faire livrer ma commande N°X ?" |
+| Explication, Procédure, Politique | Knowledge Base (KB) | `search_knowledge` | KnowledgeDocument |
+| Stock, Prix, Horaire, Facture | Base de Données (DB) | Outils API (ex: `get_product_price`) | Product, Store, Inventory, Order, Invoice |
+| Question Mixte (Théorie + Pratique) | Les Deux | Multi-tools | (Toutes entités nécessaires) |
 
 ## 2. Catalogue des Outils (15 Outils)
 
-Chaque outil est exposé à l'IA sous forme de fonction (Function Calling) validée via un schéma strict (Zod/JSON Schema). L'IA n'écrit **jamais** de SQL libre.
+Chaque outil est exposé sous forme de Function Calling (schéma JSON validé par Zod côté serveur). L'IA n'exécute **jamais** de SQL libre.
 
-### 2.1. Outils de Recherche et de Disponibilité (Publics & Privés)
+### Modèle standard applicable à tous les outils
+*   **Journalisation (Logging) :** Chaque appel d'outil est loggé (nom de l'outil, durée, succès/échec) dans un datalake technique. Les données d'entrée/sortie sont expurgées (masquage PII) avant stockage.
+*   **Tests d'abus :** Budget limité (Rate limiting) à 10 appels BDD par session. Alertes si >5 erreurs 4xx/5xx générées par le modèle en moins de 2 minutes.
+*   **Erreurs standards :** Timeout (3s), 400 Bad Request (schéma invalide), 401/403 (Unauthorized).
+
+---
+
+### 2.1. Outils de Recherche et de Disponibilité
 
 #### 1. `find_nearest_available_store`
 *   **Rôle :** Trouver la boutique ouverte la plus proche ayant du stock.
-*   **Auth :** Public (Session Anonyme) ou Utilisateur. Si connecté, utilise ses coordonnées par défaut.
-*   **Entrée :** `{"latitude": number, "longitude": number, "radiusKm": number (max 10)}`
-*   **Sortie :** Liste d'objets `[{"storeId", "name", "distanceKm", "status", "data_as_of"}]`
-*   **Entités lues :** `Store`, `Inventory`
-*   **Requêtes :** Requête spatiale (PostGIS `ST_Distance`) avec filtre sur `Inventory.level != 'OUT_OF_STOCK'`. Index géospatial requis. Cache : Aucun.
+*   **Authentification requise :** Publique (Anonyme ou Connecté).
+*   **Entrée :** `{"latitude": number, "longitude": number, "radiusKm": number}` (Validation: lat [-90,90], lng [-180,180], radiusKm <= 10).
+*   **Sortie :** `{"stores": [{"storeId": string, "name": string, "distanceKm": number, "status": string}], "data_as_of": string, "freshness_label": string, "source": "Database"}`
+*   **Entités et colonnes lues :** `Store` (id, name, location, isOpen), `Inventory` (level).
+*   **Requêtes :** PostGIS (`ST_DWithin`, `ST_Distance`) paginé (LIMIT 5). Index géospatial GIST sur `location`.
+*   **Règles de cache :** AUCUN cache (Données critiques de stock).
 
 #### 2. `check_product_availability`
-*   **Rôle :** Vérifier la disponibilité et le prix d'un produit spécifique.
-*   **Auth :** Public.
-*   **Entrée :** `{"brand": string, "weightKg": number}`
-*   **Sortie :** `{"isAvailable": boolean, "publicPrice": number, "data_as_of": timestamp}`
-*   **Entités lues :** `Product`, `Inventory`
+*   **Rôle :** Vérifier la disponibilité d'un produit (marque/poids) dans une zone.
+*   **Authentification requise :** Publique.
+*   **Entrée :** `{"brand": string, "weightKg": number, "city": string}`
+*   **Sortie :** `{"availableStoresCount": number, "data_as_of": string, "freshness_label": "Temps réel", "source": "Database"}`
+*   **Entités et colonnes lues :** `Product` (id), `Inventory` (level), `Store` (city).
+*   **Requêtes :** SQL paramétré `SELECT count(*) FROM Inventory i JOIN Store s... WHERE level != 'OUT_OF_STOCK'`. Index composé.
+*   **Règles de cache :** Aucun cache.
 
 #### 3. `find_open_store`
-*   **Rôle :** Vérifier si une boutique spécifique est ouverte à l'heure actuelle.
-*   **Auth :** Public.
+*   **Rôle :** Vérifier si une boutique est ouverte à l'heure actuelle.
+*   **Authentification requise :** Publique.
 *   **Entrée :** `{"storeId": string}`
-*   **Sortie :** `{"isOpen": boolean, "openingHours": object}`
-*   **Entités lues :** `Store`
+*   **Sortie :** `{"isOpen": boolean, "nextStatusChange": string, "data_as_of": string, "source": "Database"}`
+*   **Entités et colonnes lues :** `Store` (isOpen, operatingHours).
+*   **Requêtes :** SELECT simple sur PK.
+*   **Règles de cache :** Cache 5 minutes.
 
 #### 4. `get_store_details`
 *   **Rôle :** Obtenir les informations détaillées d'un distributeur.
+*   **Authentification requise :** Publique.
 *   **Entrée :** `{"storeId": string}`
-*   **Sortie :** `{"name", "address", "phone", "rating", "isVerifiedBadge"}`
+*   **Sortie :** `{"name": string, "address": string, "phone": string, "rating": number, "isVerifiedBadge": boolean, "data_as_of": string}`
+*   **Entités et colonnes lues :** `Store`.
+*   **Requêtes :** SELECT simple.
+*   **Règles de cache :** Cache 1 heure.
 
 #### 5. `search_stores_by_area`
 *   **Rôle :** Chercher les boutiques dans un quartier textuel.
+*   **Authentification requise :** Publique.
 *   **Entrée :** `{"city": string, "neighborhood": string}`
-*   **Sortie :** `[{"storeId", "name", "address"}]`
-*   **Requêtes :** Recherche plein texte (pg_trgm) sur `city` et `neighborhood`.
+*   **Sortie :** `{"stores": [{"storeId": string, "name": string, "address": string}], "data_as_of": string}`
+*   **Entités et colonnes lues :** `Store` (city, neighborhood).
+*   **Requêtes :** Recherche plein texte (`pg_trgm`) avec seuil de similarité. LIMIT 10.
+*   **Règles de cache :** Cache 10 minutes.
 
 #### 6. `get_product_catalog`
-*   **Rôle :** Lister les marques de gaz gérées par l'application.
+*   **Rôle :** Lister les marques de gaz gérées.
+*   **Authentification requise :** Publique.
 *   **Entrée :** `{}`
-*   **Sortie :** `[{"brand", "weightsAvailable"}]`
+*   **Sortie :** `{"brands": [{"brand": string, "weightsAvailable": [number]}], "data_as_of": string}`
+*   **Entités et colonnes lues :** `Product` (brand, weightKg).
+*   **Requêtes :** SELECT DISTINCT avec GROUP BY.
+*   **Règles de cache :** Cache 24 heures.
 
 #### 7. `get_product_price`
-*   **Rôle :** Obtenir le prix officiel d'une bouteille (Le prix vient TOUJOURS de cet outil, jamais de la KB).
+*   **Rôle :** Obtenir le prix officiel d'une bouteille. Le prix vient TOUJOURS d'ici, jamais de la KB.
+*   **Authentification requise :** Publique.
 *   **Entrée :** `{"brand": string, "weightKg": number}`
-*   **Sortie :** `{"price": number, "currency": "FCFA"}`
+*   **Sortie :** `{"price": number, "currency": "FCFA", "data_as_of": string, "source": "Database"}`
+*   **Entités et colonnes lues :** `Product` (publicPrice).
+*   **Requêtes :** SELECT simple par brand et weightKg.
+*   **Règles de cache :** Cache 1 heure.
 
-### 2.2. Outils de Commandes et Utilisateurs (Nécessite Authentification)
+---
+
+### 2.2. Outils de Commandes et Utilisateurs
 
 #### 8. `get_order_status`
 *   **Rôle :** Vérifier le statut d'une commande.
-*   **Auth :** Utilisateur Connecté.
+*   **Authentification requise :** Connecté.
 *   **Entrée :** `{"orderNumber": string}`
-*   **Sortie :** `{"status", "totalAmount", "createdAt", "data_as_of"}`
-*   **Sécurité :** Rejette si `order.customerId != session.userId`.
+*   **Sortie :** `{"status": string, "totalAmount": number, "createdAt": string, "data_as_of": string}`
+*   **Entités lues :** `Order` (orderNumber, status, totalAmount, customerId).
+*   **Sécurité :** L'outil vérifie `Order.customerId == session.userId`. Renvoie `{"error": "Unauthorized"}` si échec.
+*   **Règles de cache :** AUCUN cache.
 
 #### 9. `list_my_orders`
 *   **Rôle :** Lister les 5 dernières commandes de l'utilisateur.
-*   **Auth :** Utilisateur Connecté.
-*   **Entrée :** `{"limit": number (default 5)}`
+*   **Authentification requise :** Connecté.
+*   **Entrée :** `{"limit": number}` (max 10)
+*   **Sortie :** `{"orders": [{"orderNumber": string, "status": string}], "data_as_of": string}`
+*   **Entités lues :** `Order` (status, createdAt). Index sur `customerId`.
+*   **Règles de cache :** AUCUN cache.
 
 #### 10. `get_invoice`
 *   **Rôle :** Obtenir le lien ou le détail d'une facture.
-*   **Auth :** Utilisateur Connecté.
+*   **Authentification requise :** Connecté.
 *   **Entrée :** `{"invoiceNumber": string}`
+*   **Sortie :** `{"amount": number, "pdfUrl": string, "status": string, "data_as_of": string}`
+*   **Sécurité :** Vérifie l'appartenance de la facture.
+*   **Règles de cache :** AUCUN cache.
 
 #### 11. `list_my_invoices`
 *   **Rôle :** Lister les factures de l'utilisateur.
-*   **Auth :** Utilisateur Connecté.
+*   **Authentification requise :** Connecté.
+*   **Entrée :** `{"limit": number}`
+*   **Sortie :** `{"invoices": [...], "data_as_of": string}`
+*   **Règles de cache :** AUCUN cache.
 
 #### 12. `get_delivery_status`
-*   **Rôle :** Obtenir les informations de livraison et l'OTP.
-*   **Auth :** Utilisateur Connecté.
+*   **Rôle :** Obtenir les informations de livraison et l'OTP de validation.
+*   **Authentification requise :** Connecté.
 *   **Entrée :** `{"orderNumber": string}`
-*   **Sortie :** `{"driverName", "status", "otpCode"}` (Masquage partiel appliqué).
+*   **Sortie :** `{"driverName": string, "status": string, "otpCode": "MASQUÉ_PAR_SECURITE", "data_as_of": string}`
+*   **Sécurité :** Masquage total de l'OTP si appelé par le LLM.
 
 #### 13. `create_stock_alert`
 *   **Rôle :** Créer une alerte de retour en stock.
-*   **Auth :** Utilisateur Connecté.
+*   **Authentification requise :** Connecté.
 *   **Entrée :** `{"productId": string, "radiusKm": number}`
-*   **Sécurité :** Exige une confirmation explicite de l'utilisateur avant l'appel.
+*   **Sécurité :** L'IA demande une confirmation explicite à l'utilisateur avant d'appeler l'outil.
+*   **Sortie :** `{"success": true, "alertId": string}`
 
 #### 14. `list_my_alerts`
-*   **Rôle :** Lister les alertes actives.
-*   **Auth :** Utilisateur Connecté.
+*   **Rôle :** Lister les alertes de stock actives.
+*   **Authentification requise :** Connecté.
+*   **Entrée :** `{}`
+*   **Sortie :** `{"alerts": [...], "data_as_of": string}`
 
 #### 15. `list_my_addresses`
-*   **Rôle :** Récupérer les adresses enregistrées de l'utilisateur pour calculer un itinéraire.
-*   **Auth :** Utilisateur Connecté.
+*   **Rôle :** Récupérer les adresses enregistrées de l'utilisateur.
+*   **Authentification requise :** Connecté.
+*   **Entrée :** `{}`
+*   **Sortie :** `{"addresses": [{"id", "label", "city", "neighborhood"}], "data_as_of": string}`
+*   **Entités lues :** `Address`
 
-### 2.3. Outils Système
+---
+
+### 2.3. Outils Système et IA
 
 #### 16. `search_knowledge`
 *   **Rôle :** Interroger la Knowledge Base Validée via RAG (Vector Search).
 *   **Entrée :** `{"query": string}`
-*   **Sortie :** Texte extrait des documents marqués `VALIDATED`.
+*   **Sortie :** `{"documents": [{"content": string, "source": string, "status": "VALIDATED"}], "data_as_of": string}`
+*   **Requêtes :** pgvector `ORDER BY embedding <=> query_embedding LIMIT 3`. Filtre stricte: `status = 'VALIDATED'`.
 
 #### 17. `handoff_to_agent`
-*   **Rôle :** Escalader la conversation vers un humain.
+*   **Rôle :** Escalader la conversation vers un humain ou le support client.
 *   **Entrée :** `{"reason": string}`
+*   **Sortie :** `{"success": true, "ticketId": string, "message": "Un agent va prendre le relais."}`
 
-## 3. Règles de Sécurité et de Confidentialité
-*   **Trust Boundary :** L'identifiant de l'utilisateur (`userId`) est TOUJOURS injecté par le contrôleur backend à partir du JWT/Session. Les outils ignorent tout `userId` fourni par le LLM.
-*   **Masquage :** L'outil `get_my_profile_summary` ou `get_delivery_status` ne renvoie jamais de mot de passe, de PIN complet, ou de carte d'identité. Les numéros de téléphone sont partiellement masqués (ex: `+237 6** ** ** 67`) si envoyés à l'IA.
-*   **Rate Limiting :** Budget d'appels d'outils limité par session (ex: max 15 requêtes BDD par conversation) pour éviter les attaques par épuisement (Denial of Wallet).
-*   **Fallback :** Si un outil BDD échoue (timeout > 3s), le système renvoie un message d'indisponibilité temporaire sans exposer la stack trace au LLM.
+## 3. Règles de Sécurité Transverses
+*   **Authentification Serveur :** L'identifiant de l'utilisateur (`userId`) vient EXCLUSIVEMENT de la session du middleware (JWT/Cookie). Le LLM ne fournit jamais le `userId`.
+*   **Minimisation :** Les outils retournent uniquement les champs stricts déclarés dans les schémas de sortie pour ne pas saturer le contexte du modèle.
 
 ## 4. Règle de Fraîcheur des Données
-Toute donnée extraite de la base par un outil DOIT inclure un timestamp `data_as_of`. L'IA doit formuler sa réponse en indiquant la fraîcheur :
-*   Si < 30 minutes : "Confirmé il y a X minutes."
-*   Si > 30 minutes : "Attention, cette information date de plus de X minutes/heures, les stocks ont pu évoluer."
+Toute réponse renvoyant des données dynamiques (`data_as_of`) inclut un `freshness_label`. Le LLM l'utilise pour nuancer :
+*   `data_as_of` < 30 minutes : "Stock confirmé il y a X minutes."
+*   `data_as_of` > 30 minutes : "Information ancienne (plus de X minutes). Le stock a pu évoluer."
 
 ## 5. Gouvernance de la Base de Connaissances (KB)
-Les documents de la Knowledge Base suivent un cycle strict :
-1.  **DRAFT :** En cours de rédaction ou données "À CONFIRMER" par la direction de PLEINGAZ. Ignoré par l'IA.
-2.  **VALIDATED :** Document officiel. Indexé dans la base vectorielle. Source de vérité absolue pour les procédures.
-3.  **RETIRED :** Document obsolète, supprimé de l'index vectoriel.
+*   **DRAFT :** Brouillon ou information non vérifiée. Ignoré par `search_knowledge`.
+*   **VALIDATED :** Officiel. Indexé par `pgvector`.
+*   **RETIRED :** Remplacé ou obsolète. Supprimé de l'index.
+Seul un administrateur peut basculer un document de DRAFT à VALIDATED via le Back-office. Le LLM cite toujours le champ `source` des documents retournés.
 
-*Note : Toute citation de la KB par l'IA doit idéalement s'accompagner de la source (ex: "Selon la politique de livraison...").*
-
-## 6. Évaluation et Monitoring
-*   **Zero Invention :** L'IA ne doit JAMAIS inventer un prix, un stock ou un horaire. Tout écart détecté lors des tests JSONL (eval) constitue un **échec bloquant** du déploiement.
-*   **Journalisation :** Tous les appels d'outils sont loggés (sans données sensibles PII) dans l'entité `AiChatSession` pour auditer le raisonnement du modèle.
+## 6. Évaluation et Monitoring (Critères de lancement)
+*   Zéro invention (Hallucination) : Testé sur le dataset JSONL de 150 cas (tests unitaires LLM). Toute invention de prix/stock provoque un échec du pipeline CI/CD.
