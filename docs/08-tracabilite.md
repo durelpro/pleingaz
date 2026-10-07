@@ -32,7 +32,9 @@ Ce document prouve que chaque exigence atomique des 5 fichiers sources (Vision, 
 | Pages | Le maintien des pages existantes était listé, mais pas planifié explicitement. | `06c-mvp-pilote-roadmap.md` | Migration des pages ajoutée à la Phase 2B (correction effectuée). |
 
 ## DÉCISIONS DU PROPRIÉTAIRE
-- **Mobile Money** : Sandbox en phase 6, le pilote démarre avec le paiement en présentiel confirmé par code.
+
+*   **[DÉCISION-AUTH-OTP]** (cf. docs/02b-espace-acheteur.md) : L'authentification par email/mot de passe décrite dans la section 5 de la vision est remplacée par une authentification par OTP (SMS/WhatsApp) sur le numéro de téléphone. L'email devient facultatif. Justification : Taux de conversion et usages du marché local.
+*   **[DÉCISION-IA-ONBOARDING]** : L'assistant IA n'envoie pas de code et ne crée pas de compte de manière autonome pour le MVP. Il explique la démarche et redirige vers le parcours d'inscription.- **Mobile Money** : Sandbox en phase 6, le pilote démarre avec le paiement en présentiel confirmé par code.
 - **Exigences écartées** : Aucune exigence de la vision n'a été écartée sans décision explicite du propriétaire.
 
 ---

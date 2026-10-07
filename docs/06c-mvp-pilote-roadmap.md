@@ -40,13 +40,12 @@ Le pilote est le premier test grandeur nature sur une cible restreinte pour ajus
 ## 3. Roadmap et Chemin Critique
 | Phase | Sujet | Complexité | Dépendances & Risques |
 |---|---|---|---|
-| **MVP (1-2)** | Core : Auth, Stock, BDD, Commandes, PWA. | L | Validation Juridique, Accès OTP. |
-| **Pilote** | Déploiement terrain, Paiement, Factures. | M | Comptes Marchands MTN/Orange validés. |
-| **Phase 2B** | Migration des pages existantes (About, FAQ, Blog, Contact, Services, Products, Engagements), cahier des charges (docs/screens/), Avis clients, WhatsApp API. | M | Compte Meta Officiel. |
-| **Phase 3** | Payout automatisé aux distributeurs. | H | Intégration API de décaissement (Opérateur). |
-| **Phase 4-5** | Cartographie avancée (Auto-hébergement). | H | Coûts serveurs dédiés géospatiaux. |
-| **Phase 6-7** | BI, Dashboards avancés, Reporting fiscal. | M | Outils d'export / Data Lake léger. |
-| **Phase 8-10**| Assistant IA, Forecasting, Optimisations. | H | Données massives pour le RAG, Coûts LLM. |
+| **Phase 4** | Espace Acheteur : Auth OTP, Profil, Tableau de bord | M | Validation OTP (SMS/WhatsApp). |
+| **Phase 5** | Espace Acheteur : Adresses, Commandes, Cartographie avancée | H | Coûts serveurs dédiés géospatiaux. |
+| **Phase 6** | Espace Acheteur : Factures, Mobile Money (Sandbox) | M | Génération PDF (Puppeteer/ExcelJS). |
+| **Phase 7** | Espace Acheteur : Favoris, Alertes Stock, Préférences | M | Moteur de notification (BullMQ). |
+| **Phase 8** | Assistant IA (RAG), Avis Clients | H | Données massives pour le RAG, Coûts LLM. |
+| **Phase 9** | Conformité, RGPD, Suppression de compte | L | Conformité légale. |
 
 **Chemin Critique** : Les modules RBAC, Paiement et Authentification conditionnent l'ensemble de la livraison du MVP.
 
