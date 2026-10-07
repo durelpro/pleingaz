@@ -28,13 +28,13 @@ export default function PilotageDashboard() {
         <div className="flex flex-col md:flex-row justify-between items-start md:items-end gap-4">
           <div>
             <h1 className="text-3xl font-black text-gray-900 dark:text-white flex items-center gap-3">
-              <BarChart3 className="text-pleingaz-orange" size={32} />
+              <BarChart3 className="text-pleingaz-red" size={32} />
               Pilotage & Analytique
             </h1>
             <p className="text-gray-500 mt-2">Vision globale, fiabilité des distributeurs et prévention des ruptures.</p>
           </div>
           <div className="flex gap-3">
-            <button className="flex items-center gap-2 px-4 py-2.5 bg-white dark:bg-neutral-900 border border-gray-200 dark:border-neutral-800 rounded-xl text-gray-700 dark:text-gray-300 font-bold hover:border-pleingaz-orange transition-colors">
+            <button className="flex items-center gap-2 px-4 py-2.5 bg-white dark:bg-neutral-900 border border-gray-200 dark:border-neutral-800 rounded-xl text-gray-700 dark:text-gray-300 font-bold hover:border-pleingaz-red transition-colors">
               <Filter size={18} />
               Filtres
             </button>
@@ -54,7 +54,7 @@ export default function PilotageDashboard() {
             icon={<PackageX />} 
             alert="HIGH"
           />
-          <div className="col-span-1 md:col-span-2 bg-gradient-to-br from-pleingaz-orange to-red-500 p-6 rounded-3xl text-white shadow-lg shadow-orange-500/20 flex flex-col justify-between">
+          <div className="col-span-1 md:col-span-2 bg-gradient-to-br from-pleingaz-red to-red-500 p-6 rounded-3xl text-white shadow-lg shadow-orange-500/20 flex flex-col justify-between">
             <div className="flex justify-between items-start">
               <h3 className="font-bold text-white/80">Alerte IA (Tâche 9.3)</h3>
               <AlertTriangle className="text-white/80" />
@@ -159,7 +159,7 @@ export default function PilotageDashboard() {
                       {store.name}
                     </td>
                     <td className="py-4">
-                      <span className={\`font-black \${store.score > 80 ? 'text-green-500' : store.score > 50 ? 'text-orange-500' : 'text-red-500'}\`}>
+                      <span className={`font-black \${store.score > 80 ? 'text-green-500' : store.score > 50 ? 'text-orange-500' : 'text-red-500'}`}>
                         {store.score}/100
                       </span>
                     </td>
@@ -192,7 +192,7 @@ function InsightCard({ title, value, desc, icon, alert }: { title: string, value
   };
 
   return (
-    <div className={\`p-6 rounded-3xl border \${colors[alert]} flex flex-col justify-between\`}>
+    <div className={`p-6 rounded-3xl border \${colors[alert]} flex flex-col justify-between`}>
       <div className="flex justify-between items-start mb-4">
         <div className="p-2 bg-white dark:bg-neutral-900 rounded-xl shadow-sm">
           {icon}

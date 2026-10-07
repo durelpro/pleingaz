@@ -34,7 +34,7 @@ export default function SearchPage() {
         
         {/* Header */}
         <div className="text-center space-y-4">
-          <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-orange-100 dark:bg-orange-900/30 text-pleingaz-orange mb-2">
+          <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-orange-100 dark:bg-orange-900/30 text-pleingaz-red mb-2">
             <Flame size={32} />
           </div>
           <h1 className="text-4xl font-extrabold text-gray-900 dark:text-white">
@@ -48,11 +48,11 @@ export default function SearchPage() {
         {/* Search Bar */}
         <form onSubmit={handleSearch} className="relative group">
           <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
-            <Search className="text-gray-400 group-focus-within:text-pleingaz-orange transition-colors" />
+            <Search className="text-gray-400 group-focus-within:text-pleingaz-red transition-colors" />
           </div>
           <input
             type="text"
-            className="w-full pl-12 pr-16 py-4 bg-white dark:bg-neutral-900 border-2 border-gray-100 dark:border-neutral-800 rounded-2xl text-lg focus:border-pleingaz-orange focus:ring-0 outline-none shadow-sm transition-all"
+            className="w-full pl-12 pr-16 py-4 bg-white dark:bg-neutral-900 border-2 border-gray-100 dark:border-neutral-800 rounded-2xl text-lg focus:border-pleingaz-red focus:ring-0 outline-none shadow-sm transition-all"
             placeholder="Ex: Bonamoussadi, ou 'Ma position'"
             value={query}
             onChange={(e) => setQuery(e.target.value)}
@@ -99,7 +99,7 @@ export default function SearchPage() {
                       <span className={`px-3 py-1 rounded-full text-sm font-bold \${getBadgeColor(store.stockLevel)}`}>
                         {store.stockLevel === 'HIGH' ? 'BON STOCK' : 'STOCK MOYEN'}
                       </span>
-                      <button className="px-5 py-2 bg-gray-900 dark:bg-white text-white dark:text-gray-900 font-bold rounded-xl hover:bg-pleingaz-orange dark:hover:bg-pleingaz-orange hover:text-white transition-colors">
+                      <button className="px-5 py-2 bg-gray-900 dark:bg-white text-white dark:text-gray-900 font-bold rounded-xl hover:bg-pleingaz-red dark:hover:bg-pleingaz-red hover:text-white transition-colors">
                         Y aller
                       </button>
                     </div>
@@ -109,7 +109,7 @@ export default function SearchPage() {
                 <div className="bg-orange-50 dark:bg-orange-900/20 border border-orange-200 dark:border-orange-800 p-8 rounded-2xl text-center space-y-4">
                   <h3 className="text-orange-800 dark:text-orange-400 font-bold text-lg">Oups, rupture de stock par ici !</h3>
                   <p className="text-orange-700 dark:text-orange-300">Aucun distributeur n'a de gaz dans cette zone actuellement.</p>
-                  <button className="inline-flex items-center gap-2 px-6 py-3 bg-pleingaz-orange text-white font-bold rounded-xl shadow-lg shadow-orange-500/30 hover:-translate-y-0.5 transition-all">
+                  <button className="inline-flex items-center gap-2 px-6 py-3 bg-pleingaz-red text-white font-bold rounded-xl shadow-lg shadow-orange-500/30 hover:-translate-y-0.5 transition-all">
                     <BellRing size={20} />
                     Alertez-moi quand le gaz revient
                   </button>

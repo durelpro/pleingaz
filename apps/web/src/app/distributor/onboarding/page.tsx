@@ -13,20 +13,20 @@ export default function DistributorOnboarding() {
         {/* Progress Bar */}
         <div className="flex gap-2 mb-8">
           {[1, 2, 3].map((i) => (
-            <div key={i} className={\`h-2 flex-1 rounded-full \${step >= i ? 'bg-pleingaz-orange' : 'bg-gray-100 dark:bg-neutral-800'}\`} />
+            <div key={i} className={`h-2 flex-1 rounded-full \${step >= i ? 'bg-pleingaz-red' : 'bg-gray-100 dark:bg-neutral-800'}`} />
           ))}
         </div>
 
         {step === 1 && (
           <div className="text-center space-y-4">
-            <div className="w-20 h-20 bg-orange-100 dark:bg-orange-900/30 text-pleingaz-orange rounded-full flex items-center justify-center mx-auto mb-6">
+            <div className="w-20 h-20 bg-orange-100 dark:bg-orange-900/30 text-pleingaz-red rounded-full flex items-center justify-center mx-auto mb-6">
               <Store size={40} />
             </div>
             <h1 className="text-2xl font-black text-gray-900 dark:text-white">Bienvenue sur Pleingaz !</h1>
             <p className="text-gray-500">Votre boutique est prête à recevoir des commandes. Suivez ce guide rapide pour comprendre le fonctionnement.</p>
             <button 
               onClick={() => setStep(2)}
-              className="w-full py-3.5 bg-pleingaz-orange text-white font-bold rounded-xl mt-6 hover:opacity-90 transition-opacity"
+              className="w-full py-3.5 bg-pleingaz-red text-white font-bold rounded-xl mt-6 hover:opacity-90 transition-opacity"
             >
               Suivant
             </button>
@@ -42,7 +42,7 @@ export default function DistributorOnboarding() {
             <p className="text-gray-500">Mettez à jour votre stock quotidiennement. Une alerte sera envoyée si votre stock est bas, ce qui pourrait baisser votre score de fiabilité.</p>
             <button 
               onClick={() => setStep(3)}
-              className="w-full py-3.5 bg-pleingaz-orange text-white font-bold rounded-xl mt-6 hover:opacity-90 transition-opacity"
+              className="w-full py-3.5 bg-pleingaz-red text-white font-bold rounded-xl mt-6 hover:opacity-90 transition-opacity"
             >
               Suivant
             </button>

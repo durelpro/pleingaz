@@ -39,7 +39,7 @@ export default function SupportPage() {
 
           {/* Email Support */}
           <div className="bg-white dark:bg-neutral-900 p-8 rounded-3xl shadow-sm border border-gray-100 dark:border-neutral-800 text-center space-y-6">
-            <div className="w-16 h-16 bg-orange-50 dark:bg-orange-900/20 rounded-full flex items-center justify-center mx-auto text-pleingaz-orange">
+            <div className="w-16 h-16 bg-orange-50 dark:bg-orange-900/20 rounded-full flex items-center justify-center mx-auto text-pleingaz-red">
               <Mail size={32} />
             </div>
             <div>
@@ -47,7 +47,7 @@ export default function SupportPage() {
               <p className="text-gray-500">{supportEmail}</p>
             </div>
             <a 
-              href={\`mailto:\${supportEmail}\`}
+              href={`mailto:${supportEmail}`}
               className="inline-flex w-full items-center justify-center gap-2 px-6 py-3 bg-gray-100 dark:bg-neutral-800 hover:bg-gray-200 dark:hover:bg-neutral-700 text-gray-900 dark:text-white font-bold rounded-2xl transition-all"
             >
               Nous écrire

@@ -21,7 +21,7 @@ export default function StoresPublicMap() {
             <input 
               type="text" 
               placeholder="Ville, Quartier, Repère..." 
-              className="w-full pl-12 pr-4 py-3 bg-gray-50 dark:bg-neutral-950 border border-gray-200 dark:border-neutral-800 rounded-xl focus:ring-2 focus:ring-pleingaz-orange outline-none transition-all"
+              className="w-full pl-12 pr-4 py-3 bg-gray-50 dark:bg-neutral-950 border border-gray-200 dark:border-neutral-800 rounded-xl focus:ring-2 focus:ring-pleingaz-red outline-none transition-all"
               value={search}
               onChange={(e) => setSearch(e.target.value)}
             />
@@ -32,7 +32,7 @@ export default function StoresPublicMap() {
           {/* Fausse donnée pour la démo du design */}
           <div className="p-5 rounded-2xl border border-gray-100 dark:border-neutral-800 bg-white dark:bg-neutral-900 hover:shadow-lg transition-shadow cursor-pointer group">
             <div className="flex justify-between items-start mb-2">
-              <h3 className="font-bold text-gray-900 dark:text-white group-hover:text-pleingaz-orange transition-colors">ETS Kamga & Fils</h3>
+              <h3 className="font-bold text-gray-900 dark:text-white group-hover:text-pleingaz-red transition-colors">ETS Kamga & Fils</h3>
               <span className="px-2 py-1 bg-green-100 text-green-700 text-xs font-bold rounded-full">Vérifié</span>
             </div>
             <p className="text-sm text-gray-500 mb-4">📍 Bonamoussadi, Derrière la boulangerie Saker</p>

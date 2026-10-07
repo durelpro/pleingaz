@@ -50,17 +50,17 @@ export default function DeliveryTracker() {
                         backgroundColor: isActive ? '#f97316' : '#f3f4f6',
                         scale: isCurrent ? 1.2 : 1
                       }}
-                      className={\`w-14 h-14 rounded-full flex items-center justify-center z-10 \${isActive ? 'text-white' : 'text-gray-400 dark:text-gray-600 dark:bg-neutral-800'}\`}
+                      className={`w-14 h-14 rounded-full flex items-center justify-center z-10 ${isActive ? 'text-white' : 'text-gray-400 dark:text-gray-600 dark:bg-neutral-800'}`}
                     >
                       <Icon size={24} />
                     </motion.div>
                     
                     <div>
-                      <h3 className={\`font-bold text-lg \${isActive ? 'text-gray-900 dark:text-white' : 'text-gray-400'}\`}>
+                      <h3 className={`font-bold text-lg ${isActive ? 'text-gray-900 dark:text-white' : 'text-gray-400'}`}>
                         {step.label}
                       </h3>
                       {isCurrent && step.key === 'IN_TRANSIT' && (
-                        <p className="text-pleingaz-orange font-medium mt-1">
+                        <p className="text-pleingaz-red font-medium mt-1">
                           Le livreur arrive bientôt ! Préparez le code.
                         </p>
                       )}
@@ -79,7 +79,7 @@ export default function DeliveryTracker() {
             <p className="text-orange-700 dark:text-orange-300 text-sm">
               Donnez ce code au livreur uniquement lorsqu'il vous remet votre bouteille de gaz.
             </p>
-            <div className="text-5xl font-black text-pleingaz-orange tracking-[0.25em]">
+            <div className="text-5xl font-black text-pleingaz-red tracking-[0.25em]">
               {otpCode}
             </div>
           </div>

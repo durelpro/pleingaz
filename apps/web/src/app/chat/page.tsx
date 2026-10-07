@@ -6,7 +6,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 
 export default function AssistantPage() {
   const [messages, setMessages] = useState<{role: 'assistant' | 'user', content: string}[]>([
-    { role: 'assistant', content: 'Bonjour ! Je suis l\\'assistant PLEINGAZ. Posez-moi vos questions sur nos produits, le statut de votre commande ou nos horaires.' }
+    { role: 'assistant', content: "Bonjour ! Je suis l'assistant PLEINGAZ. Posez-moi vos questions sur nos produits, le statut de votre commande ou nos horaires." }
   ]);
   const [input, setInput] = useState('');
   const [isLoading, setIsLoading] = useState(false);
@@ -24,7 +24,7 @@ export default function AssistantPage() {
       setMessages(prev => [...prev, { 
         role: 'assistant', 
         content: userMsg.toLowerCase().includes('prix') 
-          ? 'Le prix officiel d\\'une bouteille SCTM 12.5Kg est de 6 500 FCFA.'
+          ? "Le prix officiel d'une bouteille SCTM 12.5Kg est de 6 500 FCFA."
           : '[MODE DEV] Je suis connecté à ma base de connaissances. Posez une vraie question !'
       }]);
       setIsLoading(false);
@@ -37,7 +37,7 @@ export default function AssistantPage() {
         
         {/* Header */}
         <div className="p-4 md:p-6 border-b border-gray-100 dark:border-neutral-800 flex items-center gap-4 bg-white dark:bg-neutral-900 z-10">
-          <div className="w-12 h-12 bg-pleingaz-orange rounded-full flex items-center justify-center text-white shrink-0 shadow-lg shadow-orange-500/30">
+          <div className="w-12 h-12 bg-pleingaz-red rounded-full flex items-center justify-center text-white shrink-0 shadow-lg shadow-orange-500/30">
             <Bot size={24} />
           </div>
           <div>
@@ -65,12 +65,12 @@ export default function AssistantPage() {
                 key={idx}
                 initial={{ opacity: 0, y: 10 }}
                 animate={{ opacity: 1, y: 0 }}
-                className={\`flex gap-4 \${msg.role === 'user' ? 'flex-row-reverse' : ''}\`}
+                className={`flex gap-4 \${msg.role === 'user' ? 'flex-row-reverse' : ''}`}
               >
-                <div className={\`w-10 h-10 rounded-full flex items-center justify-center shrink-0 \${msg.role === 'user' ? 'bg-gray-100 dark:bg-neutral-800 text-gray-900 dark:text-white' : 'bg-pleingaz-orange text-white'}\`}>
+                <div className={`w-10 h-10 rounded-full flex items-center justify-center shrink-0 \${msg.role === 'user' ? 'bg-gray-100 dark:bg-neutral-800 text-gray-900 dark:text-white' : 'bg-pleingaz-red text-white'}`}>
                   {msg.role === 'user' ? <User size={18} /> : <Bot size={18} />}
                 </div>
-                <div className={\`max-w-[80%] p-4 rounded-2xl \${msg.role === 'user' ? 'bg-gray-900 dark:bg-white text-white dark:text-gray-900 rounded-tr-none' : 'bg-gray-100 dark:bg-neutral-800 text-gray-900 dark:text-white rounded-tl-none'}\`}>
+                <div className={`max-w-[80%] p-4 rounded-2xl \${msg.role === 'user' ? 'bg-gray-900 dark:bg-white text-white dark:text-gray-900 rounded-tr-none' : 'bg-gray-100 dark:bg-neutral-800 text-gray-900 dark:text-white rounded-tl-none'}`}>
                   {msg.content}
                 </div>
               </motion.div>
@@ -81,7 +81,7 @@ export default function AssistantPage() {
                 animate={{ opacity: 1, y: 0 }}
                 className="flex gap-4"
               >
-                <div className="w-10 h-10 rounded-full bg-pleingaz-orange flex items-center justify-center text-white shrink-0">
+                <div className="w-10 h-10 rounded-full bg-pleingaz-red flex items-center justify-center text-white shrink-0">
                   <Bot size={18} />
                 </div>
                 <div className="p-4 rounded-2xl bg-gray-100 dark:bg-neutral-800 rounded-tl-none flex items-center gap-2">
@@ -103,12 +103,12 @@ export default function AssistantPage() {
               onChange={(e) => setInput(e.target.value)}
               onKeyDown={(e) => e.key === 'Enter' && handleSend()}
               placeholder="Écrivez votre message..."
-              className="w-full pl-6 pr-14 py-4 bg-gray-50 dark:bg-neutral-950 border border-gray-200 dark:border-neutral-800 rounded-2xl focus:border-pleingaz-orange outline-none transition-colors"
+              className="w-full pl-6 pr-14 py-4 bg-gray-50 dark:bg-neutral-950 border border-gray-200 dark:border-neutral-800 rounded-2xl focus:border-pleingaz-red outline-none transition-colors"
             />
             <button 
               onClick={handleSend}
               disabled={!input.trim() || isLoading}
-              className="absolute right-2 p-3 bg-pleingaz-orange text-white rounded-xl hover:bg-orange-600 transition-colors disabled:opacity-50"
+              className="absolute right-2 p-3 bg-pleingaz-red text-white rounded-xl hover:bg-orange-600 transition-colors disabled:opacity-50"
             >
               <Send size={18} />
             </button>

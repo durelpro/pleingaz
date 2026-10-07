@@ -20,10 +20,11 @@ interface InventoryItem {
 
 export default function InventoryList() {
   const [isOffline, setIsOffline] = useState(false);
+  const [now, setNow] = useState<number | null>(null);
   const [inventory, setInventory] = useState<InventoryItem[]>([
     // Fausses données pour démo UX
-    { id: '1', product: { id: 'p1', brand: 'SCTM', weightKg: 12.5 }, level: 'HIGH', lastConfirmedAt: new Date().toISOString() },
-    { id: '2', product: { id: 'p2', brand: 'Camgaz', weightKg: 12.5 }, level: 'OUT_OF_STOCK', lastConfirmedAt: new Date(Date.now() - 4 * 3600000).toISOString() }, // 4h
+    { id: '1', product: { id: 'p1', brand: 'SCTM', weightKg: 12.5 }, level: 'HIGH', lastConfirmedAt: '2026-10-07T08:00:00.000Z' },
+    { id: '2', product: { id: 'p2', brand: 'Camgaz', weightKg: 12.5 }, level: 'OUT_OF_STOCK', lastConfirmedAt: '2026-10-07T04:00:00.000Z' }, // 4h
   ]);
 
   useEffect(() => {
@@ -39,8 +40,15 @@ export default function InventoryList() {
     };
   }, []);
 
+  useEffect(() => {
+    setNow(Date.now());
+    const interval = setInterval(() => setNow(Date.now()), 60000);
+    return () => clearInterval(interval);
+  }, []);
+
   const getAgeColor = (isoDate: string) => {
-    const hours = (Date.now() - new Date(isoDate).getTime()) / 3600000;
+    if (!now) return 'bg-gray-100 text-gray-700 border-gray-200';
+    const hours = (now - new Date(isoDate).getTime()) / 3600000;
     if (hours < 1) return 'bg-green-100 text-green-700 border-green-200'; // 🟢 < 1h
     if (hours < 3) return 'bg-orange-100 text-orange-700 border-orange-200'; // 🟠 < 3h
     if (hours < 12) return 'bg-red-100 text-red-700 border-red-200'; // 🔴 < 12h
@@ -90,7 +98,7 @@ export default function InventoryList() {
                 <h3 className="font-bold text-gray-900 dark:text-white text-lg">{item.product.brand} {item.product.weightKg}kg</h3>
                 <div className={`mt-2 inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md border text-xs font-semibold ${getAgeColor(item.lastConfirmedAt)}`}>
                   <Clock size={12} />
-                  Stock confirmé il y a {Math.floor((Date.now() - new Date(item.lastConfirmedAt).getTime()) / 60000)} min
+                  Stock confirmé il y a {now ? Math.floor((now - new Date(item.lastConfirmedAt).getTime()) / 60000) : 0} min
                 </div>
               </div>
             </div>

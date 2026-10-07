@@ -39,7 +39,7 @@ export default function CheckoutPage() {
             <h2 className="text-2xl font-bold text-green-700 dark:text-green-400">Paiement Réussi !</h2>
             <p className="text-green-600 dark:text-green-500">Votre commande est confirmée et partira en livraison sous peu.</p>
             
-            <button className="mt-6 w-full py-4 bg-gray-900 dark:bg-white text-white dark:text-gray-900 font-bold rounded-2xl hover:bg-pleingaz-orange transition-colors">
+            <button className="mt-6 w-full py-4 bg-gray-900 dark:bg-white text-white dark:text-gray-900 font-bold rounded-2xl hover:bg-pleingaz-red transition-colors">
               Suivre ma livraison
             </button>
           </motion.div>
@@ -57,7 +57,7 @@ export default function CheckoutPage() {
               </div>
               <div className="flex justify-between items-center pt-4">
                 <span className="text-lg font-bold text-gray-900 dark:text-white">Total à payer</span>
-                <span className="text-2xl font-black text-pleingaz-orange">7 500 FCFA</span>
+                <span className="text-2xl font-black text-pleingaz-red">7 500 FCFA</span>
               </div>
             </div>
 
@@ -71,7 +71,7 @@ export default function CheckoutPage() {
                 <button
                   key={m.id}
                   onClick={() => setMethod(m.id as any)}
-                  className={\`w-full p-4 rounded-2xl border-2 transition-all flex items-center justify-between \${method === m.id ? \`\${m.color} \${m.bg} ring-4 ring-opacity-50 ring-\${m.color.replace('border-', '')}\` : 'border-gray-200 dark:border-neutral-800 bg-white dark:bg-neutral-900'}\`}
+                  className={`w-full p-4 rounded-2xl border-2 transition-all flex items-center justify-between ${method === m.id ? m.color + ' ' + m.bg + ' ring-4 ring-opacity-50 ring-' + m.color.replace('border-', '') : 'border-gray-200 dark:border-neutral-800 bg-white dark:bg-neutral-900'}`}
                 >
                   <div className="flex items-center gap-3">
                     {m.id === 'CASH' ? <Banknote className={method === m.id ? 'text-blue-500' : 'text-gray-400'} /> : <CreditCard className={method === m.id ? 'text-gray-900 dark:text-white' : 'text-gray-400'} />}
@@ -97,7 +97,7 @@ export default function CheckoutPage() {
                       type="tel"
                       value={phone}
                       onChange={(e) => setPhone(e.target.value)}
-                      className="w-full px-4 py-4 bg-white dark:bg-neutral-900 border-2 border-gray-200 dark:border-neutral-800 rounded-xl text-lg font-bold focus:border-pleingaz-orange outline-none transition-colors"
+                      className="w-full px-4 py-4 bg-white dark:bg-neutral-900 border-2 border-gray-200 dark:border-neutral-800 rounded-xl text-lg font-bold focus:border-pleingaz-red outline-none transition-colors"
                     />
                   </div>
                 </motion.div>
@@ -108,7 +108,7 @@ export default function CheckoutPage() {
             <button 
               onClick={handlePay}
               disabled={status === 'PROCESSING'}
-              className="w-full py-4 bg-pleingaz-orange text-white font-black text-lg rounded-2xl shadow-lg shadow-orange-500/30 flex items-center justify-center gap-3 hover:-translate-y-0.5 transition-all disabled:opacity-50 disabled:hover:translate-y-0"
+              className="w-full py-4 bg-pleingaz-red text-white font-black text-lg rounded-2xl shadow-lg shadow-orange-500/30 flex items-center justify-center gap-3 hover:-translate-y-0.5 transition-all disabled:opacity-50 disabled:hover:translate-y-0"
             >
               {status === 'PROCESSING' ? (
                 <>

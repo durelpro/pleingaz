@@ -24,8 +24,8 @@ export function WhatsAppButton({
     // Détecter si on est sur mobile pour ouvrir l'app native
     const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
     const url = isMobile 
-      ? \`whatsapp://send?phone=\${cleanNumber}&text=\${encodedMessage}\`
-      : \`https://wa.me/\${cleanNumber}?text=\${encodedMessage}\`;
+      ? `whatsapp://send?phone=\${cleanNumber}&text=\${encodedMessage}`
+      : `https://wa.me/\${cleanNumber}?text=\${encodedMessage}`;
       
     window.open(url, '_blank');
   };
@@ -33,7 +33,7 @@ export function WhatsAppButton({
   return (
     <button 
       onClick={handleChat}
-      className={\`inline-flex items-center justify-center gap-2 px-6 py-3 bg-[#25D366] hover:bg-[#128C7E] text-white font-bold rounded-2xl shadow-lg shadow-green-500/30 transition-all hover:-translate-y-0.5 \${className}\`}
+      className={`inline-flex items-center justify-center gap-2 px-6 py-3 bg-[#25D366] hover:bg-[#128C7E] text-white font-bold rounded-2xl shadow-lg shadow-green-500/30 transition-all hover:-translate-y-0.5 \${className}`}
     >
       <MessageCircle className="w-5 h-5" />
       {label}

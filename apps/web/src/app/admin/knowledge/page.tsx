@@ -27,7 +27,7 @@ export default function KnowledgeBaseAdmin() {
         <div className="flex justify-between items-end">
           <div>
             <h1 className="text-3xl font-black text-gray-900 dark:text-white flex items-center gap-3">
-              <Database className="text-pleingaz-orange" />
+              <Database className="text-pleingaz-red" />
               Base de Connaissances IA (RAG)
             </h1>
             <p className="text-gray-500 mt-2">Gérez les documents officiels que l'IA utilisera pour répondre aux clients.</p>
@@ -42,13 +42,13 @@ export default function KnowledgeBaseAdmin() {
               <input 
                 type="text" 
                 placeholder="Rechercher un document..." 
-                className="w-full pl-10 pr-4 py-3 bg-white dark:bg-neutral-900 border border-gray-200 dark:border-neutral-800 rounded-xl focus:border-pleingaz-orange outline-none"
+                className="w-full pl-10 pr-4 py-3 bg-white dark:bg-neutral-900 border border-gray-200 dark:border-neutral-800 rounded-xl focus:border-pleingaz-red outline-none"
               />
             </div>
             
             <div className="space-y-3">
               {docs.map(doc => (
-                <div key={doc.id} className="p-4 bg-white dark:bg-neutral-900 border border-gray-200 dark:border-neutral-800 rounded-xl cursor-pointer hover:border-pleingaz-orange transition-colors">
+                <div key={doc.id} className="p-4 bg-white dark:bg-neutral-900 border border-gray-200 dark:border-neutral-800 rounded-xl cursor-pointer hover:border-pleingaz-red transition-colors">
                   <div className="flex justify-between items-start mb-2">
                     <h3 className="font-bold text-gray-900 dark:text-white">{doc.title}</h3>
                     <span className="text-xs px-2 py-1 bg-green-100 text-green-700 rounded-lg font-bold">v{doc.version}</span>
@@ -81,7 +81,7 @@ export default function KnowledgeBaseAdmin() {
                     value={title}
                     onChange={(e) => setTitle(e.target.value)}
                     placeholder="Ex: Politique de retour des bouteilles vides" 
-                    className="w-full px-4 py-3 bg-gray-50 dark:bg-neutral-950 border border-gray-200 dark:border-neutral-800 rounded-xl focus:border-pleingaz-orange outline-none"
+                    className="w-full px-4 py-3 bg-gray-50 dark:bg-neutral-950 border border-gray-200 dark:border-neutral-800 rounded-xl focus:border-pleingaz-red outline-none"
                   />
                 </div>
                 <div>
@@ -91,7 +91,7 @@ export default function KnowledgeBaseAdmin() {
                     value={content}
                     onChange={(e) => setContent(e.target.value)}
                     placeholder="Écrivez le contenu ici..." 
-                    className="w-full px-4 py-3 bg-gray-50 dark:bg-neutral-950 border border-gray-200 dark:border-neutral-800 rounded-xl focus:border-pleingaz-orange outline-none resize-y"
+                    className="w-full px-4 py-3 bg-gray-50 dark:bg-neutral-950 border border-gray-200 dark:border-neutral-800 rounded-xl focus:border-pleingaz-red outline-none resize-y"
                   ></textarea>
                 </div>
                 
@@ -101,7 +101,7 @@ export default function KnowledgeBaseAdmin() {
                   </button>
                   <button 
                     onClick={handleSave}
-                    className="px-6 py-3 bg-pleingaz-orange hover:bg-orange-600 text-white font-bold rounded-xl flex items-center gap-2 shadow-lg shadow-orange-500/20 transition-all hover:-translate-y-0.5"
+                    className="px-6 py-3 bg-pleingaz-red hover:bg-orange-600 text-white font-bold rounded-xl flex items-center gap-2 shadow-lg shadow-orange-500/20 transition-all hover:-translate-y-0.5"
                   >
                     <Plus size={20} />
                     Sauvegarder le Document
