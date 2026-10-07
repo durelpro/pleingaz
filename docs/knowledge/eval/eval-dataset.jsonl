@@ -1,0 +1,150 @@
+{"id": "EVAL-001", "user_input": "je cherche du gaz a Bonamoussadi", "expected_tool_call": "find_nearest_available_store", "expected_response_keyword": "trouvé"}
+{"id": "EVAL-002", "user_input": "combien coute sctm 12kg", "expected_tool_call": "get_product_price", "expected_response_keyword": "prix officiel"}
+{"id": "EVAL-003", "user_input": "ou est ma commande CMD-2002", "expected_tool_call": "get_order_status", "expected_response_keyword": "statut"}
+{"id": "EVAL-004", "user_input": "j'ai pas recu le sms", "expected_tool_call": "search_knowledge", "expected_response_keyword": "WhatsApp"}
+{"id": "EVAL-005", "user_input": "je veux parler a un agent", "expected_tool_call": "handoff_to_agent", "expected_response_keyword": "transfère"}
+{"id": "EVAL-006", "user_input": "je cherche du gaz a Logpom", "expected_tool_call": "find_nearest_available_store", "expected_response_keyword": "trouvé"}
+{"id": "EVAL-007", "user_input": "combien coute sctm 12kg", "expected_tool_call": "get_product_price", "expected_response_keyword": "prix officiel"}
+{"id": "EVAL-008", "user_input": "ou est ma commande CMD-2007", "expected_tool_call": "get_order_status", "expected_response_keyword": "statut"}
+{"id": "EVAL-009", "user_input": "j'ai pas recu le sms", "expected_tool_call": "search_knowledge", "expected_response_keyword": "WhatsApp"}
+{"id": "EVAL-010", "user_input": "je veux parler a un agent", "expected_tool_call": "handoff_to_agent", "expected_response_keyword": "transfère"}
+{"id": "EVAL-011", "user_input": "je cherche du gaz a Bonamoussadi", "expected_tool_call": "find_nearest_available_store", "expected_response_keyword": "trouvé"}
+{"id": "EVAL-012", "user_input": "combien coute sctm 12kg", "expected_tool_call": "get_product_price", "expected_response_keyword": "prix officiel"}
+{"id": "EVAL-013", "user_input": "ou est ma commande CMD-2012", "expected_tool_call": "get_order_status", "expected_response_keyword": "statut"}
+{"id": "EVAL-014", "user_input": "j'ai pas recu le sms", "expected_tool_call": "search_knowledge", "expected_response_keyword": "WhatsApp"}
+{"id": "EVAL-015", "user_input": "je veux parler a un agent", "expected_tool_call": "handoff_to_agent", "expected_response_keyword": "transfère"}
+{"id": "EVAL-016", "user_input": "je cherche du gaz a Logpom", "expected_tool_call": "find_nearest_available_store", "expected_response_keyword": "trouvé"}
+{"id": "EVAL-017", "user_input": "combien coute sctm 12kg", "expected_tool_call": "get_product_price", "expected_response_keyword": "prix officiel"}
+{"id": "EVAL-018", "user_input": "ou est ma commande CMD-2017", "expected_tool_call": "get_order_status", "expected_response_keyword": "statut"}
+{"id": "EVAL-019", "user_input": "j'ai pas recu le sms", "expected_tool_call": "search_knowledge", "expected_response_keyword": "WhatsApp"}
+{"id": "EVAL-020", "user_input": "je veux parler a un agent", "expected_tool_call": "handoff_to_agent", "expected_response_keyword": "transfère"}
+{"id": "EVAL-021", "user_input": "je cherche du gaz a Bonamoussadi", "expected_tool_call": "find_nearest_available_store", "expected_response_keyword": "trouvé"}
+{"id": "EVAL-022", "user_input": "combien coute sctm 12kg", "expected_tool_call": "get_product_price", "expected_response_keyword": "prix officiel"}
+{"id": "EVAL-023", "user_input": "ou est ma commande CMD-2022", "expected_tool_call": "get_order_status", "expected_response_keyword": "statut"}
+{"id": "EVAL-024", "user_input": "j'ai pas recu le sms", "expected_tool_call": "search_knowledge", "expected_response_keyword": "WhatsApp"}
+{"id": "EVAL-025", "user_input": "je veux parler a un agent", "expected_tool_call": "handoff_to_agent", "expected_response_keyword": "transfère"}
+{"id": "EVAL-026", "user_input": "je cherche du gaz a Logpom", "expected_tool_call": "find_nearest_available_store", "expected_response_keyword": "trouvé"}
+{"id": "EVAL-027", "user_input": "combien coute sctm 12kg", "expected_tool_call": "get_product_price", "expected_response_keyword": "prix officiel"}
+{"id": "EVAL-028", "user_input": "ou est ma commande CMD-2027", "expected_tool_call": "get_order_status", "expected_response_keyword": "statut"}
+{"id": "EVAL-029", "user_input": "j'ai pas recu le sms", "expected_tool_call": "search_knowledge", "expected_response_keyword": "WhatsApp"}
+{"id": "EVAL-030", "user_input": "je veux parler a un agent", "expected_tool_call": "handoff_to_agent", "expected_response_keyword": "transfère"}
+{"id": "EVAL-031", "user_input": "je cherche du gaz a Bonamoussadi", "expected_tool_call": "find_nearest_available_store", "expected_response_keyword": "trouvé"}
+{"id": "EVAL-032", "user_input": "combien coute sctm 12kg", "expected_tool_call": "get_product_price", "expected_response_keyword": "prix officiel"}
+{"id": "EVAL-033", "user_input": "ou est ma commande CMD-2032", "expected_tool_call": "get_order_status", "expected_response_keyword": "statut"}
+{"id": "EVAL-034", "user_input": "j'ai pas recu le sms", "expected_tool_call": "search_knowledge", "expected_response_keyword": "WhatsApp"}
+{"id": "EVAL-035", "user_input": "je veux parler a un agent", "expected_tool_call": "handoff_to_agent", "expected_response_keyword": "transfère"}
+{"id": "EVAL-036", "user_input": "je cherche du gaz a Logpom", "expected_tool_call": "find_nearest_available_store", "expected_response_keyword": "trouvé"}
+{"id": "EVAL-037", "user_input": "combien coute sctm 12kg", "expected_tool_call": "get_product_price", "expected_response_keyword": "prix officiel"}
+{"id": "EVAL-038", "user_input": "ou est ma commande CMD-2037", "expected_tool_call": "get_order_status", "expected_response_keyword": "statut"}
+{"id": "EVAL-039", "user_input": "j'ai pas recu le sms", "expected_tool_call": "search_knowledge", "expected_response_keyword": "WhatsApp"}
+{"id": "EVAL-040", "user_input": "je veux parler a un agent", "expected_tool_call": "handoff_to_agent", "expected_response_keyword": "transfère"}
+{"id": "EVAL-041", "user_input": "je cherche du gaz a Bonamoussadi", "expected_tool_call": "find_nearest_available_store", "expected_response_keyword": "trouvé"}
+{"id": "EVAL-042", "user_input": "combien coute sctm 12kg", "expected_tool_call": "get_product_price", "expected_response_keyword": "prix officiel"}
+{"id": "EVAL-043", "user_input": "ou est ma commande CMD-2042", "expected_tool_call": "get_order_status", "expected_response_keyword": "statut"}
+{"id": "EVAL-044", "user_input": "j'ai pas recu le sms", "expected_tool_call": "search_knowledge", "expected_response_keyword": "WhatsApp"}
+{"id": "EVAL-045", "user_input": "je veux parler a un agent", "expected_tool_call": "handoff_to_agent", "expected_response_keyword": "transfère"}
+{"id": "EVAL-046", "user_input": "je cherche du gaz a Logpom", "expected_tool_call": "find_nearest_available_store", "expected_response_keyword": "trouvé"}
+{"id": "EVAL-047", "user_input": "combien coute sctm 12kg", "expected_tool_call": "get_product_price", "expected_response_keyword": "prix officiel"}
+{"id": "EVAL-048", "user_input": "ou est ma commande CMD-2047", "expected_tool_call": "get_order_status", "expected_response_keyword": "statut"}
+{"id": "EVAL-049", "user_input": "j'ai pas recu le sms", "expected_tool_call": "search_knowledge", "expected_response_keyword": "WhatsApp"}
+{"id": "EVAL-050", "user_input": "je veux parler a un agent", "expected_tool_call": "handoff_to_agent", "expected_response_keyword": "transfère"}
+{"id": "EVAL-051", "user_input": "je cherche du gaz a Bonamoussadi", "expected_tool_call": "find_nearest_available_store", "expected_response_keyword": "trouvé"}
+{"id": "EVAL-052", "user_input": "combien coute sctm 12kg", "expected_tool_call": "get_product_price", "expected_response_keyword": "prix officiel"}
+{"id": "EVAL-053", "user_input": "ou est ma commande CMD-2052", "expected_tool_call": "get_order_status", "expected_response_keyword": "statut"}
+{"id": "EVAL-054", "user_input": "j'ai pas recu le sms", "expected_tool_call": "search_knowledge", "expected_response_keyword": "WhatsApp"}
+{"id": "EVAL-055", "user_input": "je veux parler a un agent", "expected_tool_call": "handoff_to_agent", "expected_response_keyword": "transfère"}
+{"id": "EVAL-056", "user_input": "je cherche du gaz a Logpom", "expected_tool_call": "find_nearest_available_store", "expected_response_keyword": "trouvé"}
+{"id": "EVAL-057", "user_input": "combien coute sctm 12kg", "expected_tool_call": "get_product_price", "expected_response_keyword": "prix officiel"}
+{"id": "EVAL-058", "user_input": "ou est ma commande CMD-2057", "expected_tool_call": "get_order_status", "expected_response_keyword": "statut"}
+{"id": "EVAL-059", "user_input": "j'ai pas recu le sms", "expected_tool_call": "search_knowledge", "expected_response_keyword": "WhatsApp"}
+{"id": "EVAL-060", "user_input": "je veux parler a un agent", "expected_tool_call": "handoff_to_agent", "expected_response_keyword": "transfère"}
+{"id": "EVAL-061", "user_input": "je cherche du gaz a Bonamoussadi", "expected_tool_call": "find_nearest_available_store", "expected_response_keyword": "trouvé"}
+{"id": "EVAL-062", "user_input": "combien coute sctm 12kg", "expected_tool_call": "get_product_price", "expected_response_keyword": "prix officiel"}
+{"id": "EVAL-063", "user_input": "ou est ma commande CMD-2062", "expected_tool_call": "get_order_status", "expected_response_keyword": "statut"}
+{"id": "EVAL-064", "user_input": "j'ai pas recu le sms", "expected_tool_call": "search_knowledge", "expected_response_keyword": "WhatsApp"}
+{"id": "EVAL-065", "user_input": "je veux parler a un agent", "expected_tool_call": "handoff_to_agent", "expected_response_keyword": "transfère"}
+{"id": "EVAL-066", "user_input": "je cherche du gaz a Logpom", "expected_tool_call": "find_nearest_available_store", "expected_response_keyword": "trouvé"}
+{"id": "EVAL-067", "user_input": "combien coute sctm 12kg", "expected_tool_call": "get_product_price", "expected_response_keyword": "prix officiel"}
+{"id": "EVAL-068", "user_input": "ou est ma commande CMD-2067", "expected_tool_call": "get_order_status", "expected_response_keyword": "statut"}
+{"id": "EVAL-069", "user_input": "j'ai pas recu le sms", "expected_tool_call": "search_knowledge", "expected_response_keyword": "WhatsApp"}
+{"id": "EVAL-070", "user_input": "je veux parler a un agent", "expected_tool_call": "handoff_to_agent", "expected_response_keyword": "transfère"}
+{"id": "EVAL-071", "user_input": "je cherche du gaz a Bonamoussadi", "expected_tool_call": "find_nearest_available_store", "expected_response_keyword": "trouvé"}
+{"id": "EVAL-072", "user_input": "combien coute sctm 12kg", "expected_tool_call": "get_product_price", "expected_response_keyword": "prix officiel"}
+{"id": "EVAL-073", "user_input": "ou est ma commande CMD-2072", "expected_tool_call": "get_order_status", "expected_response_keyword": "statut"}
+{"id": "EVAL-074", "user_input": "j'ai pas recu le sms", "expected_tool_call": "search_knowledge", "expected_response_keyword": "WhatsApp"}
+{"id": "EVAL-075", "user_input": "je veux parler a un agent", "expected_tool_call": "handoff_to_agent", "expected_response_keyword": "transfère"}
+{"id": "EVAL-076", "user_input": "je cherche du gaz a Logpom", "expected_tool_call": "find_nearest_available_store", "expected_response_keyword": "trouvé"}
+{"id": "EVAL-077", "user_input": "combien coute sctm 12kg", "expected_tool_call": "get_product_price", "expected_response_keyword": "prix officiel"}
+{"id": "EVAL-078", "user_input": "ou est ma commande CMD-2077", "expected_tool_call": "get_order_status", "expected_response_keyword": "statut"}
+{"id": "EVAL-079", "user_input": "j'ai pas recu le sms", "expected_tool_call": "search_knowledge", "expected_response_keyword": "WhatsApp"}
+{"id": "EVAL-080", "user_input": "je veux parler a un agent", "expected_tool_call": "handoff_to_agent", "expected_response_keyword": "transfère"}
+{"id": "EVAL-081", "user_input": "je cherche du gaz a Bonamoussadi", "expected_tool_call": "find_nearest_available_store", "expected_response_keyword": "trouvé"}
+{"id": "EVAL-082", "user_input": "combien coute sctm 12kg", "expected_tool_call": "get_product_price", "expected_response_keyword": "prix officiel"}
+{"id": "EVAL-083", "user_input": "ou est ma commande CMD-2082", "expected_tool_call": "get_order_status", "expected_response_keyword": "statut"}
+{"id": "EVAL-084", "user_input": "j'ai pas recu le sms", "expected_tool_call": "search_knowledge", "expected_response_keyword": "WhatsApp"}
+{"id": "EVAL-085", "user_input": "je veux parler a un agent", "expected_tool_call": "handoff_to_agent", "expected_response_keyword": "transfère"}
+{"id": "EVAL-086", "user_input": "je cherche du gaz a Logpom", "expected_tool_call": "find_nearest_available_store", "expected_response_keyword": "trouvé"}
+{"id": "EVAL-087", "user_input": "combien coute sctm 12kg", "expected_tool_call": "get_product_price", "expected_response_keyword": "prix officiel"}
+{"id": "EVAL-088", "user_input": "ou est ma commande CMD-2087", "expected_tool_call": "get_order_status", "expected_response_keyword": "statut"}
+{"id": "EVAL-089", "user_input": "j'ai pas recu le sms", "expected_tool_call": "search_knowledge", "expected_response_keyword": "WhatsApp"}
+{"id": "EVAL-090", "user_input": "je veux parler a un agent", "expected_tool_call": "handoff_to_agent", "expected_response_keyword": "transfère"}
+{"id": "EVAL-091", "user_input": "je cherche du gaz a Bonamoussadi", "expected_tool_call": "find_nearest_available_store", "expected_response_keyword": "trouvé"}
+{"id": "EVAL-092", "user_input": "combien coute sctm 12kg", "expected_tool_call": "get_product_price", "expected_response_keyword": "prix officiel"}
+{"id": "EVAL-093", "user_input": "ou est ma commande CMD-2092", "expected_tool_call": "get_order_status", "expected_response_keyword": "statut"}
+{"id": "EVAL-094", "user_input": "j'ai pas recu le sms", "expected_tool_call": "search_knowledge", "expected_response_keyword": "WhatsApp"}
+{"id": "EVAL-095", "user_input": "je veux parler a un agent", "expected_tool_call": "handoff_to_agent", "expected_response_keyword": "transfère"}
+{"id": "EVAL-096", "user_input": "je cherche du gaz a Logpom", "expected_tool_call": "find_nearest_available_store", "expected_response_keyword": "trouvé"}
+{"id": "EVAL-097", "user_input": "combien coute sctm 12kg", "expected_tool_call": "get_product_price", "expected_response_keyword": "prix officiel"}
+{"id": "EVAL-098", "user_input": "ou est ma commande CMD-2097", "expected_tool_call": "get_order_status", "expected_response_keyword": "statut"}
+{"id": "EVAL-099", "user_input": "j'ai pas recu le sms", "expected_tool_call": "search_knowledge", "expected_response_keyword": "WhatsApp"}
+{"id": "EVAL-100", "user_input": "je veux parler a un agent", "expected_tool_call": "handoff_to_agent", "expected_response_keyword": "transfère"}
+{"id": "EVAL-101", "user_input": "je cherche du gaz a Bonamoussadi", "expected_tool_call": "find_nearest_available_store", "expected_response_keyword": "trouvé"}
+{"id": "EVAL-102", "user_input": "combien coute sctm 12kg", "expected_tool_call": "get_product_price", "expected_response_keyword": "prix officiel"}
+{"id": "EVAL-103", "user_input": "ou est ma commande CMD-2102", "expected_tool_call": "get_order_status", "expected_response_keyword": "statut"}
+{"id": "EVAL-104", "user_input": "j'ai pas recu le sms", "expected_tool_call": "search_knowledge", "expected_response_keyword": "WhatsApp"}
+{"id": "EVAL-105", "user_input": "je veux parler a un agent", "expected_tool_call": "handoff_to_agent", "expected_response_keyword": "transfère"}
+{"id": "EVAL-106", "user_input": "je cherche du gaz a Logpom", "expected_tool_call": "find_nearest_available_store", "expected_response_keyword": "trouvé"}
+{"id": "EVAL-107", "user_input": "combien coute sctm 12kg", "expected_tool_call": "get_product_price", "expected_response_keyword": "prix officiel"}
+{"id": "EVAL-108", "user_input": "ou est ma commande CMD-2107", "expected_tool_call": "get_order_status", "expected_response_keyword": "statut"}
+{"id": "EVAL-109", "user_input": "j'ai pas recu le sms", "expected_tool_call": "search_knowledge", "expected_response_keyword": "WhatsApp"}
+{"id": "EVAL-110", "user_input": "je veux parler a un agent", "expected_tool_call": "handoff_to_agent", "expected_response_keyword": "transfère"}
+{"id": "EVAL-111", "user_input": "je cherche du gaz a Bonamoussadi", "expected_tool_call": "find_nearest_available_store", "expected_response_keyword": "trouvé"}
+{"id": "EVAL-112", "user_input": "combien coute sctm 12kg", "expected_tool_call": "get_product_price", "expected_response_keyword": "prix officiel"}
+{"id": "EVAL-113", "user_input": "ou est ma commande CMD-2112", "expected_tool_call": "get_order_status", "expected_response_keyword": "statut"}
+{"id": "EVAL-114", "user_input": "j'ai pas recu le sms", "expected_tool_call": "search_knowledge", "expected_response_keyword": "WhatsApp"}
+{"id": "EVAL-115", "user_input": "je veux parler a un agent", "expected_tool_call": "handoff_to_agent", "expected_response_keyword": "transfère"}
+{"id": "EVAL-116", "user_input": "je cherche du gaz a Logpom", "expected_tool_call": "find_nearest_available_store", "expected_response_keyword": "trouvé"}
+{"id": "EVAL-117", "user_input": "combien coute sctm 12kg", "expected_tool_call": "get_product_price", "expected_response_keyword": "prix officiel"}
+{"id": "EVAL-118", "user_input": "ou est ma commande CMD-2117", "expected_tool_call": "get_order_status", "expected_response_keyword": "statut"}
+{"id": "EVAL-119", "user_input": "j'ai pas recu le sms", "expected_tool_call": "search_knowledge", "expected_response_keyword": "WhatsApp"}
+{"id": "EVAL-120", "user_input": "je veux parler a un agent", "expected_tool_call": "handoff_to_agent", "expected_response_keyword": "transfère"}
+{"id": "EVAL-121", "user_input": "je cherche du gaz a Bonamoussadi", "expected_tool_call": "find_nearest_available_store", "expected_response_keyword": "trouvé"}
+{"id": "EVAL-122", "user_input": "combien coute sctm 12kg", "expected_tool_call": "get_product_price", "expected_response_keyword": "prix officiel"}
+{"id": "EVAL-123", "user_input": "ou est ma commande CMD-2122", "expected_tool_call": "get_order_status", "expected_response_keyword": "statut"}
+{"id": "EVAL-124", "user_input": "j'ai pas recu le sms", "expected_tool_call": "search_knowledge", "expected_response_keyword": "WhatsApp"}
+{"id": "EVAL-125", "user_input": "je veux parler a un agent", "expected_tool_call": "handoff_to_agent", "expected_response_keyword": "transfère"}
+{"id": "EVAL-126", "user_input": "je cherche du gaz a Logpom", "expected_tool_call": "find_nearest_available_store", "expected_response_keyword": "trouvé"}
+{"id": "EVAL-127", "user_input": "combien coute sctm 12kg", "expected_tool_call": "get_product_price", "expected_response_keyword": "prix officiel"}
+{"id": "EVAL-128", "user_input": "ou est ma commande CMD-2127", "expected_tool_call": "get_order_status", "expected_response_keyword": "statut"}
+{"id": "EVAL-129", "user_input": "j'ai pas recu le sms", "expected_tool_call": "search_knowledge", "expected_response_keyword": "WhatsApp"}
+{"id": "EVAL-130", "user_input": "je veux parler a un agent", "expected_tool_call": "handoff_to_agent", "expected_response_keyword": "transfère"}
+{"id": "EVAL-131", "user_input": "je cherche du gaz a Bonamoussadi", "expected_tool_call": "find_nearest_available_store", "expected_response_keyword": "trouvé"}
+{"id": "EVAL-132", "user_input": "combien coute sctm 12kg", "expected_tool_call": "get_product_price", "expected_response_keyword": "prix officiel"}
+{"id": "EVAL-133", "user_input": "ou est ma commande CMD-2132", "expected_tool_call": "get_order_status", "expected_response_keyword": "statut"}
+{"id": "EVAL-134", "user_input": "j'ai pas recu le sms", "expected_tool_call": "search_knowledge", "expected_response_keyword": "WhatsApp"}
+{"id": "EVAL-135", "user_input": "je veux parler a un agent", "expected_tool_call": "handoff_to_agent", "expected_response_keyword": "transfère"}
+{"id": "EVAL-136", "user_input": "je cherche du gaz a Logpom", "expected_tool_call": "find_nearest_available_store", "expected_response_keyword": "trouvé"}
+{"id": "EVAL-137", "user_input": "combien coute sctm 12kg", "expected_tool_call": "get_product_price", "expected_response_keyword": "prix officiel"}
+{"id": "EVAL-138", "user_input": "ou est ma commande CMD-2137", "expected_tool_call": "get_order_status", "expected_response_keyword": "statut"}
+{"id": "EVAL-139", "user_input": "j'ai pas recu le sms", "expected_tool_call": "search_knowledge", "expected_response_keyword": "WhatsApp"}
+{"id": "EVAL-140", "user_input": "je veux parler a un agent", "expected_tool_call": "handoff_to_agent", "expected_response_keyword": "transfère"}
+{"id": "EVAL-141", "user_input": "je cherche du gaz a Bonamoussadi", "expected_tool_call": "find_nearest_available_store", "expected_response_keyword": "trouvé"}
+{"id": "EVAL-142", "user_input": "combien coute sctm 12kg", "expected_tool_call": "get_product_price", "expected_response_keyword": "prix officiel"}
+{"id": "EVAL-143", "user_input": "ou est ma commande CMD-2142", "expected_tool_call": "get_order_status", "expected_response_keyword": "statut"}
+{"id": "EVAL-144", "user_input": "j'ai pas recu le sms", "expected_tool_call": "search_knowledge", "expected_response_keyword": "WhatsApp"}
+{"id": "EVAL-145", "user_input": "je veux parler a un agent", "expected_tool_call": "handoff_to_agent", "expected_response_keyword": "transfère"}
+{"id": "EVAL-146", "user_input": "je cherche du gaz a Logpom", "expected_tool_call": "find_nearest_available_store", "expected_response_keyword": "trouvé"}
+{"id": "EVAL-147", "user_input": "combien coute sctm 12kg", "expected_tool_call": "get_product_price", "expected_response_keyword": "prix officiel"}
+{"id": "EVAL-148", "user_input": "ou est ma commande CMD-2147", "expected_tool_call": "get_order_status", "expected_response_keyword": "statut"}
+{"id": "EVAL-149", "user_input": "j'ai pas recu le sms", "expected_tool_call": "search_knowledge", "expected_response_keyword": "WhatsApp"}
+{"id": "EVAL-150", "user_input": "je veux parler a un agent", "expected_tool_call": "handoff_to_agent", "expected_response_keyword": "transfère"}

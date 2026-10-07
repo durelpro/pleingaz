@@ -39,7 +39,7 @@ done
 # 3. Validation JSONL (Évaluation)
 if [ -f "$KB_DIR/eval/eval-dataset.jsonl" ]; then
     echo "⚙️ Vérification de la validité du JSONL d'évaluation..."
-    if ! jq -e . "$KB_DIR/eval/eval-dataset.jsonl" > /dev/null 2>&1; then
+    if ! python3 -c 'import sys, json; [json.loads(line) for line in sys.stdin]' < "$KB_DIR/eval/eval-dataset.jsonl" > /dev/null 2>&1; then
         echo "❌ [ERREUR] Le fichier eval-dataset.jsonl est invalide."
         ERRORS=$((ERRORS + 1))
     fi
