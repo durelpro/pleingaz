@@ -19,21 +19,68 @@ export default function AssistantPage() {
     setInput('');
     setIsLoading(true);
 
-    // Simulation de l'appel API avec un peu plus d'intelligence artificielle simulée
+    // Simulation d'un modèle d'IA très avancé
     setTimeout(() => {
       let response = "";
-      const lowerMsg = userMsg.toLowerCase();
+      const msg = userMsg.toLowerCase().trim();
       
-      if (lowerMsg.includes('prix') || lowerMsg.includes('coûte') || lowerMsg.includes('combien')) {
-        response = "Le prix officiel homologué d'une recharge de bouteille SCTM 12.5Kg est de 6 500 FCFA. Il n'y a pas de surfacturation chez nos distributeurs agréés !";
-      } else if (lowerMsg.includes('livraison') || lowerMsg.includes('livrer')) {
-        response = "Nous livrons votre bouteille de gaz à domicile via notre réseau de livreurs. Une fois la commande passée, un code OTP vous est fourni pour sécuriser la transaction.";
-      } else if (lowerMsg.includes('distributeur') || lowerMsg.includes('vendre') || lowerMsg.includes('partenaire')) {
-        response = "Pour devenir distributeur agréé PLEINGAZ, rendez-vous dans l'Espace Dédié 'Devenir Distributeur' sur l'accueil, ou fournissez simplement votre NIU et RCCM via notre formulaire !";
-      } else if (lowerMsg.includes('rupture') || lowerMsg.includes('vide')) {
-        response = "Nous surveillons en temps réel les stocks de nos distributeurs grâce à l'IoT. S'il n'y a plus de gaz près de chez vous, nous sommes déjà en route pour les réapprovisionner !";
-      } else {
-        response = "Je suis l'IA de Pleingaz. En tant qu'assistant de test, ma base de connaissances est en cours d'enrichissement. Comment puis-je vous aider avec votre gaz domestique ?";
+      // Moteur NLP (Natural Language Processing) de base avec Regex et Mots-clés
+      const rules = [
+        {
+          patterns: ['prix', 'coute', 'coûte', 'combien', 'tarif', 'fcfa'],
+          reply: "Le prix officiel homologué d'une recharge de bouteille SCTM, Camgaz ou Tradex de 12.5Kg est de 6 500 FCFA. Il n'y a aucune surfacturation chez nos distributeurs agréés !"
+        },
+        {
+          patterns: ['livraison', 'livrer', 'apporter', 'domicile', 'chez moi'],
+          reply: "Nous proposons une livraison express de vos bouteilles de gaz à domicile. Une fois votre commande passée dans l'application, un livreur vous l'apportera. Un code OTP secret vous sera fourni pour valider la réception en toute sécurité."
+        },
+        {
+          patterns: ['distributeur', 'partenaire', 'vendre', 'boutique', 'magasin', 'relais'],
+          reply: "Vous souhaitez devenir distributeur agréé PLEINGAZ ? Super ! Rendez-vous dans la section 'Devenir Distributeur' de l'application. Vous devrez fournir votre CNI et votre RCCM. Une fois validé, votre point de vente apparaîtra sur notre carte avec votre stock en temps réel."
+        },
+        {
+          patterns: ['rupture', 'vide', 'plus de gaz', 'fini', 'stock'],
+          reply: "Notre technologie IoT surveille les stocks de tous nos distributeurs en temps réel. S'il n'y a plus de gaz près de chez vous, c'est que nous sommes déjà en route pour les réapprovisionner ! Vous pouvez consulter la carte pour trouver un autre point de vente avec du stock."
+        },
+        {
+          patterns: ['paiement', 'payer', 'orange money', 'mtn momo', 'cash', 'espece'],
+          reply: "Nous acceptons les paiements via MTN Mobile Money, Orange Money, et également le paiement en Cash à la livraison ou en point de retrait. Vos transactions sont 100% sécurisées."
+        },
+        {
+          patterns: ['marque', 'sctm', 'camgaz', 'tradex', 'greenoil', 'oilibya', 'bocom'],
+          reply: "L'application PLEINGAZ regroupe toutes vos marques préférées : SCTM, Camgaz, Tradex, BOCOM, GreenOil, etc. Vous pouvez filtrer la carte par marque pour trouver exactement ce que vous cherchez."
+        },
+        {
+          patterns: ['horaire', 'ouvert', 'ferme', 'heure'],
+          reply: "Les horaires varient selon les distributeurs. Cependant, la majorité de nos points relais sont ouverts de 08:00 à 18:00, du lundi au samedi. La carte interactive vous indiquera en temps réel si une boutique est ouverte ou fermée."
+        },
+        {
+          patterns: ['probleme', 'reclamation', 'arnaque', 'surfacturation', 'cher', 'plainte'],
+          reply: "Nous prenons les infractions très au sérieux. Si un distributeur surfacture le gaz ou est fermé alors qu'il est indiqué ouvert, vous pouvez le signaler directement via le bouton 'Signaler' sur sa boutique virtuelle. Son score de fiabilité baissera automatiquement."
+        },
+        {
+          patterns: ['bonjour', 'salut', 'coucou', 'hello'],
+          reply: "Bonjour ! Je suis l'Intelligence Artificielle PLEINGAZ. Comment puis-je vous aider aujourd'hui concernant votre approvisionnement en gaz ?"
+        },
+        {
+          patterns: ['merci', 'super', 'génial', 'genial', 'ok', 'd\'accord'],
+          reply: "C'est un plaisir de vous aider ! N'hésitez pas si vous avez d'autres questions. PLEINGAZ est là pour vous faciliter la vie."
+        }
+      ];
+
+      // Recherche de la meilleure correspondance
+      let foundMatch = false;
+      for (const rule of rules) {
+        if (rule.patterns.some(pattern => msg.includes(pattern))) {
+          response = rule.reply;
+          foundMatch = true;
+          break;
+        }
+      }
+
+      // Réponse de repli (Fallback) si l'IA ne comprend pas
+      if (!foundMatch) {
+        response = "Je n'ai pas bien compris votre demande. En tant qu'assistant virtuel en phase d'apprentissage, pourriez-vous reformuler votre question ? Vous pouvez me demander nos prix, le suivi de livraison, ou comment devenir distributeur.";
       }
 
       setMessages(prev => [...prev, { role: 'assistant', content: response }]);
