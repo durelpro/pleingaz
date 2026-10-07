@@ -21,8 +21,8 @@ for file in $(find "$KB_DIR" -type f -name "*.md"); do
             ERRORS=$((ERRORS + 1))
         fi
     fi
-    # Vérification section vide (titre suivi d'un autre titre sans contenu)
-    if grep -E "^#.*" "$file" -A 1 | grep -E "^#.*" > /dev/null; then
+    # Vérification section vide (titre suivi immédiatement d'un autre titre)
+    if grep -P -z -q '(?m)^#.*\n+#' "$file" 2>/dev/null; then
         echo "⚠️ [ATTENTION] Section potentiellement vide dans $file"
     fi
 done

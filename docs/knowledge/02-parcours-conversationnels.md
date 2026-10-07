@@ -14,6 +14,8 @@ outils_lies: []
 
 # Parcours Conversationnels Types de l'Assistant
 
+Ces diagrammes décrivent les principaux flux de décision du chatbot.
+
 ## 1. Recherche de bout en bout ("J'ai besoin de gaz")
 
 ```mermaid
