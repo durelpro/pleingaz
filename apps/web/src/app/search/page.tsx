@@ -3,6 +3,7 @@
 import { useState } from 'react';
 import { Search, MapPin, BellRing, Flame } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
+import Link from 'next/link';
 
 export default function SearchPage() {
   const [query, setQuery] = useState('');
@@ -96,12 +97,15 @@ export default function SearchPage() {
                     </div>
                     
                     <div className="flex items-center gap-3">
-                      <span className={`px-3 py-1 rounded-full text-sm font-bold \${getBadgeColor(store.stockLevel)}`}>
+                      <span className={`px-3 py-1 rounded-full text-sm font-bold ${getBadgeColor(store.stockLevel)}`}>
                         {store.stockLevel === 'HIGH' ? 'BON STOCK' : 'STOCK MOYEN'}
                       </span>
-                      <button className="px-5 py-2 bg-gray-900 dark:bg-white text-white dark:text-gray-900 font-bold rounded-xl hover:bg-pleingaz-red dark:hover:bg-pleingaz-red hover:text-white transition-colors">
+                      <Link 
+                        href={`/stores/${store.id === 1 ? 'sctm-bonamoussadi' : 'tradex-akwa'}`}
+                        className="px-5 py-2 bg-gray-900 dark:bg-white text-white dark:text-gray-900 font-bold rounded-xl hover:bg-pleingaz-red dark:hover:bg-pleingaz-red hover:text-white transition-colors"
+                      >
                         Y aller
-                      </button>
+                      </Link>
                     </div>
                   </motion.div>
                 ))

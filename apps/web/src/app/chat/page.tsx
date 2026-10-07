@@ -3,9 +3,10 @@
 import { useState } from 'react';
 import { Send, Bot, User, Loader2, Info } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
+import Link from 'next/link';
 
 export default function AssistantPage() {
-  const [messages, setMessages] = useState<{role: 'assistant' | 'user', content: string}[]>([
+  const [messages, setMessages] = useState<{role: 'assistant' | 'user', content: string, action?: {label: string, href: string}}[]>([
     { role: 'assistant', content: "Bonjour ! Je suis l'assistant PLEINGAZ. Posez-moi vos questions sur nos produits, le statut de votre commande ou nos horaires." }
   ]);
   const [input, setInput] = useState('');
@@ -22,6 +23,7 @@ export default function AssistantPage() {
     // Simulation d'un modèle d'IA très avancé
     setTimeout(() => {
       let response = "";
+      let action = undefined;
       const msg = userMsg.toLowerCase().trim();
       
       // Moteur NLP (Natural Language Processing) de base avec Regex et Mots-clés
@@ -35,7 +37,12 @@ export default function AssistantPage() {
           reply: "Nous proposons une livraison express de vos bouteilles de gaz à domicile. Une fois votre commande passée dans l'application, un livreur vous l'apportera. Un code OTP secret vous sera fourni pour valider la réception en toute sécurité."
         },
         {
-          patterns: ['distributeur', 'partenaire', 'vendre', 'boutique', 'magasin', 'relais'],
+          patterns: ['distributeur', 'proche', 'trouver', 'boutique', 'magasin', 'relais', 'autour'],
+          reply: "J'ai trouvé un distributeur ouvert et certifié très proche de votre position ! Vous pouvez visiter sa Boutique Virtuelle pour voir son stock, son emplacement exact sur la carte, ou discuter avec lui sur WhatsApp.",
+          action: { label: "Visiter la boutique", href: "/stores/sctm-bonamoussadi" }
+        },
+        {
+          patterns: ['partenaire', 'vendre', 'devenir'],
           reply: "Vous souhaitez devenir distributeur agréé PLEINGAZ ? Super ! Rendez-vous dans la section 'Devenir Distributeur' de l'application. Vous devrez fournir votre CNI et votre RCCM. Une fois validé, votre point de vente apparaîtra sur notre carte avec votre stock en temps réel."
         },
         {
@@ -73,6 +80,9 @@ export default function AssistantPage() {
       for (const rule of rules) {
         if (rule.patterns.some(pattern => msg.includes(pattern))) {
           response = rule.reply;
+          if ('action' in rule) {
+            action = (rule as any).action;
+          }
           foundMatch = true;
           break;
         }
@@ -83,7 +93,7 @@ export default function AssistantPage() {
         response = "Je n'ai pas bien compris votre demande. En tant qu'assistant virtuel en phase d'apprentissage, pourriez-vous reformuler votre question ? Vous pouvez me demander nos prix, le suivi de livraison, ou comment devenir distributeur.";
       }
 
-      setMessages(prev => [...prev, { role: 'assistant', content: response }]);
+      setMessages(prev => [...prev, { role: 'assistant', content: response, action }]);
       setIsLoading(false);
     }, 1200);
   };
@@ -129,6 +139,16 @@ export default function AssistantPage() {
                 </div>
                 <div className={`max-w-[80%] p-4 rounded-2xl ${msg.role === 'user' ? 'bg-gray-900 dark:bg-white text-white dark:text-gray-900 rounded-tr-none' : 'bg-gray-100 dark:bg-neutral-800 text-gray-900 dark:text-white rounded-tl-none'}`}>
                   {msg.content}
+                  {msg.action && (
+                    <div className="mt-3">
+                      <Link 
+                        href={msg.action.href}
+                        className="inline-block px-4 py-2 bg-pleingaz-red text-white text-sm font-bold rounded-xl hover:bg-red-800 transition-colors"
+                      >
+                        {msg.action.label}
+                      </Link>
+                    </div>
+                  )}
                 </div>
               </motion.div>
             ))}
