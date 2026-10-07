@@ -8,6 +8,7 @@ source: "HSE PLEINGAZ"
 valide_par: "Durel"
 date_validation: "2026-10-07"
 version: "1.0"
+expiration: "2099-12-31"
 tags: ["sécurité", "fuite", "danger", "utilisation"]
 outils_lies: []
 ---
