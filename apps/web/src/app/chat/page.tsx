@@ -19,16 +19,26 @@ export default function AssistantPage() {
     setInput('');
     setIsLoading(true);
 
-    // Simulation de l'appel API (Tâche 8.4)
+    // Simulation de l'appel API avec un peu plus d'intelligence artificielle simulée
     setTimeout(() => {
-      setMessages(prev => [...prev, { 
-        role: 'assistant', 
-        content: userMsg.toLowerCase().includes('prix') 
-          ? "Le prix officiel d'une bouteille SCTM 12.5Kg est de 6 500 FCFA."
-          : '[MODE DEV] Je suis connecté à ma base de connaissances. Posez une vraie question !'
-      }]);
+      let response = "";
+      const lowerMsg = userMsg.toLowerCase();
+      
+      if (lowerMsg.includes('prix') || lowerMsg.includes('coûte') || lowerMsg.includes('combien')) {
+        response = "Le prix officiel homologué d'une recharge de bouteille SCTM 12.5Kg est de 6 500 FCFA. Il n'y a pas de surfacturation chez nos distributeurs agréés !";
+      } else if (lowerMsg.includes('livraison') || lowerMsg.includes('livrer')) {
+        response = "Nous livrons votre bouteille de gaz à domicile via notre réseau de livreurs. Une fois la commande passée, un code OTP vous est fourni pour sécuriser la transaction.";
+      } else if (lowerMsg.includes('distributeur') || lowerMsg.includes('vendre') || lowerMsg.includes('partenaire')) {
+        response = "Pour devenir distributeur agréé PLEINGAZ, rendez-vous dans l'Espace Dédié 'Devenir Distributeur' sur l'accueil, ou fournissez simplement votre NIU et RCCM via notre formulaire !";
+      } else if (lowerMsg.includes('rupture') || lowerMsg.includes('vide')) {
+        response = "Nous surveillons en temps réel les stocks de nos distributeurs grâce à l'IoT. S'il n'y a plus de gaz près de chez vous, nous sommes déjà en route pour les réapprovisionner !";
+      } else {
+        response = "Je suis l'IA de Pleingaz. En tant qu'assistant de test, ma base de connaissances est en cours d'enrichissement. Comment puis-je vous aider avec votre gaz domestique ?";
+      }
+
+      setMessages(prev => [...prev, { role: 'assistant', content: response }]);
       setIsLoading(false);
-    }, 1500);
+    }, 1200);
   };
 
   return (
@@ -37,7 +47,7 @@ export default function AssistantPage() {
         
         {/* Header */}
         <div className="p-4 md:p-6 border-b border-gray-100 dark:border-neutral-800 flex items-center gap-4 bg-white dark:bg-neutral-900 z-10">
-          <div className="w-12 h-12 bg-pleingaz-red rounded-full flex items-center justify-center text-white shrink-0 shadow-lg shadow-orange-500/30">
+          <div className="w-12 h-12 bg-pleingaz-red rounded-full flex items-center justify-center text-white shrink-0 shadow-lg shadow-red-500/30">
             <Bot size={24} />
           </div>
           <div>
@@ -65,12 +75,12 @@ export default function AssistantPage() {
                 key={idx}
                 initial={{ opacity: 0, y: 10 }}
                 animate={{ opacity: 1, y: 0 }}
-                className={`flex gap-4 \${msg.role === 'user' ? 'flex-row-reverse' : ''}`}
+                className={`flex gap-4 ${msg.role === 'user' ? 'flex-row-reverse' : ''}`}
               >
-                <div className={`w-10 h-10 rounded-full flex items-center justify-center shrink-0 \${msg.role === 'user' ? 'bg-gray-100 dark:bg-neutral-800 text-gray-900 dark:text-white' : 'bg-pleingaz-red text-white'}`}>
+                <div className={`w-10 h-10 rounded-full flex items-center justify-center shrink-0 ${msg.role === 'user' ? 'bg-gray-100 dark:bg-neutral-800 text-gray-900 dark:text-white' : 'bg-pleingaz-red text-white'}`}>
                   {msg.role === 'user' ? <User size={18} /> : <Bot size={18} />}
                 </div>
-                <div className={`max-w-[80%] p-4 rounded-2xl \${msg.role === 'user' ? 'bg-gray-900 dark:bg-white text-white dark:text-gray-900 rounded-tr-none' : 'bg-gray-100 dark:bg-neutral-800 text-gray-900 dark:text-white rounded-tl-none'}`}>
+                <div className={`max-w-[80%] p-4 rounded-2xl ${msg.role === 'user' ? 'bg-gray-900 dark:bg-white text-white dark:text-gray-900 rounded-tr-none' : 'bg-gray-100 dark:bg-neutral-800 text-gray-900 dark:text-white rounded-tl-none'}`}>
                   {msg.content}
                 </div>
               </motion.div>
@@ -108,7 +118,7 @@ export default function AssistantPage() {
             <button 
               onClick={handleSend}
               disabled={!input.trim() || isLoading}
-              className="absolute right-2 p-3 bg-pleingaz-red text-white rounded-xl hover:bg-orange-600 transition-colors disabled:opacity-50"
+              className="absolute right-2 p-3 bg-pleingaz-red text-white rounded-xl hover:bg-red-800 transition-colors disabled:opacity-50"
             >
               <Send size={18} />
             </button>
