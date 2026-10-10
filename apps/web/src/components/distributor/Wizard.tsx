@@ -16,7 +16,6 @@ const steps = [
 
 export default function DistributorWizard() {
   const router = useRouter();
-  const fileInputRef = useRef<HTMLInputElement>(null);
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   
   const [currentStep, setCurrentStep] = useState(1);
@@ -123,10 +122,7 @@ export default function DistributorWizard() {
             {currentStep === 3 && (
               <div className="space-y-4">
                 <h2 className="text-2xl font-bold text-gray-900 dark:text-white">Pièces justificatives</h2>
-                <div 
-                  className="border-2 border-dashed border-gray-300 dark:border-neutral-800 rounded-2xl p-8 text-center hover:border-pleingaz-red transition-colors cursor-pointer group bg-gray-50 dark:bg-neutral-950"
-                  onClick={() => fileInputRef.current?.click()}
-                >
+                <label className="block border-2 border-dashed border-gray-300 dark:border-neutral-800 rounded-2xl p-8 text-center hover:border-pleingaz-red transition-colors cursor-pointer group bg-gray-50 dark:bg-neutral-950">
                   <div className="w-16 h-16 bg-orange-100 dark:bg-orange-900/30 text-pleingaz-red rounded-full flex items-center justify-center mx-auto mb-4 group-hover:scale-110 transition-transform">
                     {selectedFile ? <CheckCircle size={24} /> : <FileText size={24} />}
                   </div>
@@ -136,18 +132,17 @@ export default function DistributorWizard() {
                   <p className="text-xs text-gray-500 mt-2">
                     {selectedFile ? 'Fichier sélectionné avec succès' : 'JPEG, PNG ou PDF (Max 5Mo)'}
                   </p>
-                </div>
-                <input 
-                  type="file" 
-                  ref={fileInputRef} 
-                  className="hidden" 
-                  onChange={(e) => {
-                    if (e.target.files && e.target.files[0]) {
-                      setSelectedFile(e.target.files[0]);
-                    }
-                  }}
-                  accept=".jpg,.jpeg,.png,.pdf"
-                />
+                  <input 
+                    type="file" 
+                    className="hidden" 
+                    onChange={(e) => {
+                      if (e.target.files && e.target.files[0]) {
+                        setSelectedFile(e.target.files[0]);
+                      }
+                    }}
+                    accept=".jpg,.jpeg,.png,.pdf"
+                  />
+                </label>
               </div>
             )}
           </motion.div>
