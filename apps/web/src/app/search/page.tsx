@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { Search, MapPin, BellRing, Flame } from 'lucide-react';
+import { Search, MapPin, BellRing, Flame, MessageCircle } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import Link from 'next/link';
 
@@ -100,6 +100,13 @@ export default function SearchPage() {
                       <span className={`px-3 py-1 rounded-full text-sm font-bold ${getBadgeColor(store.stockLevel)}`}>
                         {store.stockLevel === 'HIGH' ? 'BON STOCK' : 'STOCK MOYEN'}
                       </span>
+                      <Link 
+                        href="/buyer/messages"
+                        className="px-4 py-2 bg-blue-50 dark:bg-blue-900/20 text-blue-600 dark:text-blue-400 font-bold rounded-xl hover:bg-blue-100 dark:hover:bg-blue-900/40 transition-colors flex items-center gap-2"
+                      >
+                        <MessageCircle size={18} />
+                        Contacter
+                      </Link>
                       <Link 
                         href={`/stores/${store.id === 1 ? 'sctm-bonamoussadi' : 'tradex-akwa'}`}
                         className="px-5 py-2 bg-gray-900 dark:bg-white text-white dark:text-gray-900 font-bold rounded-xl hover:bg-pleingaz-red dark:hover:bg-pleingaz-red hover:text-white transition-colors"

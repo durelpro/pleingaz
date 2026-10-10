@@ -157,6 +157,20 @@ export default function DistributorDashboard() {
                 </div>
                 <ArrowRight className="text-gray-400 group-hover:text-pleingaz-red transition-colors" />
               </Link>
+
+              <Link href="/distributor/messages" className="group flex justify-between items-center p-4 bg-gray-50 dark:bg-neutral-950 rounded-2xl hover:bg-orange-50 dark:hover:bg-orange-900/10 border border-transparent hover:border-orange-200 dark:hover:border-orange-900/30 transition-all">
+                <div className="flex items-center gap-4">
+                  <div className="w-12 h-12 bg-white dark:bg-neutral-900 rounded-xl flex items-center justify-center shadow-sm text-pleingaz-red group-hover:scale-110 transition-transform relative">
+                    <div className="absolute -top-1 -right-1 w-3 h-3 bg-red-500 rounded-full border-2 border-white dark:border-neutral-900" />
+                    <FileText size={20} />
+                  </div>
+                  <div>
+                    <h4 className="font-bold text-gray-900 dark:text-white">Messagerie</h4>
+                    <p className="text-sm text-gray-500">Discuter avec les clients</p>
+                  </div>
+                </div>
+                <ArrowRight className="text-gray-400 group-hover:text-pleingaz-red transition-colors" />
+              </Link>
             </div>
           </div>
 
