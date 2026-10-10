@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Search, MapPin, BellRing, Flame, MessageCircle } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import Link from 'next/link';
@@ -12,6 +12,25 @@ export default function SearchPage() {
   const [isLoading, setIsLoading] = useState(false);
   const [locationName, setLocationName] = useState('');
   const [alertSet, setAlertSet] = useState(false);
+
+  // Live Search (Autocomplétion / Debounce)
+
+  useEffect(() => {
+    if (query.trim() === '') {
+      setResults([]);
+      setHasSearched(false);
+      return;
+    }
+
+    const delayDebounceFn = setTimeout(() => {
+      // Ne pas relancer si la query vient du bouton GPS (qui a déjà géré la recherche)
+      if (query !== 'Ma position GPS') {
+        performSearch(undefined, undefined, query);
+      }
+    }, 400);
+
+    return () => clearTimeout(delayDebounceFn);
+  }, [query]);
 
   const performSearch = async (lat?: number, lng?: number, textQuery?: string) => {
     setHasSearched(true);
