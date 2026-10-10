@@ -103,9 +103,9 @@ export default function Home() {
         <h2 className="text-2xl font-black text-gray-900 dark:text-white text-center">Espaces Dédiés</h2>
         
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-          <Link href="/distributor/apply" className="group p-6 bg-white dark:bg-neutral-900 rounded-3xl border-2 border-gray-100 dark:border-neutral-800 hover:border-pleingaz-red hover:shadow-lg hover:shadow-red-500/10 transition-all">
-            <h3 className="font-bold text-lg text-gray-900 dark:text-white group-hover:text-pleingaz-red transition-colors">Devenir Distributeur</h3>
-            <p className="text-sm text-gray-500 mt-2">Rejoignez notre réseau agréé et augmentez vos ventes.</p>
+          <Link href="/distributor/portal" className="group p-6 bg-white dark:bg-neutral-900 rounded-3xl border-2 border-gray-100 dark:border-neutral-800 hover:border-pleingaz-red hover:shadow-lg hover:shadow-red-500/10 transition-all">
+            <h3 className="font-bold text-lg text-gray-900 dark:text-white group-hover:text-pleingaz-red transition-colors">Espace Distributeur</h3>
+            <p className="text-sm text-gray-500 mt-2">Connectez-vous à votre tableau de bord ou rejoignez notre réseau agréé.</p>
           </Link>
           
           <Link href="/admin/dashboard" className="group p-6 bg-white dark:bg-neutral-900 rounded-3xl border-2 border-gray-100 dark:border-neutral-800 hover:border-purple-500 hover:shadow-lg hover:shadow-purple-500/10 transition-all">

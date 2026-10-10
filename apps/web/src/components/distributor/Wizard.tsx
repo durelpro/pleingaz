@@ -122,7 +122,7 @@ export default function DistributorWizard() {
             {currentStep === 3 && (
               <div className="space-y-4">
                 <h2 className="text-2xl font-bold text-gray-900 dark:text-white">Pièces justificatives</h2>
-                <label className="block border-2 border-dashed border-gray-300 dark:border-neutral-800 rounded-2xl p-8 text-center hover:border-pleingaz-red transition-colors cursor-pointer group bg-gray-50 dark:bg-neutral-950">
+                <label htmlFor="file-upload" className="block border-2 border-dashed border-gray-300 dark:border-neutral-800 rounded-2xl p-8 text-center hover:border-pleingaz-red transition-colors cursor-pointer group bg-gray-50 dark:bg-neutral-950">
                   <div className="w-16 h-16 bg-orange-100 dark:bg-orange-900/30 text-pleingaz-red rounded-full flex items-center justify-center mx-auto mb-4 group-hover:scale-110 transition-transform">
                     {selectedFiles.length > 0 ? <CheckCircle size={24} /> : <FileText size={24} />}
                   </div>
@@ -137,6 +137,7 @@ export default function DistributorWizard() {
                       : 'JPEG, PNG ou PDF (Max 5Mo)'}
                   </p>
                   <input 
+                    id="file-upload"
                     type="file" 
                     className="hidden" 
                     multiple

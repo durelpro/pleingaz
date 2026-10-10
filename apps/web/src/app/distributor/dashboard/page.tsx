@@ -3,7 +3,7 @@
 import { useState } from 'react';
 import { 
   Store, Package, TrendingUp, AlertCircle, 
-  MapPin, Star, Settings, FileText, ArrowRight, EyeOff, Eye
+  MapPin, Star, Settings, FileText, ArrowRight, EyeOff, Eye, Home
 } from 'lucide-react';
 import Link from 'next/link';
 import { motion } from 'framer-motion';
@@ -51,6 +51,14 @@ export default function DistributorDashboard() {
             <p className="text-gray-500 mt-2 font-medium ml-1">Bienvenue sur votre espace distributeur PLEINGAZ.</p>
           </div>
           <div className="flex gap-3 items-center">
+            <Link 
+              href="/"
+              className="px-4 py-2 flex items-center gap-2 text-sm font-bold bg-white dark:bg-neutral-900 border border-gray-200 dark:border-neutral-800 rounded-xl hover:text-pleingaz-red transition-colors shadow-sm"
+              title="Retour à l'accueil"
+            >
+              <Home size={16} />
+              Accueil
+            </Link>
             <button 
               onClick={() => setStatus(s => s === 'PENDING' ? 'APPROVED' : 'PENDING')}
               className="px-4 py-2 text-xs font-bold bg-gray-200 dark:bg-neutral-800 rounded-xl hover:bg-gray-300 dark:hover:bg-neutral-700 transition-colors"
