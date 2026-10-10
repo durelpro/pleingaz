@@ -64,11 +64,25 @@ export class DistributorService implements OnModuleInit {
       throw new BadRequestException("Impossible de modifier une demande en cours de validation");
     }
 
+    const { phone, password, ...applicationData } = data;
+
+    // Si on reçoit le téléphone et le mot de passe depuis le Wizard, on met à jour le profil User
+    if (phone || password) {
+      const userUpdate: any = {};
+      if (phone) userUpdate.phone = phone;
+      if (password) {
+        const argon2 = require('argon2');
+        userUpdate.passwordHash = await argon2.hash(password);
+      }
+      await this.prisma.user.update({
+        where: { id: userId },
+        data: userUpdate,
+      });
+    }
+
     const updated = await this.prisma.distributorApplication.update({
       where: { id: application.id },
-      data: {
-        ...data,
-      },
+      data: applicationData,
     });
 
     return updated;
