@@ -60,6 +60,8 @@ export default function DistributorWizard() {
         
         // Populate DRAFT
         setFormData({
+          phone: '',
+          password: '',
           businessName: data.businessName || '',
           taxId: data.taxId || '',
           landmark: data.landmark || '',
