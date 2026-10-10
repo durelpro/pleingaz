@@ -1,7 +1,12 @@
-import { Controller, Get, Put, Post, Body, UseGuards, Request, UploadedFile, UseInterceptors } from '@nestjs/common';
+import { 
+  Controller, Get, Put, Post, Delete, Body, UseGuards, 
+  Request, UploadedFile, UseInterceptors, Param, Res, BadRequestException 
+} from '@nestjs/common';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { DistributorService } from './distributor.service';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
+import type { Response } from 'express';
+import * as fs from 'fs';
 
 @Controller('distributor')
 @UseGuards(JwtAuthGuard)
@@ -13,9 +18,19 @@ export class DistributorController {
     return this.distributorService.getOrCreateDraft(req.user.userId);
   }
 
+  @Get('dashboard-metrics')
+  async getDashboardMetrics(@Request() req: any) {
+    return this.distributorService.getDashboardMetrics(req.user.userId);
+  }
+
   @Put('application/step')
   async updateStep(@Request() req: any, @Body() data: any) {
     return this.distributorService.updateDraft(req.user.userId, data);
+  }
+
+  @Get('documents')
+  async getDocuments(@Request() req: any) {
+    return this.distributorService.getDocuments(req.user.userId);
   }
 
   @Post('application/upload')
@@ -25,13 +40,34 @@ export class DistributorController {
     @Body('type') type: string,
     @UploadedFile() file: Express.Multer.File,
   ) {
+    if (!file) {
+      throw new BadRequestException('Aucun fichier fourni');
+    }
     return this.distributorService.uploadDocument(
       req.user.userId,
       type,
       file.buffer,
       file.mimetype,
       file.size,
+      file.originalname,
     );
+  }
+
+  @Get('documents/:id/file')
+  async viewDocument(
+    @Request() req: any,
+    @Param('id') id: string,
+    @Res() res: Response,
+  ) {
+    const fileInfo = await this.distributorService.getDocumentFile(req.user.userId, id, false);
+    res.setHeader('Content-Type', fileInfo.mimeType);
+    res.setHeader('Content-Disposition', `inline; filename="${fileInfo.fileName}"`);
+    fs.createReadStream(fileInfo.filePath).pipe(res);
+  }
+
+  @Delete('documents/:id')
+  async deleteDocument(@Request() req: any, @Param('id') id: string) {
+    return this.distributorService.deleteDocument(req.user.userId, id);
   }
 
   @Post('application/submit')
@@ -39,3 +75,4 @@ export class DistributorController {
     return this.distributorService.submitApplication(req.user.userId);
   }
 }
+

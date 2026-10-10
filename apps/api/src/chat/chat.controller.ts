@@ -1,4 +1,4 @@
-import { Controller, Get, Param, UseGuards, Request } from '@nestjs/common';
+import { Controller, Get, Post, Body, Param, UseGuards, Request } from '@nestjs/common';
 import { ChatService } from './chat.service';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 
@@ -10,6 +10,11 @@ export class ChatController {
   @Get('conversations')
   async getConversations(@Request() req: any) {
     return this.chatService.getConversations(req.user.userId);
+  }
+
+  @Post('messages')
+  async sendMessage(@Request() req: any, @Body() body: { recipientId: string; content: string; attachmentUrl?: string }) {
+    return this.chatService.saveMessage(req.user.userId, body.recipientId, body.content, body.attachmentUrl);
   }
 
   @Get('conversations/:id/messages')

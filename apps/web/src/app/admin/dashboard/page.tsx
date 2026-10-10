@@ -7,6 +7,8 @@ import {
 } from 'lucide-react';
 import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
 import { motion, AnimatePresence } from 'framer-motion';
+import { useEffect } from 'react';
+import Link from 'next/link';
 
 const mockChartData = [
   { name: 'Lun', ventes: 4000, ruptures: 24 },
@@ -20,15 +22,35 @@ const mockChartData = [
 
 export default function PilotageDashboard() {
   const [timeframe, setTimeframe] = useState('semaine');
-  const [viewingDoc, setViewingDoc] = useState<string | null>(null);
-  const [pendingDocs, setPendingDocs] = useState([
-    { id: 1, name: 'ETS Pleingaz Bonamoussadi', loc: 'Douala, Bonamoussadi', docs: ['CNI', 'RCCM'], date: 'Il y a 1h', status: 'PENDING' },
-    { id: 2, name: 'Maman Gaz Makepe', loc: 'Douala, Makepe', docs: ['CNI'], date: 'Il y a 3h', status: 'PENDING' },
-    { id: 3, name: 'Dépôt Central Yaoundé', loc: 'Yaoundé, Biyem-Assi', docs: ['CNI', 'RCCM', 'NIU'], date: 'Hier', status: 'PENDING' },
-  ]);
+  const [viewingDoc, setViewingDoc] = useState<{ id: string, name: string } | null>(null);
+  const [pendingDocs, setPendingDocs] = useState<any[]>([]);
+  const [metrics, setMetrics] = useState({ outOfStockCount: 0, outOfStockStores: [], averageReliability: 100, pendingDocsCount: 0 });
 
-  const handleValidation = (id: number, action: 'APPROVED' | 'REJECTED') => {
-    setPendingDocs(prev => prev.map(doc => doc.id === id ? { ...doc, status: action } : doc));
+  useEffect(() => {
+    Promise.all([
+      fetch('http://localhost:3001/admin/distributors/pending', { headers: { 'x-demo-role': 'admin_1' } }).then(res => res.json()),
+      fetch('http://localhost:3001/admin/system/dashboard-metrics', { headers: { 'x-demo-role': 'admin_1' } }).then(res => res.json())
+    ])
+    .then(([pendingData, metricsData]) => {
+      if (Array.isArray(pendingData)) setPendingDocs(pendingData);
+      if (metricsData) setMetrics(metricsData);
+    })
+    .catch(err => console.error(err));
+  }, []);
+
+  const handleValidation = async (id: string, action: 'APPROVED' | 'REJECTED') => {
+    try {
+      const endpoint = action === 'APPROVED' ? 'approve' : 'reject';
+      await fetch(`http://localhost:3001/admin/distributors/${id}/${endpoint}`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'x-demo-role': 'admin_1' },
+        body: JSON.stringify({ reason: action === 'REJECTED' ? 'Dossier incomplet' : undefined })
+      });
+      // Mettre à jour la liste localement
+      setPendingDocs(prev => prev.map(doc => doc.id === id ? { ...doc, status: action } : doc));
+    } catch (e) {
+      console.error(e);
+    }
   };
 
   return (
@@ -63,10 +85,10 @@ export default function PilotageDashboard() {
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
           <InsightCard 
             title="Risque de Rupture" 
-            value="14" 
-            desc="Boutiques en stock critique (Camgaz 12Kg)" 
+            value={`${metrics.outOfStockCount}`} 
+            desc="Boutiques en stock critique" 
             icon={<PackageX />} 
-            alert="HIGH"
+            alert={metrics.outOfStockCount > 0 ? "HIGH" : "GOOD"}
           />
           <div className="col-span-1 md:col-span-2 bg-gradient-to-br from-pleingaz-red to-red-500 p-6 rounded-3xl text-white shadow-lg shadow-orange-500/20 flex flex-col justify-between">
             <div className="flex justify-between items-start">
@@ -75,15 +97,20 @@ export default function PilotageDashboard() {
             </div>
             <div>
               <p className="text-3xl font-black mt-2">Ruptures signalées</p>
-              <p className="text-white/90 mt-1">2 distributeurs (dont ETS Pleingaz Bonamoussadi) ont signalé une rupture de stock récente et attendent d'être approvisionnés.</p>
+              <p className="text-white/90 mt-1">
+                {metrics.outOfStockCount === 0 
+                  ? "Aucune rupture de stock signalée actuellement sur le réseau." 
+                  : `${metrics.outOfStockCount} distributeur(s) ont signalé une rupture de stock et attendent d'être approvisionnés.`
+                }
+              </p>
             </div>
           </div>
           <InsightCard 
             title="Fiabilité Moyenne" 
-            value="92/100" 
+            value={`${metrics.averageReliability}/100`} 
             desc="Score réseau global (Tâche 9.4)" 
             icon={<Star />} 
-            alert="GOOD"
+            alert={metrics.averageReliability >= 80 ? "GOOD" : "MEDIUM"}
           />
         </div>
 
@@ -138,9 +165,12 @@ export default function PilotageDashboard() {
               <div className="absolute top-1/2 left-2/3 w-24 h-24 bg-orange-500 rounded-full mix-blend-multiply filter blur-xl opacity-60"></div>
               <div className="absolute bottom-1/4 left-1/3 w-20 h-20 bg-yellow-400 rounded-full mix-blend-multiply filter blur-xl opacity-50"></div>
 
-              <div className="z-10 text-center">
+              <div className="z-10 text-center flex flex-col items-center">
                 <p className="font-bold text-gray-700 dark:text-gray-300">Carte de chaleur active</p>
-                <p className="text-xs text-gray-500 mt-1">Basée sur les recherches sans résultat</p>
+                <p className="text-xs text-gray-500 mt-1 mb-3">Basée sur les recherches sans résultat</p>
+                <Link href="/admin/map" className="px-4 py-2 bg-gray-900 dark:bg-white text-white dark:text-gray-900 rounded-full font-bold text-sm shadow-lg hover:scale-105 transition-transform flex items-center gap-2">
+                  <Eye size={16} /> Ouvrir le Radar National
+                </Link>
               </div>
             </div>
           </div>
@@ -188,24 +218,24 @@ export default function PilotageDashboard() {
                         <div className="w-10 h-10 bg-gray-100 dark:bg-neutral-800 rounded-xl flex items-center justify-center">
                           <Store size={18} className="text-gray-500" />
                         </div>
-                        {dossier.name}
+                        {dossier.businessName || 'Demande sans nom'}
                       </td>
-                      <td className="py-4 text-sm text-gray-600 dark:text-gray-400">{dossier.loc}</td>
+                      <td className="py-4 text-sm text-gray-600 dark:text-gray-400">{dossier.city ? `${dossier.city}, ${dossier.neighborhood}` : 'Non défini'}</td>
                       <td className="py-4">
                         <div className="flex gap-2 flex-wrap">
-                          {dossier.docs.map((doc, i) => (
+                          {dossier.documents && dossier.documents.map((doc: any, i: number) => (
                             <button 
                               key={i}
-                              onClick={() => setViewingDoc(`${dossier.name} - ${doc}`)}
+                              onClick={() => setViewingDoc({ id: doc.id, name: `${dossier.businessName} - ${doc.type}` })}
                               className="px-3 py-1.5 bg-gray-100 dark:bg-neutral-800 hover:bg-blue-50 dark:hover:bg-blue-900/20 text-gray-700 dark:text-gray-300 hover:text-blue-600 text-xs font-bold rounded-lg border border-gray-200 dark:border-neutral-700 transition-colors flex items-center gap-1"
                               title="Voir le document"
                             >
-                              <Eye size={12} /> {doc}
+                              <Eye size={12} /> {doc.type}
                             </button>
                           ))}
                         </div>
                       </td>
-                      <td className="py-4 text-sm font-medium text-gray-500">{dossier.date}</td>
+                      <td className="py-4 text-sm font-medium text-gray-500">{new Date(dossier.createdAt).toLocaleDateString()}</td>
                       <td className="py-4 flex justify-end gap-2">
                         {dossier.status === 'PENDING' ? (
                           <>
@@ -225,7 +255,7 @@ export default function PilotageDashboard() {
                             </button>
                           </>
                         ) : (
-                          <span className={`px-3 py-1 text-xs font-bold rounded-lg \${dossier.status === 'APPROVED' ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'}`}>
+                          <span className={`px-3 py-1 text-xs font-bold rounded-lg ${dossier.status === 'APPROVED' ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'}`}>
                             {dossier.status === 'APPROVED' ? 'Approuvé' : 'Refusé'}
                           </span>
                         )}
@@ -361,23 +391,20 @@ export default function PilotageDashboard() {
               animate={{ scale: 1, opacity: 1 }}
               exit={{ scale: 0.9, opacity: 0 }}
               onClick={(e) => e.stopPropagation()}
-              className="bg-white dark:bg-neutral-900 rounded-3xl overflow-hidden max-w-2xl w-full shadow-2xl"
+              className="bg-white dark:bg-neutral-900 rounded-3xl overflow-hidden max-w-4xl w-full h-[80vh] flex flex-col shadow-2xl"
             >
-              <div className="flex justify-between items-center p-6 border-b border-gray-100 dark:border-neutral-800">
-                <h3 className="font-black text-xl text-gray-900 dark:text-white truncate pr-4">Visionneuse : {viewingDoc}</h3>
+              <div className="flex justify-between items-center p-6 border-b border-gray-100 dark:border-neutral-800 shrink-0">
+                <h3 className="font-black text-xl text-gray-900 dark:text-white truncate pr-4">Visionneuse : {viewingDoc.name}</h3>
                 <button onClick={() => setViewingDoc(null)} className="p-2 bg-gray-100 dark:bg-neutral-800 rounded-full hover:bg-gray-200 dark:hover:bg-neutral-700 transition-colors shrink-0">
                   <X size={20} />
                 </button>
               </div>
-              <div className="p-8 flex flex-col items-center justify-center bg-gray-50 dark:bg-neutral-950 min-h-[400px]">
-                {/* Mock document visual */}
-                <div className="w-64 h-80 bg-white dark:bg-neutral-800 rounded-xl shadow-md border border-gray-200 dark:border-neutral-700 p-6 flex flex-col gap-4">
-                  <div className="w-full h-8 bg-gray-200 dark:bg-neutral-700 rounded-md" />
-                  <div className="w-3/4 h-4 bg-gray-200 dark:bg-neutral-700 rounded-md" />
-                  <div className="w-1/2 h-4 bg-gray-200 dark:bg-neutral-700 rounded-md" />
-                  <div className="mt-auto w-16 h-16 bg-gray-200 dark:bg-neutral-700 rounded-full self-end" />
-                </div>
-                <p className="mt-6 text-gray-500 font-medium">Ceci est un aperçu simulé du document.</p>
+              <div className="flex-1 bg-gray-100 dark:bg-neutral-950 overflow-hidden">
+                <iframe 
+                  src={`http://localhost:3001/admin/distributors/documents/${viewingDoc.id}/file`} 
+                  className="w-full h-full border-0"
+                  title="Document Admin"
+                />
               </div>
             </motion.div>
           </motion.div>

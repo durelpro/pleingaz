@@ -172,6 +172,8 @@ model DistributorApplication {
   latitude       Float?
   longitude      Float?
   whatsappNumber String?
+  momoReceiverNumber   String?
+  orangeReceiverNumber String?
 
   documents StoreDocument[]
 
@@ -190,6 +192,9 @@ model StoreDocument {
   application    DistributorApplication @relation(fields: [applicationId], references: [id], onDelete: Cascade)
   type           DocumentType
   fileUrl        String // Chemin ou URI privé
+  fileName       String?
+  fileSize       Int?
+  mimeType       String?
   isValid        Boolean?
   rejectedReason String?
 

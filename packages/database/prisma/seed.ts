@@ -143,6 +143,114 @@ async function main() {
     },
   });
 
+  // 5b. Dossiers PENDING pour le tableau de bord Administrateur
+  const pendingUser1 = await prisma.user.upsert({
+    where: { phone: '+237633333333' },
+    update: {},
+    create: {
+      phone: '+237633333333',
+      roles: { create: { roleId: distributorRole.id } },
+    },
+  });
+
+  const pendingApp1 = await prisma.distributorApplication.upsert({
+    where: { userId: pendingUser1.id },
+    update: { status: 'PENDING' },
+    create: {
+      userId: pendingUser1.id,
+      status: 'PENDING',
+      businessName: 'ETS Gaz Bonamoussadi Plus',
+      city: 'Douala',
+      neighborhood: 'Bonamoussadi',
+      landmark: 'En face Collège Laval',
+      latitude: 4.0845,
+      longitude: 9.7482,
+      whatsappNumber: '+237633333333',
+    },
+  });
+
+  // Documents pour pendingApp1
+  const docTypesApp1 = [
+    { type: 'CNI_FRONT', name: 'cni_recto_bonamoussadi.png', mime: 'image/png' },
+    { type: 'CNI_BACK', name: 'cni_verso_bonamoussadi.png', mime: 'image/png' },
+    { type: 'REGISTRE_COMMERCE', name: 'rccm_bonamoussadi.pdf', mime: 'application/pdf' },
+    { type: 'PLAN_LOCALISATION', name: 'plan_localisation_bonamoussadi.png', mime: 'image/png' },
+  ];
+
+  for (const d of docTypesApp1) {
+    const existingDoc = await prisma.storeDocument.findFirst({
+      where: { applicationId: pendingApp1.id, type: d.type as any },
+    });
+    if (!existingDoc) {
+      const created = await prisma.storeDocument.create({
+        data: {
+          applicationId: pendingApp1.id,
+          type: d.type as any,
+          fileUrl: '',
+          fileName: `${pendingApp1.id}_${d.type}.png`,
+          fileSize: 1024 * 45,
+          mimeType: d.mime,
+        },
+      });
+      await prisma.storeDocument.update({
+        where: { id: created.id },
+        data: { fileUrl: `/api/distributor/documents/${created.id}/file` },
+      });
+    }
+  }
+
+  const pendingUser2 = await prisma.user.upsert({
+    where: { phone: '+237644444444' },
+    update: {},
+    create: {
+      phone: '+237644444444',
+      roles: { create: { roleId: distributorRole.id } },
+    },
+  });
+
+  const pendingApp2 = await prisma.distributorApplication.upsert({
+    where: { userId: pendingUser2.id },
+    update: { status: 'PENDING' },
+    create: {
+      userId: pendingUser2.id,
+      status: 'PENDING',
+      businessName: 'Maman Gaz Makepe Express',
+      city: 'Douala',
+      neighborhood: 'Makepe',
+      landmark: 'Rond-point Petit Pays',
+      latitude: 4.0722,
+      longitude: 9.7315,
+      whatsappNumber: '+237644444444',
+    },
+  });
+
+  const docTypesApp2 = [
+    { type: 'CNI_FRONT', name: 'cni_recto_makepe.png', mime: 'image/png' },
+    { type: 'REGISTRE_COMMERCE', name: 'rccm_makepe.pdf', mime: 'application/pdf' },
+  ];
+
+  for (const d of docTypesApp2) {
+    const existingDoc = await prisma.storeDocument.findFirst({
+      where: { applicationId: pendingApp2.id, type: d.type as any },
+    });
+    if (!existingDoc) {
+      const created = await prisma.storeDocument.create({
+        data: {
+          applicationId: pendingApp2.id,
+          type: d.type as any,
+          fileUrl: '',
+          fileName: `${pendingApp2.id}_${d.type}.png`,
+          fileSize: 1024 * 32,
+          mimeType: d.mime,
+        },
+      });
+      await prisma.storeDocument.update({
+        where: { id: created.id },
+        data: { fileUrl: `/api/distributor/documents/${created.id}/file` },
+      });
+    }
+  }
+
   // 6. Inventaires (Stocks)
   const dbProducts = await prisma.product.findMany();
   

@@ -1,4 +1,4 @@
-import { Controller, Post, Get, Body, Param, UseGuards, Request } from '@nestjs/common';
+import { Controller, Post, Get, Patch, Body, Param, UseGuards, Request } from '@nestjs/common';
 import { OrdersService } from './orders.service';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 
@@ -6,6 +6,22 @@ import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 @UseGuards(JwtAuthGuard)
 export class OrdersController {
   constructor(private readonly ordersService: OrdersService) {}
+
+  @Post()
+  async checkout(
+    @Request() req: any,
+    @Body() body: { 
+      storeId: string; 
+      inventoryId: string; 
+      deliveryMethod: 'PICKUP' | 'DELIVERY'; 
+      address: string; 
+      needsConsigne: boolean; 
+      paymentMethod: 'MOMO' | 'OM' | 'CASH'; 
+      totalAmount: number 
+    }
+  ) {
+    return this.ordersService.createCheckoutOrder(req.user.userId, body);
+  }
 
   @Post('reserve')
   async reserve(
@@ -40,8 +56,22 @@ export class OrdersController {
   }
 
   @Get()
-  async getMyOrders(@Request() req: any) {
+  async getMyOrders(@Request() req: any): Promise<any> {
     return this.ordersService.getUserOrders(req.user.userId);
+  }
+
+  @Get('store')
+  async getStoreOrders(@Request() req: any): Promise<any> {
+    return this.ordersService.getStoreOrders(req.user.userId);
+  }
+
+  @Patch(':id/status')
+  async updateOrderStatus(
+    @Request() req: any,
+    @Param('id') orderId: string,
+    @Body('status') status: any
+  ) {
+    return this.ordersService.updateOrderStatus(req.user.userId, orderId, status);
   }
 
   @Post(':id/review')

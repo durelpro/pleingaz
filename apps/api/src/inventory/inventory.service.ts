@@ -17,6 +17,26 @@ export class InventoryService {
     });
   }
 
+  async getMyStoreInventory(userId: string) {
+    const store = await this.prisma.store.findFirst({
+      where: { ownerId: userId }
+    });
+    if (!store) throw new NotFoundException('Boutique introuvable');
+
+    return this.prisma.inventory.findMany({
+      where: { storeId: store.id },
+      include: { product: true },
+    });
+  }
+
+  async updateMyStock(userId: string, productId: string, level: StockLevel) {
+    const store = await this.prisma.store.findFirst({
+      where: { ownerId: userId }
+    });
+    if (!store) throw new NotFoundException('Boutique introuvable');
+    return this.updateStock(userId, store.id, productId, level);
+  }
+
   // Confirmer mon stock maintenant (Tâche 4.2)
   async updateStock(userId: string, storeId: string, productId: string, level: StockLevel) {
     // Sécurité: vérifier que l'utilisateur est bien le proprio du store

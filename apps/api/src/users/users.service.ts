@@ -71,4 +71,30 @@ export class UsersService {
 
     return address;
   }
+
+  async addPointsForPurchase(userId: string, purchaseAmount: number) {
+    // 1 point for every 100 FCFA spent
+    const pointsEarned = Math.floor(purchaseAmount / 100);
+    
+    if (pointsEarned > 0) {
+      await this.prisma.$transaction(async (prisma) => {
+        await prisma.loyaltyTransaction.create({
+          data: {
+            userId,
+            points: pointsEarned,
+            description: `Achat d'un montant de ${purchaseAmount} FCFA`
+          }
+        });
+
+        await prisma.user.update({
+          where: { id: userId },
+          data: {
+            loyaltyPoints: { increment: pointsEarned }
+          }
+        });
+      });
+    }
+
+    return { pointsEarned };
+  }
 }

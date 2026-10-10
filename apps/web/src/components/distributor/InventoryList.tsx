@@ -24,11 +24,8 @@ export default function InventoryList() {
   const [isOffline, setIsOffline] = useState(false);
   const [now, setNow] = useState<number | null>(null);
   const [toast, setToast] = useState<string | null>(null);
-  const [inventory, setInventory] = useState<InventoryItem[]>([
-    // Fausses données pour démo UX
-    { id: '1', product: { id: 'p1', brand: 'SCTM', weightKg: 12.5 }, level: 'HIGH', lastConfirmedAt: '2026-10-07T08:00:00.000Z' },
-    { id: '2', product: { id: 'p2', brand: 'Camgaz', weightKg: 12.5 }, level: 'OUT_OF_STOCK', lastConfirmedAt: '2026-10-07T04:00:00.000Z' }, // 4h
-  ]);
+  const [inventory, setInventory] = useState<InventoryItem[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
     const handleOnline = () => setIsOffline(false);
@@ -49,6 +46,20 @@ export default function InventoryList() {
     return () => clearInterval(interval);
   }, []);
 
+  useEffect(() => {
+    fetch('http://localhost:3001/inventory/my-store', {
+      headers: { 'x-demo-role': 'distributor_1' }
+    })
+    .then(res => res.json())
+    .then(data => {
+      if (Array.isArray(data)) {
+        setInventory(data);
+      }
+    })
+    .catch(err => console.error(err))
+    .finally(() => setIsLoading(false));
+  }, []);
+
   const getAgeColor = (isoDate: string) => {
     if (!now) return 'bg-gray-100 text-gray-700 border-gray-200';
     const hours = (now - new Date(isoDate).getTime()) / 3600000;
@@ -67,20 +78,35 @@ export default function InventoryList() {
     }
   };
 
-  const confirmStock = (id: string, newLevel: StockLevel) => {
+  const confirmStock = async (productId: string, newLevel: StockLevel) => {
     // Tâche 4.2: Fonctionnement dégradé hors ligne
     if (isOffline) {
       alert("Mode hors ligne: Mise à jour mise en file d'attente.");
       // On sauvegarderait dans IndexedDB ici
     }
 
+    // Optimistic update
     setInventory(prev => prev.map(item => 
-      item.id === id ? { ...item, level: newLevel, lastConfirmedAt: new Date().toISOString() } : item
+      item.product.id === productId ? { ...item, level: newLevel, lastConfirmedAt: new Date().toISOString() } : item
     ));
+
+    try {
+      await fetch(`http://localhost:3001/inventory/my-store/product/${productId}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json', 'x-demo-role': 'distributor_1' },
+        body: JSON.stringify({ level: newLevel })
+      });
+    } catch (e) {
+      console.error(e);
+      // Rollback would happen here
+    }
 
     if (newLevel === 'OUT_OF_STOCK') {
       setToast("⚠️ PLEINGAZ a été notifié de votre rupture de stock.");
       setTimeout(() => setToast(null), 5000);
+    } else {
+      setToast("✅ Stock mis à jour et visible par les clients à proximité.");
+      setTimeout(() => setToast(null), 3000);
     }
   };
 
@@ -112,6 +138,20 @@ export default function InventoryList() {
       )}
 
       <div className="grid gap-4">
+        {inventory.length === 0 && !isLoading && (
+          <div className="bg-white dark:bg-neutral-900 p-8 rounded-2xl shadow-sm border border-gray-100 dark:border-neutral-800 text-center flex flex-col items-center">
+            <div className="w-16 h-16 bg-gray-50 dark:bg-neutral-950 text-gray-400 rounded-full flex items-center justify-center mb-4">
+              <Info size={24} />
+            </div>
+            <h3 className="font-bold text-gray-900 dark:text-white text-lg mb-2">Aucun stock trouvé</h3>
+            <p className="text-gray-500 max-w-sm">
+              Votre boutique est peut-être encore en attente de validation, ou aucun produit n'a été assigné à votre point de vente.
+            </p>
+            <Link href="/distributor/dashboard" className="mt-6 text-pleingaz-red font-medium hover:underline">
+              Retour au tableau de bord
+            </Link>
+          </div>
+        )}
         {inventory.map(item => (
           <div key={item.id} className="bg-white dark:bg-neutral-900 p-6 rounded-2xl shadow-sm border border-gray-100 dark:border-neutral-800 flex flex-col md:flex-row md:items-center justify-between gap-6">
             
@@ -132,7 +172,7 @@ export default function InventoryList() {
               {(['HIGH', 'MEDIUM', 'LOW', 'OUT_OF_STOCK'] as StockLevel[]).map(level => (
                 <button
                   key={level}
-                  onClick={() => confirmStock(item.id, level)}
+                  onClick={() => confirmStock(item.product.id, level)}
                   className={`px-4 py-2 rounded-xl text-sm font-semibold transition-all flex items-center gap-2
                     ${item.level === level 
                       ? `${getLevelColor(level)} text-white shadow-md` 

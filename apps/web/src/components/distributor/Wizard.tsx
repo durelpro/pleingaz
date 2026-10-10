@@ -1,8 +1,8 @@
 'use client';
 
-import { useState, useRef } from 'react';
+import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Store, MapPin, FileText, CheckCircle } from 'lucide-react';
+import { Store, MapPin, FileText, CheckCircle, UploadCloud, Loader2 } from 'lucide-react';
 import dynamic from 'next/dynamic';
 import { useRouter } from 'next/navigation';
 
@@ -12,31 +12,155 @@ const steps = [
   { id: 1, title: 'Identité', icon: Store },
   { id: 2, title: 'Localisation', icon: MapPin },
   { id: 3, title: 'Documents', icon: FileText },
+  { id: 4, title: 'Paiement', icon: CheckCircle },
+];
+
+const documentTypes = [
+  { id: 'CNI_FRONT', label: 'CNI (Recto)' },
+  { id: 'CNI_BACK', label: 'CNI (Verso)' },
+  { id: 'REGISTRE_COMMERCE', label: 'Registre de Commerce (RCCM)' },
+  { id: 'PLAN_LOCALISATION', label: 'Plan de Localisation' },
+  { id: 'PHOTO_BOUTIQUE', label: 'Photo de la Boutique' },
 ];
 
 export default function DistributorWizard() {
   const router = useRouter();
-  const [selectedFiles, setSelectedFiles] = useState<File[]>([]);
-  
   const [currentStep, setCurrentStep] = useState(1);
+  const [isLoading, setIsLoading] = useState(true);
+  const [isSaving, setIsSaving] = useState(false);
+  
   const [formData, setFormData] = useState({
     businessName: '',
     taxId: '',
     landmark: '',
     latitude: 0,
     longitude: 0,
+    momoReceiverNumber: '',
+    orangeReceiverNumber: '',
   });
 
-  const nextStep = () => setCurrentStep((prev) => Math.min(prev + 1, steps.length));
+  const [documents, setDocuments] = useState<Record<string, { file: File | null, uploaded: boolean, url?: string }>>(
+    documentTypes.reduce((acc, doc) => ({ ...acc, [doc.id]: { file: null, uploaded: false } }), {})
+  );
+
+  useEffect(() => {
+    // Vérifier si un profil existe déjà
+    fetch('http://localhost:3001/distributor/application', {
+      headers: { 'x-demo-role': 'distributor_1' }
+    })
+    .then(res => res.json())
+    .then(data => {
+      if (data && data.status) {
+        if (data.status === 'PENDING' || data.status === 'APPROVED' || data.status === 'REJECTED') {
+          router.push('/distributor/dashboard');
+          return;
+        }
+        
+        // Populate DRAFT
+        setFormData({
+          businessName: data.businessName || '',
+          taxId: data.taxId || '',
+          landmark: data.landmark || '',
+          latitude: data.latitude || 0,
+          longitude: data.longitude || 0,
+          momoReceiverNumber: data.momoReceiverNumber || '',
+          orangeReceiverNumber: data.orangeReceiverNumber || '',
+        });
+
+        // Populate documents
+        if (data.documents && data.documents.length > 0) {
+          const newDocs = { ...documents };
+          data.documents.forEach((d: any) => {
+            newDocs[d.type] = { file: null, uploaded: true, url: d.fileUrl };
+          });
+          setDocuments(newDocs);
+        }
+
+        setCurrentStep(data.currentStep || 1);
+      }
+    })
+    .catch(err => console.error(err))
+    .finally(() => setIsLoading(false));
+  }, [router]);
+
+  const saveStep = async () => {
+    setIsSaving(true);
+    try {
+      await fetch('http://localhost:3001/distributor/application/step', {
+        method: 'PUT',
+        headers: { 
+          'Content-Type': 'application/json',
+          'x-demo-role': 'distributor_1'
+        },
+        body: JSON.stringify({ ...formData, currentStep })
+      });
+    } catch (e) {
+      console.error(e);
+    }
+    setIsSaving(false);
+  };
+
+  const nextStep = async () => {
+    await saveStep();
+    setCurrentStep((prev) => Math.min(prev + 1, steps.length));
+  };
   const prevStep = () => setCurrentStep((prev) => Math.max(prev - 1, 1));
 
-  const handleNextOrSubmit = () => {
-    if (currentStep === steps.length) {
-      router.push('/distributor/onboarding');
-    } else {
-      nextStep();
+  const handleFileUpload = async (type: string, file: File) => {
+    const formDataUpload = new FormData();
+    formDataUpload.append('file', file);
+    formDataUpload.append('type', type);
+
+    try {
+      const res = await fetch('http://localhost:3001/distributor/application/upload', {
+        method: 'POST',
+        headers: { 'x-demo-role': 'distributor_1' },
+        body: formDataUpload
+      });
+      if (res.ok) {
+        setDocuments(prev => ({
+          ...prev,
+          [type]: { file, uploaded: true }
+        }));
+      }
+    } catch (e) {
+      console.error(e);
     }
   };
+
+  const handleNextOrSubmit = async () => {
+    if (currentStep === steps.length) {
+      // Validate documents
+      const allUploaded = documentTypes.every(d => documents[d.id].uploaded);
+      if (!allUploaded) {
+        alert('Veuillez uploader tous les documents requis.');
+        return;
+      }
+      
+      setIsSaving(true);
+      try {
+        const res = await fetch('http://localhost:3001/distributor/application/submit', {
+          method: 'POST',
+          headers: { 'x-demo-role': 'distributor_1' }
+        });
+        if (res.ok) {
+          router.push('/distributor/dashboard');
+        } else {
+          const err = await res.json();
+          alert(err.message || 'Erreur lors de la soumission');
+        }
+      } catch (e) {
+        console.error(e);
+      }
+      setIsSaving(false);
+    } else {
+      await nextStep();
+    }
+  };
+
+  if (isLoading) {
+    return <div className="flex justify-center items-center h-64"><Loader2 className="animate-spin text-pleingaz-red" size={32} /></div>;
+  }
 
   return (
     <div className="w-full max-w-2xl mx-auto p-4 sm:p-6 bg-white dark:bg-neutral-900 rounded-3xl shadow-[0_8px_30px_rgb(0,0,0,0.04)] border border-gray-100 dark:border-neutral-800">
@@ -122,33 +246,94 @@ export default function DistributorWizard() {
             {currentStep === 3 && (
               <div className="space-y-4">
                 <h2 className="text-2xl font-bold text-gray-900 dark:text-white">Pièces justificatives</h2>
-                <label htmlFor="file-upload" className="block border-2 border-dashed border-gray-300 dark:border-neutral-800 rounded-2xl p-8 text-center hover:border-pleingaz-red transition-colors cursor-pointer group bg-gray-50 dark:bg-neutral-950">
-                  <div className="w-16 h-16 bg-orange-100 dark:bg-orange-900/30 text-pleingaz-red rounded-full flex items-center justify-center mx-auto mb-4 group-hover:scale-110 transition-transform">
-                    {selectedFiles.length > 0 ? <CheckCircle size={24} /> : <FileText size={24} />}
+                <p className="text-sm text-gray-500 mb-4">Veuillez fournir les 5 documents obligatoires pour valider votre dossier.</p>
+                
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  {documentTypes.map(docType => (
+                    <div key={docType.id} className="border border-gray-200 dark:border-neutral-800 rounded-xl p-4 flex flex-col justify-between">
+                      <div className="flex items-start justify-between mb-2">
+                        <span className="text-sm font-bold text-gray-700 dark:text-gray-300">{docType.label}</span>
+                        {documents[docType.id].uploaded && <CheckCircle size={18} className="text-green-500" />}
+                      </div>
+                      <label className="cursor-pointer text-sm font-medium text-blue-600 hover:text-blue-700 flex items-center gap-1 mt-2">
+                        <UploadCloud size={16} /> {documents[docType.id].uploaded ? 'Remplacer le fichier' : 'Uploader (Max 5Mo)'}
+                        <input 
+                          type="file" 
+                          className="hidden" 
+                          accept=".jpg,.jpeg,.png,.pdf"
+                          onChange={(e) => {
+                            if (e.target.files && e.target.files[0]) {
+                              handleFileUpload(docType.id, e.target.files[0]);
+                            }
+                          }}
+                        />
+                      </label>
+                      {documents[docType.id].file && <p className="text-xs text-gray-500 mt-1 truncate">{documents[docType.id].file?.name}</p>}
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {currentStep === 4 && (
+              <div className="space-y-4">
+                <h2 className="text-2xl font-bold text-gray-900 dark:text-white">Vos Numéros Commerciaux</h2>
+                <p className="text-sm text-gray-500">Ces numéros seront présentés à vos clients pour recevoir leurs paiements Mobile Money. Au moins un numéro est recommandé.</p>
+                
+                <div className="space-y-4 mt-6">
+                  <div className="space-y-2">
+                    <label className="text-sm font-medium text-gray-700 dark:text-gray-300">Numéro de réception MTN MoMo</label>
+                    <input 
+                      type="tel" 
+                      className="w-full p-4 rounded-xl border border-gray-200 dark:border-neutral-800 bg-gray-50 dark:bg-neutral-950 focus:ring-2 focus:ring-yellow-500 outline-none transition-all"
+                      placeholder="Ex: 670 00 00 00"
+                      value={formData.momoReceiverNumber}
+                      onChange={(e) => setFormData({...formData, momoReceiverNumber: e.target.value})}
+                    />
                   </div>
-                  <p className="text-sm font-medium text-gray-700 dark:text-gray-300">
-                    {selectedFiles.length > 0 
-                      ? `${selectedFiles.length} fichier(s) sélectionné(s)` 
-                      : 'Cliquer pour uploader CNI et Registre de Commerce'}
-                  </p>
-                  <p className="text-xs text-gray-500 mt-2">
-                    {selectedFiles.length > 0 
-                      ? selectedFiles.map(f => f.name).join(', ') 
-                      : 'JPEG, PNG ou PDF (Max 5Mo)'}
-                  </p>
-                  <input 
-                    id="file-upload"
-                    type="file" 
-                    className="hidden" 
-                    multiple
-                    onChange={(e) => {
-                      if (e.target.files) {
-                        setSelectedFiles(Array.from(e.target.files));
-                      }
-                    }}
-                    accept=".jpg,.jpeg,.png,.pdf"
-                  />
-                </label>
+
+                  <div className="space-y-2">
+                    <label className="text-sm font-medium text-gray-700 dark:text-gray-300">Numéro de réception Orange Money</label>
+                    <input 
+                      type="tel" 
+                      className="w-full p-4 rounded-xl border border-gray-200 dark:border-neutral-800 bg-gray-50 dark:bg-neutral-950 focus:ring-2 focus:ring-orange-500 outline-none transition-all"
+                      placeholder="Ex: 690 00 00 00"
+                      value={formData.orangeReceiverNumber}
+                      onChange={(e) => setFormData({...formData, orangeReceiverNumber: e.target.value})}
+                    />
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {currentStep === 4 && (
+              <div className="space-y-4">
+                <h2 className="text-2xl font-bold text-gray-900 dark:text-white">Vos Numéros Commerciaux</h2>
+                <p className="text-sm text-gray-500">Ces numéros seront présentés à vos clients pour recevoir leurs paiements Mobile Money.</p>
+                
+                <div className="space-y-4 mt-6">
+                  <div className="space-y-2">
+                    <label className="text-sm font-medium text-gray-700 dark:text-gray-300">Numéro de réception MTN MoMo</label>
+                    <input 
+                      type="tel" 
+                      className="w-full p-4 rounded-xl border border-gray-200 dark:border-neutral-800 bg-gray-50 dark:bg-neutral-950 focus:ring-2 focus:ring-yellow-500 outline-none transition-all"
+                      placeholder="Ex: 670 00 00 00"
+                      value={formData.momoReceiverNumber}
+                      onChange={(e) => setFormData({...formData, momoReceiverNumber: e.target.value})}
+                    />
+                  </div>
+
+                  <div className="space-y-2">
+                    <label className="text-sm font-medium text-gray-700 dark:text-gray-300">Numéro de réception Orange Money</label>
+                    <input 
+                      type="tel" 
+                      className="w-full p-4 rounded-xl border border-gray-200 dark:border-neutral-800 bg-gray-50 dark:bg-neutral-950 focus:ring-2 focus:ring-orange-500 outline-none transition-all"
+                      placeholder="Ex: 690 00 00 00"
+                      value={formData.orangeReceiverNumber}
+                      onChange={(e) => setFormData({...formData, orangeReceiverNumber: e.target.value})}
+                    />
+                  </div>
+                </div>
               </div>
             )}
           </motion.div>
@@ -159,15 +344,17 @@ export default function DistributorWizard() {
       <div className="flex justify-between items-center mt-8 pt-6 border-t border-gray-100 dark:border-neutral-800">
         <button
           onClick={prevStep}
-          disabled={currentStep === 1}
+          disabled={currentStep === 1 || isSaving}
           className={`px-6 py-3 font-medium rounded-xl transition-all ${currentStep === 1 ? 'opacity-50 cursor-not-allowed text-gray-400' : 'text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-neutral-800'}`}
         >
           Retour
         </button>
         <button
           onClick={handleNextOrSubmit}
-          className="px-8 py-3 font-medium rounded-xl bg-gradient-to-r from-pleingaz-red to-[#ff6a00] text-white shadow-lg shadow-orange-500/30 hover:shadow-orange-500/50 hover:-translate-y-0.5 transition-all"
+          disabled={isSaving}
+          className="flex items-center gap-2 px-8 py-3 font-medium rounded-xl bg-gradient-to-r from-pleingaz-red to-[#ff6a00] text-white shadow-lg shadow-orange-500/30 hover:shadow-orange-500/50 hover:-translate-y-0.5 transition-all disabled:opacity-70"
         >
+          {isSaving && <Loader2 size={16} className="animate-spin" />}
           {currentStep === steps.length ? 'Soumettre le dossier' : 'Continuer'}
         </button>
       </div>

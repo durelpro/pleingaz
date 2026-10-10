@@ -1,121 +1,176 @@
-'use client';
+"use client";
 
-import { Activity, ShieldCheck, Server, Bug, Database, AlertCircle, RefreshCw } from 'lucide-react';
+import { useState, useEffect } from 'react';
+import { Shield, Activity, Database, Users, AlertCircle, FileText, Download, Fingerprint, Lock, ShieldAlert, CheckCircle2 } from 'lucide-react';
+import Link from 'next/link';
 
-export default function SystemObservability() {
+export default function SystemAuditPage() {
+  const [kpis, setKpis] = useState<any>(null);
+  const [logs, setLogs] = useState<any[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+
+  useEffect(() => {
+    // Fetch KPIs and Logs
+    Promise.all([
+      fetch('http://localhost:3001/admin/system/kpis', { headers: { 'x-demo-role': 'admin_1' } }).then(res => res.json()),
+      fetch('http://localhost:3001/admin/system/audit?limit=20', { headers: { 'x-demo-role': 'admin_1' } }).then(res => res.json())
+    ])
+    .then(([kpisData, logsData]) => {
+      setKpis(kpisData);
+      setLogs(logsData);
+    })
+    .catch(console.error)
+    .finally(() => setIsLoading(false));
+  }, []);
+
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-neutral-950 p-6 lg:p-10">
       <div className="max-w-7xl mx-auto space-y-8">
         
-        <div className="flex justify-between items-end">
+        {/* Header */}
+        <div className="flex flex-col md:flex-row justify-between items-start md:items-end gap-4">
           <div>
             <h1 className="text-3xl font-black text-gray-900 dark:text-white flex items-center gap-3">
-              <Activity className="text-blue-500" size={32} />
-              État de la Plateforme (Observabilité)
+              <Shield className="text-pleingaz-red" size={32} />
+              Sécurité & Audit Trail
             </h1>
-            <p className="text-gray-500 mt-2">Monitoring Sentry, Santé des services, Sécurité et Backups.</p>
+            <p className="text-gray-500 mt-2">Traçabilité complète du système et indicateurs clés de performance globale.</p>
           </div>
-          <button className="flex items-center gap-2 px-4 py-2.5 bg-white dark:bg-neutral-900 border border-gray-200 dark:border-neutral-800 rounded-xl text-gray-700 dark:text-gray-300 font-bold hover:border-blue-500 transition-colors">
-            <RefreshCw size={18} />
-            Actualiser
-          </button>
-        </div>
-
-        {/* Global Status */}
-        <div className="bg-green-500 text-white p-6 rounded-3xl shadow-lg flex items-center justify-between">
-          <div className="flex items-center gap-4">
-            <div className="p-3 bg-white/20 rounded-full">
-              <ShieldCheck size={32} />
-            </div>
-            <div>
-              <h2 className="text-2xl font-black">Tous les systèmes sont opérationnels</h2>
-              <p className="text-green-50">Uptime: 99.98% sur les 30 derniers jours</p>
-            </div>
-          </div>
-          <div className="text-right">
-            <p className="text-sm font-bold opacity-80">Dernier déploiement</p>
-            <p className="font-mono text-lg">v2.1.0-prod (Phase 10)</p>
+          <div className="flex gap-3">
+            <button className="flex items-center gap-2 px-4 py-2.5 bg-gray-900 dark:bg-white text-white dark:text-gray-900 font-bold rounded-xl hover:opacity-90 transition-opacity">
+              <Download size={18} />
+              Exporter Registre (CSV)
+            </button>
           </div>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {/* Services Health (Uptime Kuma mock) */}
-          <div className="bg-white dark:bg-neutral-900 border border-gray-200 dark:border-neutral-800 rounded-3xl p-6">
-            <h3 className="font-black text-xl mb-4 flex items-center gap-2">
-              <Server className="text-gray-400" />
-              Services (Uptime)
-            </h3>
-            <ul className="space-y-4">
-              <li className="flex justify-between items-center">
-                <span className="font-bold">API Principale</span>
-                <span className="px-2 py-1 bg-green-100 text-green-700 text-xs font-black rounded-lg">99.9%</span>
-              </li>
-              <li className="flex justify-between items-center">
-                <span className="font-bold">Base de Données (Postgres)</span>
-                <span className="px-2 py-1 bg-green-100 text-green-700 text-xs font-black rounded-lg">100%</span>
-              </li>
-              <li className="flex justify-between items-center">
-                <span className="font-bold">Redis (BullMQ)</span>
-                <span className="px-2 py-1 bg-green-100 text-green-700 text-xs font-black rounded-lg">99.8%</span>
-              </li>
-              <li className="flex justify-between items-center">
-                <span className="font-bold">Passerelle Orange Money</span>
-                <span className="px-2 py-1 bg-orange-100 text-orange-700 text-xs font-black rounded-lg">98.5%</span>
-              </li>
-            </ul>
+        {/* Global KPIs (Phase 6.4) */}
+        {kpis && (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+            <KpiCard 
+              title="Revenus Générés (FCFA)" 
+              value={new Intl.NumberFormat('fr-CM').format(kpis.totalRevenue)} 
+              icon={<Activity />} 
+              color="text-green-500"
+              bg="bg-green-50 dark:bg-green-900/20"
+            />
+            <KpiCard 
+              title="Commandes Livrées" 
+              value={kpis.deliveredOrders.toString()} 
+              icon={<CheckCircle2 />} 
+              color="text-blue-500"
+              bg="bg-blue-50 dark:bg-blue-900/20"
+            />
+            <KpiCard 
+              title="Taux de Livraison" 
+              value={`${kpis.deliveryRate}%`} 
+              icon={<Database />} 
+              color="text-purple-500"
+              bg="bg-purple-50 dark:bg-purple-900/20"
+            />
+            <KpiCard 
+              title="Distributeurs Actifs" 
+              value={kpis.activeStores.toString()} 
+              icon={<Users />} 
+              color="text-orange-500"
+              bg="bg-orange-50 dark:bg-orange-900/20"
+            />
           </div>
+        )}
 
-          {/* Sentry Logs */}
-          <div className="bg-white dark:bg-neutral-900 border border-gray-200 dark:border-neutral-800 rounded-3xl p-6">
-            <h3 className="font-black text-xl mb-4 flex items-center gap-2">
-              <Bug className="text-red-500" />
-              Exceptions (Sentry)
+        {/* Audit Log (Phase 6.5) */}
+        <div className="bg-white dark:bg-neutral-900 border border-gray-200 dark:border-neutral-800 rounded-3xl overflow-hidden shadow-sm">
+          <div className="p-6 border-b border-gray-100 dark:border-neutral-800 flex justify-between items-center bg-gray-50/50 dark:bg-neutral-900/50">
+            <h3 className="font-black text-xl text-gray-900 dark:text-white flex items-center gap-2">
+              <Fingerprint className="text-gray-400" />
+              Registre d'Activité Système
             </h3>
-            <div className="space-y-4">
-              <div className="p-3 border border-red-100 bg-red-50 dark:bg-red-900/10 dark:border-red-900/30 rounded-xl">
-                <p className="text-xs text-red-600 font-bold mb-1">Il y a 10 min</p>
-                <p className="font-mono text-sm text-gray-800 dark:text-gray-200">TimeoutError: Redis connection failed</p>
-              </div>
-              <div className="p-3 border border-gray-100 dark:border-neutral-800 rounded-xl">
-                <p className="text-xs text-gray-500 font-bold mb-1">Il y a 2 heures</p>
-                <p className="font-mono text-sm text-gray-800 dark:text-gray-200">PaymentWebhook verification failed</p>
-              </div>
-            </div>
+            <span className="px-3 py-1 bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-400 text-xs font-bold rounded-full flex items-center gap-1">
+              <Lock size={12} /> Confidentiel Admin
+            </span>
           </div>
-
-          {/* Backups & Security */}
-          <div className="bg-white dark:bg-neutral-900 border border-gray-200 dark:border-neutral-800 rounded-3xl p-6">
-            <h3 className="font-black text-xl mb-4 flex items-center gap-2">
-              <Database className="text-purple-500" />
-              Backups & Sécurité
-            </h3>
-            <ul className="space-y-4">
-              <li className="flex items-start gap-3">
-                <ShieldCheck className="text-green-500 mt-1" size={20} />
-                <div>
-                  <p className="font-bold">Helmet & Throttler</p>
-                  <p className="text-xs text-gray-500">Actifs (100 req/min)</p>
-                </div>
-              </li>
-              <li className="flex items-start gap-3">
-                <Database className="text-green-500 mt-1" size={20} />
-                <div>
-                  <p className="font-bold">Dernier Backup DB</p>
-                  <p className="text-xs text-gray-500">Réussi à 04:00 AM (AWS S3)</p>
-                </div>
-              </li>
-              <li className="flex items-start gap-3">
-                <AlertCircle className="text-orange-500 mt-1" size={20} />
-                <div>
-                  <p className="font-bold">Test de Restauration</p>
-                  <p className="text-xs text-gray-500">Prévu dans 5 jours</p>
-                </div>
-              </li>
-            </ul>
+          
+          <div className="overflow-x-auto">
+            <table className="w-full text-left text-sm">
+              <thead>
+                <tr className="text-gray-500 border-b border-gray-100 dark:border-neutral-800 bg-gray-50 dark:bg-neutral-950">
+                  <th className="px-6 py-4 font-bold">Horodatage</th>
+                  <th className="px-6 py-4 font-bold">Action</th>
+                  <th className="px-6 py-4 font-bold">Entité</th>
+                  <th className="px-6 py-4 font-bold">Utilisateur / IP</th>
+                  <th className="px-6 py-4 font-bold">Détails techniques</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-gray-100 dark:divide-neutral-800 font-mono">
+                {isLoading ? (
+                  <tr>
+                    <td colSpan={5} className="p-8 text-center text-gray-500">Chargement sécurisé des logs...</td>
+                  </tr>
+                ) : logs.length === 0 ? (
+                  <tr>
+                    <td colSpan={5} className="p-8 text-center text-gray-500">Aucune activité récente.</td>
+                  </tr>
+                ) : (
+                  logs.map((log) => (
+                    <tr key={log.id} className="hover:bg-gray-50 dark:hover:bg-neutral-950/50 transition-colors">
+                      <td className="px-6 py-4 text-gray-500 whitespace-nowrap">
+                        {new Date(log.createdAt).toLocaleString('fr-FR')}
+                      </td>
+                      <td className="px-6 py-4">
+                        <span className={`px-2 py-1 rounded text-xs font-bold \${getActionColor(log.action)}`}>
+                          {log.action}
+                        </span>
+                      </td>
+                      <td className="px-6 py-4 text-gray-700 dark:text-gray-300">
+                        {log.entity} <span className="text-gray-400">({log.entityId?.slice(0,8)}...)</span>
+                      </td>
+                      <td className="px-6 py-4">
+                        {log.user ? (
+                          <div className="flex flex-col">
+                            <span className="font-sans font-bold text-gray-900 dark:text-white">{log.user.name || 'Admin'}</span>
+                            <span className="text-xs text-gray-500">{log.user.role}</span>
+                          </div>
+                        ) : (
+                          <span className="text-gray-500 text-xs">Système / Anonyme</span>
+                        )}
+                      </td>
+                      <td className="px-6 py-4">
+                        <div className="max-w-xs truncate text-xs text-gray-500 bg-gray-100 dark:bg-neutral-950 p-2 rounded border border-gray-200 dark:border-neutral-800">
+                          {log.details ? JSON.stringify(log.details) : '-'}
+                        </div>
+                      </td>
+                    </tr>
+                  ))
+                )}
+              </tbody>
+            </table>
           </div>
-
         </div>
+
       </div>
     </div>
   );
+}
+
+function KpiCard({ title, value, icon, color, bg }: { title: string, value: string, icon: any, color: string, bg: string }) {
+  return (
+    <div className="bg-white dark:bg-neutral-900 p-6 rounded-3xl border border-gray-200 dark:border-neutral-800 shadow-sm flex flex-col justify-between">
+      <div className="flex justify-between items-start mb-4">
+        <div className={`p-3 \${bg} rounded-xl shadow-sm \${color}`}>
+          {icon}
+        </div>
+      </div>
+      <div>
+        <p className="text-sm font-bold text-gray-500 mb-1">{title}</p>
+        <h3 className="text-3xl font-black text-gray-900 dark:text-white">{value}</h3>
+      </div>
+    </div>
+  );
+}
+
+function getActionColor(action: string) {
+  if (action.includes('APPROVE') || action.includes('SUCCESS') || action.includes('DELIVER')) return 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400';
+  if (action.includes('REJECT') || action.includes('FAIL') || action.includes('DELETE') || action.includes('CANCEL')) return 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400';
+  if (action.includes('VIEW') || action.includes('LOGIN')) return 'bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400';
+  return 'bg-gray-100 text-gray-700 dark:bg-gray-800 dark:text-gray-300';
 }

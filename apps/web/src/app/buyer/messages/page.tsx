@@ -1,47 +1,160 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect, Suspense } from 'react';
+import { useSearchParams } from 'next/navigation';
 import Link from 'next/link';
-import { ArrowLeft, Send, Store, MapPin, Search } from 'lucide-react';
+import { ArrowLeft, Send, Store, MapPin, Search, Loader2 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 
-const MOCK_MESSAGES = [
-  { id: 1, sender: 'distributor', text: 'Bonjour ! Oui, nous avons bien de la SCTM 12.5Kg en stock.', time: '10:30' },
-  { id: 2, sender: 'buyer', text: 'Super, à quel prix s\'il vous plait ?', time: '10:31' },
-  { id: 3, sender: 'distributor', text: 'Le prix officiel, 6500 FCFA. Voulez-vous que je vous en réserve une ?', time: '10:33' },
-];
-
-export default function BuyerMessages() {
-  const [messages, setMessages] = useState(MOCK_MESSAGES);
+function BuyerMessagesContent() {
+  const searchParams = useSearchParams();
+  const toId = searchParams.get('to');
+  const [conversations, setConversations] = useState<any[]>([]);
+  const [messages, setMessages] = useState<any[]>([]);
   const [input, setInput] = useState('');
+  const [activeConv, setActiveConv] = useState<any>(null);
+  
+  const [hasProfile, setHasProfile] = useState<boolean | null>(null);
+  const [profileForm, setProfileForm] = useState({ firstName: '', lastName: '' });
+  const [isSubmittingProfile, setIsSubmittingProfile] = useState(false);
 
-  const sendMessage = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!input.trim()) return;
-    
-    setMessages(prev => [...prev, {
-      id: Date.now(),
-      sender: 'buyer',
-      text: input,
-      time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
-    }]);
-    
-    setInput('');
-    
-    // Simulate auto-reply
-    setTimeout(() => {
-      setMessages(prev => [...prev, {
-        id: Date.now() + 1,
-        sender: 'distributor',
-        text: 'D\'accord, c\'est noté ! À tout à l\'heure.',
-        time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
-      }]);
-    }, 1500);
+  useEffect(() => {
+    // Check profile
+    fetch('http://localhost:3001/users/profile', {
+      headers: { 'x-demo-role': 'customer_1' }
+    })
+    .then(res => {
+      if (!res.ok) throw new Error('No profile');
+      return res.json();
+    })
+    .then(data => {
+      if (data && data.id) {
+        setHasProfile(true);
+        loadConversations();
+      } else {
+        setHasProfile(false);
+      }
+    })
+    .catch(() => setHasProfile(false));
+  }, []);
+
+  const loadConversations = () => {
+    fetch('http://localhost:3001/chat/conversations', {
+      headers: { 'x-demo-role': 'customer_1' }
+    })
+    .then(res => res.json())
+    .then(data => {
+      setConversations(data);
+      if (toId && !activeConv) {
+        const existing = data.find((c: any) => c.participant1Id === toId || c.participant2Id === toId);
+        if (existing) {
+          selectConversation(existing);
+        } else {
+          setActiveConv({ isNew: true, participant1Id: 'customer_1', participant2Id: toId });
+          setMessages([]);
+        }
+      }
+    })
+    .catch(err => console.error(err));
   };
+
+  const selectConversation = (conv: any) => {
+    setActiveConv(conv);
+    fetch(`http://localhost:3001/chat/conversations/${conv.id}/messages`, {
+      headers: { 'x-demo-role': 'customer_1' }
+    })
+    .then(res => res.json())
+    .then(data => setMessages(data))
+    .catch(err => console.error(err));
+  };
+
+  const createProfile = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setIsSubmittingProfile(true);
+    try {
+      await fetch('http://localhost:3001/users/profile', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'x-demo-role': 'customer_1' },
+        body: JSON.stringify(profileForm)
+      });
+      setHasProfile(true);
+      loadConversations();
+    } catch (err) {
+      console.error(err);
+    }
+    setIsSubmittingProfile(false);
+  };
+
+  const sendMessage = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!input.trim() || !activeConv) return;
+    
+    // We assume participant2 is the distributor (or the other guy)
+    const recipientId = activeConv.participant1Id === 'customer_1' ? activeConv.participant2Id : activeConv.participant1Id;
+
+    try {
+      const res = await fetch('http://localhost:3001/chat/messages', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'x-demo-role': 'customer_1' },
+        body: JSON.stringify({ recipientId, content: input })
+      });
+      const newMsg = await res.json();
+      setMessages(prev => [...prev, newMsg]);
+      setInput('');
+      // Reload conversations to update last message preview
+      loadConversations();
+    } catch (err) {
+      console.error(err);
+    }
+  };
+
+  if (hasProfile === null) {
+    return <div className="min-h-screen flex items-center justify-center"><Loader2 className="animate-spin text-blue-500" size={32} /></div>;
+  }
+
+  if (hasProfile === false) {
+    return (
+      <div className="min-h-screen bg-gray-50 dark:bg-neutral-950 flex items-center justify-center p-4">
+        <div className="max-w-md w-full bg-white dark:bg-neutral-900 rounded-3xl p-8 shadow-xl border border-gray-200 dark:border-neutral-800">
+          <div className="w-16 h-16 bg-blue-100 dark:bg-blue-900/30 text-blue-500 rounded-full flex items-center justify-center mx-auto mb-6">
+            <Store size={32} />
+          </div>
+          <h2 className="text-2xl font-black text-center mb-2">Profil Acheteur</h2>
+          <p className="text-gray-500 text-center mb-8">Veuillez renseigner votre nom pour discuter avec les distributeurs.</p>
+          
+          <form onSubmit={createProfile} className="space-y-4">
+            <input 
+              type="text" 
+              placeholder="Prénom" 
+              required
+              value={profileForm.firstName}
+              onChange={e => setProfileForm({...profileForm, firstName: e.target.value})}
+              className="w-full p-4 rounded-xl bg-gray-50 dark:bg-neutral-950 border border-gray-200 dark:border-neutral-800 focus:ring-2 focus:ring-blue-500 outline-none" 
+            />
+            <input 
+              type="text" 
+              placeholder="Nom" 
+              required
+              value={profileForm.lastName}
+              onChange={e => setProfileForm({...profileForm, lastName: e.target.value})}
+              className="w-full p-4 rounded-xl bg-gray-50 dark:bg-neutral-950 border border-gray-200 dark:border-neutral-800 focus:ring-2 focus:ring-blue-500 outline-none" 
+            />
+            <button 
+              type="submit" 
+              disabled={isSubmittingProfile}
+              className="w-full py-4 bg-blue-500 text-white font-bold rounded-xl hover:bg-blue-600 transition-colors flex justify-center items-center gap-2"
+            >
+              {isSubmittingProfile && <Loader2 size={18} className="animate-spin" />}
+              Créer mon profil
+            </button>
+          </form>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-neutral-950 flex flex-col md:flex-row">
-      
       {/* Sidebar - Conversation List */}
       <div className="w-full md:w-80 lg:w-96 bg-white dark:bg-neutral-900 border-r border-gray-200 dark:border-neutral-800 flex flex-col">
         <div className="p-4 border-b border-gray-200 dark:border-neutral-800">
@@ -60,106 +173,114 @@ export default function BuyerMessages() {
         </div>
         
         <div className="flex-1 overflow-y-auto">
-          {/* Active Conversation Item */}
-          <div className="p-4 border-b border-gray-100 dark:border-neutral-800 bg-blue-50 dark:bg-blue-900/10 cursor-pointer hover:bg-blue-100 dark:hover:bg-blue-900/20 transition-colors">
-            <div className="flex items-start gap-3">
-              <div className="w-12 h-12 bg-white dark:bg-neutral-800 rounded-full flex items-center justify-center text-blue-500 shadow-sm shrink-0">
-                <Store size={20} />
-              </div>
-              <div className="flex-1 min-w-0">
-                <div className="flex justify-between items-baseline mb-1">
-                  <h3 className="font-bold text-gray-900 dark:text-white truncate">ETS Pleingaz Bonamoussadi</h3>
-                  <span className="text-xs text-blue-500 font-bold">10:33</span>
+          {conversations.length === 0 ? (
+            <p className="p-6 text-center text-gray-500 text-sm">Aucune conversation active.</p>
+          ) : (
+            conversations.map(conv => (
+              <div 
+                key={conv.id}
+                onClick={() => selectConversation(conv)}
+                className={`p-4 border-b border-gray-100 dark:border-neutral-800 cursor-pointer transition-colors ${activeConv?.id === conv.id ? 'bg-blue-50 dark:bg-blue-900/10' : 'hover:bg-gray-50 dark:hover:bg-neutral-900'}`}
+              >
+                <div className="flex items-start gap-3">
+                  <div className={`w-12 h-12 rounded-full flex items-center justify-center shrink-0 ${activeConv?.id === conv.id ? 'bg-white dark:bg-neutral-800 text-blue-500 shadow-sm' : 'bg-gray-100 dark:bg-neutral-800 text-gray-400'}`}>
+                    <Store size={20} />
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <div className="flex justify-between items-baseline mb-1">
+                      <h3 className="font-bold text-gray-900 dark:text-white truncate">Boutique</h3>
+                      <span className="text-xs text-blue-500 font-bold"></span>
+                    </div>
+                    <p className="text-sm text-gray-600 dark:text-gray-400 truncate font-medium">
+                      {conv.messages?.[0]?.content || 'Nouvelle conversation'}
+                    </p>
+                  </div>
                 </div>
-                <p className="text-sm text-gray-600 dark:text-gray-400 truncate font-medium">Le prix officiel, 6500 FCFA...</p>
               </div>
-            </div>
-          </div>
-
-          {/* Another Conversation */}
-          <div className="p-4 border-b border-gray-100 dark:border-neutral-800 cursor-pointer hover:bg-gray-50 dark:hover:bg-neutral-900 transition-colors">
-            <div className="flex items-start gap-3">
-              <div className="w-12 h-12 bg-gray-100 dark:bg-neutral-800 rounded-full flex items-center justify-center text-gray-400 shrink-0">
-                <Store size={20} />
-              </div>
-              <div className="flex-1 min-w-0">
-                <div className="flex justify-between items-baseline mb-1">
-                  <h3 className="font-bold text-gray-900 dark:text-white truncate">Maman Gaz Makepe</h3>
-                  <span className="text-xs text-gray-400">Hier</span>
-                </div>
-                <p className="text-sm text-gray-500 truncate">Je n'ai plus de Camgaz désolé.</p>
-              </div>
-            </div>
-          </div>
+            ))
+          )}
         </div>
       </div>
 
       {/* Main Chat Area */}
       <div className="flex-1 flex flex-col h-screen max-h-screen relative bg-gray-50 dark:bg-neutral-950">
-        
-        {/* Chat Header */}
-        <div className="px-6 py-4 bg-white dark:bg-neutral-900 border-b border-gray-200 dark:border-neutral-800 flex items-center gap-4 z-10">
-          <div className="w-12 h-12 bg-blue-100 dark:bg-blue-900/30 text-blue-500 rounded-full flex items-center justify-center">
-            <Store size={24} />
+        {!activeConv ? (
+          <div className="flex-1 flex items-center justify-center text-gray-500">
+            Sélectionnez une conversation pour commencer
           </div>
-          <div>
-            <h2 className="text-lg font-black text-gray-900 dark:text-white">ETS Pleingaz Bonamoussadi</h2>
-            <p className="text-sm text-gray-500 flex items-center gap-1 font-medium">
-              <MapPin size={14} /> Douala, Bonamoussadi
-            </p>
-          </div>
-        </div>
+        ) : (
+          <>
+            {/* Chat Header */}
+            <div className="px-6 py-4 bg-white dark:bg-neutral-900 border-b border-gray-200 dark:border-neutral-800 flex items-center gap-4 z-10">
+              <div className="w-12 h-12 bg-blue-100 dark:bg-blue-900/30 text-blue-500 rounded-full flex items-center justify-center">
+                <Store size={24} />
+              </div>
+              <div>
+                <h2 className="text-lg font-black text-gray-900 dark:text-white">Boutique (Distributeur)</h2>
+                <p className="text-sm text-gray-500 flex items-center gap-1 font-medium">
+                  <MapPin size={14} /> Localisation
+                </p>
+              </div>
+            </div>
 
-        {/* Messages */}
-        <div className="flex-1 overflow-y-auto p-6 space-y-6">
-          <div className="text-center">
-            <span className="px-3 py-1 bg-gray-200 dark:bg-neutral-800 text-gray-500 dark:text-gray-400 text-xs font-bold rounded-full">
-              Aujourd'hui
-            </span>
-          </div>
+            {/* Messages */}
+            <div className="flex-1 overflow-y-auto p-6 space-y-6">
+              <AnimatePresence initial={false}>
+                {messages.map((msg: any) => {
+                  const isMe = msg.senderId === 'customer_1';
+                  return (
+                    <motion.div 
+                      key={msg.id}
+                      initial={{ opacity: 0, y: 10, scale: 0.95 }}
+                      animate={{ opacity: 1, y: 0, scale: 1 }}
+                      className={`flex flex-col max-w-[75%] ${isMe ? 'ml-auto items-end' : 'mr-auto items-start'}`}
+                    >
+                      <div className={`p-4 rounded-2xl shadow-sm ${
+                        isMe
+                          ? 'bg-blue-500 text-white rounded-br-sm' 
+                          : 'bg-white dark:bg-neutral-900 text-gray-900 dark:text-white border border-gray-100 dark:border-neutral-800 rounded-bl-sm'
+                      }`}>
+                        <p className="font-medium">{msg.content}</p>
+                      </div>
+                      <span className="text-xs text-gray-400 mt-1 mx-1 font-bold">
+                        {new Date(msg.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                      </span>
+                    </motion.div>
+                  );
+                })}
+              </AnimatePresence>
+            </div>
 
-          <AnimatePresence initial={false}>
-            {messages.map((msg) => (
-              <motion.div 
-                key={msg.id}
-                initial={{ opacity: 0, y: 10, scale: 0.95 }}
-                animate={{ opacity: 1, y: 0, scale: 1 }}
-                className={`flex flex-col max-w-[75%] \${msg.sender === 'buyer' ? 'ml-auto items-end' : 'mr-auto items-start'}`}
-              >
-                <div className={`p-4 rounded-2xl shadow-sm \${
-                  msg.sender === 'buyer' 
-                    ? 'bg-blue-500 text-white rounded-br-sm' 
-                    : 'bg-white dark:bg-neutral-900 text-gray-900 dark:text-white border border-gray-100 dark:border-neutral-800 rounded-bl-sm'
-                }`}>
-                  <p className="font-medium">{msg.text}</p>
-                </div>
-                <span className="text-xs text-gray-400 mt-1 mx-1 font-bold">{msg.time}</span>
-              </motion.div>
-            ))}
-          </AnimatePresence>
-        </div>
-
-        {/* Input Area */}
-        <div className="p-4 bg-white dark:bg-neutral-900 border-t border-gray-200 dark:border-neutral-800 z-10">
-          <form onSubmit={sendMessage} className="max-w-4xl mx-auto flex items-center gap-3">
-            <input 
-              type="text" 
-              value={input}
-              onChange={(e) => setInput(e.target.value)}
-              placeholder="Écrivez votre message..."
-              className="flex-1 bg-gray-100 dark:bg-neutral-800 border-transparent focus:border-blue-500 focus:ring-0 rounded-full px-6 py-3.5 outline-none transition-all font-medium"
-            />
-            <button 
-              type="submit"
-              disabled={!input.trim()}
-              className="w-12 h-12 bg-blue-500 hover:bg-blue-600 disabled:bg-gray-300 dark:disabled:bg-neutral-700 text-white rounded-full flex items-center justify-center transition-colors shrink-0"
-            >
-              <Send size={18} className="ml-1" />
-            </button>
-          </form>
-        </div>
-
+            {/* Input Area */}
+            <div className="p-4 bg-white dark:bg-neutral-900 border-t border-gray-200 dark:border-neutral-800 z-10">
+              <form onSubmit={sendMessage} className="max-w-4xl mx-auto flex items-center gap-3">
+                <input 
+                  type="text" 
+                  value={input}
+                  onChange={(e) => setInput(e.target.value)}
+                  placeholder="Écrivez votre message..."
+                  className="flex-1 bg-gray-100 dark:bg-neutral-800 border-transparent focus:border-blue-500 focus:ring-0 rounded-full px-6 py-3.5 outline-none transition-all font-medium"
+                />
+                <button 
+                  type="submit"
+                  disabled={!input.trim()}
+                  className="w-12 h-12 bg-blue-500 hover:bg-blue-600 disabled:bg-gray-300 dark:disabled:bg-neutral-700 text-white rounded-full flex items-center justify-center transition-colors shrink-0"
+                >
+                  <Send size={18} className="ml-1" />
+                </button>
+              </form>
+            </div>
+          </>
+        )}
       </div>
     </div>
+  );
+}
+
+export default function BuyerMessages() {
+  return (
+    <Suspense fallback={<div className="min-h-screen flex items-center justify-center"><Loader2 className="animate-spin text-blue-500" size={32} /></div>}>
+      <BuyerMessagesContent />
+    </Suspense>
   );
 }

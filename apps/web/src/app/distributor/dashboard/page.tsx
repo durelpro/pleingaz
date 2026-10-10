@@ -3,10 +3,11 @@
 import { useState } from 'react';
 import { 
   Store, Package, TrendingUp, AlertCircle, 
-  MapPin, Star, Settings, FileText, ArrowRight, EyeOff, Eye, Home
+  MapPin, Star, Settings, FileText, ArrowRight, EyeOff, Eye, Home, Award, ShoppingBag
 } from 'lucide-react';
 import Link from 'next/link';
 import { motion } from 'framer-motion';
+import { useEffect } from 'react';
 
 const containerVariants = {
   hidden: { opacity: 0 },
@@ -24,7 +25,30 @@ const itemVariants = {
 };
 
 export default function DistributorDashboard() {
-  const [status, setStatus] = useState<'PENDING' | 'APPROVED'>('PENDING');
+  const [status, setStatus] = useState<'PENDING' | 'APPROVED' | 'REJECTED' | 'DRAFT'>('PENDING');
+  const [storeName, setStoreName] = useState<string>('');
+  const [metrics, setMetrics] = useState({ loyaltyPoints: 0, reliabilityScore: 0, storeViews: 0, lastUpdate: null });
+  const [isLoading, setIsLoading] = useState(true);
+
+  useEffect(() => {
+    Promise.all([
+      fetch('http://localhost:3001/distributor/application', { headers: { 'x-demo-role': 'distributor_1' } }).then(res => res.json()),
+      fetch('http://localhost:3001/distributor/dashboard-metrics', { headers: { 'x-demo-role': 'distributor_1' } }).then(res => res.json())
+    ])
+    .then(([appData, metricsData]) => {
+      if (appData && appData.status) {
+        setStatus(appData.status);
+        if (appData.businessName) setStoreName(appData.businessName);
+      }
+      if (metricsData) {
+        setMetrics(metricsData);
+      }
+    })
+    .catch(err => console.error(err))
+    .finally(() => setIsLoading(false));
+  }, []);
+
+  if (isLoading) return <div className="min-h-screen flex items-center justify-center bg-gray-50 dark:bg-neutral-950">Chargement...</div>;
 
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-neutral-950 p-6 lg:p-10 relative overflow-hidden">
@@ -40,13 +64,13 @@ export default function DistributorDashboard() {
       >
         
         {/* Header */}
-        <motion.div variants={itemVariants} className="flex flex-col md:flex-row justify-between items-start md:items-end gap-4">
+        <motion.div className="flex flex-col md:flex-row justify-between items-start md:items-end gap-4">
           <div>
             <h1 className="text-3xl md:text-4xl font-black text-gray-900 dark:text-white flex items-center gap-3">
               <div className="w-12 h-12 bg-white dark:bg-neutral-900 rounded-2xl shadow-sm flex items-center justify-center text-pleingaz-red border border-gray-100 dark:border-neutral-800">
                 <Store size={24} />
               </div>
-              Mon Tableau de Bord
+              {storeName || 'Mon Tableau de Bord'}
             </h1>
             <p className="text-gray-500 mt-2 font-medium ml-1">Bienvenue sur votre espace distributeur PLEINGAZ.</p>
           </div>
@@ -59,12 +83,6 @@ export default function DistributorDashboard() {
               <Home size={16} />
               Accueil
             </Link>
-            <button 
-              onClick={() => setStatus(s => s === 'PENDING' ? 'APPROVED' : 'PENDING')}
-              className="px-4 py-2 text-xs font-bold bg-gray-200 dark:bg-neutral-800 rounded-xl hover:bg-gray-300 dark:hover:bg-neutral-700 transition-colors"
-            >
-              Basculer statut (Dev)
-            </button>
             <Link href="/distributor/inventory" className="flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-pleingaz-red to-[#ff6a00] text-white font-black rounded-xl shadow-lg shadow-orange-500/30 hover:shadow-orange-500/50 hover:scale-[1.02] active:scale-[0.98] transition-all">
               <Package size={20} />
               Mettre à jour mon stock
@@ -74,7 +92,7 @@ export default function DistributorDashboard() {
 
         {/* Status Banner */}
         {status === 'PENDING' && (
-          <motion.div variants={itemVariants} className="bg-orange-50 dark:bg-orange-900/10 border-2 border-orange-200 dark:border-orange-900/30 p-6 rounded-3xl flex flex-col md:flex-row items-center gap-5 text-orange-800 dark:text-orange-400 shadow-sm relative overflow-hidden">
+          <motion.div className="bg-orange-50 dark:bg-orange-900/10 border-2 border-orange-200 dark:border-orange-900/30 p-6 rounded-3xl flex flex-col md:flex-row items-center gap-5 text-orange-800 dark:text-orange-400 shadow-sm relative overflow-hidden">
             <div className="absolute top-0 right-0 w-32 h-32 bg-orange-400/10 rounded-full blur-2xl pointer-events-none" />
             <div className="w-14 h-14 bg-white dark:bg-neutral-900 shadow-sm rounded-2xl flex items-center justify-center shrink-0 border border-orange-100 dark:border-orange-900/50">
               <AlertCircle size={28} className="text-orange-500" />
@@ -90,24 +108,31 @@ export default function DistributorDashboard() {
         )}
 
         {/* Actionable Insights */}
-        <motion.div variants={itemVariants} className="grid grid-cols-1 md:grid-cols-3 gap-6">
+          <motion.div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+          <InsightCard 
+            title="Points de Fidélité" 
+            value={`${metrics.loyaltyPoints} Pts`} 
+            desc="Obtenus grâce à votre fiabilité." 
+            icon={<Award />} 
+            alert="GOOD"
+          />
           <InsightCard 
             title="Score de Fiabilité" 
-            value="95/100" 
-            desc="Très bien ! Continuez à mettre à jour votre stock." 
+            value={`${metrics.reliabilityScore}/100`} 
+            desc="Très bien ! Continuez à mettre à jour." 
             icon={<Star />} 
             alert="GOOD"
           />
           <InsightCard 
             title="Dernière mise à jour" 
-            value="Il y a 2h" 
-            desc="Stock de Camgaz 12Kg déclaré." 
+            value={metrics.lastUpdate ? "Récemment" : "Aucune"} 
+            desc="Stock de gaz mis à jour." 
             icon={<AlertCircle />} 
-            alert="MEDIUM"
+            alert={metrics.lastUpdate ? "GOOD" : "MEDIUM"}
           />
           <InsightCard 
             title="Vues de la boutique" 
-            value="142" 
+            value={`${metrics.storeViews}`} 
             desc="Recherches à proximité (7 jours)" 
             icon={<TrendingUp />} 
             alert="GOOD"
@@ -115,10 +140,23 @@ export default function DistributorDashboard() {
         </motion.div>
 
         {/* Quick Access Menu */}
-        <motion.div variants={itemVariants} className="grid grid-cols-1 md:grid-cols-2 gap-8">
+          <motion.div className="grid grid-cols-1 md:grid-cols-2 gap-8">
           <div className="bg-white dark:bg-neutral-900 border border-gray-200 dark:border-neutral-800 rounded-3xl p-6">
             <h3 className="font-black text-xl text-gray-900 dark:text-white mb-6">Actions Rapides</h3>
             <div className="space-y-4">
+              <Link href="/distributor/dashboard/orders" className="group flex justify-between items-center p-4 bg-gray-50 dark:bg-neutral-950 rounded-2xl hover:bg-orange-50 dark:hover:bg-orange-900/10 border border-transparent hover:border-orange-200 dark:hover:border-orange-900/30 transition-all">
+                <div className="flex items-center gap-4">
+                  <div className="w-12 h-12 bg-white dark:bg-neutral-900 rounded-xl flex items-center justify-center shadow-sm text-pleingaz-red group-hover:scale-110 transition-transform">
+                    <ShoppingBag size={20} />
+                  </div>
+                  <div>
+                    <h4 className="font-bold text-gray-900 dark:text-white">Commandes Reçues</h4>
+                    <p className="text-sm text-gray-500">Gérer les achats clients</p>
+                  </div>
+                </div>
+                <ArrowRight className="text-gray-400 group-hover:text-pleingaz-red transition-colors" />
+              </Link>
+              
               <Link href="/distributor/inventory" className="group flex justify-between items-center p-4 bg-gray-50 dark:bg-neutral-950 rounded-2xl hover:bg-orange-50 dark:hover:bg-orange-900/10 border border-transparent hover:border-orange-200 dark:hover:border-orange-900/30 transition-all">
                 <div className="flex items-center gap-4">
                   <div className="w-12 h-12 bg-white dark:bg-neutral-900 rounded-xl flex items-center justify-center shadow-sm text-pleingaz-red group-hover:scale-110 transition-transform">

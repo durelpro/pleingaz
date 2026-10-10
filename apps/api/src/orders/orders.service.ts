@@ -79,6 +79,92 @@ export class OrdersService {
   }
 
   /**
+   * MVP Checkout Order (Direct purchase without reservation logic)
+   */
+  async createCheckoutOrder(userId: string, data: any) {
+    return this.prisma.$transaction(async (tx) => {
+      const inventory = await tx.inventory.findUnique({
+        where: { id: data.inventoryId },
+        include: { product: true, store: true }
+      });
+
+      if (!inventory || inventory.level === 'OUT_OF_STOCK') {
+        throw new BadRequestException('Produit en rupture de stock.');
+      }
+
+      const orderType = data.deliveryMethod === 'DELIVERY' ? 'B2C_DELIVERY' : 'B2C_PICKUP';
+      const paymentMethodMapped = data.paymentMethod === 'MOMO' ? 'MTN_MOMO' : data.paymentMethod === 'OM' ? 'ORANGE_MONEY' : 'CASH';
+
+      const itemsToCreate: any[] = [{ 
+        productId: inventory.productId, 
+        quantity: 1, 
+        unitPrice: inventory.product.publicPrice, 
+        totalPrice: inventory.product.publicPrice 
+      }];
+
+      if (data.needsConsigne) {
+        itemsToCreate.push({
+          productId: null, // Pas de produit spécifique, c'est une consigne
+          quantity: 1,
+          unitPrice: 15000,
+          totalPrice: 15000,
+        });
+      }
+
+      // 1. Create Order
+      const order = await tx.order.create({
+        data: {
+          orderNumber: `ORD-${Date.now()}`,
+          type: orderType,
+          status: 'SUBMITTED', // SUBMITTED awaiting store processing
+          customerId: userId,
+          storeId: data.storeId,
+          totalAmount: data.totalAmount,
+          deliveryAddress: data.address,
+          items: {
+            create: itemsToCreate
+          },
+          payments: {
+            create: [{
+              amount: data.totalAmount,
+              method: paymentMethodMapped,
+              status: data.paymentMethod === 'CASH' ? 'PENDING' : 'SUCCESS', // Simulating successful MoMo/OM for MVP
+              idempotencyKey: `IDEMP-${Date.now()}`,
+              providerTxId: `TXN-${Date.now()}`
+            }]
+          }
+        }
+      });
+
+      // 2. Generate Automatic Invoice
+      const invoice = await tx.invoice.create({
+        data: {
+          invoiceNumber: `INV-${Date.now()}`,
+          orderId: order.id,
+          sellerName: `Distributeur Agréé : ${inventory.store.name}`,
+          totalAmount: data.totalAmount,
+        }
+      });
+
+      // 3. Deduct stock safely
+      await tx.inventory.update({
+        where: { id: inventory.id },
+        data: { level: 'LOW' } // Simple MVP logic
+      });
+
+      await this.audit.log({
+        userId,
+        action: 'CREATE_CHECKOUT_ORDER',
+        entity: 'Order',
+        entityId: order.id,
+        details: { data, invoiceId: invoice.id }
+      });
+
+      return order;
+    });
+  }
+
+  /**
    * Confirmer la commande (Convertir le brouillon)
    */
   async confirmOrder(userId: string, orderId: string, deliveryAddress?: string) {
@@ -168,12 +254,65 @@ export class OrdersService {
     return order;
   }
 
-  async getUserOrders(userId: string) {
+  async getUserOrders(userId: string): Promise<any> {
     return this.prisma.order.findMany({
       where: { customerId: userId },
-      include: { items: true, delivery: true, review: true },
+      include: { items: { include: { product: true } }, delivery: true, review: true, invoice: true, store: true },
       orderBy: { createdAt: 'desc' }
     });
+  }
+
+  /**
+   * Tâche 5.1: Gestion des commandes reçues (Distributeur)
+   */
+  async getStoreOrders(userId: string): Promise<any> {
+    // Trouver le store du distributeur
+    const store = await this.prisma.store.findFirst({
+      where: { ownerId: userId }
+    });
+
+    if (!store) throw new NotFoundException('Aucune boutique trouvée pour ce distributeur.');
+
+    return this.prisma.order.findMany({
+      where: { storeId: store.id },
+      include: { 
+        customer: true, 
+        items: { include: { product: true } }, 
+        delivery: { include: { driver: true } },
+        payments: true
+      },
+      orderBy: { createdAt: 'desc' }
+    });
+  }
+
+  async updateOrderStatus(userId: string, orderId: string, status: any) {
+    const store = await this.prisma.store.findFirst({
+      where: { ownerId: userId }
+    });
+
+    if (!store) throw new NotFoundException('Aucune boutique trouvée.');
+
+    const order = await this.prisma.order.findFirst({
+      where: { id: orderId, storeId: store.id },
+      include: { customer: true }
+    });
+
+    if (!order) throw new NotFoundException('Commande introuvable ou non autorisée.');
+
+    const updated = await this.prisma.order.update({
+      where: { id: order.id },
+      data: { status }
+    });
+
+    await this.audit.log({
+      userId,
+      action: 'UPDATE_ORDER_STATUS',
+      entity: 'Order',
+      entityId: order.id,
+      details: { newStatus: status }
+    });
+
+    return updated;
   }
 
   /**

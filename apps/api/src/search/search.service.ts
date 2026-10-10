@@ -9,7 +9,7 @@ export class SearchService {
    * Tâche 4.5 & 4.6 : Recherche géospatiale et textuelle
    */
   async searchStores(params: {
-    productId: string;
+    productId?: string;
     latitude?: number;
     longitude?: number;
     radiusKm?: number; // Défaut: 5
@@ -19,14 +19,21 @@ export class SearchService {
     const { productId, latitude, longitude, textQuery, userId } = params;
     const radiusMeters = (params.radiusKm || 5) * 1000;
 
-    let queryCondition = `WHERE i."productId" = $1 AND s."isVisible" = true AND s."isVerifiedBadge" = true`;
-    const queryParams: any[] = [productId];
-    let paramIndex = 2;
+    let queryCondition = `WHERE s."isVisible" = true AND s."isVerifiedBadge" = true`;
+    const queryParams: any[] = [];
+    let paramIndex = 1;
+
+    if (productId) {
+      queryCondition += ` AND i."productId" = $${paramIndex}`;
+      queryParams.push(productId);
+      paramIndex++;
+    }
 
     // Condition textuelle (pg_trgm + unaccent)
     if (textQuery) {
       queryCondition += ` AND (
-        unaccent(s.neighborhood) ILIKE unaccent($${paramIndex}) 
+        unaccent(s.name) ILIKE unaccent($${paramIndex})
+        OR unaccent(s.neighborhood) ILIKE unaccent($${paramIndex}) 
         OR unaccent(s.city) ILIKE unaccent($${paramIndex})
         OR unaccent(s.landmark) ILIKE unaccent($${paramIndex})
         OR s.neighborhood % $${paramIndex}
@@ -96,5 +103,56 @@ export class SearchService {
         recommendationReason: row.distance && row.distance < 2000 ? '📍 Le plus proche' : (row.stockLevel === 'HIGH' ? '🔥 Beaucoup de stock' : ''),
       };
     });
+  }
+
+  async getStoreDetails(storeId: string) {
+    const store = await this.prisma.store.findFirst({
+      where: { 
+        id: storeId,
+        isVisible: true,
+        isVerifiedBadge: true
+      },
+      include: {
+        inventories: {
+          include: { product: true }
+        }
+      }
+    });
+
+    if (!store) {
+      throw new Error('Store not found');
+    }
+
+    return {
+      id: store.id,
+      name: store.name,
+      description: null, // Removed store.description
+      address: `${store.landmark || ''}, ${store.neighborhood}`,
+      city: store.city,
+      rating: null,
+      reviews: 0,
+      latitude: store.latitude,
+      longitude: store.longitude,
+      phone: store.whatsappNumber, // Removed store.phone
+      hours: store.openingHours ? JSON.stringify(store.openingHours) : null, // Fixed openingHours
+      inventory: store.inventories.map(inv => {
+        const minutesAgo = Math.floor((Date.now() - new Date(inv.lastConfirmedAt).getTime()) / 60000);
+        let freshness = '🔴 Plus de 12h';
+        if (minutesAgo < 60) freshness = '🟢 Moins de 1h';
+        else if (minutesAgo < 180) freshness = '🟠 Moins de 3h';
+        else if (minutesAgo < 720) freshness = '🔴 Moins de 12h';
+
+        return {
+          id: inv.id,
+          brand: inv.product.brand,
+          weight: `${inv.product.weightKg}Kg`,
+          price: inv.product.publicPrice,
+          status: inv.level === 'OUT_OF_STOCK' ? 'Rupture' : 'En stock',
+          color: inv.product.brand === 'SCTM' ? 'bg-blue-600' : 'bg-yellow-500',
+          lastConfirmedAt: inv.lastConfirmedAt,
+          freshness: `Confirmé il y a ${minutesAgo} min (${freshness})`
+        };
+      })
+    };
   }
 }

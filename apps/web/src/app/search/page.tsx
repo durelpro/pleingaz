@@ -7,18 +7,60 @@ import Link from 'next/link';
 
 export default function SearchPage() {
   const [query, setQuery] = useState('');
-  const [results, setResults] = useState<any[]>([
-    // Fake data for UI demonstration
-    { id: 1, name: "ETS Le Bon Berger", distanceStr: "0.8 km", stockFreshness: "Confirmé il y a 15 min (🟢 Moins de 1h)", recommendationReason: "📍 Le plus proche", stockLevel: "HIGH" },
-    { id: 2, name: "Superette Etoile", distanceStr: "1.2 km", stockFreshness: "Confirmé il y a 2h (🟠 Moins de 3h)", recommendationReason: "🔥 Beaucoup de stock", stockLevel: "MEDIUM" },
-  ]);
+  const [results, setResults] = useState<any[]>([]);
   const [hasSearched, setHasSearched] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
+  const [locationName, setLocationName] = useState('');
+  const [alertSet, setAlertSet] = useState(false);
+
+  const performSearch = async (lat?: number, lng?: number, textQuery?: string) => {
+    setHasSearched(true);
+    setIsLoading(true);
+    setAlertSet(false);
+    try {
+      const url = new URL('http://localhost:3001/search/stores');
+      if (lat && lng) {
+        url.searchParams.append('lat', lat.toString());
+        url.searchParams.append('lng', lng.toString());
+      }
+      if (textQuery) {
+        url.searchParams.append('q', textQuery);
+      }
+
+      const res = await fetch(url.toString());
+      const data = await res.json();
+      setResults(data || []);
+    } catch (err) {
+      console.error('Error fetching stores', err);
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
-    setHasSearched(true);
-    // Dans la vraie appli, on appellerait le backend /search/stores
+    performSearch(undefined, undefined, query);
   };
+
+  const handleGPSRequest = () => {
+    if (!navigator.geolocation) {
+      alert("La géolocalisation n'est pas supportée par votre navigateur");
+      return;
+    }
+    
+    setIsLoading(true);
+    navigator.geolocation.getCurrentPosition(
+      (position) => {
+        setQuery('Ma position GPS');
+        performSearch(position.coords.latitude, position.coords.longitude);
+      },
+      (error) => {
+        setIsLoading(false);
+        alert("Impossible d'obtenir votre position. Veuillez vérifier vos permissions.");
+      }
+    );
+  };
+
 
   const getBadgeColor = (level: string) => {
     switch (level) {
@@ -60,6 +102,7 @@ export default function SearchPage() {
           />
           <button 
             type="button"
+            onClick={handleGPSRequest}
             className="absolute inset-y-2 right-2 px-4 bg-gray-100 dark:bg-neutral-800 hover:bg-gray-200 dark:hover:bg-neutral-700 text-gray-600 dark:text-gray-300 rounded-xl transition-colors flex items-center justify-center"
             title="Utiliser ma position GPS"
           >
@@ -120,9 +163,17 @@ export default function SearchPage() {
                 <div className="bg-orange-50 dark:bg-orange-900/20 border border-orange-200 dark:border-orange-800 p-8 rounded-2xl text-center space-y-4">
                   <h3 className="text-orange-800 dark:text-orange-400 font-bold text-lg">Oups, rupture de stock par ici !</h3>
                   <p className="text-orange-700 dark:text-orange-300">Aucun distributeur n'a de gaz dans cette zone actuellement.</p>
-                  <button className="inline-flex items-center gap-2 px-6 py-3 bg-pleingaz-red text-white font-bold rounded-xl shadow-lg shadow-orange-500/30 hover:-translate-y-0.5 transition-all">
+                  <button 
+                    onClick={() => setAlertSet(true)}
+                    disabled={alertSet}
+                    className={`inline-flex items-center gap-2 px-6 py-3 font-bold rounded-xl shadow-lg transition-all ${
+                      alertSet 
+                        ? 'bg-green-500 text-white cursor-default'
+                        : 'bg-pleingaz-red text-white shadow-orange-500/30 hover:-translate-y-0.5'
+                    }`}
+                  >
                     <BellRing size={20} />
-                    Alertez-moi quand le gaz revient
+                    {alertSet ? "Alerte programmée ! Vous serez notifié." : "Alertez-moi quand le gaz revient"}
                   </button>
                 </div>
               )}

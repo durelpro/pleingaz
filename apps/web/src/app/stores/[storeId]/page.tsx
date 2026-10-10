@@ -10,32 +10,22 @@ import Link from 'next/link';
 const StoreMap = dynamic(() => import('@/components/map/StoreMap'), { ssr: false });
 
 export default function StoreProfilePage({ params }: { params: { storeId: string } }) {
+  const [store, setStore] = useState<any>(null);
   const [isMounted, setIsMounted] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
     setIsMounted(true);
-  }, []);
-
-  // Simulation d'un store (Normalement on fetch avec params.storeId)
-  const store = {
-    name: "Dépôt Central SCTM Bonamoussadi",
-    description: "Distributeur officiel agréé. Vente en gros et détail avec livraison à domicile rapide et sécurisée.",
-    address: "Bonamoussadi - Face marché",
-    city: "Douala",
-    rating: 4.8,
-    reviews: 124,
-    latitude: 4.0833,
-    longitude: 9.7500,
-    phone: "+237611111111",
-    hours: "Lun - Sam: 08:00 - 18:00",
-    inventory: [
-      { id: 1, brand: "SCTM", weight: "12.5Kg", price: 6500, status: "En stock", color: "bg-blue-600" },
-      { id: 2, brand: "Camgaz", weight: "12.5Kg", price: 6500, status: "En stock", color: "bg-yellow-500" },
-      { id: 3, brand: "SCTM", weight: "6Kg", price: 3500, status: "Rupture", color: "bg-blue-600" }
-    ]
-  };
+    fetch(`http://localhost:3001/search/stores/${params.storeId}`)
+      .then(res => res.json())
+      .then(data => setStore(data))
+      .catch(err => console.error(err))
+      .finally(() => setIsLoading(false));
+  }, [params.storeId]);
 
   if (!isMounted) return null;
+  if (isLoading) return <div className="min-h-screen flex items-center justify-center bg-gray-50 dark:bg-neutral-950">Chargement de la boutique...</div>;
+  if (!store) return <div className="min-h-screen flex items-center justify-center bg-gray-50 dark:bg-neutral-950">Boutique introuvable</div>;
 
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-neutral-950 pb-20">
@@ -68,16 +58,17 @@ export default function StoreProfilePage({ params }: { params: { storeId: string
                   <span className="flex items-center gap-1 bg-green-50 text-green-700 dark:bg-green-900/20 dark:text-green-400 px-2 py-1 rounded-md font-medium">
                     <ShieldCheck size={16} /> Agréé
                   </span>
-                  <span className="flex items-center gap-1">
-                    <Star size={16} className="text-yellow-400 fill-yellow-400" />
-                    {store.rating} ({store.reviews} avis)
-                  </span>
+                  {store.rating !== null && (
+                    <span className="flex items-center gap-1">
+                      <Star size={16} className="text-yellow-400 fill-yellow-400" />
+                      {store.rating} ({store.reviews} avis)
+                    </span>
+                  )}
                 </div>
               </div>
               
               <Link 
-                href={`https://wa.me/${store.phone.replace('+', '')}`} 
-                target="_blank"
+                href={`/buyer/messages?to=distributor_1`} 
                 className="flex items-center justify-center gap-2 bg-[#25D366] text-white px-6 py-3 rounded-xl font-bold hover:bg-[#1ebd5a] transition-colors shadow-lg shadow-[#25D366]/30"
               >
                 <MessageCircle size={20} />
@@ -117,7 +108,7 @@ export default function StoreProfilePage({ params }: { params: { storeId: string
             </h2>
             
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              {store.inventory.map((item) => (
+              {store.inventory.map((item: any) => (
                 <motion.div 
                   key={item.id}
                   whileHover={{ scale: 1.02 }}
@@ -139,13 +130,17 @@ export default function StoreProfilePage({ params }: { params: { storeId: string
                     </div>
                   </div>
                   
-                  <button 
-                    disabled={item.status !== 'En stock'}
-                    className={`mt-4 w-full py-3 rounded-xl font-bold flex items-center justify-center gap-2 transition-all ${item.status === 'En stock' ? 'bg-gray-900 dark:bg-white text-white dark:text-gray-900 hover:bg-pleingaz-red hover:text-white' : 'bg-gray-200 dark:bg-neutral-800 text-gray-400 cursor-not-allowed'}`}
+                  <div className="mt-2 text-xs text-gray-500 font-medium flex items-center justify-between">
+                    <span>Mise à jour: {item.freshness || "Inconnu"}</span>
+                  </div>
+                  
+                  <Link 
+                    href={item.status === 'En stock' ? `/checkout/${store.id}?inventoryId=${item.id}&productId=${item.productId || ''}` : '#'}
+                    className={`mt-4 w-full py-3 rounded-xl font-bold flex items-center justify-center gap-2 transition-all ${item.status === 'En stock' ? 'bg-gray-900 dark:bg-white text-white dark:text-gray-900 hover:bg-pleingaz-red hover:text-white' : 'bg-gray-200 dark:bg-neutral-800 text-gray-400 cursor-not-allowed pointer-events-none'}`}
                   >
                     <ShoppingCart size={18} />
                     {item.status === 'En stock' ? 'Commander' : 'Indisponible'}
-                  </button>
+                  </Link>
                 </motion.div>
               ))}
             </div>
