@@ -20,6 +20,11 @@ export class AdminController {
     return this.adminService.getDashboardMetrics();
   }
 
+  @Get('sales-stats')
+  async getSalesStats(@Query('timeframe') timeframe?: string) {
+    return this.adminService.getSalesStats(timeframe || 'semaine');
+  }
+
   @Get('audit')
   async getAuditLogs(@Query('limit') limit?: string): Promise<any> {
     return this.adminService.getAuditLogs(limit ? parseInt(limit, 10) : 50);

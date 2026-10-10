@@ -25,18 +25,21 @@ export default function PilotageDashboard() {
   const [viewingDoc, setViewingDoc] = useState<{ id: string, name: string } | null>(null);
   const [pendingDocs, setPendingDocs] = useState<any[]>([]);
   const [metrics, setMetrics] = useState({ outOfStockCount: 0, outOfStockStores: [], averageReliability: 100, pendingDocsCount: 0 });
+  const [chartData, setChartData] = useState<any[]>(mockChartData);
 
   useEffect(() => {
     Promise.all([
       fetch('http://localhost:3001/admin/distributors/pending', { headers: { 'x-demo-role': 'admin_1' } }).then(res => res.json()),
-      fetch('http://localhost:3001/admin/system/dashboard-metrics', { headers: { 'x-demo-role': 'admin_1' } }).then(res => res.json())
+      fetch('http://localhost:3001/admin/system/dashboard-metrics', { headers: { 'x-demo-role': 'admin_1' } }).then(res => res.json()),
+      fetch(`http://localhost:3001/admin/system/sales-stats?timeframe=${timeframe}`, { headers: { 'x-demo-role': 'admin_1' } }).then(res => res.json())
     ])
-    .then(([pendingData, metricsData]) => {
+    .then(([pendingData, metricsData, chartDataRes]) => {
       if (Array.isArray(pendingData)) setPendingDocs(pendingData);
       if (metricsData) setMetrics(metricsData);
+      if (Array.isArray(chartDataRes)) setChartData(chartDataRes);
     })
     .catch(err => console.error(err));
-  }, []);
+  }, [timeframe]);
 
   const handleValidation = async (id: string, action: 'APPROVED' | 'REJECTED') => {
     try {
@@ -120,18 +123,16 @@ export default function PilotageDashboard() {
             <div className="flex justify-between items-center mb-6">
               <h3 className="font-black text-xl text-gray-900 dark:text-white">Ventes vs Ruptures</h3>
               <select 
-                className="bg-gray-50 dark:bg-neutral-950 border border-gray-200 dark:border-neutral-800 rounded-xl px-4 py-2 font-bold text-sm outline-none"
+                className="bg-gray-50 dark:bg-neutral-950 border border-gray-200 dark:border-neutral-800 rounded-xl px-4 py-2 font-bold text-sm outline-none text-gray-900 dark:text-white"
                 value={timeframe}
                 onChange={(e) => setTimeframe(e.target.value)}
               >
-                <option value="jour">Aujourd'hui</option>
                 <option value="semaine">7 derniers jours</option>
-                <option value="mois">Ce mois</option>
               </select>
             </div>
             <div className="h-80">
               <ResponsiveContainer width="100%" height="100%">
-                <AreaChart data={mockChartData} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
+                <AreaChart data={chartData} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
                   <defs>
                     <linearGradient id="colorVentes" x1="0" y1="0" x2="0" y2="1">
                       <stop offset="5%" stopColor="#f97316" stopOpacity={0.8}/>
