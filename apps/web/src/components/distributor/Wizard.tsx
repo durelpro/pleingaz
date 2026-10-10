@@ -1,9 +1,10 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Store, MapPin, FileText, CheckCircle } from 'lucide-react';
 import dynamic from 'next/dynamic';
+import { useRouter } from 'next/navigation';
 
 const MapPicker = dynamic(() => import('../map/MapPicker'), { ssr: false, loading: () => <div className="h-64 bg-skeleton-base animate-pulse rounded-xl" /> });
 
@@ -14,6 +15,10 @@ const steps = [
 ];
 
 export default function DistributorWizard() {
+  const router = useRouter();
+  const fileInputRef = useRef<HTMLInputElement>(null);
+  const [selectedFile, setSelectedFile] = useState<File | null>(null);
+  
   const [currentStep, setCurrentStep] = useState(1);
   const [formData, setFormData] = useState({
     businessName: '',
@@ -25,6 +30,14 @@ export default function DistributorWizard() {
 
   const nextStep = () => setCurrentStep((prev) => Math.min(prev + 1, steps.length));
   const prevStep = () => setCurrentStep((prev) => Math.max(prev - 1, 1));
+
+  const handleNextOrSubmit = () => {
+    if (currentStep === steps.length) {
+      router.push('/distributor/onboarding');
+    } else {
+      nextStep();
+    }
+  };
 
   return (
     <div className="w-full max-w-2xl mx-auto p-4 sm:p-6 bg-white dark:bg-neutral-900 rounded-3xl shadow-[0_8px_30px_rgb(0,0,0,0.04)] border border-gray-100 dark:border-neutral-800">
@@ -110,13 +123,31 @@ export default function DistributorWizard() {
             {currentStep === 3 && (
               <div className="space-y-4">
                 <h2 className="text-2xl font-bold text-gray-900 dark:text-white">Pièces justificatives</h2>
-                <div className="border-2 border-dashed border-gray-300 dark:border-neutral-800 rounded-2xl p-8 text-center hover:border-pleingaz-red transition-colors cursor-pointer group bg-gray-50 dark:bg-neutral-950">
+                <div 
+                  className="border-2 border-dashed border-gray-300 dark:border-neutral-800 rounded-2xl p-8 text-center hover:border-pleingaz-red transition-colors cursor-pointer group bg-gray-50 dark:bg-neutral-950"
+                  onClick={() => fileInputRef.current?.click()}
+                >
                   <div className="w-16 h-16 bg-orange-100 dark:bg-orange-900/30 text-pleingaz-red rounded-full flex items-center justify-center mx-auto mb-4 group-hover:scale-110 transition-transform">
-                    <FileText size={24} />
+                    {selectedFile ? <CheckCircle size={24} /> : <FileText size={24} />}
                   </div>
-                  <p className="text-sm font-medium text-gray-700 dark:text-gray-300">Uploader votre CNI et Registre de Commerce</p>
-                  <p className="text-xs text-gray-500 mt-2">JPEG, PNG ou PDF (Max 5Mo)</p>
+                  <p className="text-sm font-medium text-gray-700 dark:text-gray-300">
+                    {selectedFile ? selectedFile.name : 'Uploader votre CNI et Registre de Commerce'}
+                  </p>
+                  <p className="text-xs text-gray-500 mt-2">
+                    {selectedFile ? 'Fichier sélectionné avec succès' : 'JPEG, PNG ou PDF (Max 5Mo)'}
+                  </p>
                 </div>
+                <input 
+                  type="file" 
+                  ref={fileInputRef} 
+                  className="hidden" 
+                  onChange={(e) => {
+                    if (e.target.files && e.target.files[0]) {
+                      setSelectedFile(e.target.files[0]);
+                    }
+                  }}
+                  accept=".jpg,.jpeg,.png,.pdf"
+                />
               </div>
             )}
           </motion.div>
@@ -133,7 +164,7 @@ export default function DistributorWizard() {
           Retour
         </button>
         <button
-          onClick={nextStep}
+          onClick={handleNextOrSubmit}
           className="px-8 py-3 font-medium rounded-xl bg-gradient-to-r from-pleingaz-red to-[#ff6a00] text-white shadow-lg shadow-orange-500/30 hover:shadow-orange-500/50 hover:-translate-y-0.5 transition-all"
         >
           {currentStep === steps.length ? 'Soumettre le dossier' : 'Continuer'}
