@@ -3,9 +3,10 @@
 import { useState } from 'react';
 import { 
   BarChart3, TrendingUp, AlertTriangle, PackageX, 
-  MapPin, Store, Star, Download, Filter, FileText, CheckCircle, XCircle
+  MapPin, Store, Star, Download, Filter, FileText, CheckCircle, XCircle, Search
 } from 'lucide-react';
 import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
+import { motion, AnimatePresence } from 'framer-motion';
 
 const mockChartData = [
   { name: 'Lun', ventes: 4000, ruptures: 24 },
@@ -19,9 +20,21 @@ const mockChartData = [
 
 export default function PilotageDashboard() {
   const [timeframe, setTimeframe] = useState('semaine');
+  const [pendingDocs, setPendingDocs] = useState([
+    { id: 1, name: 'ETS Pleingaz Bonamoussadi', loc: 'Douala, Bonamoussadi', docs: 'CNI, RCCM', date: 'Il y a 1h', status: 'PENDING' },
+    { id: 2, name: 'Maman Gaz Makepe', loc: 'Douala, Makepe', docs: 'CNI', date: 'Il y a 3h', status: 'PENDING' },
+    { id: 3, name: 'Dépôt Central Yaoundé', loc: 'Yaoundé, Biyem-Assi', docs: 'CNI, RCCM, NIU', date: 'Hier', status: 'PENDING' },
+  ]);
+
+  const handleValidation = (id: number, action: 'APPROVED' | 'REJECTED') => {
+    setPendingDocs(prev => prev.map(doc => doc.id === id ? { ...doc, status: action } : doc));
+  };
 
   return (
-    <div className="min-h-screen bg-gray-50 dark:bg-neutral-950 p-6 lg:p-10">
+    <div className="min-h-screen bg-gray-50 dark:bg-neutral-950 p-6 lg:p-10 overflow-hidden relative">
+      <div className="absolute top-0 right-0 w-[500px] h-[500px] bg-pleingaz-red/5 rounded-full filter blur-[100px] -z-10" />
+      <div className="absolute bottom-0 left-0 w-[500px] h-[500px] bg-blue-500/5 rounded-full filter blur-[100px] -z-10" />
+      
       <div className="max-w-7xl mx-auto space-y-8">
         
         {/* Header & Actions */}
@@ -133,14 +146,19 @@ export default function PilotageDashboard() {
         </div>
 
         {/* Validation des Distributeurs (Tâche 3.3) */}
-        <div className="bg-white dark:bg-neutral-900 border border-gray-200 dark:border-neutral-800 rounded-3xl p-6">
+        <motion.div 
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.2 }}
+          className="bg-white dark:bg-neutral-900 border border-gray-200 dark:border-neutral-800 rounded-3xl p-6 shadow-sm"
+        >
           <div className="flex justify-between items-center mb-6">
             <h3 className="font-black text-xl text-gray-900 dark:text-white flex items-center gap-2">
               <FileText className="text-orange-500" />
               Dossiers en attente de validation
             </h3>
             <span className="px-3 py-1 bg-orange-100 dark:bg-orange-900/30 text-orange-600 dark:text-orange-400 font-bold rounded-full text-sm">
-              3 Nouveaux
+              {pendingDocs.filter(d => d.status === 'PENDING').length} Nouveaux
             </span>
           </div>
           <div className="overflow-x-auto">
@@ -155,36 +173,67 @@ export default function PilotageDashboard() {
                 </tr>
               </thead>
               <tbody className="divide-y divide-gray-100 dark:divide-neutral-800">
-                {[
-                  { name: 'ETS Pleingaz Bonamoussadi', loc: 'Douala, Bonamoussadi', docs: 'CNI, RCCM', date: 'Il y a 1h' },
-                  { name: 'Maman Gaz Makepe', loc: 'Douala, Makepe', docs: 'CNI', date: 'Il y a 3h' },
-                  { name: 'Dépôt Central Yaoundé', loc: 'Yaoundé, Biyem-Assi', docs: 'CNI, RCCM, NIU', date: 'Hier' },
-                ].map((dossier, i) => (
-                  <tr key={i} className="group hover:bg-gray-50 dark:hover:bg-neutral-950/50 transition-colors">
-                    <td className="py-4 font-bold text-gray-900 dark:text-white">
-                      {dossier.name}
-                    </td>
-                    <td className="py-4 text-sm text-gray-600 dark:text-gray-400">{dossier.loc}</td>
-                    <td className="py-4">
-                      <span className="px-2 py-1 bg-gray-100 dark:bg-neutral-800 text-gray-600 dark:text-gray-300 text-xs font-bold rounded-lg">
-                        {dossier.docs}
-                      </span>
-                    </td>
-                    <td className="py-4 text-sm text-gray-500">{dossier.date}</td>
-                    <td className="py-4 flex justify-end gap-2">
-                      <button className="p-2 bg-green-50 dark:bg-green-900/20 text-green-600 hover:bg-green-100 dark:hover:bg-green-900/40 rounded-xl transition-colors" title="Accepter">
-                        <CheckCircle size={20} />
-                      </button>
-                      <button className="p-2 bg-red-50 dark:bg-red-900/20 text-red-600 hover:bg-red-100 dark:hover:bg-red-900/40 rounded-xl transition-colors" title="Refuser">
-                        <XCircle size={20} />
-                      </button>
+                <AnimatePresence>
+                  {pendingDocs.map((dossier) => (
+                    <motion.tr 
+                      key={dossier.id} 
+                      layout
+                      initial={{ opacity: 0, x: -20 }}
+                      animate={{ opacity: 1, x: 0 }}
+                      exit={{ opacity: 0, scale: 0.95 }}
+                      className="group hover:bg-gray-50 dark:hover:bg-neutral-950/50 transition-colors"
+                    >
+                      <td className="py-4 font-bold text-gray-900 dark:text-white flex items-center gap-3">
+                        <div className="w-10 h-10 bg-gray-100 dark:bg-neutral-800 rounded-xl flex items-center justify-center">
+                          <Store size={18} className="text-gray-500" />
+                        </div>
+                        {dossier.name}
+                      </td>
+                      <td className="py-4 text-sm text-gray-600 dark:text-gray-400">{dossier.loc}</td>
+                      <td className="py-4">
+                        <span className="px-3 py-1.5 bg-gray-100 dark:bg-neutral-800 text-gray-700 dark:text-gray-300 text-xs font-bold rounded-lg border border-gray-200 dark:border-neutral-700">
+                          {dossier.docs}
+                        </span>
+                      </td>
+                      <td className="py-4 text-sm font-medium text-gray-500">{dossier.date}</td>
+                      <td className="py-4 flex justify-end gap-2">
+                        {dossier.status === 'PENDING' ? (
+                          <>
+                            <button 
+                              onClick={() => handleValidation(dossier.id, 'APPROVED')}
+                              className="p-2.5 bg-green-50 dark:bg-green-900/20 text-green-600 hover:bg-green-500 hover:text-white rounded-xl transition-all shadow-sm" 
+                              title="Accepter"
+                            >
+                              <CheckCircle size={20} />
+                            </button>
+                            <button 
+                              onClick={() => handleValidation(dossier.id, 'REJECTED')}
+                              className="p-2.5 bg-red-50 dark:bg-red-900/20 text-red-600 hover:bg-red-500 hover:text-white rounded-xl transition-all shadow-sm" 
+                              title="Refuser"
+                            >
+                              <XCircle size={20} />
+                            </button>
+                          </>
+                        ) : (
+                          <span className={`px-3 py-1 text-xs font-bold rounded-lg \${dossier.status === 'APPROVED' ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'}`}>
+                            {dossier.status === 'APPROVED' ? 'Approuvé' : 'Refusé'}
+                          </span>
+                        )}
+                      </td>
+                    </motion.tr>
+                  ))}
+                </AnimatePresence>
+                {pendingDocs.length === 0 && (
+                  <tr>
+                    <td colSpan={5} className="py-8 text-center text-gray-500 font-medium">
+                      Aucun dossier en attente.
                     </td>
                   </tr>
-                ))}
+                )}
               </tbody>
             </table>
           </div>
-        </div>
+        </motion.div>
 
         {/* Top Distributeurs (Tâche 9.4) */}
         <div className="bg-white dark:bg-neutral-900 border border-gray-200 dark:border-neutral-800 rounded-3xl p-6">
@@ -232,6 +281,58 @@ export default function PilotageDashboard() {
             </table>
           </div>
         </div>
+
+        {/* Gestion du Catalogue (Tâche 4.1) */}
+        <motion.div 
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.4 }}
+          className="bg-white dark:bg-neutral-900 border border-gray-200 dark:border-neutral-800 rounded-3xl p-6 shadow-sm"
+        >
+          <div className="flex justify-between items-center mb-6">
+            <h3 className="font-black text-xl text-gray-900 dark:text-white flex items-center gap-2">
+              <PackageX className="text-blue-500" />
+              Catalogue Produits
+            </h3>
+            <button className="px-4 py-2 bg-blue-50 dark:bg-blue-900/20 text-blue-600 dark:text-blue-400 font-bold rounded-xl text-sm border border-blue-200 dark:border-blue-900/30 hover:bg-blue-100 transition-colors">
+              + Nouveau Produit
+            </button>
+          </div>
+          <div className="overflow-x-auto">
+            <table className="w-full text-left">
+              <thead>
+                <tr className="text-gray-500 border-b border-gray-100 dark:border-neutral-800">
+                  <th className="pb-3 font-bold">Produit</th>
+                  <th className="pb-3 font-bold">Marque</th>
+                  <th className="pb-3 font-bold">Poids</th>
+                  <th className="pb-3 font-bold">Prix Public (XAF)</th>
+                  <th className="pb-3 font-bold text-right">Actions</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-gray-100 dark:divide-neutral-800">
+                {[
+                  { id: 1, name: 'Bouteille 12.5Kg', brand: 'Camgaz', weight: '12.5 kg', price: '6 500' },
+                  { id: 2, name: 'Bouteille 12.5Kg', brand: 'SCTM', weight: '12.5 kg', price: '6 500' },
+                  { id: 3, name: 'Bouteille 12.5Kg', brand: 'Tradex', weight: '12.5 kg', price: '6 500' },
+                ].map((prod) => (
+                  <tr key={prod.id} className="group hover:bg-gray-50 dark:hover:bg-neutral-950/50 transition-colors">
+                    <td className="py-4 font-bold text-gray-900 dark:text-white">{prod.name}</td>
+                    <td className="py-4">
+                      <span className="px-3 py-1 bg-gray-100 dark:bg-neutral-800 text-gray-700 dark:text-gray-300 text-xs font-bold rounded-lg border border-gray-200 dark:border-neutral-700">
+                        {prod.brand}
+                      </span>
+                    </td>
+                    <td className="py-4 text-sm text-gray-600 dark:text-gray-400">{prod.weight}</td>
+                    <td className="py-4 font-bold text-green-600">{prod.price}</td>
+                    <td className="py-4 flex justify-end gap-2">
+                      <button className="text-sm font-bold text-blue-500 hover:text-blue-600 underline">Éditer</button>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </motion.div>
 
       </div>
     </div>

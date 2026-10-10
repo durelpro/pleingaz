@@ -3,58 +3,86 @@
 import { useState } from 'react';
 import { 
   Store, Package, TrendingUp, AlertCircle, 
-  MapPin, Star, Settings, FileText, ArrowRight
+  MapPin, Star, Settings, FileText, ArrowRight, EyeOff, Eye
 } from 'lucide-react';
 import Link from 'next/link';
+import { motion } from 'framer-motion';
+
+const containerVariants = {
+  hidden: { opacity: 0 },
+  visible: {
+    opacity: 1,
+    transition: {
+      staggerChildren: 0.1
+    }
+  }
+};
+
+const itemVariants = {
+  hidden: { y: 20, opacity: 0 },
+  visible: { y: 0, opacity: 1, transition: { type: "spring", stiffness: 100 } }
+};
 
 export default function DistributorDashboard() {
   const [status, setStatus] = useState<'PENDING' | 'APPROVED'>('PENDING');
 
   return (
-    <div className="min-h-screen bg-gray-50 dark:bg-neutral-950 p-6 lg:p-10">
-      <div className="max-w-7xl mx-auto space-y-8">
+    <div className="min-h-screen bg-gray-50 dark:bg-neutral-950 p-6 lg:p-10 relative overflow-hidden">
+      {/* Premium Background Blurs */}
+      <div className="absolute top-0 right-0 w-[600px] h-[600px] bg-orange-500/10 rounded-full filter blur-[120px] -z-10 pointer-events-none" />
+      <div className="absolute bottom-0 left-0 w-[400px] h-[400px] bg-red-500/5 rounded-full filter blur-[100px] -z-10 pointer-events-none" />
+
+      <motion.div 
+        variants={containerVariants}
+        initial="hidden"
+        animate="visible"
+        className="max-w-7xl mx-auto space-y-8 relative z-10"
+      >
         
         {/* Header */}
-        <div className="flex flex-col md:flex-row justify-between items-start md:items-end gap-4">
+        <motion.div variants={itemVariants} className="flex flex-col md:flex-row justify-between items-start md:items-end gap-4">
           <div>
-            <h1 className="text-3xl font-black text-gray-900 dark:text-white flex items-center gap-3">
-              <Store className="text-pleingaz-red" size={32} />
+            <h1 className="text-3xl md:text-4xl font-black text-gray-900 dark:text-white flex items-center gap-3">
+              <div className="w-12 h-12 bg-white dark:bg-neutral-900 rounded-2xl shadow-sm flex items-center justify-center text-pleingaz-red border border-gray-100 dark:border-neutral-800">
+                <Store size={24} />
+              </div>
               Mon Tableau de Bord
             </h1>
-            <p className="text-gray-500 mt-2">Bienvenue sur votre espace distributeur PLEINGAZ.</p>
+            <p className="text-gray-500 mt-2 font-medium ml-1">Bienvenue sur votre espace distributeur PLEINGAZ.</p>
           </div>
-          <div className="flex gap-3">
+          <div className="flex gap-3 items-center">
             <button 
               onClick={() => setStatus(s => s === 'PENDING' ? 'APPROVED' : 'PENDING')}
-              className="px-4 py-2 text-xs font-bold bg-gray-200 dark:bg-neutral-800 rounded-xl"
+              className="px-4 py-2 text-xs font-bold bg-gray-200 dark:bg-neutral-800 rounded-xl hover:bg-gray-300 dark:hover:bg-neutral-700 transition-colors"
             >
               Basculer statut (Dev)
             </button>
-            <Link href="/distributor/inventory" className="flex items-center gap-2 px-6 py-2.5 bg-gradient-to-r from-pleingaz-red to-[#ff6a00] text-white font-bold rounded-xl shadow-lg shadow-orange-500/30 hover:shadow-orange-500/50 hover:-translate-y-0.5 transition-all">
-              <Package size={18} />
+            <Link href="/distributor/inventory" className="flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-pleingaz-red to-[#ff6a00] text-white font-black rounded-xl shadow-lg shadow-orange-500/30 hover:shadow-orange-500/50 hover:scale-[1.02] active:scale-[0.98] transition-all">
+              <Package size={20} />
               Mettre à jour mon stock
             </Link>
           </div>
-        </div>
+        </motion.div>
 
         {/* Status Banner */}
         {status === 'PENDING' && (
-          <div className="bg-orange-50 dark:bg-orange-900/20 border border-orange-200 dark:border-orange-800 p-6 rounded-2xl flex flex-col md:flex-row items-center gap-4 text-orange-800 dark:text-orange-400">
-            <div className="w-12 h-12 bg-orange-100 dark:bg-orange-900/50 rounded-full flex items-center justify-center shrink-0">
-              <AlertCircle size={24} />
+          <motion.div variants={itemVariants} className="bg-orange-50 dark:bg-orange-900/10 border-2 border-orange-200 dark:border-orange-900/30 p-6 rounded-3xl flex flex-col md:flex-row items-center gap-5 text-orange-800 dark:text-orange-400 shadow-sm relative overflow-hidden">
+            <div className="absolute top-0 right-0 w-32 h-32 bg-orange-400/10 rounded-full blur-2xl pointer-events-none" />
+            <div className="w-14 h-14 bg-white dark:bg-neutral-900 shadow-sm rounded-2xl flex items-center justify-center shrink-0 border border-orange-100 dark:border-orange-900/50">
+              <AlertCircle size={28} className="text-orange-500" />
             </div>
-            <div>
-              <h3 className="font-black text-lg">Dossier en attente de validation</h3>
-              <p className="font-medium opacity-90 mt-1">
+            <div className="z-10">
+              <h3 className="font-black text-xl mb-1">Dossier en attente de validation</h3>
+              <p className="font-medium opacity-90 leading-relaxed">
                 Votre profil distributeur a bien été créé mais n'est pas encore visible par les clients. 
                 L'administrateur PLEINGAZ analyse vos pièces justificatives. Vous serez notifié dès l'activation.
               </p>
             </div>
-          </div>
+          </motion.div>
         )}
 
         {/* Actionable Insights */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+        <motion.div variants={itemVariants} className="grid grid-cols-1 md:grid-cols-3 gap-6">
           <InsightCard 
             title="Score de Fiabilité" 
             value="95/100" 
@@ -76,10 +104,10 @@ export default function DistributorDashboard() {
             icon={<TrendingUp />} 
             alert="GOOD"
           />
-        </div>
+        </motion.div>
 
         {/* Quick Access Menu */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <motion.div variants={itemVariants} className="grid grid-cols-1 md:grid-cols-2 gap-8">
           <div className="bg-white dark:bg-neutral-900 border border-gray-200 dark:border-neutral-800 rounded-3xl p-6">
             <h3 className="font-black text-xl text-gray-900 dark:text-white mb-6">Actions Rapides</h3>
             <div className="space-y-4">
@@ -124,28 +152,38 @@ export default function DistributorDashboard() {
             </div>
           </div>
 
-          <div className={`border rounded-3xl p-8 text-white flex flex-col justify-center shadow-lg transition-colors \${status === 'APPROVED' ? 'bg-gradient-to-br from-pleingaz-red to-red-600 border-red-500 shadow-orange-500/20' : 'bg-gray-400 dark:bg-neutral-800 border-gray-300 dark:border-neutral-700'}`}>
-            <h3 className="font-black text-3xl mb-4">
-              {status === 'APPROVED' ? 'Votre boutique est visible !' : 'Boutique invisible'}
-            </h3>
-            <p className="text-white/90 text-lg mb-6 leading-relaxed">
-              {status === 'APPROVED' 
-                ? 'Les clients autour de vous peuvent vous trouver et voir vos disponibilités. Mettez à jour votre stock quotidiennement pour conserver un score de fiabilité élevé.'
-                : 'En attente de la validation administrateur pour apparaître sur la carte PLEINGAZ.'
-              }
-            </p>
-            {status === 'APPROVED' && (
-              <div className="p-4 bg-white/10 rounded-2xl backdrop-blur-sm border border-white/20">
-                <p className="font-bold">Astuce Pro 💡</p>
-                <p className="text-sm text-white/80 mt-1">
-                  Une mise à jour le matin à 8h attire 3x plus de clients dans la journée.
-                </p>
+          <div className={`relative overflow-hidden border-2 rounded-[2rem] p-8 text-white flex flex-col justify-center shadow-2xl transition-colors duration-500 \${status === 'APPROVED' ? 'bg-gradient-to-br from-pleingaz-red to-[#ff6a00] border-orange-400/50 shadow-orange-500/20' : 'bg-gray-400 dark:bg-neutral-800 border-gray-300 dark:border-neutral-700'}`}>
+            <div className="absolute top-0 right-0 w-64 h-64 bg-white/10 rounded-full blur-3xl pointer-events-none" />
+            
+            <div className="z-10">
+              <div className="w-16 h-16 bg-white/20 backdrop-blur-md rounded-2xl flex items-center justify-center mb-6">
+                {status === 'APPROVED' ? <Eye size={32} /> : <EyeOff size={32} />}
               </div>
-            )}
+              <h3 className="font-black text-3xl md:text-4xl mb-4 tracking-tight">
+                {status === 'APPROVED' ? 'Votre boutique est visible !' : 'Boutique invisible'}
+              </h3>
+              <p className="text-white/90 text-lg mb-8 leading-relaxed font-medium">
+                {status === 'APPROVED' 
+                  ? 'Les clients autour de vous peuvent vous trouver et voir vos disponibilités. Mettez à jour votre stock quotidiennement pour conserver un score de fiabilité élevé.'
+                  : 'En attente de la validation administrateur pour apparaître sur la carte PLEINGAZ.'
+                }
+              </p>
+              {status === 'APPROVED' && (
+                <div className="p-5 bg-white/10 rounded-2xl backdrop-blur-md border border-white/20 flex gap-4 items-center">
+                  <div className="text-3xl">💡</div>
+                  <div>
+                    <p className="font-black tracking-wide uppercase text-xs text-white/80 mb-1">Astuce Pro</p>
+                    <p className="text-sm text-white font-medium">
+                      Une mise à jour le matin à 8h attire 3x plus de clients dans la journée.
+                    </p>
+                  </div>
+                </div>
+              )}
+            </div>
           </div>
-        </div>
+        </motion.div>
 
-      </div>
+      </motion.div>
     </div>
   );
 }
