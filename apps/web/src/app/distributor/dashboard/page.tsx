@@ -152,22 +152,28 @@ export default function DistributorDashboard() {
             </div>
           </div>
 
-          <div className={`relative overflow-hidden border-2 rounded-[2rem] p-8 text-white flex flex-col justify-center shadow-2xl transition-colors duration-500 \${status === 'APPROVED' ? 'bg-gradient-to-br from-pleingaz-red to-[#ff6a00] border-orange-400/50 shadow-orange-500/20' : 'bg-gray-400 dark:bg-neutral-800 border-gray-300 dark:border-neutral-700'}`}>
-            <div className="absolute top-0 right-0 w-64 h-64 bg-white/10 rounded-full blur-3xl pointer-events-none" />
+          <div className={`relative overflow-hidden border-2 rounded-[2rem] p-8 flex flex-col justify-center shadow-2xl transition-colors duration-500 \${status === 'APPROVED' ? 'bg-gradient-to-br from-pleingaz-red to-[#ff6a00] border-orange-400/50 shadow-orange-500/20 text-white' : 'bg-neutral-900 dark:bg-black border-neutral-800 shadow-neutral-900/40 text-white'}`}>
+            <div className="absolute top-0 right-0 w-64 h-64 bg-white/5 rounded-full blur-3xl pointer-events-none" />
             
             <div className="z-10">
-              <div className="w-16 h-16 bg-white/20 backdrop-blur-md rounded-2xl flex items-center justify-center mb-6">
-                {status === 'APPROVED' ? <Eye size={32} /> : <EyeOff size={32} />}
+              <div className="w-16 h-16 bg-white/10 backdrop-blur-md rounded-2xl flex items-center justify-center mb-6">
+                {status === 'APPROVED' ? <Eye size={32} /> : <EyeOff size={32} className="text-gray-400" />}
               </div>
               <h3 className="font-black text-3xl md:text-4xl mb-4 tracking-tight">
                 {status === 'APPROVED' ? 'Votre boutique est visible !' : 'Boutique invisible'}
               </h3>
-              <p className="text-white/90 text-lg mb-8 leading-relaxed font-medium">
+              <div className="text-lg mb-8 leading-relaxed font-medium">
                 {status === 'APPROVED' 
-                  ? 'Les clients autour de vous peuvent vous trouver et voir vos disponibilités. Mettez à jour votre stock quotidiennement pour conserver un score de fiabilité élevé.'
-                  : 'En attente de la validation administrateur pour apparaître sur la carte PLEINGAZ.'
+                  ? <p className="text-white/90">Les clients autour de vous peuvent vous trouver et voir vos disponibilités. Mettez à jour votre stock quotidiennement pour conserver un score de fiabilité élevé.</p>
+                  : <div className="p-4 bg-orange-500/10 border border-orange-500/20 rounded-xl">
+                      <p className="text-orange-300 font-bold flex items-center gap-2">
+                        <AlertCircle size={20} />
+                        En attente de validation
+                      </p>
+                      <p className="text-gray-300 mt-2 text-base">Votre dossier est actuellement en cours d'analyse par l'administrateur. Vous n'apparaissez pas encore sur la carte PLEINGAZ.</p>
+                    </div>
                 }
-              </p>
+              </div>
               {status === 'APPROVED' && (
                 <div className="p-5 bg-white/10 rounded-2xl backdrop-blur-md border border-white/20 flex gap-4 items-center">
                   <div className="text-3xl">💡</div>
