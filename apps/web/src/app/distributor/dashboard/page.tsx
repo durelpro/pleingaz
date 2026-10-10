@@ -124,7 +124,7 @@ export default function DistributorDashboard() {
                 <ArrowRight className="text-gray-400 group-hover:text-pleingaz-red transition-colors" />
               </Link>
               
-              <Link href="#" className="group flex justify-between items-center p-4 bg-gray-50 dark:bg-neutral-950 rounded-2xl hover:bg-orange-50 dark:hover:bg-orange-900/10 border border-transparent hover:border-orange-200 dark:hover:border-orange-900/30 transition-all">
+              <Link href="/distributor/documents" className="group flex justify-between items-center p-4 bg-gray-50 dark:bg-neutral-950 rounded-2xl hover:bg-orange-50 dark:hover:bg-orange-900/10 border border-transparent hover:border-orange-200 dark:hover:border-orange-900/30 transition-all">
                 <div className="flex items-center gap-4">
                   <div className="w-12 h-12 bg-white dark:bg-neutral-900 rounded-xl flex items-center justify-center shadow-sm text-pleingaz-red group-hover:scale-110 transition-transform">
                     <FileText size={20} />
@@ -137,7 +137,7 @@ export default function DistributorDashboard() {
                 <ArrowRight className="text-gray-400 group-hover:text-pleingaz-red transition-colors" />
               </Link>
 
-              <Link href="#" className="group flex justify-between items-center p-4 bg-gray-50 dark:bg-neutral-950 rounded-2xl hover:bg-orange-50 dark:hover:bg-orange-900/10 border border-transparent hover:border-orange-200 dark:hover:border-orange-900/30 transition-all">
+              <Link href="/distributor/location" className="group flex justify-between items-center p-4 bg-gray-50 dark:bg-neutral-950 rounded-2xl hover:bg-orange-50 dark:hover:bg-orange-900/10 border border-transparent hover:border-orange-200 dark:hover:border-orange-900/30 transition-all">
                 <div className="flex items-center gap-4">
                   <div className="w-12 h-12 bg-white dark:bg-neutral-900 rounded-xl flex items-center justify-center shadow-sm text-pleingaz-red group-hover:scale-110 transition-transform">
                     <MapPin size={20} />

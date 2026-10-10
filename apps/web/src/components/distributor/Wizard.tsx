@@ -16,7 +16,7 @@ const steps = [
 
 export default function DistributorWizard() {
   const router = useRouter();
-  const [selectedFile, setSelectedFile] = useState<File | null>(null);
+  const [selectedFiles, setSelectedFiles] = useState<File[]>([]);
   
   const [currentStep, setCurrentStep] = useState(1);
   const [formData, setFormData] = useState({
@@ -124,20 +124,25 @@ export default function DistributorWizard() {
                 <h2 className="text-2xl font-bold text-gray-900 dark:text-white">Pièces justificatives</h2>
                 <label className="block border-2 border-dashed border-gray-300 dark:border-neutral-800 rounded-2xl p-8 text-center hover:border-pleingaz-red transition-colors cursor-pointer group bg-gray-50 dark:bg-neutral-950">
                   <div className="w-16 h-16 bg-orange-100 dark:bg-orange-900/30 text-pleingaz-red rounded-full flex items-center justify-center mx-auto mb-4 group-hover:scale-110 transition-transform">
-                    {selectedFile ? <CheckCircle size={24} /> : <FileText size={24} />}
+                    {selectedFiles.length > 0 ? <CheckCircle size={24} /> : <FileText size={24} />}
                   </div>
                   <p className="text-sm font-medium text-gray-700 dark:text-gray-300">
-                    {selectedFile ? selectedFile.name : 'Uploader votre CNI et Registre de Commerce'}
+                    {selectedFiles.length > 0 
+                      ? `${selectedFiles.length} fichier(s) sélectionné(s)` 
+                      : 'Cliquer pour uploader CNI et Registre de Commerce'}
                   </p>
                   <p className="text-xs text-gray-500 mt-2">
-                    {selectedFile ? 'Fichier sélectionné avec succès' : 'JPEG, PNG ou PDF (Max 5Mo)'}
+                    {selectedFiles.length > 0 
+                      ? selectedFiles.map(f => f.name).join(', ') 
+                      : 'JPEG, PNG ou PDF (Max 5Mo)'}
                   </p>
                   <input 
                     type="file" 
                     className="hidden" 
+                    multiple
                     onChange={(e) => {
-                      if (e.target.files && e.target.files[0]) {
-                        setSelectedFile(e.target.files[0]);
+                      if (e.target.files) {
+                        setSelectedFiles(Array.from(e.target.files));
                       }
                     }}
                     accept=".jpg,.jpeg,.png,.pdf"
