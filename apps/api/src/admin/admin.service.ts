@@ -59,52 +59,80 @@ export class AdminService {
   }
 
   async getSalesStats(timeframe: string) {
-    const days = 7; // Pour simplifier on retourne toujours les 7 derniers jours ou on adapte selon timeframe
-    
-    // Noms de jours en français
-    const dayNames = ['Dim', 'Lun', 'Mar', 'Mer', 'Jeu', 'Ven', 'Sam'];
     const result = [];
-    
-    // On construit le tableau pour les 7 derniers jours
-    for (let i = days - 1; i >= 0; i--) {
-      const d = new Date();
-      d.setDate(d.getDate() - i);
-      d.setHours(0, 0, 0, 0);
-      
-      const nextDay = new Date(d);
-      nextDay.setDate(nextDay.getDate() + 1);
 
-      // Total des ventes de ce jour
-      const orders = await this.prisma.order.findMany({
-        where: {
-          createdAt: {
-            gte: d,
-            lt: nextDay
-          },
-          status: { in: ['DELIVERED', 'CONFIRMED'] }
-        },
-        select: { totalAmount: true }
-      });
-      
-      const totalVentes = orders.reduce((sum, o) => sum + o.totalAmount, 0);
+    if (timeframe === 'jour') {
+      // Les 24 dernières heures, regroupées par intervalles de 4h
+      for (let i = 20; i >= 0; i -= 4) {
+        const start = new Date();
+        start.setHours(start.getHours() - i - 4, 0, 0, 0);
+        const end = new Date(start);
+        end.setHours(end.getHours() + 4);
 
-      // Simuler les ruptures ou compter les searchEvents sans résultat ? 
-      // Pour être réaliste, on compte les SearchEvents avec resultsCount = 0 ce jour-là
-      const ruptures = await this.prisma.searchEvent.count({
-        where: {
-          createdAt: {
-            gte: d,
-            lt: nextDay
-          },
-          resultsCount: 0
-        }
-      });
+        const orders = await this.prisma.order.findMany({
+          where: { createdAt: { gte: start, lt: end }, status: { in: ['DELIVERED', 'CONFIRMED'] } },
+          select: { totalAmount: true }
+        });
+        
+        const ruptures = await this.prisma.searchEvent.count({
+          where: { createdAt: { gte: start, lt: end }, resultsCount: 0 }
+        });
 
-      result.push({
-        name: dayNames[d.getDay()],
-        ventes: totalVentes,
-        ruptures: ruptures
-      });
+        result.push({
+          name: `${start.getHours()}h`,
+          ventes: orders.reduce((sum, o) => sum + o.totalAmount, 0),
+          ruptures
+        });
+      }
+    } else if (timeframe === 'mois') {
+      // Les 4 dernières semaines
+      for (let i = 3; i >= 0; i--) {
+        const end = new Date();
+        end.setDate(end.getDate() - (i * 7));
+        const start = new Date(end);
+        start.setDate(start.getDate() - 7);
+
+        const orders = await this.prisma.order.findMany({
+          where: { createdAt: { gte: start, lt: end }, status: { in: ['DELIVERED', 'CONFIRMED'] } },
+          select: { totalAmount: true }
+        });
+
+        const ruptures = await this.prisma.searchEvent.count({
+          where: { createdAt: { gte: start, lt: end }, resultsCount: 0 }
+        });
+
+        result.push({
+          name: `S-${i+1}`,
+          ventes: orders.reduce((sum, o) => sum + o.totalAmount, 0),
+          ruptures
+        });
+      }
+    } else {
+      // "semaine" par défaut : les 7 derniers jours
+      const dayNames = ['Dim', 'Lun', 'Mar', 'Mer', 'Jeu', 'Ven', 'Sam'];
+      for (let i = 6; i >= 0; i--) {
+        const d = new Date();
+        d.setDate(d.getDate() - i);
+        d.setHours(0, 0, 0, 0);
+        
+        const nextDay = new Date(d);
+        nextDay.setDate(nextDay.getDate() + 1);
+
+        const orders = await this.prisma.order.findMany({
+          where: { createdAt: { gte: d, lt: nextDay }, status: { in: ['DELIVERED', 'CONFIRMED'] } },
+          select: { totalAmount: true }
+        });
+        
+        const ruptures = await this.prisma.searchEvent.count({
+          where: { createdAt: { gte: d, lt: nextDay }, resultsCount: 0 }
+        });
+
+        result.push({
+          name: dayNames[d.getDay()],
+          ventes: orders.reduce((sum, o) => sum + o.totalAmount, 0),
+          ruptures
+        });
+      }
     }
 
     return result;

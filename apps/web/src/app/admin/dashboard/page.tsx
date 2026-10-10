@@ -127,7 +127,9 @@ export default function PilotageDashboard() {
                 value={timeframe}
                 onChange={(e) => setTimeframe(e.target.value)}
               >
+                <option value="jour">Aujourd'hui</option>
                 <option value="semaine">7 derniers jours</option>
+                <option value="mois">4 dernières semaines</option>
               </select>
             </div>
             <div className="h-80">
