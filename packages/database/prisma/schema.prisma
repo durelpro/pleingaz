@@ -10,36 +10,36 @@ datasource db {
 }
 
 model User {
-  id              String           @id @default(uuid())
-  phone           String           @unique
-  email           String?          @unique
-  passwordHash    String?          // Argon2id hash
-  isPhoneVerified Boolean          @default(false)
-  isEmailVerified Boolean          @default(false)
-  failedAttempts  Int              @default(0)
+  id              String                  @id @default(uuid())
+  phone           String                  @unique
+  email           String?                 @unique
+  passwordHash    String? // Argon2id hash
+  isPhoneVerified Boolean                 @default(false)
+  isEmailVerified Boolean                 @default(false)
+  failedAttempts  Int                     @default(0)
   lockedUntil     DateTime?
   roles           UserRole[]
   customerProfile CustomerProfile?
   distributorApp  DistributorApplication?
   stores          Store[]
   sessions        Session[]
-  auditLogs       AuditLog[]       @relation("UserAuditLogs")
+  auditLogs       AuditLog[]              @relation("UserAuditLogs")
   demandAlerts    DemandAlert[]
-  
-  customerOrders  Order[]          @relation("CustomerOrders")
-  assistedOrders  Order[]          @relation("AssistedOrders")
-  driverDeliveries Delivery[]      @relation("DriverDeliveries")
-  
-  notifications   Notification[]
-  reports         Report[]
-  sentMessages    ChatMessage[]    @relation("SentMessages")
-  aiChatSessions  AiChatSession[]
-  aiUsageMetrics  AiUsageMetric[]
-  loyaltyPoints   Int              @default(0)
-  loyaltyTx       LoyaltyTransaction[]
 
-  createdAt       DateTime         @default(now())
-  updatedAt       DateTime         @updatedAt
+  customerOrders   Order[]    @relation("CustomerOrders")
+  assistedOrders   Order[]    @relation("AssistedOrders")
+  driverDeliveries Delivery[] @relation("DriverDeliveries")
+
+  notifications  Notification[]
+  reports        Report[]
+  sentMessages   ChatMessage[]        @relation("SentMessages")
+  aiChatSessions AiChatSession[]
+  aiUsageMetrics AiUsageMetric[]
+  loyaltyPoints  Int                  @default(0)
+  loyaltyTx      LoyaltyTransaction[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 }
 
 model Role {
@@ -49,16 +49,16 @@ model Role {
   permissions RolePermission[]
   users       UserRole[]
 
-  createdAt   DateTime         @default(now())
-  updatedAt   DateTime         @updatedAt
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 }
 
 model UserRole {
   userId String
   roleId String
 
-  user   User @relation(fields: [userId], references: [id], onDelete: Cascade)
-  role   Role @relation(fields: [roleId], references: [id], onDelete: Cascade)
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  role Role @relation(fields: [roleId], references: [id], onDelete: Cascade)
 
   @@id([userId, roleId])
 }
@@ -69,8 +69,8 @@ model Permission {
   description String?
   roles       RolePermission[]
 
-  createdAt   DateTime         @default(now())
-  updatedAt   DateTime         @updatedAt
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 }
 
 model RolePermission {
@@ -90,26 +90,26 @@ model CustomerProfile {
   lastName  String?
   addresses Address[]
 
-  user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 
-  createdAt DateTime  @default(now())
-  updatedAt DateTime  @updatedAt
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 }
 
 model Address {
-  id                String          @id @default(uuid())
+  id                String  @id @default(uuid())
   customerProfileId String
   city              String
   neighborhood      String
-  landmark          String?         // Repère textuel (ex: "en face de la boulangerie")
+  landmark          String? // Repère textuel (ex: "en face de la boulangerie")
   latitude          Float?
   longitude         Float?
-  isDefault         Boolean         @default(false)
+  isDefault         Boolean @default(false)
 
-  customerProfile   CustomerProfile @relation(fields: [customerProfileId], references: [id], onDelete: Cascade)
+  customerProfile CustomerProfile @relation(fields: [customerProfileId], references: [id], onDelete: Cascade)
 
-  createdAt         DateTime        @default(now())
-  updatedAt         DateTime        @updatedAt
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 }
 
 model Session {
@@ -120,13 +120,13 @@ model Session {
   ipAddress    String?
   expiresAt    DateTime
 
-  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 
-  createdAt    DateTime @default(now())
+  createdAt DateTime @default(now())
 }
 
 model AuditLog {
-  id        String   @id @default(uuid())
+  id        String  @id @default(uuid())
   userId    String?
   action    String
   entity    String?
@@ -135,7 +135,7 @@ model AuditLog {
   ipAddress String?
   userAgent String?
 
-  user      User?    @relation("UserAuditLogs", fields: [userId], references: [id], onDelete: SetNull)
+  user User? @relation("UserAuditLogs", fields: [userId], references: [id], onDelete: SetNull)
 
   createdAt DateTime @default(now())
 }
@@ -157,31 +157,31 @@ enum DocumentType {
 }
 
 model DistributorApplication {
-  id              String            @id @default(uuid())
-  userId          String            @unique
-  user            User              @relation(fields: [userId], references: [id], onDelete: Cascade)
-  status          ApplicationStatus @default(DRAFT)
-  currentStep     Int               @default(1) // Pour la reprise du wizard
-  
-  businessName    String?
-  taxId           String?
-  
-  city            String?
-  neighborhood    String?
-  landmark        String?
-  latitude        Float?
-  longitude       Float?
-  whatsappNumber  String?
-  
-  documents       StoreDocument[]
-  
+  id          String            @id @default(uuid())
+  userId      String            @unique
+  user        User              @relation(fields: [userId], references: [id], onDelete: Cascade)
+  status      ApplicationStatus @default(DRAFT)
+  currentStep Int               @default(1) // Pour la reprise du wizard
+
+  businessName String?
+  taxId        String?
+
+  city           String?
+  neighborhood   String?
+  landmark       String?
+  latitude       Float?
+  longitude      Float?
+  whatsappNumber String?
+
+  documents StoreDocument[]
+
   rejectionReason String?
   verifiedAt      DateTime?
-  
-  createdAt       DateTime          @default(now())
-  updatedAt       DateTime          @updatedAt
-  
-  store           Store?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  store Store?
 }
 
 model StoreDocument {
@@ -189,48 +189,48 @@ model StoreDocument {
   applicationId  String
   application    DistributorApplication @relation(fields: [applicationId], references: [id], onDelete: Cascade)
   type           DocumentType
-  fileUrl        String                 // Chemin ou URI privé
+  fileUrl        String // Chemin ou URI privé
   isValid        Boolean?
   rejectedReason String?
-  
-  createdAt      DateTime               @default(now())
-  updatedAt      DateTime               @updatedAt
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 }
 
 model Store {
-  id              String                 @id @default(uuid())
-  applicationId   String                 @unique
-  application     DistributorApplication @relation(fields: [applicationId], references: [id])
-  ownerId         String
-  owner           User                   @relation(fields: [ownerId], references: [id])
-  
-  name            String
-  city            String
-  neighborhood    String
-  landmark        String?
-  latitude        Float?
-  longitude       Float?
-  
-  whatsappNumber  String?
-  openingHours    Json?                  // ex: { monday: "08:00-18:00" }
-  
-  isVerifiedBadge Boolean                @default(true)
-  isVisible       Boolean                @default(true)
-  
-  reliabilityScore Float                 @default(100) // Tâche 9.4
-  badges          Json?                  // ["FAST", "TOP_RATED"]
-  
+  id            String                 @id @default(uuid())
+  applicationId String                 @unique
+  application   DistributorApplication @relation(fields: [applicationId], references: [id])
+  ownerId       String
+  owner         User                   @relation(fields: [ownerId], references: [id])
+
+  name         String
+  city         String
+  neighborhood String
+  landmark     String?
+  latitude     Float?
+  longitude    Float?
+
+  whatsappNumber String?
+  openingHours   Json? // ex: { monday: "08:00-18:00" }
+
+  isVerifiedBadge Boolean @default(true)
+  isVisible       Boolean @default(true)
+
+  reliabilityScore Float @default(100) // Tâche 9.4
+  badges           Json? // ["FAST", "TOP_RATED"]
+
   // Paiements (Numéros de réception des fonds du distributeur)
   momoReceiverNumber   String?
   orangeReceiverNumber String?
-  
-  inventories     Inventory[]
-  orders          Order[]
+
+  inventories       Inventory[]
+  orders            Order[]
   stockReservations StockReservation[]
-  reports         Report[]
-  
-  createdAt       DateTime               @default(now())
-  updatedAt       DateTime               @updatedAt
+  reports           Report[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 }
 
 // ==========================================
@@ -242,44 +242,44 @@ model ProductCategory {
   name        String    @unique
   description String?
   products    Product[]
-  
-  createdAt   DateTime  @default(now())
-  updatedAt   DateTime  @updatedAt
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 }
 
 model Product {
-  id              String          @id @default(uuid())
-  categoryId      String
-  category        ProductCategory @relation(fields: [categoryId], references: [id])
-  brand           String          // ex: SCTM, Camgaz, Tradex, BOCOM, OLA, GreenOil
-  weightKg        Float           // ex: 12.5, 6, 50
-  publicPrice     Float           // Prix public conseillé
-  distributorPrice Float          // Prix distributeur
-  promoPrice      Float?          // Prix promotionnel éventuel
-  
-  inventories     Inventory[]
-  priceHistories  PriceHistory[]
-  demandAlerts    DemandAlert[]
-  orderItems      OrderItem[]
+  id               String          @id @default(uuid())
+  categoryId       String
+  category         ProductCategory @relation(fields: [categoryId], references: [id])
+  brand            String // ex: SCTM, Camgaz, Tradex, BOCOM, OLA, GreenOil
+  weightKg         Float // ex: 12.5, 6, 50
+  publicPrice      Float // Prix public conseillé
+  distributorPrice Float // Prix distributeur
+  promoPrice       Float? // Prix promotionnel éventuel
+
+  inventories       Inventory[]
+  priceHistories    PriceHistory[]
+  demandAlerts      DemandAlert[]
+  orderItems        OrderItem[]
   stockReservations StockReservation[]
-  
-  createdAt       DateTime        @default(now())
-  updatedAt       DateTime        @updatedAt
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
   @@unique([brand, weightKg])
 }
 
 model PriceHistory {
-  id               String   @id @default(uuid())
-  productId        String
-  product          Product  @relation(fields: [productId], references: [id], onDelete: Cascade)
-  oldPublicPrice   Float
-  newPublicPrice   Float
+  id                  String  @id @default(uuid())
+  productId           String
+  product             Product @relation(fields: [productId], references: [id], onDelete: Cascade)
+  oldPublicPrice      Float
+  newPublicPrice      Float
   oldDistributorPrice Float
   newDistributorPrice Float
-  changedByUserId  String?  // Admin ID
-  
-  createdAt        DateTime @default(now())
+  changedByUserId     String? // Admin ID
+
+  createdAt DateTime @default(now())
 }
 
 enum StockLevel {
@@ -290,49 +290,49 @@ enum StockLevel {
 }
 
 model Inventory {
-  id               String     @id @default(uuid())
-  storeId          String
-  store            Store      @relation(fields: [storeId], references: [id], onDelete: Cascade)
-  productId        String
-  product          Product    @relation(fields: [productId], references: [id], onDelete: Cascade)
-  
-  level            StockLevel @default(OUT_OF_STOCK)
-  lastConfirmedAt  DateTime   @default(now()) // Pour le calcul d'ancienneté (Vert/Orange/Rouge/Gris)
-  
-  createdAt        DateTime   @default(now())
-  updatedAt        DateTime   @updatedAt
+  id        String  @id @default(uuid())
+  storeId   String
+  store     Store   @relation(fields: [storeId], references: [id], onDelete: Cascade)
+  productId String
+  product   Product @relation(fields: [productId], references: [id], onDelete: Cascade)
+
+  level           StockLevel @default(OUT_OF_STOCK)
+  lastConfirmedAt DateTime   @default(now()) // Pour le calcul d'ancienneté (Vert/Orange/Rouge/Gris)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
   @@unique([storeId, productId])
 }
 
 model SearchEvent {
-  id            String   @id @default(uuid())
-  userId        String?
-  searchQuery   String?  // Terme recherché (ex: quartier)
-  latitude      Float?
-  longitude     Float?
-  radiusKm      Float?
-  resultsCount  Int
-  
-  createdAt     DateTime @default(now())
+  id           String  @id @default(uuid())
+  userId       String?
+  searchQuery  String? // Terme recherché (ex: quartier)
+  latitude     Float?
+  longitude    Float?
+  radiusKm     Float?
+  resultsCount Int
+
+  createdAt DateTime @default(now())
 }
 
 model DemandAlert {
-  id          String   @id @default(uuid())
-  userId      String
-  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-  productId   String
-  product     Product  @relation(fields: [productId], references: [id], onDelete: Cascade)
-  
-  latitude    Float?
-  longitude   Float?
-  radiusKm    Float?
-  storeId     String?  // Si alerte sur une boutique spécifique
-  
-  isFulfilled Boolean  @default(false)
+  id        String  @id @default(uuid())
+  userId    String
+  user      User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  productId String
+  product   Product @relation(fields: [productId], references: [id], onDelete: Cascade)
+
+  latitude  Float?
+  longitude Float?
+  radiusKm  Float?
+  storeId   String? // Si alerte sur une boutique spécifique
+
+  isFulfilled Boolean   @default(false)
   fulfilledAt DateTime?
-  
-  createdAt   DateTime @default(now())
+
+  createdAt DateTime @default(now())
 }
 
 // ==========================================
@@ -357,66 +357,66 @@ enum OrderStatus {
 }
 
 model Order {
-  id              String      @id @default(uuid())
-  orderNumber     String      @unique // Généré: ORD-20261006-XXXX
-  type            OrderType
-  status          OrderStatus @default(DRAFT)
-  
-  customerId      String
-  customer        User        @relation("CustomerOrders", fields: [customerId], references: [id])
-  
-  storeId         String?     // Nullable si B2B direct ou avant choix du store
-  store           Store?      @relation(fields: [storeId], references: [id])
-  
-  totalAmount     Float
-  
+  id          String      @id @default(uuid())
+  orderNumber String      @unique // Généré: ORD-20261006-XXXX
+  type        OrderType
+  status      OrderStatus @default(DRAFT)
+
+  customerId String
+  customer   User   @relation("CustomerOrders", fields: [customerId], references: [id])
+
+  storeId String? // Nullable si B2B direct ou avant choix du store
+  store   Store?  @relation(fields: [storeId], references: [id])
+
+  totalAmount Float
+
   // Livraison
   deliveryAddress String?
   deliveryLat     Float?
   deliveryLng     Float?
   deliveryNotes   String?
   deliverySlot    DateTime?
-  
+
   // Assistance (Tâche 5.7)
-  assistedById    String?
-  assistedBy      User?       @relation("AssistedOrders", fields: [assistedById], references: [id])
-  
-  items           OrderItem[]
-  reservations    StockReservation[]
-  payments        Payment[]
-  delivery        Delivery?
-  invoice         Invoice?
-  review          Review?
-  
-  createdAt       DateTime    @default(now())
-  updatedAt       DateTime    @updatedAt
+  assistedById String?
+  assistedBy   User?   @relation("AssistedOrders", fields: [assistedById], references: [id])
+
+  items        OrderItem[]
+  reservations StockReservation[]
+  payments     Payment[]
+  delivery     Delivery?
+  invoice      Invoice?
+  review       Review?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 }
 
 model OrderItem {
-  id          String   @id @default(uuid())
-  orderId     String
-  order       Order    @relation(fields: [orderId], references: [id], onDelete: Cascade)
-  productId   String
-  product     Product  @relation(fields: [productId], references: [id])
-  quantity    Int
-  unitPrice   Float
-  totalPrice  Float
+  id         String  @id @default(uuid())
+  orderId    String
+  order      Order   @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  productId  String
+  product    Product @relation(fields: [productId], references: [id])
+  quantity   Int
+  unitPrice  Float
+  totalPrice Float
 }
 
 model StockReservation {
-  id          String   @id @default(uuid())
-  orderId     String
-  order       Order    @relation(fields: [orderId], references: [id], onDelete: Cascade)
-  storeId     String
-  store       Store    @relation(fields: [storeId], references: [id])
-  productId   String
-  product     Product  @relation(fields: [productId], references: [id])
-  quantity    Int
-  
-  expiresAt   DateTime // Expiration stricte (ex: +15 minutes)
-  isConsumed  Boolean  @default(false)
-  
-  createdAt   DateTime @default(now())
+  id        String  @id @default(uuid())
+  orderId   String
+  order     Order   @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  storeId   String
+  store     Store   @relation(fields: [storeId], references: [id])
+  productId String
+  product   Product @relation(fields: [productId], references: [id])
+  quantity  Int
+
+  expiresAt  DateTime // Expiration stricte (ex: +15 minutes)
+  isConsumed Boolean  @default(false)
+
+  createdAt DateTime @default(now())
 }
 
 enum DeliveryStatus {
@@ -430,37 +430,37 @@ enum DeliveryStatus {
 }
 
 model Delivery {
-  id              String         @id @default(uuid())
-  orderId         String         @unique
-  order           Order          @relation(fields: [orderId], references: [id], onDelete: Cascade)
-  
-  driverId        String?
-  driver          User?          @relation("DriverDeliveries", fields: [driverId], references: [id])
-  
+  id      String @id @default(uuid())
+  orderId String @unique
+  order   Order  @relation(fields: [orderId], references: [id], onDelete: Cascade)
+
+  driverId String?
+  driver   User?   @relation("DriverDeliveries", fields: [driverId], references: [id])
+
   status          DeliveryStatus @default(PENDING)
-  confirmationOtp String?        // Code OTP à remettre au client (Tâche 5.4)
-  
-  pickedUpAt      DateTime?
-  deliveredAt     DateTime?
-  failedReason    String?
-  
-  createdAt       DateTime       @default(now())
-  updatedAt       DateTime       @updatedAt
+  confirmationOtp String? // Code OTP à remettre au client (Tâche 5.4)
+
+  pickedUpAt   DateTime?
+  deliveredAt  DateTime?
+  failedReason String?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 }
 
 model Invoice {
-  id            String   @id @default(uuid())
-  invoiceNumber String   @unique // Numérotation unique par vendeur
-  orderId       String   @unique
-  order         Order    @relation(fields: [orderId], references: [id])
-  
-  sellerName    String   // "PLEINGAZ - Vente directe" ou "Distributeur agréé : X"
-  totalAmount   Float
-  pdfUrl        String?  // Facture immuable PDF
-  
-  isVoided      Boolean  @default(false) // Pour gestion des avoirs
-  
-  createdAt     DateTime @default(now())
+  id            String @id @default(uuid())
+  invoiceNumber String @unique // Numérotation unique par vendeur
+  orderId       String @unique
+  order         Order  @relation(fields: [orderId], references: [id])
+
+  sellerName  String // "PLEINGAZ - Vente directe" ou "Distributeur agréé : X"
+  totalAmount Float
+  pdfUrl      String? // Facture immuable PDF
+
+  isVoided Boolean @default(false) // Pour gestion des avoirs
+
+  createdAt DateTime @default(now())
 }
 
 // ==========================================
@@ -481,36 +481,36 @@ enum PaymentStatus {
 }
 
 model Payment {
-  id              String        @id @default(uuid())
-  orderId         String
-  order           Order         @relation(fields: [orderId], references: [id])
-  
-  method          PaymentMethod
-  status          PaymentStatus @default(PENDING)
-  
-  amount          Float
-  fee             Float         @default(0) // Frais de transaction
-  
+  id      String @id @default(uuid())
+  orderId String
+  order   Order  @relation(fields: [orderId], references: [id])
+
+  method PaymentMethod
+  status PaymentStatus @default(PENDING)
+
+  amount Float
+  fee    Float @default(0) // Frais de transaction
+
   // Idempotence & Fournisseur
-  idempotencyKey  String        @unique // Empêcher les doublons
-  providerTxId    String?       @unique // ID de transaction renvoyé par MTN/Orange
-  
+  idempotencyKey String  @unique // Empêcher les doublons
+  providerTxId   String? @unique // ID de transaction renvoyé par MTN/Orange
+
   // Webhooks
   lastWebhookData Json?
-  
-  createdAt       DateTime      @default(now())
-  updatedAt       DateTime      @updatedAt
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 }
 
 model PlatformSettings {
-  id                   String   @id @default("singleton")
-  adminMomoNumber      String?
-  adminOrangeNumber    String?
-  
-  supportPhone         String   @default("+237 657696567")
-  supportEmail         String   @default("donfackdurel1980@icloud.com")
-  
-  updatedAt            DateTime @updatedAt
+  id                String  @id @default("singleton")
+  adminMomoNumber   String?
+  adminOrangeNumber String?
+
+  supportPhone String @default("+237 657696567")
+  supportEmail String @default("donfackdurel1980@icloud.com")
+
+  updatedAt DateTime @updatedAt
 }
 
 // ==========================================
@@ -530,19 +530,19 @@ enum NotificationStatus {
 }
 
 model Notification {
-  id        String             @id @default(uuid())
-  userId    String
-  user      User               @relation(fields: [userId], references: [id], onDelete: Cascade)
-  
-  type      NotificationType
-  status    NotificationStatus @default(PENDING)
-  
-  title     String
-  content   String
-  metadata  Json?              // Données additionnelles pour le template
-  
-  createdAt DateTime           @default(now())
-  updatedAt DateTime           @updatedAt
+  id     String @id @default(uuid())
+  userId String
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  type   NotificationType
+  status NotificationStatus @default(PENDING)
+
+  title    String
+  content  String
+  metadata Json? // Données additionnelles pour le template
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 }
 
 enum ReportReason {
@@ -554,30 +554,30 @@ enum ReportReason {
 }
 
 model Report {
-  id        String       @id @default(uuid())
-  userId    String
-  user      User         @relation(fields: [userId], references: [id])
-  storeId   String
-  store     Store        @relation(fields: [storeId], references: [id])
-  
-  reason    ReportReason
-  details   String?
-  
-  isResolved Boolean     @default(false)
-  
-  createdAt DateTime     @default(now())
+  id      String @id @default(uuid())
+  userId  String
+  user    User   @relation(fields: [userId], references: [id])
+  storeId String
+  store   Store  @relation(fields: [storeId], references: [id])
+
+  reason  ReportReason
+  details String?
+
+  isResolved Boolean @default(false)
+
+  createdAt DateTime @default(now())
 }
 
 model ChatConversation {
-  id        String        @id @default(uuid())
+  id             String @id @default(uuid())
   participant1Id String
   participant2Id String
-  
-  messages  ChatMessage[]
-  
-  createdAt DateTime      @default(now())
-  updatedAt DateTime      @updatedAt
-  
+
+  messages ChatMessage[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
   @@unique([participant1Id, participant2Id])
 }
 
@@ -585,15 +585,15 @@ model ChatMessage {
   id             String           @id @default(uuid())
   conversationId String
   conversation   ChatConversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
-  
-  senderId       String
-  sender         User             @relation("SentMessages", fields: [senderId], references: [id])
-  
-  content        String
-  attachmentUrl  String?
-  isRead         Boolean          @default(false)
-  
-  createdAt      DateTime         @default(now())
+
+  senderId String
+  sender   User   @relation("SentMessages", fields: [senderId], references: [id])
+
+  content       String
+  attachmentUrl String?
+  isRead        Boolean @default(false)
+
+  createdAt DateTime @default(now())
 }
 
 // ==========================================
@@ -601,40 +601,40 @@ model ChatMessage {
 // ==========================================
 
 model KnowledgeDocument {
-  id        String   @id @default(uuid())
-  title     String
-  content   String
-  isActive  Boolean  @default(true)
-  version   Int      @default(1)
-  
+  id       String  @id @default(uuid())
+  title    String
+  content  String
+  isActive Boolean @default(true)
+  version  Int     @default(1)
+
   createdBy String?
-  
+
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 }
 
 model AiChatSession {
-  id        String   @id @default(uuid())
-  userId    String
-  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-  
-  history   Json     // Historique des messages (Prompt + Réponse + Tools)
-  
+  id     String @id @default(uuid())
+  userId String
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  history Json // Historique des messages (Prompt + Réponse + Tools)
+
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 }
 
 model AiUsageMetric {
-  id              String   @id @default(uuid())
-  userId          String
-  user            User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-  
-  promptTokens    Int      @default(0)
-  completionTokens Int     @default(0)
-  totalTokens     Int      @default(0)
-  estimatedCostUsd Float   @default(0)
-  
-  createdAt       DateTime @default(now())
+  id     String @id @default(uuid())
+  userId String
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  promptTokens     Int   @default(0)
+  completionTokens Int   @default(0)
+  totalTokens      Int   @default(0)
+  estimatedCostUsd Float @default(0)
+
+  createdAt DateTime @default(now())
 }
 
 // ==========================================
@@ -642,13 +642,13 @@ model AiUsageMetric {
 // ==========================================
 
 model HeatmapEvent {
-  id          String   @id @default(uuid())
-  type        HeatmapEventType // 'DEMAND', 'NO_RESULT', 'OUT_OF_STOCK'
-  latitude    Float
-  longitude   Float
-  gridId      String   // ID de grille (ex: "lat_lng_hash") pour anonymisation
-  metadata    Json?    // Ex: marque recherchée, poids
-  createdAt   DateTime @default(now())
+  id        String           @id @default(uuid())
+  type      HeatmapEventType // 'DEMAND', 'NO_RESULT', 'OUT_OF_STOCK'
+  latitude  Float
+  longitude Float
+  gridId    String // ID de grille (ex: "lat_lng_hash") pour anonymisation
+  metadata  Json? // Ex: marque recherchée, poids
+  createdAt DateTime         @default(now())
 }
 
 enum HeatmapEventType {
@@ -658,22 +658,22 @@ enum HeatmapEventType {
 }
 
 model Review {
-  id          String   @id @default(uuid())
-  orderId     String   @unique
-  order       Order    @relation(fields: [orderId], references: [id])
-  
-  rating      Int      // 1-5
+  id      String @id @default(uuid())
+  orderId String @unique
+  order   Order  @relation(fields: [orderId], references: [id])
+
+  rating      Int // 1-5
   comment     String?
-  isModerated Boolean  @default(false)
-  
-  createdAt   DateTime @default(now())
+  isModerated Boolean @default(false)
+
+  createdAt DateTime @default(now())
 }
 
 model LoyaltyTransaction {
   id          String   @id @default(uuid())
   userId      String
   user        User     @relation(fields: [userId], references: [id])
-  points      Int      // Positif (gagné) ou négatif (dépensé)
+  points      Int // Positif (gagné) ou négatif (dépensé)
   description String
   createdAt   DateTime @default(now())
 }

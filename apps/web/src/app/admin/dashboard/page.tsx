@@ -3,7 +3,7 @@
 import { useState } from 'react';
 import { 
   BarChart3, TrendingUp, AlertTriangle, PackageX, 
-  MapPin, Store, Star, Download, Filter, FileText
+  MapPin, Store, Star, Download, Filter, FileText, CheckCircle, XCircle
 } from 'lucide-react';
 import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
 
@@ -60,8 +60,8 @@ export default function PilotageDashboard() {
               <AlertTriangle className="text-white/80" />
             </div>
             <div>
-              <p className="text-3xl font-black mt-2">Anomalie détectée</p>
-              <p className="text-white/90 mt-1">12 distributeurs à Douala (Akwa) n'ont pas mis à jour leur stock depuis 48h. Un pic de recherche a été détecté dans cette zone.</p>
+              <p className="text-3xl font-black mt-2">Ruptures signalées</p>
+              <p className="text-white/90 mt-1">2 distributeurs (dont ETS Pleingaz Bonamoussadi) ont signalé une rupture de stock récente et attendent d'être approvisionnés.</p>
             </div>
           </div>
           <InsightCard 
@@ -129,6 +129,60 @@ export default function PilotageDashboard() {
                 <p className="text-xs text-gray-500 mt-1">Basée sur les recherches sans résultat</p>
               </div>
             </div>
+          </div>
+        </div>
+
+        {/* Validation des Distributeurs (Tâche 3.3) */}
+        <div className="bg-white dark:bg-neutral-900 border border-gray-200 dark:border-neutral-800 rounded-3xl p-6">
+          <div className="flex justify-between items-center mb-6">
+            <h3 className="font-black text-xl text-gray-900 dark:text-white flex items-center gap-2">
+              <FileText className="text-orange-500" />
+              Dossiers en attente de validation
+            </h3>
+            <span className="px-3 py-1 bg-orange-100 dark:bg-orange-900/30 text-orange-600 dark:text-orange-400 font-bold rounded-full text-sm">
+              3 Nouveaux
+            </span>
+          </div>
+          <div className="overflow-x-auto">
+            <table className="w-full text-left">
+              <thead>
+                <tr className="text-gray-500 border-b border-gray-100 dark:border-neutral-800">
+                  <th className="pb-3 font-bold">Boutique</th>
+                  <th className="pb-3 font-bold">Localisation</th>
+                  <th className="pb-3 font-bold">Documents</th>
+                  <th className="pb-3 font-bold">Date</th>
+                  <th className="pb-3 font-bold text-right">Actions</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-gray-100 dark:divide-neutral-800">
+                {[
+                  { name: 'ETS Pleingaz Bonamoussadi', loc: 'Douala, Bonamoussadi', docs: 'CNI, RCCM', date: 'Il y a 1h' },
+                  { name: 'Maman Gaz Makepe', loc: 'Douala, Makepe', docs: 'CNI', date: 'Il y a 3h' },
+                  { name: 'Dépôt Central Yaoundé', loc: 'Yaoundé, Biyem-Assi', docs: 'CNI, RCCM, NIU', date: 'Hier' },
+                ].map((dossier, i) => (
+                  <tr key={i} className="group hover:bg-gray-50 dark:hover:bg-neutral-950/50 transition-colors">
+                    <td className="py-4 font-bold text-gray-900 dark:text-white">
+                      {dossier.name}
+                    </td>
+                    <td className="py-4 text-sm text-gray-600 dark:text-gray-400">{dossier.loc}</td>
+                    <td className="py-4">
+                      <span className="px-2 py-1 bg-gray-100 dark:bg-neutral-800 text-gray-600 dark:text-gray-300 text-xs font-bold rounded-lg">
+                        {dossier.docs}
+                      </span>
+                    </td>
+                    <td className="py-4 text-sm text-gray-500">{dossier.date}</td>
+                    <td className="py-4 flex justify-end gap-2">
+                      <button className="p-2 bg-green-50 dark:bg-green-900/20 text-green-600 hover:bg-green-100 dark:hover:bg-green-900/40 rounded-xl transition-colors" title="Accepter">
+                        <CheckCircle size={20} />
+                      </button>
+                      <button className="p-2 bg-red-50 dark:bg-red-900/20 text-red-600 hover:bg-red-100 dark:hover:bg-red-900/40 rounded-xl transition-colors" title="Refuser">
+                        <XCircle size={20} />
+                      </button>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
           </div>
         </div>
 

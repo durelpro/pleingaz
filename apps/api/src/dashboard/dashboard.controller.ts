@@ -2,12 +2,12 @@ import { Controller, Get, Query, UseGuards, Res } from '@nestjs/common';
 import { Response } from 'express';
 import { DashboardService } from './dashboard.service';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
-import { RolesGuard } from '../auth/guards/roles.guard';
-import { Roles } from '../auth/decorators/roles.decorator';
+import { PermissionsGuard } from '../auth/guards/permissions.guard';
+import { Permissions } from '../auth/decorators/permissions.decorator';
 
 @Controller('dashboard')
-@UseGuards(JwtAuthGuard, RolesGuard)
-@Roles('ADMIN')
+@UseGuards(JwtAuthGuard, PermissionsGuard)
+@Permissions('admin:access')
 export class DashboardController {
   constructor(private dashboardService: DashboardService) {}
 
@@ -22,7 +22,7 @@ export class DashboardController {
   }
 
   @Get('heatmap')
-  async getHeatmap() {
+  async getHeatmap(): Promise<any[]> {
     return this.dashboardService.getHeatmapData();
   }
 

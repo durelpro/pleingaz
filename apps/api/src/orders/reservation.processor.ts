@@ -9,7 +9,7 @@ export class ReservationProcessor extends WorkerHost {
   }
 
   async process(job: Job<{ reservationId: string; orderId: string }>) {
-    console.log(\`Traitement de l'expiration de réservation \${job.data.reservationId}\`);
+    console.log(`Traitement de l'expiration de réservation ${job.data.reservationId}`);
     
     const reservation = await this.prisma.stockReservation.findUnique({
       where: { id: job.data.reservationId },
@@ -17,7 +17,7 @@ export class ReservationProcessor extends WorkerHost {
 
     // Si la réservation n'a pas été consommée (commande non confirmée)
     if (reservation && !reservation.isConsumed) {
-      console.log(\`La réservation \${job.data.reservationId} a expiré ! Annulation de la commande...\`);
+      console.log(`La réservation ${job.data.reservationId} a expiré ! Annulation de la commande...`);
       
       await this.prisma.order.update({
         where: { id: job.data.orderId },

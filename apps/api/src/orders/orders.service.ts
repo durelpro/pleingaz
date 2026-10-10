@@ -35,7 +35,7 @@ export class OrdersService {
       const product = await tx.product.findUnique({ where: { id: productId } });
       const order = await tx.order.create({
         data: {
-          orderNumber: \`ORD-\${Date.now()}\`,
+          orderNumber: `ORD-${Date.now()}`,
           type: 'B2C_PICKUP',
           status: 'DRAFT',
           customerId: userId,
@@ -127,12 +127,11 @@ export class OrdersService {
    */
   async createAssistedOrder(agentId: string, customerPhone: string, storeId: string, productId: string, quantity: number, deliveryAddress?: string) {
     // 1. Trouver ou créer le client
-    let customer = await this.prisma.user.findUnique({ where: { phoneNumber: customerPhone } });
+    let customer = await this.prisma.user.findUnique({ where: { phone: customerPhone } });
     if (!customer) {
       customer = await this.prisma.user.create({
         data: {
-          phoneNumber: customerPhone,
-          role: 'CLIENT',
+          phone: customerPhone,
           passwordHash: 'GENERATED_NO_LOGIN', // Mot de passe bidon
         }
       });
@@ -144,7 +143,7 @@ export class OrdersService {
 
     const order = await this.prisma.order.create({
       data: {
-        orderNumber: \`ORD-\${Date.now()}\`,
+        orderNumber: `ORD-${Date.now()}`,
         type,
         status: 'SUBMITTED', // Directement soumis
         customerId: customer.id,
@@ -210,7 +209,7 @@ export class OrdersService {
       data: {
         userId,
         points: 10,
-        description: \`Récompense pour l'avis sur la commande \${order.orderNumber}\`
+        description: `Récompense pour l'avis sur la commande ${order.orderNumber}`
       }
     });
 

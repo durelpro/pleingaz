@@ -1,7 +1,8 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { RefreshCw, WifiOff, CheckCircle2, Clock } from 'lucide-react';
+import { RefreshCw, WifiOff, CheckCircle2, Clock, ShoppingCart, Info } from 'lucide-react';
+import Link from 'next/link';
 
 type StockLevel = 'HIGH' | 'MEDIUM' | 'LOW' | 'OUT_OF_STOCK';
 
@@ -74,6 +75,10 @@ export default function InventoryList() {
     setInventory(prev => prev.map(item => 
       item.id === id ? { ...item, level: newLevel, lastConfirmedAt: new Date().toISOString() } : item
     ));
+
+    if (newLevel === 'OUT_OF_STOCK') {
+      alert("⚠️ Alerte envoyée à l'administrateur ! PLEINGAZ a été notifié de votre rupture de stock et vous contactera bientôt.");
+    }
   };
 
   return (
@@ -120,6 +125,22 @@ export default function InventoryList() {
                 </button>
               ))}
             </div>
+
+            {item.level === 'OUT_OF_STOCK' && (
+              <div className="w-full mt-4 p-4 bg-red-50 dark:bg-red-900/10 border border-red-200 dark:border-red-900/30 rounded-xl flex flex-col md:flex-row items-center justify-between gap-4">
+                <div className="flex items-center gap-3 text-red-700 dark:text-red-400">
+                  <Info size={20} />
+                  <span className="text-sm font-semibold">L'administrateur a été notifié. Vous pouvez aussi commander directement.</span>
+                </div>
+                <Link 
+                  href="/distributor/order"
+                  className="px-6 py-2.5 bg-pleingaz-red text-white font-bold rounded-xl flex items-center gap-2 hover:opacity-90 transition-opacity whitespace-nowrap"
+                >
+                  <ShoppingCart size={18} />
+                  Commander à PLEINGAZ
+                </Link>
+              </div>
+            )}
             
           </div>
         ))}

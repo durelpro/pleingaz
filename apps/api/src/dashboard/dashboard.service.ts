@@ -14,13 +14,13 @@ export class DashboardService {
     
     // Distributeurs inactifs
     const inactiveStores = await this.prisma.store.count({
-      where: { updatedAt: { lt: fortyEightHoursAgo }, isActive: true }
+      where: { updatedAt: { lt: fortyEightHoursAgo }, isVisible: true }
     });
 
     // Risque de rupture avancé (Tâche 9.3)
     // On détecte si le stock est < 5 ET s'il y a eu des commandes récentes
     const riskyInventories = await this.prisma.inventory.findMany({
-      where: { quantity: { lte: 5 } },
+      where: { level: { in: ['LOW', 'OUT_OF_STOCK'] } },
       include: { store: true, product: true }
     });
 
@@ -28,13 +28,13 @@ export class DashboardService {
       {
         id: '1',
         title: 'Mises à jour Distributeurs',
-        description: \`\${inactiveStores} distributeurs actifs n'ont pas mis à jour leur stock depuis 48 h\`,
+        description: `${inactiveStores} distributeurs actifs n'ont pas mis à jour leur stock depuis 48 h`,
         level: inactiveStores > 10 ? 'HIGH' : 'LOW'
       },
       {
         id: '2',
         title: 'Risque de Rupture Éminent',
-        description: \`\${riskyInventories.length} références sont en seuil d'alerte critique dans le réseau\`,
+        description: `${riskyInventories.length} références sont en seuil d'alerte critique dans le réseau`,
         level: riskyInventories.length > 5 ? 'HIGH' : 'MEDIUM'
       }
     ];
@@ -86,7 +86,7 @@ export class DashboardService {
     
     const activeStores = await this.prisma.store.count({ 
       where: { 
-        isActive: true,
+        isVisible: true,
         ...(filters.city ? { city: filters.city } : {})
       } 
     });
@@ -99,7 +99,7 @@ export class DashboardService {
     };
   }
 
-  async getHeatmapData() {
+  async getHeatmapData(): Promise<any[]> {
     return this.prisma.heatmapEvent.findMany({
       take: 1000,
       orderBy: { createdAt: 'desc' }
@@ -138,6 +138,6 @@ export class DashboardService {
 
     // Generate buffer
     const buffer = await workbook.xlsx.writeBuffer();
-    return buffer as Buffer;
+    return buffer as any;
   }
 }

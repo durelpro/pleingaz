@@ -91,8 +91,8 @@ export class SearchService {
 
       return {
         ...row,
-        distanceStr: row.distance ? \`\${(row.distance / 1000).toFixed(1)} km\` : null,
-        stockFreshness: \`Confirmé il y a \${minutesAgo} min (\${freshness})\`,
+        distanceStr: row.distance ? `${(row.distance / 1000).toFixed(1)} km` : null,
+        stockFreshness: `Confirmé il y a ${minutesAgo} min (${freshness})`,
         recommendationReason: row.distance && row.distance < 2000 ? '📍 Le plus proche' : (row.stockLevel === 'HIGH' ? '🔥 Beaucoup de stock' : ''),
       };
     });

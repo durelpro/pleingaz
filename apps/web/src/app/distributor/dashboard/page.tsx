@@ -8,6 +8,8 @@ import {
 import Link from 'next/link';
 
 export default function DistributorDashboard() {
+  const [status, setStatus] = useState<'PENDING' | 'APPROVED'>('PENDING');
+
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-neutral-950 p-6 lg:p-10">
       <div className="max-w-7xl mx-auto space-y-8">
@@ -22,12 +24,34 @@ export default function DistributorDashboard() {
             <p className="text-gray-500 mt-2">Bienvenue sur votre espace distributeur PLEINGAZ.</p>
           </div>
           <div className="flex gap-3">
+            <button 
+              onClick={() => setStatus(s => s === 'PENDING' ? 'APPROVED' : 'PENDING')}
+              className="px-4 py-2 text-xs font-bold bg-gray-200 dark:bg-neutral-800 rounded-xl"
+            >
+              Basculer statut (Dev)
+            </button>
             <Link href="/distributor/inventory" className="flex items-center gap-2 px-6 py-2.5 bg-gradient-to-r from-pleingaz-red to-[#ff6a00] text-white font-bold rounded-xl shadow-lg shadow-orange-500/30 hover:shadow-orange-500/50 hover:-translate-y-0.5 transition-all">
               <Package size={18} />
               Mettre à jour mon stock
             </Link>
           </div>
         </div>
+
+        {/* Status Banner */}
+        {status === 'PENDING' && (
+          <div className="bg-orange-50 dark:bg-orange-900/20 border border-orange-200 dark:border-orange-800 p-6 rounded-2xl flex flex-col md:flex-row items-center gap-4 text-orange-800 dark:text-orange-400">
+            <div className="w-12 h-12 bg-orange-100 dark:bg-orange-900/50 rounded-full flex items-center justify-center shrink-0">
+              <AlertCircle size={24} />
+            </div>
+            <div>
+              <h3 className="font-black text-lg">Dossier en attente de validation</h3>
+              <p className="font-medium opacity-90 mt-1">
+                Votre profil distributeur a bien été créé mais n'est pas encore visible par les clients. 
+                L'administrateur PLEINGAZ analyse vos pièces justificatives. Vous serez notifié dès l'activation.
+              </p>
+            </div>
+          </div>
+        )}
 
         {/* Actionable Insights */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
@@ -100,18 +124,24 @@ export default function DistributorDashboard() {
             </div>
           </div>
 
-          <div className="bg-gradient-to-br from-pleingaz-red to-red-600 border border-red-500 rounded-3xl p-8 text-white shadow-lg shadow-orange-500/20 flex flex-col justify-center">
-            <h3 className="font-black text-3xl mb-4">Votre boutique est visible !</h3>
+          <div className={`border rounded-3xl p-8 text-white flex flex-col justify-center shadow-lg transition-colors \${status === 'APPROVED' ? 'bg-gradient-to-br from-pleingaz-red to-red-600 border-red-500 shadow-orange-500/20' : 'bg-gray-400 dark:bg-neutral-800 border-gray-300 dark:border-neutral-700'}`}>
+            <h3 className="font-black text-3xl mb-4">
+              {status === 'APPROVED' ? 'Votre boutique est visible !' : 'Boutique invisible'}
+            </h3>
             <p className="text-white/90 text-lg mb-6 leading-relaxed">
-              Les clients autour de vous peuvent vous trouver et voir vos disponibilités. 
-              Mettez à jour votre stock quotidiennement pour conserver un score de fiabilité élevé.
+              {status === 'APPROVED' 
+                ? 'Les clients autour de vous peuvent vous trouver et voir vos disponibilités. Mettez à jour votre stock quotidiennement pour conserver un score de fiabilité élevé.'
+                : 'En attente de la validation administrateur pour apparaître sur la carte PLEINGAZ.'
+              }
             </p>
-            <div className="p-4 bg-white/10 rounded-2xl backdrop-blur-sm border border-white/20">
-              <p className="font-bold">Astuce Pro 💡</p>
-              <p className="text-sm text-white/80 mt-1">
-                Une mise à jour le matin à 8h attire 3x plus de clients dans la journée.
-              </p>
-            </div>
+            {status === 'APPROVED' && (
+              <div className="p-4 bg-white/10 rounded-2xl backdrop-blur-sm border border-white/20">
+                <p className="font-bold">Astuce Pro 💡</p>
+                <p className="text-sm text-white/80 mt-1">
+                  Une mise à jour le matin à 8h attire 3x plus de clients dans la journée.
+                </p>
+              </div>
+            )}
           </div>
         </div>
 

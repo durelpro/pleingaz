@@ -37,7 +37,7 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
       this.activeUsers.set(userId, client.id);
       client.data.userId = userId;
       
-      console.log(\`[ChatGateway] User connected: \${userId}\`);
+      console.log(`[ChatGateway] User connected: ${userId}`);
     } catch (e) {
       console.error('[ChatGateway] Invalid token', e.message);
       client.disconnect();
@@ -47,7 +47,7 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
   handleDisconnect(client: Socket) {
     if (client.data.userId) {
       this.activeUsers.delete(client.data.userId);
-      console.log(\`[ChatGateway] User disconnected: \${client.data.userId}\`);
+      console.log(`[ChatGateway] User disconnected: ${client.data.userId}`);
     }
   }
 

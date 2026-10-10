@@ -20,13 +20,13 @@ export class NotificationProcessor extends WorkerHost {
       if (notification.type === 'WHATSAPP') {
         // TODO: Appel API WhatsApp Business (Tâche 7.3)
         // const supportPhone = "+237 657696567";
-        console.log(\`[WHATSAPP] Envoi à \${notification.user.phoneNumber}: \${notification.content}\`);
+        console.log(`[WHATSAPP] Envoi à ${notification.user.phone}: ${notification.content}`);
       } else if (notification.type === 'EMAIL') {
         // TODO: Appel API SendGrid/Mailgun ou autre
         // const supportEmail = "donfackdurel1980@icloud.com";
-        console.log(\`[EMAIL] Envoi à \${notification.user.email}: \${notification.content}\`);
+        console.log(`[EMAIL] Envoi à ${notification.user.email}: ${notification.content}`);
       } else {
-        console.log(\`[IN_APP] Envoi de push notification: \${notification.title}\`);
+        console.log(`[IN_APP] Envoi de push notification: ${notification.title}`);
       }
 
       // Succès
@@ -36,7 +36,7 @@ export class NotificationProcessor extends WorkerHost {
       });
 
     } catch (error) {
-      console.error(\`Erreur lors de l'envoi de la notification \${notification.id}\`, error);
+      console.error(`Erreur lors de l'envoi de la notification ${notification.id}`, error);
       // On met à jour en FAILED. Si BullMQ refait une tentative, ça retentera
       await this.prisma.notification.update({
         where: { id: notification.id },

@@ -17,14 +17,14 @@ export class PaymentsService {
   /**
    * Tâche 6.2 : Initiation de paiement
    */
-  async initiatePayment(userId: string, orderId: string, method: PaymentMethod, phone: string) {
+  async initiatePayment(userId: string, orderId: string, method: PaymentMethod, phone: string): Promise<any> {
     const order = await this.prisma.order.findUnique({ 
       where: { id: orderId },
       include: { store: true } 
     });
     if (!order || order.status === 'CANCELLED') throw new BadRequestException('Commande invalide.');
 
-    const idempotencyKey = \`PAY-\${orderId}-\${Date.now()}\`; // Prévention des doublons
+    const idempotencyKey = `PAY-${orderId}-${Date.now()}`; // Prévention des doublons
 
     if (method === 'CASH') {
       return this.prisma.payment.create({
