@@ -27,22 +27,43 @@ export default function DistributorPortal() {
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           
           {/* Card Login */}
-          <div className="bg-white dark:bg-neutral-900 border border-gray-200 dark:border-neutral-800 p-8 rounded-[2rem] shadow-sm hover:shadow-xl hover:-translate-y-1 transition-all flex flex-col justify-between">
+          <div className="bg-white dark:bg-neutral-900 border border-gray-200 dark:border-neutral-800 p-8 rounded-[2rem] shadow-sm hover:shadow-xl transition-all flex flex-col justify-between">
             <div>
               <div className="w-16 h-16 bg-blue-50 dark:bg-blue-900/20 text-blue-500 rounded-2xl flex items-center justify-center mb-6">
                 <LogIn size={32} />
               </div>
               <h2 className="text-2xl font-black text-gray-900 dark:text-white mb-3">Déjà partenaire ?</h2>
-              <p className="text-gray-500 mb-8 font-medium">
-                Connectez-vous pour accéder à votre tableau de bord, mettre à jour votre stock et suivre vos statistiques.
+              <p className="text-gray-500 mb-6 font-medium">
+                Connectez-vous pour accéder à votre tableau de bord.
               </p>
             </div>
-            <Link 
-              href="/distributor/dashboard"
-              className="w-full py-4 text-center bg-gray-100 dark:bg-neutral-800 hover:bg-gray-200 dark:hover:bg-neutral-700 text-gray-900 dark:text-white font-black text-lg rounded-xl transition-colors"
-            >
-              Se Connecter
-            </Link>
+            
+            <form className="space-y-4" onSubmit={(e) => { e.preventDefault(); window.location.href = '/distributor/dashboard'; }}>
+              <div>
+                <label className="text-sm font-medium text-gray-700 dark:text-gray-300">Numéro de téléphone ou Email</label>
+                <input 
+                  type="text" 
+                  required
+                  placeholder="Ex: 690000000"
+                  className="w-full mt-1 p-3 rounded-xl border border-gray-200 dark:border-neutral-800 bg-gray-50 dark:bg-neutral-950 focus:ring-2 focus:ring-blue-500 outline-none transition-all"
+                />
+              </div>
+              <div>
+                <label className="text-sm font-medium text-gray-700 dark:text-gray-300">Mot de passe</label>
+                <input 
+                  type="password" 
+                  required
+                  placeholder="Votre mot de passe"
+                  className="w-full mt-1 p-3 rounded-xl border border-gray-200 dark:border-neutral-800 bg-gray-50 dark:bg-neutral-950 focus:ring-2 focus:ring-blue-500 outline-none transition-all"
+                />
+              </div>
+              <button 
+                type="submit"
+                className="w-full py-4 text-center bg-blue-600 hover:bg-blue-700 text-white font-black text-lg rounded-xl transition-colors"
+              >
+                Se Connecter
+              </button>
+            </form>
           </div>
 
           {/* Card Register */}

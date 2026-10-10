@@ -57,23 +57,47 @@ export default function BuyerPortal() {
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6 max-w-4xl mx-auto">
               {/* Card Register */}
-              <div className="bg-white dark:bg-neutral-900 border-2 border-blue-200 dark:border-blue-900/30 p-8 rounded-[2rem] shadow-sm hover:shadow-xl hover:-translate-y-1 transition-all flex flex-col justify-between relative overflow-hidden">
+              <div className="bg-white dark:bg-neutral-900 border-2 border-blue-200 dark:border-blue-900/30 p-8 rounded-[2rem] shadow-sm hover:shadow-xl transition-all flex flex-col justify-between relative overflow-hidden">
                 <div className="absolute top-0 right-0 w-32 h-32 bg-blue-400/10 rounded-full blur-2xl pointer-events-none" />
                 <div className="z-10">
-                  <div className="w-16 h-16 bg-blue-50 dark:bg-blue-900/30 text-blue-500 rounded-2xl flex items-center justify-center mb-6 border border-blue-100 dark:border-blue-900/50">
+                  <div className="w-16 h-16 bg-blue-50 dark:bg-blue-900/30 text-blue-500 rounded-2xl flex items-center justify-center mb-4 border border-blue-100 dark:border-blue-900/50">
                     <User size={32} />
                   </div>
-                  <h2 className="text-2xl font-black text-gray-900 dark:text-white mb-3">Nouveau client ?</h2>
-                  <p className="text-gray-500 mb-8 font-medium">
-                    Créez votre profil pour cumuler des points de fidélité à chaque bouteille achetée.
+                  <h2 className="text-2xl font-black text-gray-900 dark:text-white mb-2">Nouveau client ?</h2>
+                  <p className="text-gray-500 mb-6 font-medium text-sm">
+                    Créez votre profil pour cumuler des points de fidélité à chaque achat.
                   </p>
                 </div>
-                <Link 
-                  href="/buyer/messages"
-                  className="w-full py-4 text-center bg-gradient-to-r from-blue-500 to-purple-500 text-white font-black text-lg rounded-xl shadow-lg shadow-blue-500/30 hover:shadow-blue-500/50 transition-all z-10 relative"
-                >
-                  Créer mon profil
-                </Link>
+                
+                <form className="space-y-4 z-10 relative" onSubmit={(e) => { e.preventDefault(); window.location.href = '/buyer/messages'; }}>
+                  <div>
+                    <label className="text-sm font-medium text-gray-700 dark:text-gray-300">Numéro de téléphone</label>
+                    <input 
+                      type="text" 
+                      required
+                      placeholder="Ex: 690000000"
+                      className="w-full mt-1 p-3 rounded-xl border border-gray-200 dark:border-neutral-800 bg-gray-50 dark:bg-neutral-950 focus:ring-2 focus:ring-blue-500 outline-none transition-all"
+                    />
+                  </div>
+                  <div>
+                    <label className="text-sm font-medium text-gray-700 dark:text-gray-300">Créer un mot de passe</label>
+                    <input 
+                      type="password" 
+                      required
+                      placeholder="Mot de passe sécurisé"
+                      className="w-full mt-1 p-3 rounded-xl border border-gray-200 dark:border-neutral-800 bg-gray-50 dark:bg-neutral-950 focus:ring-2 focus:ring-blue-500 outline-none transition-all"
+                    />
+                  </div>
+                  <button 
+                    type="submit"
+                    className="w-full py-4 mt-2 text-center bg-gradient-to-r from-blue-500 to-purple-500 text-white font-black text-lg rounded-xl shadow-lg shadow-blue-500/30 hover:shadow-blue-500/50 transition-all"
+                  >
+                    Créer mon profil
+                  </button>
+                  <p className="text-center text-sm text-gray-500 mt-4 cursor-pointer hover:underline">
+                    Déjà un compte ? Se connecter
+                  </p>
+                </form>
               </div>
 
               {/* Loyalty Teaser */}

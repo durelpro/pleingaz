@@ -30,6 +30,8 @@ export default function DistributorWizard() {
   const [isSaving, setIsSaving] = useState(false);
   
   const [formData, setFormData] = useState({
+    phone: '',
+    password: '',
     businessName: '',
     taxId: '',
     landmark: '',
@@ -207,11 +209,38 @@ export default function DistributorWizard() {
           >
             {currentStep === 1 && (
               <div className="space-y-4">
-                <h2 className="text-2xl font-bold text-gray-900 dark:text-white">Dites-nous en plus sur vous</h2>
-                <div className="space-y-2">
+                <h2 className="text-2xl font-bold text-gray-900 dark:text-white">Création du Compte & Identité</h2>
+                
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <label className="text-sm font-medium text-gray-700 dark:text-gray-300">Numéro de téléphone</label>
+                    <input 
+                      type="text" 
+                      required
+                      className="w-full p-4 rounded-xl border border-gray-200 dark:border-neutral-800 bg-gray-50 dark:bg-neutral-950 focus:ring-2 focus:ring-pleingaz-red outline-none transition-all"
+                      placeholder="Ex: 690000000"
+                      value={formData.phone}
+                      onChange={(e) => setFormData({...formData, phone: e.target.value})}
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <label className="text-sm font-medium text-gray-700 dark:text-gray-300">Mot de passe</label>
+                    <input 
+                      type="password" 
+                      required
+                      className="w-full p-4 rounded-xl border border-gray-200 dark:border-neutral-800 bg-gray-50 dark:bg-neutral-950 focus:ring-2 focus:ring-pleingaz-red outline-none transition-all"
+                      placeholder="Créez un mot de passe sécurisé"
+                      value={formData.password}
+                      onChange={(e) => setFormData({...formData, password: e.target.value})}
+                    />
+                  </div>
+                </div>
+
+                <div className="space-y-2 mt-4">
                   <label className="text-sm font-medium text-gray-700 dark:text-gray-300">Nom de la boutique</label>
                   <input 
                     type="text" 
+                    required
                     className="w-full p-4 rounded-xl border border-gray-200 dark:border-neutral-800 bg-gray-50 dark:bg-neutral-950 focus:ring-2 focus:ring-pleingaz-red outline-none transition-all"
                     placeholder="Ex: ETS Pleingaz Bonamoussadi"
                     value={formData.businessName}
@@ -231,11 +260,12 @@ export default function DistributorWizard() {
                   />
                 </div>
                 <div className="space-y-2">
-                  <label className="text-sm font-medium text-gray-700 dark:text-gray-300">Repère textuel (Facultatif)</label>
+                  <label className="text-sm font-medium text-gray-700 dark:text-gray-300">Description du lieu (Ex: En face de la pharmacie)</label>
                   <input 
                     type="text" 
+                    required
                     className="w-full p-4 rounded-xl border border-gray-200 dark:border-neutral-800 bg-gray-50 dark:bg-neutral-950 focus:ring-2 focus:ring-pleingaz-red outline-none transition-all"
-                    placeholder="Ex: Derrière la boulangerie Saker"
+                    placeholder="Décrivez comment trouver votre boutique..."
                     value={formData.landmark}
                     onChange={(e) => setFormData({...formData, landmark: e.target.value})}
                   />
