@@ -2,12 +2,17 @@
 
 import { useState } from 'react';
 import { Store, ShieldCheck, Map, CheckCircle2 } from 'lucide-react';
+import BackButton from '@/components/common/BackButton';
 
 export default function DistributorOnboarding() {
   const [step, setStep] = useState(1);
 
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-neutral-950 flex flex-col items-center justify-center p-6">
+      <div className="max-w-md w-full mb-6">
+        <BackButton fallbackHref="/distributor/portal" label="Retour au portail distributeur" />
+      </div>
+
       <div className="max-w-md w-full bg-white dark:bg-neutral-900 border border-gray-200 dark:border-neutral-800 rounded-3xl p-8 shadow-xl">
         
         {/* Progress Bar */}

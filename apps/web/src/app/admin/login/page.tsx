@@ -4,6 +4,7 @@ import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { Lock, Shield, ArrowRight, Eye, EyeOff } from 'lucide-react';
 import { motion } from 'framer-motion';
+import BackButton from '@/components/common/BackButton';
 
 export default function AdminLogin() {
   const [phone, setPhone] = useState('+237600000000');
@@ -47,8 +48,13 @@ export default function AdminLogin() {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-zinc-950 p-4 relative overflow-hidden">
+    <div className="min-h-screen flex flex-col items-center justify-center bg-zinc-950 p-4 relative overflow-hidden">
       
+      {/* Bouton de retour en haut à gauche */}
+      <div className="absolute top-6 left-6 z-20">
+        <BackButton fallbackHref="/" label="Retour à l'accueil" />
+      </div>
+
       {/* Background Orbs */}
       <div className="absolute top-1/4 -left-32 w-96 h-96 bg-purple-600/30 rounded-full blur-[100px]" />
       <div className="absolute bottom-1/4 -right-32 w-96 h-96 bg-blue-600/30 rounded-full blur-[100px]" />

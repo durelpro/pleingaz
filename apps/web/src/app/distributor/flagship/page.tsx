@@ -11,6 +11,7 @@ import {
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import InvoiceModal from '@/components/invoice/InvoiceModal';
+import BackButton from '@/components/common/BackButton';
 
 // Dynamically import Leaflet Map to avoid SSR errors
 const FlagshipDeliveryMap = dynamic(
@@ -269,6 +270,11 @@ export default function FlagshipDashboard() {
 
       <div className="max-w-7xl mx-auto space-y-8">
         
+        {/* Barre de navigation / Retour */}
+        <div className="flex items-center justify-between">
+          <BackButton fallbackHref="/distributor/portal" label="Retour au portail distributeur" />
+        </div>
+
         {/* En-tête Institutionnel Flagship */}
         <div className="bg-gradient-to-r from-neutral-900 via-neutral-950 to-neutral-900 border border-neutral-800 p-6 md:p-8 rounded-[2rem] text-white shadow-2xl relative overflow-hidden">
           <div className="absolute -right-10 -bottom-10 opacity-10">

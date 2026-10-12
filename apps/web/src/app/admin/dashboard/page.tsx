@@ -10,6 +10,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
+import BackButton from '@/components/common/BackButton';
 
 const mockChartData = [
   { name: 'Lun', ventes: 4000, ruptures: 24 },
@@ -72,6 +73,11 @@ export default function PilotageDashboard() {
       
       <div className="max-w-7xl mx-auto space-y-8">
         
+        {/* Navigation retour */}
+        <div className="flex items-center justify-between">
+          <BackButton fallbackHref="/" label="Retour à l'accueil" />
+        </div>
+
         {/* Header & Actions */}
         <div className="flex flex-col md:flex-row justify-between items-start md:items-end gap-4">
           <div>

@@ -1,8 +1,13 @@
 import DistributorWizard from '@/components/distributor/Wizard';
+import BackButton from '@/components/common/BackButton';
 
 export default function ApplyPage() {
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-neutral-950 py-12 px-4">
+      <div className="max-w-4xl mx-auto mb-8">
+        <BackButton fallbackHref="/distributor/portal" label="Retour au portail distributeur" />
+      </div>
+
       <div className="max-w-4xl mx-auto text-center mb-12">
         <h1 className="text-4xl font-extrabold text-gray-900 dark:text-white mb-4">
           Devenez Distributeur <span className="text-transparent bg-clip-text bg-gradient-to-r from-pleingaz-red to-pleingaz-red">PLEINGAZ</span>

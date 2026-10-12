@@ -2,6 +2,7 @@
 
 import { WhatsAppButton } from '@/components/common/WhatsAppButton';
 import { Mail, Phone, MapPin, AlertTriangle } from 'lucide-react';
+import BackButton from '@/components/common/BackButton';
 
 export default function SupportPage() {
   const supportPhone = "+237 657696567";
@@ -11,6 +12,11 @@ export default function SupportPage() {
     <div className="min-h-screen bg-gray-50 dark:bg-neutral-950 py-12 px-4">
       <div className="max-w-3xl mx-auto space-y-8">
         
+        {/* Navigation retour */}
+        <div className="flex items-center justify-between">
+          <BackButton fallbackHref="/" label="Retour à l'accueil" />
+        </div>
+
         <div className="text-center space-y-4 mb-12">
           <h1 className="text-4xl font-extrabold text-gray-900 dark:text-white">
             Besoin d'aide ?

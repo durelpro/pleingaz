@@ -3,6 +3,7 @@
 import { useState } from 'react';
 import { Search, MessageCircle } from 'lucide-react';
 import dynamic from 'next/dynamic';
+import BackButton from '@/components/common/BackButton';
 
 const MapPicker = dynamic(() => import('@/components/map/MapPicker'), { ssr: false, loading: () => <div className="h-[600px] w-full bg-skeleton-base animate-pulse rounded-2xl" /> });
 
@@ -14,8 +15,11 @@ export default function StoresPublicMap() {
       
       {/* Sidebar - Liste des boutiques */}
       <div className="w-full md:w-[400px] h-[50vh] md:h-screen bg-white dark:bg-neutral-900 border-r border-gray-100 dark:border-neutral-800 flex flex-col shadow-xl z-10 relative">
-        <div className="p-6 border-b border-gray-100 dark:border-neutral-800">
-          <h1 className="text-2xl font-extrabold text-gray-900 dark:text-white mb-6">Trouver du Gaz</h1>
+        <div className="p-6 border-b border-gray-100 dark:border-neutral-800 space-y-4">
+          <div>
+            <BackButton fallbackHref="/" label="Retour à l'accueil" />
+          </div>
+          <h1 className="text-2xl font-extrabold text-gray-900 dark:text-white">Trouver du Gaz</h1>
           <div className="relative">
             <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400" size={20} />
             <input 

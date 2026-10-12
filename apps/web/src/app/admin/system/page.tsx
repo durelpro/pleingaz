@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react';
 import { Shield, Activity, Database, Users, AlertCircle, FileText, Download, Fingerprint, Lock, ShieldAlert, CheckCircle2 } from 'lucide-react';
 import Link from 'next/link';
+import BackButton from '@/components/common/BackButton';
 
 export default function SystemAuditPage() {
   const [kpis, setKpis] = useState<any>(null);
@@ -27,6 +28,10 @@ export default function SystemAuditPage() {
     <div className="min-h-screen bg-gray-50 dark:bg-neutral-950 p-6 lg:p-10">
       <div className="max-w-7xl mx-auto space-y-8">
         
+        <div>
+          <BackButton fallbackHref="/admin/dashboard" label="Retour au dashboard admin" />
+        </div>
+
         {/* Header */}
         <div className="flex flex-col md:flex-row justify-between items-start md:items-end gap-4">
           <div>

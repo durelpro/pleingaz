@@ -3,6 +3,7 @@
 import { useState } from 'react';
 import { CreditCard, Banknote, ShieldCheck, CheckCircle2, Loader2 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
+import BackButton from '@/components/common/BackButton';
 
 export default function CheckoutPage() {
   const [method, setMethod] = useState<'MTN_MOMO' | 'ORANGE_MONEY' | 'CASH'>('MTN_MOMO');
@@ -22,6 +23,10 @@ export default function CheckoutPage() {
     <div className="min-h-screen bg-gray-50 dark:bg-neutral-950 py-12 px-4">
       <div className="max-w-md mx-auto space-y-6">
         
+        <div>
+          <BackButton fallbackHref="/stores" label="Retour" />
+        </div>
+
         <div className="text-center space-y-2 mb-8">
           <h1 className="text-3xl font-black text-gray-900 dark:text-white">Paiement</h1>
           <p className="text-gray-500">Choisissez votre méthode de paiement</p>

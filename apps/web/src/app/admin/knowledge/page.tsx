@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import { Database, Plus, Search, BookOpen, AlertCircle } from 'lucide-react';
+import BackButton from '@/components/common/BackButton';
 
 export default function KnowledgeBaseAdmin() {
   const [title, setTitle] = useState('');
@@ -24,6 +25,10 @@ export default function KnowledgeBaseAdmin() {
     <div className="min-h-screen bg-gray-50 dark:bg-neutral-950 p-8">
       <div className="max-w-6xl mx-auto space-y-8">
         
+        <div>
+          <BackButton fallbackHref="/admin/dashboard" label="Retour au dashboard admin" />
+        </div>
+
         <div className="flex justify-between items-end">
           <div>
             <h1 className="text-3xl font-black text-gray-900 dark:text-white flex items-center gap-3">

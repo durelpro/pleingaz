@@ -7,6 +7,7 @@ import { motion } from 'framer-motion';
 import { MapPin, Phone, Clock, ShieldCheck, ShoppingCart, MessageCircle, Star, BellRing, Check } from 'lucide-react';
 import Link from 'next/link';
 import FavoriteButton from '@/components/store/FavoriteButton';
+import BackButton from '@/components/common/BackButton';
 
 // Chargement dynamique de la carte pour éviter les erreurs SSR Leaflet
 const StoreMap = dynamic(() => import('@/components/map/StoreMap'), { ssr: false });
@@ -61,6 +62,11 @@ function StoreProfileContent() {
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-neutral-950 pb-20">
       
+      {/* Top Bar Navigation */}
+      <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 pt-6 pb-4">
+        <BackButton fallbackHref="/stores" label="Retour à la liste des dépôts" />
+      </div>
+
       {/* Cover Banner */}
       <div className="h-64 md:h-80 w-full bg-gradient-to-r from-pleingaz-red to-red-900 relative">
         <div className="absolute inset-0 bg-black/20"></div>

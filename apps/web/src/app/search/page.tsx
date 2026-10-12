@@ -7,6 +7,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import Link from 'next/link';
 import dynamic from 'next/dynamic';
 import FavoriteButton from '@/components/store/FavoriteButton';
+import BackButton from '@/components/common/BackButton';
 
 const SearchStoresMap = dynamic(() => import('@/components/map/SearchStoresMap'), { 
   ssr: false, 
@@ -149,6 +150,11 @@ function SearchContent() {
     <div className="min-h-screen bg-gray-50 dark:bg-neutral-950 py-12 px-4">
       <div className="max-w-3xl mx-auto space-y-8">
         
+        {/* Navigation retour */}
+        <div className="flex items-center justify-between">
+          <BackButton fallbackHref="/" label="Retour à l'accueil" />
+        </div>
+
         {/* Header */}
         <div className="text-center space-y-4">
           <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-orange-100 dark:bg-orange-900/30 text-pleingaz-red mb-2">

@@ -4,6 +4,7 @@ import { useState } from 'react';
 import { Send, Bot, User, Loader2, Info } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import Link from 'next/link';
+import BackButton from '@/components/common/BackButton';
 
 export default function AssistantPage() {
   const [messages, setMessages] = useState<{role: 'assistant' | 'user', content: string, action?: {label: string, href: string}}[]>([
@@ -117,17 +118,20 @@ export default function AssistantPage() {
       <div className="max-w-3xl mx-auto w-full flex flex-col h-[calc(100vh-4rem)] bg-white dark:bg-neutral-900 border border-gray-200 dark:border-neutral-800 rounded-3xl shadow-sm overflow-hidden">
         
         {/* Header */}
-        <div className="p-4 md:p-6 border-b border-gray-100 dark:border-neutral-800 flex items-center gap-4 bg-white dark:bg-neutral-900 z-10">
-          <div className="w-12 h-12 bg-pleingaz-red rounded-full flex items-center justify-center text-white shrink-0 shadow-lg shadow-red-500/30">
-            <Bot size={24} />
+        <div className="p-4 md:p-6 border-b border-gray-100 dark:border-neutral-800 flex items-center justify-between bg-white dark:bg-neutral-900 z-10">
+          <div className="flex items-center gap-4">
+            <div className="w-12 h-12 bg-pleingaz-red rounded-full flex items-center justify-center text-white shrink-0 shadow-lg shadow-red-500/30">
+              <Bot size={24} />
+            </div>
+            <div>
+              <h1 className="text-xl font-black text-gray-900 dark:text-white">Assistant PLEINGAZ</h1>
+              <p className="text-sm text-gray-500 flex items-center gap-1">
+                <span className="w-2 h-2 rounded-full bg-green-500 animate-pulse"></span>
+                En ligne (Alimenté par IA)
+              </p>
+            </div>
           </div>
-          <div>
-            <h1 className="text-xl font-black text-gray-900 dark:text-white">Assistant PLEINGAZ</h1>
-            <p className="text-sm text-gray-500 flex items-center gap-1">
-              <span className="w-2 h-2 rounded-full bg-green-500 animate-pulse"></span>
-              En ligne (Alimenté par IA)
-            </p>
-          </div>
+          <BackButton fallbackHref="/" label="Retour à l'accueil" />
         </div>
 
         {/* Warning Banner */}
