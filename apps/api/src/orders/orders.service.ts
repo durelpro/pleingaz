@@ -277,7 +277,9 @@ export class OrdersService {
         customer: true, 
         items: { include: { product: true } }, 
         delivery: { include: { driver: true } },
-        payments: true
+        payments: true,
+        review: true,
+        invoice: true
       },
       orderBy: { createdAt: 'desc' }
     });

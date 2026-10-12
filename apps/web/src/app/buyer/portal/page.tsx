@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
-import { User, LogIn, ArrowLeft, MessageSquare, Award, Gift, ShoppingBag, Loader2, FileText } from 'lucide-react';
+import { User, LogIn, ArrowLeft, MessageSquare, Award, Gift, ShoppingBag, Loader2, FileText, Star } from 'lucide-react';
 import { motion } from 'framer-motion';
 
 export default function BuyerPortal() {
@@ -343,6 +343,23 @@ export default function BuyerPortal() {
                         >
                           Suivi Live
                         </Link>
+
+                        {(order.status === 'DELIVERED' || order.status === 'COMPLETED') && (
+                          order.review ? (
+                            <span className="flex items-center gap-1 text-xs font-bold text-amber-600 bg-amber-50 dark:bg-amber-950/40 px-2.5 py-1.5 rounded-lg border border-amber-200 dark:border-amber-900/40">
+                              <Star size={13} className="fill-amber-400 text-amber-400" />
+                              {order.review.rating}/5
+                            </span>
+                          ) : (
+                            <Link
+                              href={`/delivery?orderId=${order.id}`}
+                              className="flex items-center gap-1 text-xs font-bold text-amber-700 bg-amber-100/70 hover:bg-amber-200/80 px-2.5 py-1.5 rounded-lg transition-colors animate-pulse"
+                            >
+                              <Star size={13} className="text-amber-500" />
+                              Noter (+10 pts)
+                            </Link>
+                          )
+                        )}
                         
                         {order.invoice && (
                           <button 

@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect, useRef } from 'react';
-import { ShoppingBag, Loader2, CheckCircle, XCircle, MapPin, QrCode, Truck, Check, X, Camera, ArrowLeft } from 'lucide-react';
+import { ShoppingBag, Loader2, CheckCircle, XCircle, MapPin, QrCode, Truck, Check, X, Camera, ArrowLeft, Star } from 'lucide-react';
 import Link from 'next/link';
 import { motion, AnimatePresence } from 'framer-motion';
 
@@ -147,6 +147,28 @@ export default function DistributorOrdersPage() {
                         </span>
                       ))}
                     </div>
+
+                    {order.review && (
+                      <div className="bg-amber-50 dark:bg-amber-950/30 p-3.5 rounded-xl border border-amber-200 dark:border-amber-900/40 text-sm space-y-1">
+                        <div className="flex items-center gap-1.5 font-bold text-amber-900 dark:text-amber-300">
+                          <span className="flex items-center gap-0.5">
+                            {[1, 2, 3, 4, 5].map((s) => (
+                              <Star
+                                key={s}
+                                size={14}
+                                className={s <= order.review.rating ? "fill-amber-400 text-amber-400" : "text-gray-300 dark:text-neutral-700"}
+                              />
+                            ))}
+                          </span>
+                          <span>Avis client ({order.review.rating}/5)</span>
+                        </div>
+                        {order.review.comment && (
+                          <p className="text-xs text-gray-700 dark:text-gray-300 italic">
+                            « {order.review.comment} »
+                          </p>
+                        )}
+                      </div>
+                    )}
                   </div>
 
                   <div className="flex flex-col justify-center gap-3 min-w-[200px]">
