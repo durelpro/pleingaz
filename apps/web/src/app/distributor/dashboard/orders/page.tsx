@@ -1,9 +1,10 @@
 "use client";
 
 import { useState, useEffect, useRef } from 'react';
-import { ShoppingBag, Loader2, CheckCircle, XCircle, MapPin, QrCode, Truck, Check, X, Camera, ArrowLeft, Star } from 'lucide-react';
+import { ShoppingBag, Loader2, CheckCircle, XCircle, MapPin, QrCode, Truck, Check, X, Camera, ArrowLeft, Star, FileText } from 'lucide-react';
 import Link from 'next/link';
 import { motion, AnimatePresence } from 'framer-motion';
+import InvoiceModal from '@/components/invoice/InvoiceModal';
 
 export default function DistributorOrdersPage() {
   const [orders, setOrders] = useState<any[]>([]);
@@ -12,6 +13,7 @@ export default function DistributorOrdersPage() {
   const [isUpdating, setIsUpdating] = useState<string | null>(null);
   const [scanningOrder, setScanningOrder] = useState<string | null>(null);
   const [scannedCode, setScannedCode] = useState('');
+  const [selectedInvoiceOrderId, setSelectedInvoiceOrderId] = useState<string | null>(null);
 
   const getHeaders = () => {
     const token = typeof window !== 'undefined' ? localStorage.getItem('accessToken') : null;
@@ -234,8 +236,18 @@ export default function DistributorOrdersPage() {
                     )}
 
                     {order.status === 'DELIVERED' && (
-                      <div className="w-full flex items-center justify-center gap-2 py-3 bg-green-50 text-green-600 font-bold rounded-xl">
-                        <CheckCircle size={18} /> Terminée
+                      <div className="space-y-2">
+                        <div className="w-full flex items-center justify-center gap-2 py-3 bg-green-50 text-green-600 font-bold rounded-xl">
+                          <CheckCircle size={18} /> Terminée
+                        </div>
+                        {order.invoice && (
+                          <button
+                            onClick={() => setSelectedInvoiceOrderId(order.id)}
+                            className="w-full flex items-center justify-center gap-1.5 py-2.5 bg-gray-100 hover:bg-gray-200 dark:bg-neutral-800 dark:hover:bg-neutral-700 text-gray-700 dark:text-gray-300 text-xs font-bold rounded-xl transition-colors"
+                          >
+                            <FileText size={15} /> Voir la Facture
+                          </button>
+                        )}
                       </div>
                     )}
                     {order.status === 'CANCELLED' && (
@@ -344,6 +356,15 @@ export default function DistributorOrdersPage() {
           </div>
         )}
       </AnimatePresence>
+
+      {/* Modal Facture Officielle pour le Distributeur */}
+      {selectedInvoiceOrderId && (
+        <InvoiceModal
+          orderId={selectedInvoiceOrderId}
+          isOpen={!!selectedInvoiceOrderId}
+          onClose={() => setSelectedInvoiceOrderId(null)}
+        />
+      )}
     </div>
   );
 }

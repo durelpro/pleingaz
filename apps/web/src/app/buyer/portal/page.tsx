@@ -5,6 +5,7 @@ import Link from 'next/link';
 import { User, LogIn, ArrowLeft, MessageSquare, Award, Gift, ShoppingBag, Loader2, FileText, Star, Heart, MapPin, ChevronRight, Store, BellRing, Check } from 'lucide-react';
 import { motion } from 'framer-motion';
 import FavoriteButton, { getFavoriteStoreIds } from '@/components/store/FavoriteButton';
+import InvoiceModal from '@/components/invoice/InvoiceModal';
 
 export default function BuyerPortal() {
   const [profile, setProfile] = useState<any>(null);
@@ -18,6 +19,7 @@ export default function BuyerPortal() {
   const [password, setPassword] = useState('');
   const [authError, setAuthError] = useState('');
   const [isLoading, setIsLoading] = useState(true);
+  const [selectedInvoiceOrderId, setSelectedInvoiceOrderId] = useState<string | null>(null);
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -515,7 +517,7 @@ export default function BuyerPortal() {
                         
                         {order.invoice && (
                           <button 
-                            onClick={() => alert(`Aperçu Facture:\n\nNuméro: ${order.invoice.invoiceNumber}\nVendeur: ${order.invoice.sellerName}\nMontant: ${order.invoice.totalAmount} FCFA\nDate: ${new Date(order.invoice.createdAt).toLocaleString()}`)}
+                            onClick={() => setSelectedInvoiceOrderId(order.id)}
                             className="flex items-center gap-2 text-sm font-bold text-blue-600 hover:text-blue-700 bg-blue-50 hover:bg-blue-100 dark:bg-blue-900/20 px-3 py-2 rounded-lg transition-colors"
                           >
                             <FileText size={16} />
@@ -533,6 +535,15 @@ export default function BuyerPortal() {
             <Link href="/buyer/messages" className="md:hidden mt-6 w-full py-4 bg-blue-500 text-white font-black rounded-xl text-center block shadow-lg shadow-blue-500/30">
               Ouvrir la Messagerie
             </Link>
+
+            {/* Modal Facture Officielle */}
+            {selectedInvoiceOrderId && (
+              <InvoiceModal
+                orderId={selectedInvoiceOrderId}
+                isOpen={!!selectedInvoiceOrderId}
+                onClose={() => setSelectedInvoiceOrderId(null)}
+              />
+            )}
           </motion.div>
         )}
       </div>

@@ -1,4 +1,4 @@
-import { Controller, Post, Param, UseGuards, Request } from '@nestjs/common';
+import { Controller, Post, Get, Param, UseGuards, Request } from '@nestjs/common';
 import { InvoicesService } from './invoices.service';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 
@@ -10,5 +10,10 @@ export class InvoicesController {
   @Post(':orderId/generate')
   async generate(@Request() req: any, @Param('orderId') orderId: string) {
     return this.invoicesService.generateInvoice(orderId, req.user.userId);
+  }
+
+  @Get(':orderId')
+  async getInvoice(@Request() req: any, @Param('orderId') orderId: string) {
+    return this.invoicesService.getInvoiceByOrderId(orderId, req.user.userId);
   }
 }

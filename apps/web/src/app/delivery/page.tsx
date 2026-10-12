@@ -5,6 +5,7 @@ import { useSearchParams } from 'next/navigation';
 import { Truck, CheckCircle2, PackageSearch, PackageOpen, Download, ArrowLeft, Store, MapPin, Loader2, FileText, Check, Star } from 'lucide-react';
 import { motion } from 'framer-motion';
 import Link from 'next/link';
+import InvoiceModal from '@/components/invoice/InvoiceModal';
 
 function DeliveryTrackerContent() {
   const searchParams = useSearchParams();
@@ -13,6 +14,7 @@ function DeliveryTrackerContent() {
   const [order, setOrder] = useState<any>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [copiedOtp, setCopiedOtp] = useState(false);
+  const [showInvoiceModal, setShowInvoiceModal] = useState(false);
 
   // Évaluation / Avis client
   const [selectedRating, setSelectedRating] = useState<number>(5);
@@ -402,14 +404,21 @@ function DeliveryTrackerContent() {
               <CheckCircle2 size={20} /> Commande Clôturée avec Succès
             </div>
             <button 
-              onClick={() => alert(`Facture PLEINGAZ\n\nNuméro: ${order.invoice.invoiceNumber}\nVendeur: ${order.invoice.sellerName}\nMontant: ${order.invoice.totalAmount} FCFA\nDate: ${new Date(order.invoice.createdAt).toLocaleString()}\nStatut: PAYÉ ET LIVRÉ`)}
+              onClick={() => setShowInvoiceModal(true)}
               className="w-full py-4 bg-gray-900 dark:bg-white text-white dark:text-gray-900 font-bold rounded-2xl flex items-center justify-center gap-3 hover:scale-[1.02] transition-transform shadow-lg"
             >
               <FileText size={20} />
-              Consulter la Facture {order.invoice.invoiceNumber}
+              Consulter & Imprimer la Facture {order.invoice.invoiceNumber}
             </button>
           </div>
         )}
+
+        {/* Modal Facture Imprimable / PDF */}
+        <InvoiceModal
+          orderId={order.id}
+          isOpen={showInvoiceModal}
+          onClose={() => setShowInvoiceModal(false)}
+        />
 
       </div>
     </div>

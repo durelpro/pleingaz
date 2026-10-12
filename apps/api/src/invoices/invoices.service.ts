@@ -57,4 +57,65 @@ export class InvoicesService {
 
     return invoice;
   }
+
+  /**
+   * Récupérer les détails d'une facture officielle avec toutes ses données fiscales et légales
+   */
+  async getInvoiceByOrderId(orderId: string, userId: string) {
+    const order = await this.prisma.order.findUnique({
+      where: { id: orderId },
+      include: {
+        invoice: true,
+        items: { include: { product: true } },
+        store: true,
+        customer: { include: { customerProfile: true } },
+        delivery: true,
+        payments: true,
+      }
+    });
+
+    if (!order) throw new BadRequestException('Commande introuvable.');
+    if (!order.invoice) throw new BadRequestException('Facture non encore émise pour cette commande.');
+
+    return {
+      invoice: order.invoice,
+      orderNumber: order.orderNumber,
+      orderDate: order.createdAt,
+      type: order.type,
+      status: order.status,
+      totalAmount: order.totalAmount,
+      deliveryAddress: order.deliveryAddress,
+      customer: {
+        id: order.customer.id,
+        phone: order.customer.phone,
+        name: order.customer.customerProfile 
+          ? `${order.customer.customerProfile.firstName || ''} ${order.customer.customerProfile.lastName || ''}`.trim()
+          : `Client (${order.customer.phone?.slice(-4) || 'Vérifié'})`
+      },
+      seller: {
+        name: order.store ? order.store.name : 'PLEINGAZ / INFOTECH S.A.',
+        city: order.store?.city || 'Douala',
+        neighborhood: order.store?.neighborhood || 'Akwa',
+        landmark: order.store?.landmark || null,
+        phone: order.store?.whatsappNumber || '+237 657 696 567',
+      },
+      items: order.items.map(it => ({
+        id: it.id,
+        brand: it.product?.brand || 'PLEINGAZ',
+        weight: it.product?.weightKg ? `${it.product.weightKg}kg` : '12.5kg',
+        quantity: it.quantity,
+        unitPrice: it.unitPrice,
+        totalPrice: it.totalPrice,
+      })),
+      companyDetails: {
+        companyName: 'INFOTECH S.A. / PLEINGAZ',
+        rccm: 'RC/DLA/2018/B/4521',
+        niu: 'M051812739210N',
+        headquarters: 'Douala, Cameroun - Rue De La Joie, Akwa',
+        supportPhone: '+237 657 696 567',
+        supportEmail: 'support@monpleingaz.com',
+        website: 'https://www.monpleingaz.com',
+      }
+    };
+  }
 }
