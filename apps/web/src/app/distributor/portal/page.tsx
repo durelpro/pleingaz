@@ -2,11 +2,12 @@
 
 import { useState } from 'react';
 import Link from 'next/link';
-import { Store, LogIn, ArrowLeft, Loader2, AlertCircle } from 'lucide-react';
+import { Store, LogIn, ArrowLeft, Loader2, AlertCircle, Eye, EyeOff } from 'lucide-react';
 
 export default function DistributorPortal() {
   const [phone, setPhone] = useState('');
   const [password, setPassword] = useState('');
+  const [showPassword, setShowPassword] = useState(false);
   const [errorMsg, setErrorMsg] = useState('');
   const [isLoading, setIsLoading] = useState(false);
 
@@ -94,14 +95,24 @@ export default function DistributorPortal() {
               </div>
               <div>
                 <label className="text-sm font-medium text-gray-700 dark:text-gray-300">Mot de passe</label>
-                <input 
-                  type="password" 
-                  required
-                  placeholder="Votre mot de passe"
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  className="w-full mt-1 p-3 rounded-xl border border-gray-200 dark:border-neutral-800 bg-gray-50 dark:bg-neutral-950 focus:ring-2 focus:ring-blue-500 outline-none transition-all font-medium"
-                />
+                <div className="relative">
+                  <input 
+                    type={showPassword ? 'text' : 'password'} 
+                    required
+                    placeholder="Votre mot de passe"
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                    className="w-full mt-1 p-3 pr-11 rounded-xl border border-gray-200 dark:border-neutral-800 bg-gray-50 dark:bg-neutral-950 focus:ring-2 focus:ring-blue-500 outline-none transition-all font-medium font-mono"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowPassword(!showPassword)}
+                    className="absolute right-3.5 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 transition-colors p-1"
+                    title={showPassword ? "Masquer le mot de passe" : "Afficher le mot de passe"}
+                  >
+                    {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+                  </button>
+                </div>
               </div>
               <button 
                 type="submit"

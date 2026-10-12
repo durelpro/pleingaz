@@ -7,7 +7,7 @@ import {
   Building2, Truck, DollarSign, Package, CheckCircle2, 
   Clock, AlertTriangle, ArrowUpRight, Phone, MessageSquare, 
   MapPin, Printer, ShieldCheck, ChevronRight, Loader2, Sparkles,
-  BarChart3, FileSpreadsheet, RefreshCw, Send, Check, Lock, LogOut, ArrowRight, UserCheck
+  BarChart3, FileSpreadsheet, RefreshCw, Send, Check, Lock, LogOut, ArrowRight, UserCheck, Eye, EyeOff
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import InvoiceModal from '@/components/invoice/InvoiceModal';
@@ -33,6 +33,7 @@ export default function FlagshipDashboard() {
   const [authError, setAuthError] = useState('');
   const [isAuthenticating, setIsAuthenticating] = useState(false);
 
+  const [showPassword, setShowPassword] = useState(false);
   const [data, setData] = useState<any>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [activeTab, setActiveTab] = useState<'DELIVERIES' | 'FINANCE' | 'INVENTORY'>('DELIVERIES');
@@ -205,13 +206,21 @@ export default function FlagshipDashboard() {
                 <div className="relative">
                   <Lock className="absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-500" size={18} />
                   <input
-                    type="password"
+                    type={showPassword ? 'text' : 'password'}
                     required
                     placeholder="•••••"
                     value={loginPassword}
                     onChange={(e) => setLoginPassword(e.target.value)}
-                    className="w-full bg-neutral-950 border border-neutral-800 text-white placeholder-gray-500 rounded-xl py-3.5 pl-11 pr-4 text-sm focus:outline-none focus:border-red-500 focus:ring-1 focus:ring-red-500 font-mono tracking-widest font-bold"
+                    className="w-full bg-neutral-950 border border-neutral-800 text-white placeholder-gray-500 rounded-xl py-3.5 pl-11 pr-11 text-sm focus:outline-none focus:border-red-500 focus:ring-1 focus:ring-red-500 font-mono tracking-widest font-bold"
                   />
+                  <button
+                    type="button"
+                    onClick={() => setShowPassword(!showPassword)}
+                    className="absolute right-3.5 top-1/2 -translate-y-1/2 text-gray-400 hover:text-white transition-colors p-1"
+                    title={showPassword ? "Masquer le mot de passe" : "Afficher le mot de passe"}
+                  >
+                    {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+                  </button>
                 </div>
               </div>
 
