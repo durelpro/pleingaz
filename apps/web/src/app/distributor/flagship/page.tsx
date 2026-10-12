@@ -605,7 +605,7 @@ export default function FlagshipDashboard() {
                 <div className="flex items-center justify-between mb-4">
                   <span className="font-bold text-sm text-gray-500">Marge Commerciale Réalisée</span>
                   <div className="w-8 h-8 rounded-xl bg-purple-100 text-purple-600 flex items-center justify-center font-bold text-xs">
-                    +500F
+                    NET
                   </div>
                 </div>
                 <p className="text-3xl font-black text-purple-600 dark:text-purple-400">
@@ -709,34 +709,53 @@ export default function FlagshipDashboard() {
               </div>
 
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                {store?.inventories?.map((inv: any) => (
-                  <div key={inv.id} className="p-5 rounded-2xl border border-gray-100 dark:border-neutral-800 bg-gray-50/50 dark:bg-neutral-800/40 space-y-3">
-                    <div className="flex items-center justify-between">
-                      <span className="font-black text-base text-gray-900 dark:text-white">
-                        {inv.product?.brand} 12.5 Kg
-                      </span>
-                      <span className="px-2 py-0.5 bg-emerald-500 text-white font-black text-[10px] rounded">
-                        DISPONIBLE
-                      </span>
-                    </div>
+                {store?.inventories?.map((inv: any) => {
+                  const isStockHigh = inv.level === 'HIGH';
+                  const isStockMedium = inv.level === 'MEDIUM';
+                  const badgeColor = isStockHigh 
+                    ? 'bg-emerald-500 text-white' 
+                    : isStockMedium 
+                    ? 'bg-amber-500 text-white' 
+                    : 'bg-red-500 text-white';
+                  const badgeLabel = isStockHigh ? 'STOCK OPTIMAL' : isStockMedium ? 'STOCK MOYEN' : 'STOCK BAS';
 
-                    <div className="grid grid-cols-2 gap-2 text-xs pt-2 border-t border-gray-200 dark:border-neutral-700">
-                      <div>
-                        <p className="text-gray-500 font-medium">Bouteilles Pleines</p>
-                        <p className="text-xl font-black text-emerald-600 mt-0.5">48 unités</p>
+                  return (
+                    <div key={inv.id} className="p-5 rounded-2xl border border-gray-100 dark:border-neutral-800 bg-gray-50/50 dark:bg-neutral-800/40 space-y-3">
+                      <div className="flex items-center justify-between">
+                        <span className="font-black text-base text-gray-900 dark:text-white">
+                          {inv.product?.brand} {inv.product?.weightKg || 12.5} Kg
+                        </span>
+                        <span className={`px-2 py-0.5 font-black text-[10px] rounded uppercase ${badgeColor}`}>
+                          {badgeLabel}
+                        </span>
                       </div>
-                      <div>
-                        <p className="text-gray-500 font-medium">Vides récupérées</p>
-                        <p className="text-xl font-black text-amber-600 mt-0.5">14 consignes</p>
-                      </div>
-                    </div>
 
-                    <div className="flex items-center justify-between text-xs pt-2 text-gray-500">
-                      <span>Prix recharge : <strong>6 500 FCFA</strong></span>
-                      <span>Consigne : <strong>15 000 FCFA</strong></span>
+                      <div className="grid grid-cols-2 gap-2 text-xs pt-2 border-t border-gray-200 dark:border-neutral-700">
+                        <div>
+                          <p className="text-gray-500 font-medium">Bouteilles Pleines</p>
+                          <p className="text-xl font-black text-emerald-600 mt-0.5">
+                            {inv.fullBottlesCount ?? 0} unités
+                          </p>
+                        </div>
+                        <div>
+                          <p className="text-gray-500 font-medium">Vides récupérées</p>
+                          <p className="text-xl font-black text-amber-600 mt-0.5">
+                            {inv.emptyBottlesCount ?? 0} consignes
+                          </p>
+                        </div>
+                      </div>
+
+                      <div className="flex items-center justify-between text-xs pt-2 text-gray-500">
+                        <span>
+                          Prix recharge : <strong>{(inv.product?.publicPrice || 6500).toLocaleString('fr-FR')} FCFA</strong>
+                        </span>
+                        <span>
+                          Consigne : <strong>{(inv.depositPrice || 15000).toLocaleString('fr-FR')} FCFA</strong>
+                        </span>
+                      </div>
                     </div>
-                  </div>
-                ))}
+                  );
+                })}
               </div>
             </div>
           </div>
