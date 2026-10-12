@@ -62,6 +62,20 @@ export default function AssistantPage() {
           reply: "Les horaires varient selon les distributeurs. Cependant, la majorité de nos points relais sont ouverts de 08:00 à 18:00, du lundi au samedi. La carte interactive vous indiquera en temps réel si une boutique est ouverte ou fermée."
         },
         {
+          patterns: ['fuite', 'odeur', 'odeur de gaz', 'ca sent', 'ça sent', 'danger', 'urgence', 'brule', 'brûle', 'secours'],
+          reply: "⚠️ ALERTE SÉCURITÉ FUITE DE GAZ : 1. N'allumez aucun interrupteur ni aucune flamme. 2. Fermez immédiatement le robinet du détendeur si accessible. 3. Ouvrez portes et fenêtres pour aérer. 4. Évacuez les lieux et appelez les Sapeurs-Pompiers (118) ou notre assistance (+237 657 696 567).",
+          action: { label: "Guide complet de sécurité", href: "/securite" }
+        },
+        {
+          patterns: ['securite', 'sécurité', 'installer', 'brancher', 'detendeur', 'détendeur', 'joint', 'tuyau', 'savon', 'eau savonneuse'],
+          reply: "Pour votre sécurité : 1. Gardez toujours la bouteille en position verticale. 2. Vérifiez le joint d'étanchéité avant d'enclencher le détendeur. 3. Testez l'étanchéité avec de l'eau savonneuse (JAMAIS avec une flamme). 4. Respectez la date de péremption du tuyau.",
+          action: { label: "Consulter les 6 Règles d'Or", href: "/securite" }
+        },
+        {
+          patterns: ['consigne', 'bouteille vide', 'caution', 'nouvelle bouteille'],
+          reply: "Si vous possédez déjà une bouteille vide de même marque, vous ne payez que la recharge de gaz (6 500 FCFA). Si vous achetez une nouvelle bouteille sans échange, la consigne officielle s'applique (+15 000 FCFA)."
+        },
+        {
           patterns: ['probleme', 'reclamation', 'arnaque', 'surfacturation', 'cher', 'plainte'],
           reply: "Nous prenons les infractions très au sérieux. Si un distributeur surfacture le gaz ou est fermé alors qu'il est indiqué ouvert, vous pouvez le signaler directement via le bouton 'Signaler' sur sa boutique virtuelle. Son score de fiabilité baissera automatiquement."
         },

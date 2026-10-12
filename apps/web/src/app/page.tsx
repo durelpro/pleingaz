@@ -150,6 +150,16 @@ export default function Home() {
             <p className="text-sm text-gray-500 mt-2">Gestion globale, alertes et supervision de la plateforme.</p>
           </Link>
           
+          <Link href="/securite" className="group p-6 bg-white dark:bg-neutral-900 rounded-3xl border-2 border-gray-100 dark:border-neutral-800 hover:border-red-500 hover:shadow-lg hover:shadow-red-500/10 transition-all">
+            <h3 className="font-bold text-lg text-gray-900 dark:text-white group-hover:text-pleingaz-red transition-colors">Guide de Sécurité du Gaz</h3>
+            <p className="text-sm text-gray-500 mt-2">Les 6 règles d'or, branchement du détendeur et conduite à tenir en cas de fuite.</p>
+          </Link>
+
+          <Link href="/chat" className="group p-6 bg-white dark:bg-neutral-900 rounded-3xl border-2 border-gray-100 dark:border-neutral-800 hover:border-emerald-500 hover:shadow-lg hover:shadow-emerald-500/10 transition-all">
+            <h3 className="font-bold text-lg text-gray-900 dark:text-white group-hover:text-emerald-500 transition-colors">Assistant IA PLEINGAZ</h3>
+            <p className="text-sm text-gray-500 mt-2">Posez vos questions 24h/24 sur les prix homologués, les stocks et la sécurité.</p>
+          </Link>
+
           <Link href="/support" className="group p-6 bg-white dark:bg-neutral-900 rounded-3xl border-2 border-gray-100 dark:border-neutral-800 hover:border-blue-500 hover:shadow-lg hover:shadow-blue-500/10 transition-all sm:col-span-2">
             <h3 className="font-bold text-lg text-gray-900 dark:text-white group-hover:text-blue-500 transition-colors">Centre d'Assistance & Signalements</h3>
             <p className="text-sm text-gray-500 mt-2">Contactez-nous ou signalez un problème chez un revendeur (fermé, prix abusif...).</p>
