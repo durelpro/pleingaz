@@ -339,5 +339,121 @@ export class DistributorService implements OnModuleInit {
 
     return submitted;
   }
+
+  // ==========================================
+  // FLAGSHIP & DÉPÔT CENTRAL OFFICIEL PLEINGAZ
+  // ==========================================
+  async getFlagshipDetails(): Promise<any> {
+    const flagship = await this.prisma.store.findFirst({
+      where: {
+        OR: [
+          { name: { contains: 'Flagship' } },
+          { name: { contains: 'Dépôt Central' } }
+        ]
+      },
+      include: {
+        inventories: { include: { product: true } },
+      }
+    });
+
+    if (!flagship) {
+      throw new NotFoundException('Dépôt Flagship officiel non trouvé');
+    }
+
+    // Récupérer les commandes du flagship
+    const orders = await this.prisma.order.findMany({
+      where: { storeId: flagship.id },
+      include: {
+        customer: { include: { customerProfile: true } },
+        items: { include: { product: true } },
+        delivery: { include: { driver: { include: { customerProfile: true } } } },
+        invoice: true,
+      },
+      orderBy: { createdAt: 'desc' }
+    });
+
+    // Calculs de synthèse des ventes et de gestion financière
+    let totalSales = 0;
+    let deliveredCount = 0;
+    let inTransitCount = 0;
+    let pendingCount = 0;
+    let totalMargin = 0;
+
+    orders.forEach((o) => {
+      if (o.status === 'DELIVERED') {
+        totalSales += o.totalAmount;
+        deliveredCount++;
+        // Marge estimée : 500 FCFA par bouteille de gaz (6500 - 6000)
+        const bottlesCount = o.items.reduce((acc, item) => acc + item.quantity, 0);
+        totalMargin += bottlesCount * 500;
+      } else if (o.status === 'CONFIRMED' || o.delivery?.status === 'IN_TRANSIT') {
+        inTransitCount++;
+      } else {
+        pendingCount++;
+      }
+    });
+
+    // Livreur dédié de l'entreprise
+    const dedicatedDriver = await this.prisma.user.findFirst({
+      where: { phone: '+237677001122' },
+      include: { customerProfile: true }
+    });
+
+    return {
+      store: flagship,
+      kpis: {
+        totalSales,
+        totalOrders: orders.length,
+        deliveredCount,
+        inTransitCount,
+        pendingCount,
+        totalMargin,
+        cashCollected: Math.round(totalSales * 0.4), // Estimation 40% espèces
+        momoCollected: Math.round(totalSales * 0.6), // 60% Mobile Money
+      },
+      driver: dedicatedDriver ? {
+        id: dedicatedDriver.id,
+        name: `${dedicatedDriver.customerProfile?.firstName || 'Jean-Pierre'} ${dedicatedDriver.customerProfile?.lastName || 'Mvondo'}`,
+        phone: dedicatedDriver.phone,
+        vehicle: 'Moto-Tricycle PLEINGAZ Express (DLA-7842-LT)',
+        status: 'EN SERVICE',
+      } : null,
+      orders,
+    };
+  }
+
+  async updateDeliveryStatus(orderId: string, status: any, otp?: string) {
+    const delivery = await this.prisma.delivery.findUnique({
+      where: { orderId }
+    });
+
+    if (!delivery) {
+      throw new NotFoundException('Livraison introuvable');
+    }
+
+    if (status === 'DELIVERED') {
+      if (delivery.confirmationOtp && otp && delivery.confirmationOtp !== otp.trim()) {
+        throw new BadRequestException('Code OTP de livraison invalide');
+      }
+
+      await this.prisma.$transaction([
+        this.prisma.delivery.update({
+          where: { orderId },
+          data: { status: 'DELIVERED', deliveredAt: new Date() }
+        }),
+        this.prisma.order.update({
+          where: { id: orderId },
+          data: { status: 'DELIVERED' }
+        })
+      ]);
+    } else {
+      await this.prisma.delivery.update({
+        where: { orderId },
+        data: { status }
+      });
+    }
+
+    return { success: true };
+  }
 }
 

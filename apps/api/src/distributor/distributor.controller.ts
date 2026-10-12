@@ -84,5 +84,21 @@ export class DistributorController {
   async submit(@Request() req: any) {
     return this.distributorService.submitApplication(req.user.userId);
   }
+
+  // ==========================================
+  // ENDPOINTS FLAGSHIP DÉPÔT CENTRAL
+  // ==========================================
+  @Get('flagship')
+  async getFlagship(): Promise<any> {
+    return this.distributorService.getFlagshipDetails();
+  }
+
+  @Post('flagship/deliveries/:orderId/status')
+  async updateFlagshipDelivery(
+    @Param('orderId') orderId: string,
+    @Body() body: { status: string; otp?: string },
+  ) {
+    return this.distributorService.updateDeliveryStatus(orderId, body.status, body.otp);
+  }
 }
 

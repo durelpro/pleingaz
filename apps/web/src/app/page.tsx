@@ -135,14 +135,23 @@ export default function Home() {
         <h2 className="text-2xl font-black text-gray-900 dark:text-white text-center">Espaces Dédiés</h2>
         
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <Link href="/distributor/flagship" className="group p-6 bg-gradient-to-br from-red-950/20 to-neutral-900 rounded-3xl border-2 border-red-500/40 hover:border-red-500 hover:shadow-xl hover:shadow-red-500/20 transition-all sm:col-span-2">
+            <div className="flex items-center gap-2 mb-1">
+              <span className="px-2.5 py-0.5 bg-red-600 text-white font-black text-[10px] rounded-full uppercase tracking-wider">Flagship Direct</span>
+              <span className="text-xs font-bold text-red-400">INFOTECH S.A.</span>
+            </div>
+            <h3 className="font-bold text-xl text-gray-900 dark:text-white group-hover:text-pleingaz-red transition-colors">Dépôt Central Officiel & Flotte de Livraison Directe</h3>
+            <p className="text-sm text-gray-400 mt-2">Boutique directe de l'entreprise : compte-rendu des ventes, encaissements MoMo/Cash, et supervision GPS des courses du livreur interne.</p>
+          </Link>
+
           <Link href="/buyer/portal" className="group p-6 bg-white dark:bg-neutral-900 rounded-3xl border-2 border-gray-100 dark:border-neutral-800 hover:border-blue-500 hover:shadow-lg hover:shadow-blue-500/10 transition-all">
             <h3 className="font-bold text-lg text-gray-900 dark:text-white group-hover:text-blue-500 transition-colors">Espace Acheteur</h3>
             <p className="text-sm text-gray-500 mt-2">Connectez-vous pour utiliser vos points de fidélité et gérer vos achats.</p>
           </Link>
           
           <Link href="/distributor/portal" className="group p-6 bg-white dark:bg-neutral-900 rounded-3xl border-2 border-gray-100 dark:border-neutral-800 hover:border-pleingaz-red hover:shadow-lg hover:shadow-red-500/10 transition-all">
-            <h3 className="font-bold text-lg text-gray-900 dark:text-white group-hover:text-pleingaz-red transition-colors">Espace Distributeur</h3>
-            <p className="text-sm text-gray-500 mt-2">Connectez-vous à votre tableau de bord ou rejoignez notre réseau agréé.</p>
+            <h3 className="font-bold text-lg text-gray-900 dark:text-white group-hover:text-pleingaz-red transition-colors">Espace Distributeurs Agréés</h3>
+            <p className="text-sm text-gray-500 mt-2">Connectez-vous à votre tableau de bord revendeur ou postulez au réseau.</p>
           </Link>
           
           <Link href="/admin/dashboard" className="group p-6 bg-white dark:bg-neutral-900 rounded-3xl border-2 border-gray-100 dark:border-neutral-800 hover:border-purple-500 hover:shadow-lg hover:shadow-purple-500/10 transition-all">
