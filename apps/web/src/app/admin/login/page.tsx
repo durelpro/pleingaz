@@ -17,12 +17,6 @@ export default function AdminLogin() {
     setIsLoading(true);
     setError('');
     try {
-      if (password === 'admin123' || password === 'admin') {
-        localStorage.setItem('pleingaz_admin_auth', 'true');
-        router.push('/admin/dashboard');
-        return;
-      }
-
       const res = await fetch('http://localhost:3001/auth/login/phone', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -30,16 +24,22 @@ export default function AdminLogin() {
       });
       if (res.ok) {
         const data = await res.json();
+        if (data.user && !data.user.roles?.includes('ADMIN')) {
+          setError('Accès refusé : Ce compte ne dispose pas des privilèges administrateur.');
+          return;
+        }
         if (data.accessToken) {
           localStorage.setItem('accessToken', data.accessToken);
         }
         localStorage.setItem('pleingaz_admin_auth', 'true');
+        localStorage.setItem('pleingaz_user_data', JSON.stringify(data.user));
         router.push('/admin/dashboard');
       } else {
-        setError('Identifiants administrateur incorrects.');
+        const errData = await res.json().catch(() => ({}));
+        setError(errData.message || 'Identifiants administrateur incorrects.');
       }
     } catch (e) {
-      setError('Erreur de connexion.');
+      setError('Erreur de connexion au serveur d\'authentification.');
     } finally {
       setIsLoading(false);
     }

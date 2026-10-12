@@ -13,6 +13,103 @@ export class AuthService {
     private readonly jwtService: JwtService,
   ) {}
 
+  async registerCustomer(dto: { phone: string; password: string; firstName: string; lastName: string; email?: string }) {
+    let cleanPhone = dto.phone.trim().replace(/\s+/g, '');
+    if (!cleanPhone.startsWith('+237')) {
+      if (cleanPhone.startsWith('237')) {
+        cleanPhone = `+${cleanPhone}`;
+      } else {
+        cleanPhone = `+237${cleanPhone}`;
+      }
+    }
+
+    // Check if phone or email already registered
+    const existing = await this.prisma.user.findFirst({
+      where: {
+        OR: [
+          { phone: cleanPhone },
+          ...(dto.email ? [{ email: dto.email.trim() }] : []),
+        ],
+      },
+    });
+
+    if (existing) {
+      throw new BadRequestException('Un compte existe déjà avec ce numéro de téléphone ou cet email');
+    }
+
+    // Ensure CUSTOMER role exists
+    let customerRole = await this.prisma.role.findUnique({
+      where: { name: 'CUSTOMER' },
+    });
+    if (!customerRole) {
+      customerRole = await this.prisma.role.create({
+        data: { name: 'CUSTOMER', description: 'Client acheteur PLEINGAZ' },
+      });
+    }
+
+    const passwordHash = await argon2.hash(dto.password);
+
+    const user = await this.prisma.user.create({
+      data: {
+        phone: cleanPhone,
+        email: dto.email?.trim() || null,
+        passwordHash,
+        isPhoneVerified: true,
+        loyaltyPoints: 100, // Bonus de bienvenue
+        roles: {
+          create: {
+            roleId: customerRole.id,
+          },
+        },
+        customerProfile: {
+          create: {
+            firstName: dto.firstName.trim(),
+            lastName: dto.lastName.trim(),
+          },
+        },
+      },
+      include: {
+        customerProfile: true,
+        roles: { include: { role: true } },
+      },
+    });
+
+    const tokens = await this.generateTokens(user.id);
+    return {
+      accessToken: tokens.accessToken,
+      refreshToken: tokens.refreshToken,
+      user: {
+        id: user.id,
+        phone: user.phone,
+        email: user.email,
+        loyaltyPoints: user.loyaltyPoints,
+        roles: user.roles.map((r) => r.role.name),
+        profile: user.customerProfile,
+      },
+    };
+  }
+
+  async getMe(userId: string) {
+    const user = await this.prisma.user.findUnique({
+      where: { id: userId },
+      include: {
+        customerProfile: { include: { addresses: true } },
+        roles: { include: { role: true } },
+      },
+    });
+    if (!user) {
+      throw new UnauthorizedException('Utilisateur introuvable');
+    }
+    return {
+      id: user.id,
+      phone: user.phone,
+      email: user.email,
+      loyaltyPoints: user.loyaltyPoints,
+      roles: user.roles.map((r) => r.role.name),
+      profile: user.customerProfile,
+    };
+  }
+
   async validatePhoneOTP(phone: string, otp: string) {
     // Simulons la validation OTP locale pour le développement.
     // En production, vérifier via le service SMS externe.
@@ -84,7 +181,29 @@ export class AuthService {
     }
 
     await this.resetFailedAttempts(user);
-    return this.generateTokens(user.id);
+    const tokens = await this.generateTokens(user.id);
+
+    // Fetch user details with roles
+    const fullUser = await this.prisma.user.findUnique({
+      where: { id: user.id },
+      include: {
+        customerProfile: true,
+        roles: { include: { role: true } },
+      },
+    });
+
+    return {
+      accessToken: tokens.accessToken,
+      refreshToken: tokens.refreshToken,
+      user: {
+        id: fullUser?.id || user.id,
+        phone: fullUser?.phone || user.phone,
+        email: fullUser?.email,
+        loyaltyPoints: fullUser?.loyaltyPoints || 0,
+        roles: fullUser?.roles.map((r) => r.role.name) || [],
+        profile: fullUser?.customerProfile || null,
+      },
+    };
   }
 
   private checkLockout(user: any) {

@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
-import { User, LogIn, ArrowLeft, MessageSquare, Award, Gift, ShoppingBag, Loader2, FileText, Star, Heart, MapPin, ChevronRight, Store, BellRing, Check } from 'lucide-react';
+import { User, LogIn, LogOut, ArrowLeft, MessageSquare, Award, Gift, ShoppingBag, Loader2, FileText, Star, Heart, MapPin, ChevronRight, Store, BellRing, Check } from 'lucide-react';
 import { motion } from 'framer-motion';
 import FavoriteButton, { getFavoriteStoreIds } from '@/components/store/FavoriteButton';
 import InvoiceModal from '@/components/invoice/InvoiceModal';
@@ -21,6 +21,17 @@ export default function BuyerPortal() {
   const [isLoading, setIsLoading] = useState(true);
   const [selectedInvoiceOrderId, setSelectedInvoiceOrderId] = useState<string | null>(null);
 
+  const [email, setEmail] = useState('');
+  const [currentUser, setCurrentUser] = useState<any>(null);
+
+  const handleLogout = () => {
+    localStorage.removeItem('accessToken');
+    localStorage.removeItem('pleingaz_user_data');
+    setProfile(null);
+    setCurrentUser(null);
+    setOrders([]);
+  };
+
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsSubmitting(true);
@@ -36,21 +47,26 @@ export default function BuyerPortal() {
         if (data.accessToken) {
           localStorage.setItem('accessToken', data.accessToken);
         }
-        // Load profile
-        const profRes = await fetch('http://localhost:3001/users/profile', {
-          headers: { 
-            'Authorization': `Bearer ${data.accessToken}`,
-            'x-demo-role': 'customer_1' 
-          }
+        if (data.user) {
+          localStorage.setItem('pleingaz_user_data', JSON.stringify(data.user));
+          setCurrentUser(data.user);
+          setProfile({
+            firstName: data.user.profile?.firstName || 'Client',
+            lastName: data.user.profile?.lastName || '',
+            loyaltyPoints: data.user.loyaltyPoints || 0,
+            phone: data.user.phone
+          });
+        }
+        // Load orders
+        const ordersRes = await fetch('http://localhost:3001/orders', {
+          headers: { 'Authorization': `Bearer ${data.accessToken}` }
         });
-        if (profRes.ok) {
-          const profData = await profRes.json();
-          setProfile({ ...profData, loyaltyPoints: profData.user?.loyaltyPoints || 500 });
-        } else {
-          setProfile({ firstName: 'Client', lastName: '', loyaltyPoints: 500 });
+        if (ordersRes.ok) {
+          const ordersData = await ordersRes.json();
+          setOrders(ordersData || []);
         }
       } else {
-        const err = await res.json();
+        const err = await res.json().catch(() => ({}));
         setAuthError(err.message || 'Numéro ou mot de passe incorrect.');
       }
     } catch (e) {
@@ -62,22 +78,47 @@ export default function BuyerPortal() {
 
   const handleRegister = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!firstName.trim()) return;
+    if (!firstName.trim() || !phone.trim() || !password.trim()) {
+      setAuthError('Veuillez remplir tous les champs obligatoires.');
+      return;
+    }
     setIsSubmitting(true);
     setAuthError('');
     try {
-      const res = await fetch('http://localhost:3001/users/profile', {
+      const res = await fetch('http://localhost:3001/auth/register', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json', 'x-demo-role': 'customer_1' },
-        body: JSON.stringify({ firstName, lastName: lastName || 'Client' }),
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          firstName,
+          lastName: lastName || '',
+          phone,
+          password,
+          email: email || undefined,
+        }),
       });
       if (res.ok) {
         const data = await res.json();
-        setProfile({ ...data, loyaltyPoints: 500 });
+        if (data.accessToken) {
+          localStorage.setItem('accessToken', data.accessToken);
+        }
+        if (data.user) {
+          localStorage.setItem('pleingaz_user_data', JSON.stringify(data.user));
+          setCurrentUser(data.user);
+          setProfile({
+            firstName: data.user.profile?.firstName || firstName,
+            lastName: data.user.profile?.lastName || lastName,
+            loyaltyPoints: data.user.loyaltyPoints || 100,
+            phone: data.user.phone
+          });
+        }
+        setOrders([]);
+      } else {
+        const err = await res.json().catch(() => ({}));
+        setAuthError(err.message || 'Erreur lors de la création du compte.');
       }
     } catch (err) {
       console.error(err);
-      setAuthError('Erreur lors de la création du profil.');
+      setAuthError('Erreur réseau lors de la création du profil.');
     } finally {
       setIsSubmitting(false);
     }
@@ -136,24 +177,41 @@ export default function BuyerPortal() {
 
   useEffect(() => {
     const token = typeof window !== 'undefined' ? localStorage.getItem('accessToken') : null;
-    const authHeaders: any = { 'x-demo-role': 'customer_1' };
-    if (token) authHeaders['Authorization'] = `Bearer ${token}`;
+    if (!token) {
+      setIsLoading(false);
+      return;
+    }
 
-    Promise.all([
-      fetch('http://localhost:3001/users/profile', {
-        headers: authHeaders
-      }).then(res => res.json()),
-      fetch('http://localhost:3001/orders', {
-        headers: authHeaders
-      }).then(res => res.json())
-    ])
-    .then(([profileData, ordersData]) => {
-      if (profileData && profileData.id) {
-        setProfile({ ...profileData, loyaltyPoints: profileData.user?.loyaltyPoints || profileData.loyaltyPoints || 450 });
-      }
-      setOrders(ordersData || []);
+    fetch('http://localhost:3001/auth/me', {
+      headers: { 'Authorization': `Bearer ${token}` }
     })
-    .catch(() => {})
+    .then(async (res) => {
+      if (res.ok) {
+        const userData = await res.json();
+        setCurrentUser(userData);
+        setProfile({
+          firstName: userData.profile?.firstName || 'Client',
+          lastName: userData.profile?.lastName || '',
+          loyaltyPoints: userData.loyaltyPoints || 0,
+          phone: userData.phone
+        });
+
+        // Load customer orders
+        fetch('http://localhost:3001/orders', {
+          headers: { 'Authorization': `Bearer ${token}` }
+        })
+        .then(r => r.json())
+        .then(ordersData => setOrders(Array.isArray(ordersData) ? ordersData : []))
+        .catch(() => {});
+      } else {
+        // Invalid or expired token
+        localStorage.removeItem('accessToken');
+        setProfile(null);
+      }
+    })
+    .catch(() => {
+      setProfile(null);
+    })
     .finally(() => setIsLoading(false));
   }, []);
 
@@ -246,25 +304,59 @@ export default function BuyerPortal() {
                     </form>
                   ) : (
                     <form className="space-y-4" onSubmit={handleRegister}>
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                        <div>
+                          <label className="text-sm font-medium text-gray-700 dark:text-gray-300">Prénom *</label>
+                          <input 
+                            type="text" 
+                            required
+                            placeholder="Ex: Alain"
+                            value={firstName}
+                            onChange={(e) => setFirstName(e.target.value)}
+                            className="w-full mt-1 p-3 rounded-xl border border-gray-200 dark:border-neutral-800 bg-gray-50 dark:bg-neutral-950 focus:ring-2 focus:ring-blue-500 outline-none transition-all font-medium"
+                          />
+                        </div>
+                        <div>
+                          <label className="text-sm font-medium text-gray-700 dark:text-gray-300">Nom de famille *</label>
+                          <input 
+                            type="text" 
+                            required
+                            placeholder="Ex: Mbarga"
+                            value={lastName}
+                            onChange={(e) => setLastName(e.target.value)}
+                            className="w-full mt-1 p-3 rounded-xl border border-gray-200 dark:border-neutral-800 bg-gray-50 dark:bg-neutral-950 focus:ring-2 focus:ring-blue-500 outline-none transition-all font-medium"
+                          />
+                        </div>
+                      </div>
                       <div>
-                        <label className="text-sm font-medium text-gray-700 dark:text-gray-300">Prénom</label>
+                        <label className="text-sm font-medium text-gray-700 dark:text-gray-300">Numéro de téléphone *</label>
                         <input 
-                          type="text" 
+                          type="tel" 
                           required
-                          placeholder="Ex: Alain"
-                          value={firstName}
-                          onChange={(e) => setFirstName(e.target.value)}
+                          placeholder="Ex: 699000000 ou +237699..."
+                          value={phone}
+                          onChange={(e) => setPhone(e.target.value)}
                           className="w-full mt-1 p-3 rounded-xl border border-gray-200 dark:border-neutral-800 bg-gray-50 dark:bg-neutral-950 focus:ring-2 focus:ring-blue-500 outline-none transition-all font-medium"
                         />
                       </div>
                       <div>
-                        <label className="text-sm font-medium text-gray-700 dark:text-gray-300">Nom de famille</label>
+                        <label className="text-sm font-medium text-gray-700 dark:text-gray-300">Email (optionnel)</label>
                         <input 
-                          type="text" 
+                          type="email" 
+                          placeholder="client@domaine.cm"
+                          value={email}
+                          onChange={(e) => setEmail(e.target.value)}
+                          className="w-full mt-1 p-3 rounded-xl border border-gray-200 dark:border-neutral-800 bg-gray-50 dark:bg-neutral-950 focus:ring-2 focus:ring-blue-500 outline-none transition-all font-medium"
+                        />
+                      </div>
+                      <div>
+                        <label className="text-sm font-medium text-gray-700 dark:text-gray-300">Mot de passe *</label>
+                        <input 
+                          type="password" 
                           required
-                          placeholder="Ex: Mbarga"
-                          value={lastName}
-                          onChange={(e) => setLastName(e.target.value)}
+                          placeholder="8 caractères minimum"
+                          value={password}
+                          onChange={(e) => setPassword(e.target.value)}
                           className="w-full mt-1 p-3 rounded-xl border border-gray-200 dark:border-neutral-800 bg-gray-50 dark:bg-neutral-950 focus:ring-2 focus:ring-blue-500 outline-none transition-all font-medium"
                         />
                       </div>
@@ -273,7 +365,7 @@ export default function BuyerPortal() {
                         disabled={isSubmitting}
                         className="w-full py-4 mt-2 bg-gradient-to-r from-blue-500 to-purple-500 text-white font-black text-lg rounded-xl shadow-lg shadow-blue-500/30 hover:shadow-blue-500/50 transition-all flex items-center justify-center gap-2"
                       >
-                        {isSubmitting ? <Loader2 size={20} className="animate-spin" /> : 'Activer mon profil'}
+                        {isSubmitting ? <Loader2 size={20} className="animate-spin" /> : 'Créer mon compte client'}
                       </button>
                     </form>
                   )}
@@ -303,17 +395,29 @@ export default function BuyerPortal() {
           </>
         ) : (
           <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}>
-            <div className="flex items-center justify-between mb-8">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-8">
               <div>
                 <h1 className="text-3xl font-black text-gray-900 dark:text-white">
                   Bonjour, {profile.firstName} 👋
                 </h1>
-                <p className="text-gray-500 font-medium mt-1">Gérez vos points de fidélité et vos conversations.</p>
+                <p className="text-gray-500 font-medium mt-1">
+                  Connecté en tant que <span className="font-bold text-gray-700 dark:text-gray-300">{profile.phone || 'Client'}</span>
+                </p>
               </div>
-              <Link href="/buyer/messages" className="hidden md:flex items-center gap-2 px-6 py-3 bg-blue-50 dark:bg-blue-900/20 text-blue-600 rounded-xl font-bold hover:bg-blue-100 dark:hover:bg-blue-900/40 transition-colors">
-                <MessageSquare size={20} />
-                Mes Messages
-              </Link>
+              <div className="flex items-center gap-3">
+                <Link href="/buyer/messages" className="flex items-center gap-2 px-5 py-2.5 bg-blue-50 dark:bg-blue-900/20 text-blue-600 rounded-xl font-bold hover:bg-blue-100 dark:hover:bg-blue-900/40 transition-colors">
+                  <MessageSquare size={18} />
+                  Mes Messages
+                </Link>
+                <button 
+                  onClick={handleLogout}
+                  className="flex items-center gap-2 px-5 py-2.5 bg-red-50 dark:bg-red-900/20 text-red-600 rounded-xl font-bold hover:bg-red-100 dark:hover:bg-red-900/40 transition-colors border border-red-200 dark:border-red-800/30"
+                  title="Se déconnecter"
+                >
+                  <LogOut size={18} />
+                  Déconnexion
+                </button>
+              </div>
             </div>
 
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">

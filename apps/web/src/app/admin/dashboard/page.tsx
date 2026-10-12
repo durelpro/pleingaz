@@ -3,11 +3,12 @@
 import { useState } from 'react';
 import { 
   BarChart3, TrendingUp, AlertTriangle, PackageX, 
-  MapPin, Store, Star, Download, Filter, FileText, CheckCircle, XCircle, Search, Eye, X
+  MapPin, Store, Star, Download, Filter, FileText, CheckCircle, XCircle, Search, Eye, X, LogOut
 } from 'lucide-react';
 import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useEffect } from 'react';
+import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 
 const mockChartData = [
@@ -21,11 +22,19 @@ const mockChartData = [
 ];
 
 export default function PilotageDashboard() {
+  const router = useRouter();
   const [timeframe, setTimeframe] = useState('semaine');
   const [viewingDoc, setViewingDoc] = useState<{ id: string, name: string } | null>(null);
   const [pendingDocs, setPendingDocs] = useState<any[]>([]);
   const [metrics, setMetrics] = useState({ outOfStockCount: 0, outOfStockStores: [], averageReliability: 100, pendingDocsCount: 0 });
   const [chartData, setChartData] = useState<any[]>(mockChartData);
+
+  const handleLogout = () => {
+    localStorage.removeItem('pleingaz_admin_auth');
+    localStorage.removeItem('accessToken');
+    localStorage.removeItem('pleingaz_user_data');
+    router.replace('/admin/login');
+  };
 
   useEffect(() => {
     Promise.all([
@@ -80,6 +89,14 @@ export default function PilotageDashboard() {
             <button className="flex items-center gap-2 px-4 py-2.5 bg-gray-900 dark:bg-white text-white dark:text-gray-900 font-bold rounded-xl hover:opacity-90 transition-opacity">
               <Download size={18} />
               Exporter (PDF/CSV)
+            </button>
+            <button 
+              onClick={handleLogout}
+              className="flex items-center gap-2 px-4 py-2.5 bg-red-500/10 hover:bg-red-500/20 text-red-500 font-bold rounded-xl border border-red-500/20 transition-colors"
+              title="Se déconnecter"
+            >
+              <LogOut size={18} />
+              Déconnexion
             </button>
           </div>
         </div>
