@@ -128,6 +128,21 @@ export class SearchService {
       include: {
         inventories: {
           include: { product: true }
+        },
+        orders: {
+          where: { review: { isNot: null } },
+          include: {
+            review: true,
+            customer: {
+              select: {
+                id: true,
+                phone: true,
+                customerProfile: { select: { firstName: true, lastName: true } }
+              }
+            }
+          },
+          orderBy: { createdAt: 'desc' },
+          take: 10
         }
       }
     });
@@ -135,6 +150,26 @@ export class SearchService {
     if (!store) {
       throw new Error('Store not found');
     }
+
+    const reviewsList = store.orders
+      .filter((o: any) => o.review)
+      .map((o: any) => {
+        const name = o.customer.customerProfile
+          ? `${o.customer.customerProfile.firstName} ${o.customer.customerProfile.lastName ? o.customer.customerProfile.lastName[0] + '.' : ''}`
+          : (o.customer.phone ? `Client (${o.customer.phone.slice(-4)})` : 'Client Vérifié');
+        return {
+          id: o.review.id,
+          rating: o.review.rating,
+          comment: o.review.comment,
+          createdAt: o.review.createdAt,
+          authorName: name,
+        };
+      });
+
+    const reviewsCount = reviewsList.length;
+    const avgRating = reviewsCount > 0 
+      ? Number((reviewsList.reduce((acc: number, r: any) => acc + r.rating, 0) / reviewsCount).toFixed(1))
+      : null;
 
     return {
       id: store.id,
@@ -145,8 +180,9 @@ export class SearchService {
       neighborhood: store.neighborhood,
       landmark: store.landmark,
       city: store.city,
-      rating: null,
-      reviews: 0,
+      rating: avgRating,
+      reviews: reviewsCount,
+      reviewsList,
       latitude: store.latitude,
       longitude: store.longitude,
       phone: store.whatsappNumber,

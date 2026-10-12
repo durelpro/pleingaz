@@ -2,7 +2,7 @@
 
 import { useState, useEffect, Suspense } from 'react';
 import { useSearchParams } from 'next/navigation';
-import { Truck, CheckCircle2, PackageSearch, PackageOpen, Download, ArrowLeft, Store, MapPin, Loader2, FileText, Check } from 'lucide-react';
+import { Truck, CheckCircle2, PackageSearch, PackageOpen, Download, ArrowLeft, Store, MapPin, Loader2, FileText, Check, Star } from 'lucide-react';
 import { motion } from 'framer-motion';
 import Link from 'next/link';
 
@@ -14,11 +14,46 @@ function DeliveryTrackerContent() {
   const [isLoading, setIsLoading] = useState(true);
   const [copiedOtp, setCopiedOtp] = useState(false);
 
+  // Évaluation / Avis client
+  const [selectedRating, setSelectedRating] = useState<number>(5);
+  const [reviewComment, setReviewComment] = useState('');
+  const [isSubmittingReview, setIsSubmittingReview] = useState(false);
+  const [reviewError, setReviewError] = useState<string | null>(null);
+  const [reviewSuccess, setReviewSuccess] = useState(false);
+
   const getHeaders = () => {
     const token = typeof window !== 'undefined' ? localStorage.getItem('accessToken') : null;
     const h: any = { 'Content-Type': 'application/json', 'x-demo-role': 'customer_1' };
     if (token) h['Authorization'] = `Bearer ${token}`;
     return h;
+  };
+
+  const handleSubmitReview = async () => {
+    if (!order || selectedRating === 0) return;
+    setIsSubmittingReview(true);
+    setReviewError(null);
+    try {
+      const res = await fetch(`http://localhost:3001/orders/${order.id}/review`, {
+        method: 'POST',
+        headers: getHeaders(),
+        body: JSON.stringify({
+          rating: selectedRating,
+          comment: reviewComment.trim() || undefined,
+        }),
+      });
+
+      if (!res.ok) {
+        const err = await res.json();
+        throw new Error(err.message || 'Impossible d\'enregistrer votre avis');
+      }
+
+      setReviewSuccess(true);
+      await fetchOrderData();
+    } catch (e: any) {
+      setReviewError(e.message || 'Erreur lors de l\'envoi');
+    } finally {
+      setIsSubmittingReview(false);
+    }
   };
 
   const fetchOrderData = async () => {
@@ -234,6 +269,129 @@ function DeliveryTrackerContent() {
               {copiedOtp && <Check size={18} className="text-green-500" />}
             </div>
             <p className="text-[11px] text-gray-500">Cliquez pour copier le code</p>
+          </div>
+        )}
+
+        {/* Avis Client & Évaluation post-livraison */}
+        {isDelivered && (
+          <div className="bg-white dark:bg-neutral-900 p-6 md:p-8 rounded-3xl border border-gray-100 dark:border-neutral-800 space-y-5 shadow-sm">
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 rounded-2xl bg-amber-50 dark:bg-amber-950/40 text-amber-500 flex items-center justify-center">
+                <Star size={22} className="fill-amber-400 text-amber-400" />
+              </div>
+              <div>
+                <h3 className="font-bold text-gray-900 dark:text-white text-lg">
+                  {order.review ? "Votre avis sur cette commande" : "Évaluez votre expérience"}
+                </h3>
+                <p className="text-xs text-gray-500 font-medium">
+                  {order.review ? "Merci pour votre retour d'expérience !" : "Gagnez +10 points de fidélité en donnant votre avis vérifié"}
+                </p>
+              </div>
+            </div>
+
+            {order.review ? (
+              <div className="bg-amber-50/60 dark:bg-amber-950/20 p-5 rounded-2xl border border-amber-200/60 dark:border-amber-800/30 space-y-2">
+                <div className="flex items-center gap-1.5">
+                  {[1, 2, 3, 4, 5].map((s) => (
+                    <Star
+                      key={s}
+                      size={18}
+                      className={s <= order.review.rating ? "fill-amber-400 text-amber-400" : "text-gray-300 dark:text-neutral-700"}
+                    />
+                  ))}
+                  <span className="ml-2 text-sm font-black text-amber-900 dark:text-amber-300">
+                    {order.review.rating}/5
+                  </span>
+                </div>
+                {order.review.comment && (
+                  <p className="text-sm text-gray-700 dark:text-gray-300 italic">
+                    « {order.review.comment} »
+                  </p>
+                )}
+                <div className="flex items-center gap-2 pt-2 text-xs font-bold text-green-600 dark:text-green-400">
+                  <CheckCircle2 size={15} /> Avis vérifié enregistré (+10 points crédités)
+                </div>
+              </div>
+            ) : (
+              <div className="space-y-4">
+                {reviewSuccess ? (
+                  <div className="p-4 bg-green-50 dark:bg-green-950/30 border border-green-200 dark:border-green-800 rounded-2xl text-center space-y-1">
+                    <p className="font-bold text-green-700 dark:text-green-300">
+                      🎉 Merci pour votre avis !
+                    </p>
+                    <p className="text-xs text-green-600 dark:text-green-400">
+                      +10 points de fidélité ont été ajoutés à votre compte.
+                    </p>
+                  </div>
+                ) : (
+                  <>
+                    <div className="flex flex-col items-center sm:items-start gap-2">
+                      <label className="text-xs font-bold text-gray-600 dark:text-gray-300">
+                        Votre note :
+                      </label>
+                      <div className="flex items-center gap-2">
+                        {[1, 2, 3, 4, 5].map((star) => (
+                          <button
+                            key={star}
+                            type="button"
+                            onClick={() => setSelectedRating(star)}
+                            className="p-1 transition-transform hover:scale-125 focus:outline-none"
+                            aria-label={`Noter ${star} sur 5`}
+                          >
+                            <Star
+                              size={28}
+                              className={
+                                star <= selectedRating
+                                  ? "fill-amber-400 text-amber-400 transition-colors"
+                                  : "text-gray-300 dark:text-neutral-700 transition-colors hover:text-amber-300"
+                              }
+                            />
+                          </button>
+                        ))}
+                        <span className="text-sm font-bold text-gray-700 dark:text-gray-300 ml-2">
+                          {selectedRating > 0 ? `${selectedRating}/5` : 'Cliquez pour noter'}
+                        </span>
+                      </div>
+                    </div>
+
+                    <div className="space-y-1">
+                      <label className="text-xs font-bold text-gray-600 dark:text-gray-300">
+                        Commentaire (facultatif) :
+                      </label>
+                      <textarea
+                        value={reviewComment}
+                        onChange={(e) => setReviewComment(e.target.value)}
+                        placeholder="Ex: Livreur très ponctuel, bouteille en parfait état avec le sceau intact !"
+                        rows={3}
+                        className="w-full px-4 py-3 rounded-2xl bg-gray-50 dark:bg-neutral-800 border border-gray-200 dark:border-neutral-700 text-sm focus:outline-none focus:ring-2 focus:ring-pleingaz-red text-gray-900 dark:text-white"
+                      />
+                    </div>
+
+                    {reviewError && (
+                      <p className="text-xs text-red-500 font-bold">{reviewError}</p>
+                    )}
+
+                    <button
+                      onClick={handleSubmitReview}
+                      disabled={isSubmittingReview || selectedRating === 0}
+                      className="w-full py-3.5 bg-pleingaz-red hover:bg-red-700 text-white font-bold rounded-2xl shadow-md transition-all flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
+                    >
+                      {isSubmittingReview ? (
+                        <>
+                          <Loader2 size={18} className="animate-spin" />
+                          Envoi en cours...
+                        </>
+                      ) : (
+                        <>
+                          <Star size={18} className="fill-white" />
+                          Publier mon avis (+10 points)
+                        </>
+                      )}
+                    </button>
+                  </>
+                )}
+              </div>
+            )}
           </div>
         )}
 

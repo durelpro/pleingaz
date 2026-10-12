@@ -63,10 +63,15 @@ function StoreProfileContent() {
                   <span className="flex items-center gap-1 bg-green-50 text-green-700 dark:bg-green-900/20 dark:text-green-400 px-2 py-1 rounded-md font-medium">
                     <ShieldCheck size={16} /> Agréé
                   </span>
-                  {store.rating !== null && (
-                    <span className="flex items-center gap-1">
-                      <Star size={16} className="text-yellow-400 fill-yellow-400" />
-                      {store.rating} ({store.reviews} avis)
+                  {store.rating !== null ? (
+                    <span className="flex items-center gap-1 font-bold text-gray-700 dark:text-gray-200">
+                      <Star size={16} className="text-amber-400 fill-amber-400" />
+                      {store.rating}/5 ({store.reviews} avis vérifié{store.reviews > 1 ? 's' : ''})
+                    </span>
+                  ) : (
+                    <span className="flex items-center gap-1 text-gray-400">
+                      <Star size={16} className="text-gray-300 dark:text-neutral-700" />
+                      Nouveau point de vente (0 avis)
                     </span>
                   )}
                 </div>
@@ -105,56 +110,133 @@ function StoreProfileContent() {
         {/* Content Grid */}
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mt-8">
           
-          {/* Left Column: Products */}
-          <div className="lg:col-span-2 space-y-6">
-            <h2 className="text-xl font-bold text-gray-900 dark:text-white flex items-center gap-2">
-              <ShoppingCart className="text-pleingaz-red" />
-              Stock Disponible
-            </h2>
-            
-            {store.inventory && store.inventory.length > 0 ? (
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                {store.inventory.map((item: any) => (
-                  <motion.div 
-                    key={item.id}
-                    whileHover={{ scale: 1.02 }}
-                    className={`p-4 rounded-2xl border-2 ${item.status === 'En stock' ? 'border-gray-100 dark:border-neutral-800 bg-white dark:bg-neutral-900' : 'border-red-100 dark:border-red-900/30 bg-red-50 dark:bg-red-900/10 opacity-75'}`}
-                  >
-                    <div className="flex justify-between items-start">
-                      <div className="space-y-1">
-                        <div className="flex items-center gap-2">
-                          <span className={`w-3 h-3 rounded-full ${item.color}`}></span>
-                          <h3 className="font-bold text-gray-900 dark:text-white text-lg">{item.brand}</h3>
-                        </div>
-                        <p className="text-gray-500 font-medium">{item.weight}</p>
-                      </div>
-                      <div className="text-right">
-                        <p className="font-black text-xl text-pleingaz-red">{item.price} FCFA</p>
-                        <span className={`text-xs font-bold px-2 py-1 rounded-md ${item.status === 'En stock' ? 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400' : 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400'}`}>
-                          {item.status}
-                        </span>
-                      </div>
-                    </div>
-                    
-                    <div className="mt-2 text-xs text-gray-500 font-medium flex items-center justify-between">
-                      <span>Mise à jour: {item.freshness || "Inconnu"}</span>
-                    </div>
-                    
-                    <Link 
-                      href={item.status === 'En stock' ? `/checkout/${store.id}?inventoryId=${item.id}&productId=${item.productId || ''}` : '#'}
-                      className={`mt-4 w-full py-3 rounded-xl font-bold flex items-center justify-center gap-2 transition-all ${item.status === 'En stock' ? 'bg-gray-900 dark:bg-white text-white dark:text-gray-900 hover:bg-pleingaz-red hover:text-white' : 'bg-gray-200 dark:bg-neutral-800 text-gray-400 cursor-not-allowed pointer-events-none'}`}
+          {/* Left Column: Products & Reviews */}
+          <div className="lg:col-span-2 space-y-8">
+            <div className="space-y-6">
+              <h2 className="text-xl font-bold text-gray-900 dark:text-white flex items-center gap-2">
+                <ShoppingCart className="text-pleingaz-red" />
+                Stock Disponible
+              </h2>
+              
+              {store.inventory && store.inventory.length > 0 ? (
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  {store.inventory.map((item: any) => (
+                    <motion.div 
+                      key={item.id}
+                      whileHover={{ scale: 1.02 }}
+                      className={`p-4 rounded-2xl border-2 ${item.status === 'En stock' ? 'border-gray-100 dark:border-neutral-800 bg-white dark:bg-neutral-900' : 'border-red-100 dark:border-red-900/30 bg-red-50 dark:bg-red-900/10 opacity-75'}`}
                     >
-                      <ShoppingCart size={18} />
-                      {item.status === 'En stock' ? 'Commander' : 'Indisponible'}
-                    </Link>
-                  </motion.div>
-                ))}
+                      <div className="flex justify-between items-start">
+                        <div className="space-y-1">
+                          <div className="flex items-center gap-2">
+                            <span className={`w-3 h-3 rounded-full ${item.color}`}></span>
+                            <h3 className="font-bold text-gray-900 dark:text-white text-lg">{item.brand}</h3>
+                          </div>
+                          <p className="text-gray-500 font-medium">{item.weight}</p>
+                        </div>
+                        <div className="text-right">
+                          <p className="font-black text-xl text-pleingaz-red">{item.price} FCFA</p>
+                          <span className={`text-xs font-bold px-2 py-1 rounded-md ${item.status === 'En stock' ? 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400' : 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400'}`}>
+                            {item.status}
+                          </span>
+                        </div>
+                      </div>
+                      
+                      <div className="mt-2 text-xs text-gray-500 font-medium flex items-center justify-between">
+                        <span>Mise à jour: {item.freshness || "Inconnu"}</span>
+                      </div>
+                      
+                      <Link 
+                        href={item.status === 'En stock' ? `/checkout/${store.id}?inventoryId=${item.id}&productId=${item.productId || ''}` : '#'}
+                        className={`mt-4 w-full py-3 rounded-xl font-bold flex items-center justify-center gap-2 transition-all ${item.status === 'En stock' ? 'bg-gray-900 dark:bg-white text-white dark:text-gray-900 hover:bg-pleingaz-red hover:text-white' : 'bg-gray-200 dark:bg-neutral-800 text-gray-400 cursor-not-allowed pointer-events-none'}`}
+                      >
+                        <ShoppingCart size={18} />
+                        {item.status === 'En stock' ? 'Commander' : 'Indisponible'}
+                      </Link>
+                    </motion.div>
+                  ))}
+                </div>
+              ) : (
+                <div className="p-8 text-center bg-white dark:bg-neutral-900 rounded-2xl border border-gray-100 dark:border-neutral-800 text-gray-500">
+                  Aucune bouteille enregistrée pour ce point de vente pour le moment.
+                </div>
+              )}
+            </div>
+
+            {/* Section Avis Clients Vérifiés */}
+            <div className="space-y-4 pt-4">
+              <div className="flex items-center justify-between">
+                <h2 className="text-xl font-bold text-gray-900 dark:text-white flex items-center gap-2">
+                  <Star className="text-amber-400 fill-amber-400" />
+                  Avis Clients Vérifiés ({store.reviews || 0})
+                </h2>
+                {store.rating !== null && (
+                  <div className="flex items-center gap-1.5 bg-amber-50 dark:bg-amber-950/40 text-amber-700 dark:text-amber-300 font-black px-3 py-1 rounded-xl text-sm border border-amber-200 dark:border-amber-800/50">
+                    <Star size={16} className="fill-amber-400 text-amber-400" />
+                    <span>{store.rating} / 5</span>
+                  </div>
+                )}
               </div>
-            ) : (
-              <div className="p-8 text-center bg-white dark:bg-neutral-900 rounded-2xl border border-gray-100 dark:border-neutral-800 text-gray-500">
-                Aucune bouteille enregistrée pour ce point de vente pour le moment.
-              </div>
-            )}
+
+              {store.reviewsList && store.reviewsList.length > 0 ? (
+                <div className="space-y-3">
+                  {store.reviewsList.map((review: any) => (
+                    <div 
+                      key={review.id}
+                      className="p-5 rounded-2xl bg-white dark:bg-neutral-900 border border-gray-100 dark:border-neutral-800 shadow-sm space-y-2.5"
+                    >
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center gap-2">
+                          <div className="w-8 h-8 rounded-full bg-orange-100 dark:bg-orange-950/60 text-orange-600 dark:text-orange-400 font-black text-xs flex items-center justify-center">
+                            {review.authorName.charAt(0).toUpperCase()}
+                          </div>
+                          <div>
+                            <p className="font-bold text-sm text-gray-900 dark:text-white">
+                              {review.authorName}
+                            </p>
+                            <span className="text-[10px] font-bold text-green-600 dark:text-green-400 flex items-center gap-1">
+                              <ShieldCheck size={11} /> Achat vérifié
+                            </span>
+                          </div>
+                        </div>
+                        <div className="flex items-center gap-1">
+                          {[1, 2, 3, 4, 5].map((s) => (
+                            <Star 
+                              key={s} 
+                              size={14} 
+                              className={s <= review.rating ? "fill-amber-400 text-amber-400" : "text-gray-300 dark:text-neutral-700"} 
+                            />
+                          ))}
+                        </div>
+                      </div>
+
+                      {review.comment && (
+                        <p className="text-sm text-gray-700 dark:text-gray-300 bg-gray-50 dark:bg-neutral-800/40 p-3 rounded-xl italic">
+                          « {review.comment} »
+                        </p>
+                      )}
+
+                      <p className="text-[11px] text-gray-400 text-right">
+                        {new Date(review.createdAt).toLocaleDateString('fr-FR', {
+                          day: 'numeric',
+                          month: 'long',
+                          year: 'numeric'
+                        })}
+                      </p>
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <div className="p-6 text-center bg-white dark:bg-neutral-900 rounded-2xl border border-gray-100 dark:border-neutral-800 text-gray-500 space-y-1">
+                  <p className="font-bold text-gray-700 dark:text-gray-300 text-sm">
+                    Aucun avis pour l'instant
+                  </p>
+                  <p className="text-xs text-gray-400">
+                    Les avis sont exclusivement déposés par les clients ayant finalisé une livraison avec ce point de vente.
+                  </p>
+                </div>
+              )}
+            </div>
           </div>
 
           {/* Right Column: Map & Info */}
