@@ -120,11 +120,25 @@ export class DistributorAdminService {
     });
 
     // Règle 3.4 : Badge Vérifié
-    // Création de la boutique (Store) publique
-    const store = await this.prisma.store.create({
-      data: {
+    // Création ou mise à jour de la boutique (Store) publique
+    const store = await this.prisma.store.upsert({
+      where: { applicationId: application.id },
+      create: {
         applicationId: application.id,
         ownerId: application.userId,
+        name: application.businessName || 'Boutique Sans Nom',
+        city: application.city || 'Douala',
+        neighborhood: application.neighborhood || 'Centre',
+        landmark: application.landmark,
+        latitude: application.latitude || 4.051,
+        longitude: application.longitude || 9.708,
+        whatsappNumber: application.whatsappNumber,
+        momoReceiverNumber: (application as any).momoReceiverNumber,
+        orangeReceiverNumber: (application as any).orangeReceiverNumber,
+        isVerifiedBadge: true,
+        isVisible: true,
+      },
+      update: {
         name: application.businessName || 'Boutique Sans Nom',
         city: application.city || 'Douala',
         neighborhood: application.neighborhood || 'Centre',

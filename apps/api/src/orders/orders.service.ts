@@ -95,21 +95,13 @@ export class OrdersService {
       const orderType = data.deliveryMethod === 'DELIVERY' ? 'B2C_DELIVERY' : 'B2C_PICKUP';
       const paymentMethodMapped = data.paymentMethod === 'MOMO' ? 'MTN_MOMO' : data.paymentMethod === 'OM' ? 'ORANGE_MONEY' : 'CASH';
 
+      const unitPrice = data.needsConsigne ? (inventory.product.publicPrice + 15000) : inventory.product.publicPrice;
       const itemsToCreate: any[] = [{ 
         productId: inventory.productId, 
         quantity: 1, 
-        unitPrice: inventory.product.publicPrice, 
-        totalPrice: inventory.product.publicPrice 
+        unitPrice, 
+        totalPrice: unitPrice 
       }];
-
-      if (data.needsConsigne) {
-        itemsToCreate.push({
-          productId: null, // Pas de produit spécifique, c'est une consigne
-          quantity: 1,
-          unitPrice: 15000,
-          totalPrice: 15000,
-        });
-      }
 
       // 1. Create Order
       const order = await tx.order.create({
@@ -123,6 +115,12 @@ export class OrdersService {
           deliveryAddress: data.address,
           items: {
             create: itemsToCreate
+          },
+          delivery: {
+            create: {
+              status: 'PENDING',
+              confirmationOtp: Math.floor(1000 + Math.random() * 9000).toString(),
+            }
           },
           payments: {
             create: [{
@@ -285,7 +283,24 @@ export class OrdersService {
     });
   }
 
-  async updateOrderStatus(userId: string, orderId: string, status: any) {
+  async getOrderById(userId: string, orderId: string): Promise<any> {
+    const order = await this.prisma.order.findUnique({
+      where: { id: orderId },
+      include: {
+        items: { include: { product: true } },
+        store: true,
+        delivery: { include: { driver: true } },
+        invoice: true,
+        payments: true,
+        customer: { select: { id: true, phone: true } }
+      }
+    });
+
+    if (!order) throw new NotFoundException('Commande introuvable.');
+    return order;
+  }
+
+  async updateOrderStatus(userId: string, orderId: string, status: any, otp?: string): Promise<any> {
     const store = await this.prisma.store.findFirst({
       where: { ownerId: userId }
     });
@@ -294,22 +309,48 @@ export class OrdersService {
 
     const order = await this.prisma.order.findFirst({
       where: { id: orderId, storeId: store.id },
-      include: { customer: true }
+      include: { customer: true, delivery: true }
     });
 
     if (!order) throw new NotFoundException('Commande introuvable ou non autorisée.');
+
+    // Si on passe en DELIVERED, vérifier l'OTP s'il est fourni
+    if (status === 'DELIVERED' && order.delivery?.confirmationOtp) {
+      if (otp && otp.trim() !== order.delivery.confirmationOtp) {
+        throw new BadRequestException('Code de confirmation invalide.');
+      }
+    }
 
     const updated = await this.prisma.order.update({
       where: { id: order.id },
       data: { status }
     });
 
+    // Mettre à jour également l'entité Delivery
+    if (order.delivery) {
+      await this.prisma.delivery.update({
+        where: { orderId: order.id },
+        data: {
+          status: status === 'DELIVERED' ? 'DELIVERED' : status === 'SHIPPED' ? 'IN_TRANSIT' : 'PENDING',
+          deliveredAt: status === 'DELIVERED' ? new Date() : undefined,
+        }
+      });
+    }
+
+    // Récompenser le client avec des points de fidélité lors d'une livraison réussie (+50 points)
+    if (status === 'DELIVERED') {
+      await this.prisma.user.update({
+        where: { id: order.customerId },
+        data: { loyaltyPoints: { increment: 50 } }
+      });
+    }
+
     await this.audit.log({
       userId,
       action: 'UPDATE_ORDER_STATUS',
       entity: 'Order',
       entityId: order.id,
-      details: { newStatus: status }
+      details: { newStatus: status, otpUsed: !!otp }
     });
 
     return updated;

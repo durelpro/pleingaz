@@ -18,10 +18,17 @@ function BuyerMessagesContent() {
   const [profileForm, setProfileForm] = useState({ firstName: '', lastName: '' });
   const [isSubmittingProfile, setIsSubmittingProfile] = useState(false);
 
+  const getHeaders = () => {
+    const token = typeof window !== 'undefined' ? localStorage.getItem('accessToken') : null;
+    const h: any = { 'Content-Type': 'application/json', 'x-demo-role': 'customer_1' };
+    if (token) h['Authorization'] = `Bearer ${token}`;
+    return h;
+  };
+
   useEffect(() => {
     // Check profile
     fetch('http://localhost:3001/users/profile', {
-      headers: { 'x-demo-role': 'customer_1' }
+      headers: getHeaders()
     })
     .then(res => {
       if (!res.ok) throw new Error('No profile');
@@ -32,26 +39,38 @@ function BuyerMessagesContent() {
         setHasProfile(true);
         loadConversations();
       } else {
-        setHasProfile(false);
+        setHasProfile(true); // Don't block chat if basic user
+        loadConversations();
       }
     })
-    .catch(() => setHasProfile(false));
+    .catch(() => {
+      setHasProfile(true);
+      loadConversations();
+    });
   }, []);
 
   const loadConversations = () => {
     fetch('http://localhost:3001/chat/conversations', {
-      headers: { 'x-demo-role': 'customer_1' }
+      headers: getHeaders()
     })
     .then(res => res.json())
     .then(data => {
-      setConversations(data);
-      if (toId && !activeConv) {
-        const existing = data.find((c: any) => c.participant1Id === toId || c.participant2Id === toId);
-        if (existing) {
-          selectConversation(existing);
-        } else {
-          setActiveConv({ isNew: true, participant1Id: 'customer_1', participant2Id: toId });
-          setMessages([]);
+      if (Array.isArray(data)) {
+        setConversations(data);
+        if (toId && !activeConv) {
+          const existing = data.find((c: any) => c.participant1Id === toId || c.participant2Id === toId || c.otherParticipant?.id === toId);
+          if (existing) {
+            selectConversation(existing);
+          } else {
+            // New conversation directly
+            setActiveConv({ 
+              isNew: true, 
+              participant1Id: 'customer-demo-1234', 
+              participant2Id: toId,
+              otherParticipant: { name: 'Point de vente', id: toId }
+            });
+            setMessages([]);
+          }
         }
       }
     })
@@ -61,12 +80,30 @@ function BuyerMessagesContent() {
   const selectConversation = (conv: any) => {
     setActiveConv(conv);
     fetch(`http://localhost:3001/chat/conversations/${conv.id}/messages`, {
-      headers: { 'x-demo-role': 'customer_1' }
+      headers: getHeaders()
     })
     .then(res => res.json())
-    .then(data => setMessages(data))
+    .then(data => setMessages(Array.isArray(data) ? data : []))
     .catch(err => console.error(err));
   };
+
+  // Poll for messages in active conversation every 3.5 seconds
+  useEffect(() => {
+    if (!activeConv || activeConv.isNew) return;
+    const interval = setInterval(() => {
+      fetch(`http://localhost:3001/chat/conversations/${activeConv.id}/messages`, {
+        headers: getHeaders()
+      })
+      .then(res => res.json())
+      .then(data => {
+        if (Array.isArray(data)) {
+          setMessages(data);
+        }
+      })
+      .catch(() => {});
+    }, 3500);
+    return () => clearInterval(interval);
+  }, [activeConv]);
 
   const createProfile = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -74,7 +111,7 @@ function BuyerMessagesContent() {
     try {
       await fetch('http://localhost:3001/users/profile', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json', 'x-demo-role': 'customer_1' },
+        headers: getHeaders(),
         body: JSON.stringify(profileForm)
       });
       setHasProfile(true);
@@ -89,19 +126,17 @@ function BuyerMessagesContent() {
     e.preventDefault();
     if (!input.trim() || !activeConv) return;
     
-    // We assume participant2 is the distributor (or the other guy)
-    const recipientId = activeConv.participant1Id === 'customer_1' ? activeConv.participant2Id : activeConv.participant1Id;
+    const recipientId = activeConv.otherParticipant?.id || (activeConv.participant1Id === 'customer-demo-1234' ? activeConv.participant2Id : activeConv.participant1Id);
 
     try {
       const res = await fetch('http://localhost:3001/chat/messages', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json', 'x-demo-role': 'customer_1' },
+        headers: getHeaders(),
         body: JSON.stringify({ recipientId, content: input })
       });
       const newMsg = await res.json();
       setMessages(prev => [...prev, newMsg]);
       setInput('');
-      // Reload conversations to update last message preview
       loadConversations();
     } catch (err) {
       console.error(err);
@@ -186,10 +221,16 @@ function BuyerMessagesContent() {
                   <div className={`w-12 h-12 rounded-full flex items-center justify-center shrink-0 ${activeConv?.id === conv.id ? 'bg-white dark:bg-neutral-800 text-blue-500 shadow-sm' : 'bg-gray-100 dark:bg-neutral-800 text-gray-400'}`}>
                     <Store size={20} />
                   </div>
-                  <div className="flex-1 min-w-0">
+                    <div className="flex-1 min-w-0">
                     <div className="flex justify-between items-baseline mb-1">
-                      <h3 className="font-bold text-gray-900 dark:text-white truncate">Boutique</h3>
-                      <span className="text-xs text-blue-500 font-bold"></span>
+                      <h3 className="font-bold text-gray-900 dark:text-white truncate">
+                        {conv.otherParticipant?.name || 'Boutique Distributeur'}
+                      </h3>
+                      {conv.otherParticipant?.store?.neighborhood && (
+                        <span className="text-xs text-blue-500 font-bold ml-2 shrink-0">
+                          {conv.otherParticipant.store.neighborhood}
+                        </span>
+                      )}
                     </div>
                     <p className="text-sm text-gray-600 dark:text-gray-400 truncate font-medium">
                       {conv.messages?.[0]?.content || 'Nouvelle conversation'}
@@ -206,7 +247,7 @@ function BuyerMessagesContent() {
       <div className="flex-1 flex flex-col h-screen max-h-screen relative bg-gray-50 dark:bg-neutral-950">
         {!activeConv ? (
           <div className="flex-1 flex items-center justify-center text-gray-500">
-            Sélectionnez une conversation pour commencer
+            Sélectionnez une boutique pour démarrer la discussion
           </div>
         ) : (
           <>
@@ -216,9 +257,14 @@ function BuyerMessagesContent() {
                 <Store size={24} />
               </div>
               <div>
-                <h2 className="text-lg font-black text-gray-900 dark:text-white">Boutique (Distributeur)</h2>
+                <h2 className="text-lg font-black text-gray-900 dark:text-white">
+                  {activeConv.otherParticipant?.name || 'Boutique PLEINGAZ'}
+                </h2>
                 <p className="text-sm text-gray-500 flex items-center gap-1 font-medium">
-                  <MapPin size={14} /> Localisation
+                  <MapPin size={14} className="text-blue-500" /> 
+                  {activeConv.otherParticipant?.store 
+                    ? `${activeConv.otherParticipant.store.neighborhood}, ${activeConv.otherParticipant.store.city} ${activeConv.otherParticipant.store.landmark ? `(${activeConv.otherParticipant.store.landmark})` : ''}`
+                    : 'Point de vente Agréé'}
                 </p>
               </div>
             </div>

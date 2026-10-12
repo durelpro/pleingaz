@@ -23,6 +23,16 @@ export class DistributorController {
     return this.distributorService.getDashboardMetrics(req.user.userId);
   }
 
+  @Get('my-store')
+  async getMyStore(@Request() req: any): Promise<any> {
+    return this.distributorService.getMyStore(req.user.userId);
+  }
+
+  @Put('my-store/location')
+  async updateLocation(@Request() req: any, @Body() data: any): Promise<any> {
+    return this.distributorService.updateStoreLocation(req.user.userId, data);
+  }
+
   @Put('application/step')
   async updateStep(@Request() req: any, @Body() data: any) {
     return this.distributorService.updateDraft(req.user.userId, data);

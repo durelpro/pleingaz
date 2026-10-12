@@ -34,6 +34,8 @@ export default function DistributorWizard() {
     password: '',
     businessName: '',
     taxId: '',
+    city: 'Douala',
+    neighborhood: '',
     landmark: '',
     latitude: 0,
     longitude: 0,
@@ -45,10 +47,17 @@ export default function DistributorWizard() {
     documentTypes.reduce((acc, doc) => ({ ...acc, [doc.id]: { file: null, uploaded: false } }), {})
   );
 
+  const getAuthHeaders = (extraHeaders: any = {}) => {
+    const token = typeof window !== 'undefined' ? localStorage.getItem('accessToken') : null;
+    const h: any = { 'x-demo-role': 'distributor_1', ...extraHeaders };
+    if (token) h['Authorization'] = `Bearer ${token}`;
+    return h;
+  };
+
   useEffect(() => {
     // Vérifier si un profil existe déjà
     fetch('http://localhost:3001/distributor/application', {
-      headers: { 'x-demo-role': 'distributor_1' }
+      headers: getAuthHeaders()
     })
     .then(res => res.json())
     .then(data => {
@@ -64,6 +73,8 @@ export default function DistributorWizard() {
           password: '',
           businessName: data.businessName || '',
           taxId: data.taxId || '',
+          city: data.city || 'Douala',
+          neighborhood: data.neighborhood || '',
           landmark: data.landmark || '',
           latitude: data.latitude || 0,
           longitude: data.longitude || 0,
@@ -92,10 +103,7 @@ export default function DistributorWizard() {
     try {
       await fetch('http://localhost:3001/distributor/application/step', {
         method: 'PUT',
-        headers: { 
-          'Content-Type': 'application/json',
-          'x-demo-role': 'distributor_1'
-        },
+        headers: getAuthHeaders({ 'Content-Type': 'application/json' }),
         body: JSON.stringify({ ...formData, currentStep })
       });
     } catch (e) {
@@ -118,7 +126,7 @@ export default function DistributorWizard() {
     try {
       const res = await fetch('http://localhost:3001/distributor/application/upload', {
         method: 'POST',
-        headers: { 'x-demo-role': 'distributor_1' },
+        headers: getAuthHeaders(),
         body: formDataUpload
       });
       if (res.ok) {
@@ -133,7 +141,18 @@ export default function DistributorWizard() {
   };
 
   const handleNextOrSubmit = async () => {
+    // Validation Étape 2 (Quartier et Repère indispensables)
+    if (currentStep === 2) {
+      if (!formData.neighborhood.trim() || !formData.landmark.trim()) {
+        alert('Veuillez renseigner votre quartier et un repère (description du lieu) pour que les clients puissent vous trouver.');
+        return;
+      }
+    }
+
     if (currentStep === steps.length) {
+      // Sauvegarder les données du Step 4 d'abord
+      await saveStep();
+
       // Validate documents
       const allUploaded = documentTypes.every(d => documents[d.id].uploaded);
       if (!allUploaded) {
@@ -145,7 +164,7 @@ export default function DistributorWizard() {
       try {
         const res = await fetch('http://localhost:3001/distributor/application/submit', {
           method: 'POST',
-          headers: { 'x-demo-role': 'distributor_1' }
+          headers: getAuthHeaders()
         });
         if (res.ok) {
           router.push('/distributor/dashboard');
@@ -254,22 +273,54 @@ export default function DistributorWizard() {
 
             {currentStep === 2 && (
               <div className="space-y-4">
-                <h2 className="text-2xl font-bold text-gray-900 dark:text-white">Localisation précise</h2>
-                <p className="text-sm text-gray-500">Placez le curseur sur la carte pour nous aider à vous trouver.</p>
-                <div className="h-64 rounded-xl overflow-hidden border border-gray-200 dark:border-neutral-800">
-                  <MapPicker 
-                    onChange={(lat, lng) => setFormData({...formData, latitude: lat, longitude: lng})} 
-                  />
+                <h2 className="text-2xl font-bold text-gray-900 dark:text-white">Localisation précise de la boutique</h2>
+                <p className="text-sm text-gray-500">Renseignez votre zone et placez le curseur sur la carte pour que les clients vous retrouvent facilement.</p>
+                
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <label className="text-sm font-medium text-gray-700 dark:text-gray-300">Ville</label>
+                    <select
+                      className="w-full p-4 rounded-xl border border-gray-200 dark:border-neutral-800 bg-gray-50 dark:bg-neutral-950 focus:ring-2 focus:ring-pleingaz-red outline-none transition-all font-medium"
+                      value={formData.city}
+                      onChange={(e) => setFormData({...formData, city: e.target.value})}
+                    >
+                      <option value="Douala">Douala</option>
+                      <option value="Yaoundé">Yaoundé</option>
+                      <option value="Bafoussam">Bafoussam</option>
+                      <option value="Garoua">Garoua</option>
+                      <option value="Kribi">Kribi</option>
+                      <option value="Limbe">Limbe</option>
+                    </select>
+                  </div>
+                  <div className="space-y-2">
+                    <label className="text-sm font-medium text-gray-700 dark:text-gray-300">Quartier</label>
+                    <input 
+                      type="text" 
+                      required
+                      className="w-full p-4 rounded-xl border border-gray-200 dark:border-neutral-800 bg-gray-50 dark:bg-neutral-950 focus:ring-2 focus:ring-pleingaz-red outline-none transition-all"
+                      placeholder="Ex: Bonamoussadi, Akwa, Bastos..."
+                      value={formData.neighborhood}
+                      onChange={(e) => setFormData({...formData, neighborhood: e.target.value})}
+                    />
+                  </div>
                 </div>
+
                 <div className="space-y-2">
-                  <label className="text-sm font-medium text-gray-700 dark:text-gray-300">Description du lieu (Ex: En face de la pharmacie)</label>
+                  <label className="text-sm font-medium text-gray-700 dark:text-gray-300">Description du lieu / Repère (Crucial pour la recherche des clients)</label>
                   <input 
                     type="text" 
                     required
                     className="w-full p-4 rounded-xl border border-gray-200 dark:border-neutral-800 bg-gray-50 dark:bg-neutral-950 focus:ring-2 focus:ring-pleingaz-red outline-none transition-all"
-                    placeholder="Décrivez comment trouver votre boutique..."
+                    placeholder="Ex: En face de la boulangerie Saker, à 50m du carrefour..."
                     value={formData.landmark}
                     onChange={(e) => setFormData({...formData, landmark: e.target.value})}
+                  />
+                  <p className="text-xs text-gray-500">Les clients pourront trouver votre boutique en tapant des mots de ce repère dans la barre de recherche.</p>
+                </div>
+
+                <div className="h-64 rounded-xl overflow-hidden border border-gray-200 dark:border-neutral-800">
+                  <MapPicker 
+                    onChange={(lat, lng) => setFormData({...formData, latitude: lat, longitude: lng})} 
                   />
                 </div>
               </div>
@@ -311,37 +362,6 @@ export default function DistributorWizard() {
               <div className="space-y-4">
                 <h2 className="text-2xl font-bold text-gray-900 dark:text-white">Vos Numéros Commerciaux</h2>
                 <p className="text-sm text-gray-500">Ces numéros seront présentés à vos clients pour recevoir leurs paiements Mobile Money. Au moins un numéro est recommandé.</p>
-                
-                <div className="space-y-4 mt-6">
-                  <div className="space-y-2">
-                    <label className="text-sm font-medium text-gray-700 dark:text-gray-300">Numéro de réception MTN MoMo</label>
-                    <input 
-                      type="tel" 
-                      className="w-full p-4 rounded-xl border border-gray-200 dark:border-neutral-800 bg-gray-50 dark:bg-neutral-950 focus:ring-2 focus:ring-yellow-500 outline-none transition-all"
-                      placeholder="Ex: 670 00 00 00"
-                      value={formData.momoReceiverNumber}
-                      onChange={(e) => setFormData({...formData, momoReceiverNumber: e.target.value})}
-                    />
-                  </div>
-
-                  <div className="space-y-2">
-                    <label className="text-sm font-medium text-gray-700 dark:text-gray-300">Numéro de réception Orange Money</label>
-                    <input 
-                      type="tel" 
-                      className="w-full p-4 rounded-xl border border-gray-200 dark:border-neutral-800 bg-gray-50 dark:bg-neutral-950 focus:ring-2 focus:ring-orange-500 outline-none transition-all"
-                      placeholder="Ex: 690 00 00 00"
-                      value={formData.orangeReceiverNumber}
-                      onChange={(e) => setFormData({...formData, orangeReceiverNumber: e.target.value})}
-                    />
-                  </div>
-                </div>
-              </div>
-            )}
-
-            {currentStep === 4 && (
-              <div className="space-y-4">
-                <h2 className="text-2xl font-bold text-gray-900 dark:text-white">Vos Numéros Commerciaux</h2>
-                <p className="text-sm text-gray-500">Ces numéros seront présentés à vos clients pour recevoir leurs paiements Mobile Money.</p>
                 
                 <div className="space-y-4 mt-6">
                   <div className="space-y-2">

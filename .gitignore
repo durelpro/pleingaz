@@ -4,4 +4,6 @@ node_modules/
 !.env.example
 dist/
 .next/
+uploads/
 *.log
+.turbo/

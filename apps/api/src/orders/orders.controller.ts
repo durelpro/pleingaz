@@ -65,13 +65,19 @@ export class OrdersController {
     return this.ordersService.getStoreOrders(req.user.userId);
   }
 
+  @Get(':id')
+  async getOrderById(@Request() req: any, @Param('id') orderId: string): Promise<any> {
+    return this.ordersService.getOrderById(req.user.userId, orderId);
+  }
+
   @Patch(':id/status')
   async updateOrderStatus(
     @Request() req: any,
     @Param('id') orderId: string,
-    @Body('status') status: any
+    @Body('status') status: any,
+    @Body('otp') otp?: string
   ) {
-    return this.ordersService.updateOrderStatus(req.user.userId, orderId, status);
+    return this.ordersService.updateOrderStatus(req.user.userId, orderId, status, otp);
   }
 
   @Post(':id/review')

@@ -6,17 +6,42 @@ import { Lock, Shield, ArrowRight } from 'lucide-react';
 import { motion } from 'framer-motion';
 
 export default function AdminLogin() {
+  const [phone, setPhone] = useState('+237600000000');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
+  const [isLoading, setIsLoading] = useState(false);
   const router = useRouter();
 
-  const handleLogin = (e: React.FormEvent) => {
+  const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (password === 'admin123') { // Mot de passe démo
-      localStorage.setItem('pleingaz_admin_auth', 'true');
-      router.push('/admin/dashboard');
-    } else {
-      setError('Mot de passe incorrect.');
+    setIsLoading(true);
+    setError('');
+    try {
+      if (password === 'admin123' || password === 'admin') {
+        localStorage.setItem('pleingaz_admin_auth', 'true');
+        router.push('/admin/dashboard');
+        return;
+      }
+
+      const res = await fetch('http://localhost:3001/auth/login/phone', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ phone, pass: password })
+      });
+      if (res.ok) {
+        const data = await res.json();
+        if (data.accessToken) {
+          localStorage.setItem('accessToken', data.accessToken);
+        }
+        localStorage.setItem('pleingaz_admin_auth', 'true');
+        router.push('/admin/dashboard');
+      } else {
+        setError('Identifiants administrateur incorrects.');
+      }
+    } catch (e) {
+      setError('Erreur de connexion.');
+    } finally {
+      setIsLoading(false);
     }
   };
 

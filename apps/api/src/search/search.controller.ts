@@ -25,6 +25,11 @@ export class SearchController {
     });
   }
 
+  @Get('suggestions')
+  async getSuggestions(@Query('q') query?: string) {
+    return this.searchService.getSuggestions(query || '');
+  }
+
   @Get('stores/:id')
   async getStore(@Param('id') storeId: string) {
     return this.searchService.getStoreDetails(storeId);

@@ -14,8 +14,16 @@ const icon = L.icon({
   iconAnchor: [12, 41],
 });
 
-function LocationMarker({ onChange }: { onChange: (lat: number, lng: number) => void }) {
-  const [position, setPosition] = useState<L.LatLng | null>(null);
+function LocationMarker({ 
+  onChange,
+  initialPosition
+}: { 
+  onChange: (lat: number, lng: number) => void;
+  initialPosition?: [number, number];
+}) {
+  const [position, setPosition] = useState<L.LatLng | null>(
+    initialPosition ? new L.LatLng(initialPosition[0], initialPosition[1]) : null
+  );
 
   const map = useMapEvents({
     click(e) {
@@ -24,30 +32,40 @@ function LocationMarker({ onChange }: { onChange: (lat: number, lng: number) => 
       map.flyTo(e.latlng, map.getZoom());
     },
     locationfound(e) {
-      setPosition(e.latlng);
-      onChange(e.latlng.lat, e.latlng.lng);
-      map.flyTo(e.latlng, map.getZoom());
+      if (!initialPosition) {
+        setPosition(e.latlng);
+        onChange(e.latlng.lat, e.latlng.lng);
+        map.flyTo(e.latlng, map.getZoom());
+      }
     },
   });
 
   useEffect(() => {
-    map.locate();
-  }, [map]);
+    if (!initialPosition) {
+      map.locate();
+    }
+  }, [map, initialPosition]);
 
   return position === null ? null : (
     <Marker position={position} icon={icon} />
   );
 }
 
-export default function MapPicker({ onChange }: { onChange: (lat: number, lng: number) => void }) {
-  // Default center: Douala, Cameroon
+export default function MapPicker({ 
+  onChange,
+  initialPosition
+}: { 
+  onChange: (lat: number, lng: number) => void;
+  initialPosition?: [number, number];
+}) {
+  const center: [number, number] = initialPosition && initialPosition[0] ? initialPosition : [4.0511, 9.7679];
   return (
-    <MapContainer center={[4.0511, 9.7679]} zoom={13} scrollWheelZoom={false} className="w-full h-full z-0">
+    <MapContainer center={center} zoom={13} scrollWheelZoom={false} className="w-full h-full z-0">
       <TileLayer
         attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
         url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
       />
-      <LocationMarker onChange={onChange} />
+      <LocationMarker onChange={onChange} initialPosition={initialPosition} />
     </MapContainer>
   );
 }

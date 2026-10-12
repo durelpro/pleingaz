@@ -24,26 +24,33 @@ export class SearchService {
     let paramIndex = 1;
 
     if (productId) {
-      queryCondition += ` AND i."productId" = $${paramIndex}`;
+      queryCondition += ` AND EXISTS (SELECT 1 FROM "Inventory" inv WHERE inv."storeId" = s.id AND inv."productId" = $${paramIndex})`;
       queryParams.push(productId);
       paramIndex++;
     }
 
-    // Condition textuelle (pg_trgm + unaccent)
-    if (textQuery) {
-      queryCondition += ` AND (
-        unaccent(s.name) ILIKE unaccent($${paramIndex})
-        OR unaccent(s.neighborhood) ILIKE unaccent($${paramIndex}) 
-        OR unaccent(s.city) ILIKE unaccent($${paramIndex})
-        OR unaccent(s.landmark) ILIKE unaccent($${paramIndex})
-        OR s.neighborhood % $${paramIndex}
-      )`;
-      queryParams.push(`%${textQuery}%`);
-      paramIndex++;
+    // Condition textuelle multi-mots (nom, quartier, ville, description du lieu/repère)
+    if (textQuery && textQuery.trim().length > 0) {
+      const words = textQuery.trim().split(/\s+/).filter(w => w.length > 0);
+      const wordConditions: string[] = [];
+
+      for (const word of words) {
+        wordConditions.push(`(
+          unaccent(lower(concat_ws(' ', s.name, s.neighborhood, s.city, coalesce(s.landmark, '')))) ILIKE unaccent(lower($${paramIndex}))
+          OR s.neighborhood % $${paramIndex}
+          OR coalesce(s.landmark, '') % $${paramIndex}
+        )`);
+        queryParams.push(`%${word}%`);
+        paramIndex++;
+      }
+
+      if (wordConditions.length > 0) {
+        queryCondition += ` AND (${wordConditions.join(' AND ')})`;
+      }
     }
 
     // Condition géospatiale (PostGIS)
-    let orderBy = `ORDER BY i.level ASC, s."updatedAt" DESC`; // High level d'abord par ex
+    let orderBy = `ORDER BY s."updatedAt" DESC`;
     if (latitude !== undefined && longitude !== undefined) {
       queryCondition += ` AND ST_DWithin(
         ST_MakePoint(s.longitude, s.latitude)::geography,
@@ -51,7 +58,7 @@ export class SearchService {
         $${paramIndex + 2}
       )`;
       
-      orderBy = `ORDER BY distance ASC, i.level ASC`;
+      orderBy = `ORDER BY distance ASC, s."updatedAt" DESC`;
       queryParams.push(longitude, latitude, radiusMeters);
       paramIndex += 3;
     }
@@ -60,13 +67,19 @@ export class SearchService {
     const sql = `
       SELECT 
         s.id, s.name, s.neighborhood, s.city, s.landmark, s."whatsappNumber",
-        s.latitude, s.longitude,
-        i.level as "stockLevel", i."lastConfirmedAt",
+        s.latitude, s.longitude, s."ownerId",
+        COALESCE(
+          (SELECT level FROM "Inventory" inv WHERE inv."storeId" = s.id ORDER BY inv.level ASC LIMIT 1),
+          'HIGH'
+        ) as "stockLevel",
+        COALESCE(
+          (SELECT "lastConfirmedAt" FROM "Inventory" inv WHERE inv."storeId" = s.id ORDER BY inv."lastConfirmedAt" DESC LIMIT 1),
+          s."updatedAt"
+        ) as "lastConfirmedAt",
         ${latitude !== undefined && longitude !== undefined 
           ? `ST_Distance(ST_MakePoint(s.longitude, s.latitude)::geography, ST_MakePoint(${longitude}, ${latitude})::geography) as distance`
           : `0 as distance`}
       FROM "Store" s
-      JOIN "Inventory" i ON s.id = i."storeId"
       ${queryCondition}
       ${orderBy}
       LIMIT 20
@@ -74,7 +87,7 @@ export class SearchService {
 
     const results = await this.prisma.$queryRawUnsafe<any[]>(sql, ...queryParams);
 
-    // Tâche 4.6 : Journaliser les recherches (surtout si pas de résultat pour analyse métier)
+    // Tâche 4.6 : Journaliser les recherches
     if (results.length === 0 || textQuery) {
       await this.prisma.searchEvent.create({
         data: {
@@ -90,7 +103,8 @@ export class SearchService {
 
     // Enrichissement R6 : Libellé métier ("Stock confirmé il y a X min")
     return results.map(row => {
-      const minutesAgo = Math.floor((Date.now() - new Date(row.lastConfirmedAt).getTime()) / 60000);
+      const lastDate = row.lastConfirmedAt ? new Date(row.lastConfirmedAt).getTime() : Date.now();
+      const minutesAgo = Math.max(0, Math.floor((Date.now() - lastDate) / 60000));
       let freshness = '🔴 Plus de 12h';
       if (minutesAgo < 60) freshness = '🟢 Moins de 1h';
       else if (minutesAgo < 180) freshness = '🟠 Moins de 3h';
@@ -100,7 +114,7 @@ export class SearchService {
         ...row,
         distanceStr: row.distance ? `${(row.distance / 1000).toFixed(1)} km` : null,
         stockFreshness: `Confirmé il y a ${minutesAgo} min (${freshness})`,
-        recommendationReason: row.distance && row.distance < 2000 ? '📍 Le plus proche' : (row.stockLevel === 'HIGH' ? '🔥 Beaucoup de stock' : ''),
+        recommendationReason: row.distance && row.distance < 2000 ? '📍 Le plus proche' : (row.stockLevel === 'HIGH' ? '🔥 Stock disponible' : ''),
       };
     });
   }
@@ -110,7 +124,6 @@ export class SearchService {
       where: { 
         id: storeId,
         isVisible: true,
-        isVerifiedBadge: true
       },
       include: {
         inventories: {
@@ -125,18 +138,22 @@ export class SearchService {
 
     return {
       id: store.id,
+      ownerId: store.ownerId,
       name: store.name,
-      description: null, // Removed store.description
-      address: `${store.landmark || ''}, ${store.neighborhood}`,
+      description: store.landmark ? `Repère : ${store.landmark}` : null,
+      address: `${store.landmark ? store.landmark + ', ' : ''}${store.neighborhood || ''}`,
+      neighborhood: store.neighborhood,
+      landmark: store.landmark,
       city: store.city,
       rating: null,
       reviews: 0,
       latitude: store.latitude,
       longitude: store.longitude,
-      phone: store.whatsappNumber, // Removed store.phone
-      hours: store.openingHours ? JSON.stringify(store.openingHours) : null, // Fixed openingHours
+      phone: store.whatsappNumber,
+      hours: store.openingHours ? JSON.stringify(store.openingHours) : null,
       inventory: store.inventories.map(inv => {
-        const minutesAgo = Math.floor((Date.now() - new Date(inv.lastConfirmedAt).getTime()) / 60000);
+        const lastDate = inv.lastConfirmedAt ? new Date(inv.lastConfirmedAt).getTime() : Date.now();
+        const minutesAgo = Math.max(0, Math.floor((Date.now() - lastDate) / 60000));
         let freshness = '🔴 Plus de 12h';
         if (minutesAgo < 60) freshness = '🟢 Moins de 1h';
         else if (minutesAgo < 180) freshness = '🟠 Moins de 3h';
@@ -155,4 +172,58 @@ export class SearchService {
       })
     };
   }
+
+  async getSuggestions(query: string) {
+    if (!query || query.trim().length === 0) return [];
+    const cleanQuery = query.trim();
+
+    const sql = `
+      SELECT DISTINCT
+        s.neighborhood, s.city, s.landmark, s.name, s.id
+      FROM "Store" s
+      WHERE s."isVisible" = true
+        AND (
+          unaccent(lower(concat_ws(' ', s.name, s.neighborhood, s.city, coalesce(s.landmark, '')))) ILIKE unaccent(lower($1))
+          OR s.neighborhood % $1
+          OR coalesce(s.landmark, '') % $1
+        )
+      LIMIT 10
+    `;
+
+    const rows = await this.prisma.$queryRawUnsafe<any[]>(sql, `%${cleanQuery}%`);
+
+    const suggestions: { type: 'neighborhood' | 'landmark' | 'store'; text: string; subtext?: string; storeId?: string }[] = [];
+    const seenTexts = new Set<string>();
+
+    for (const row of rows) {
+      if (row.neighborhood && !seenTexts.has(row.neighborhood.toLowerCase())) {
+        seenTexts.add(row.neighborhood.toLowerCase());
+        suggestions.push({
+          type: 'neighborhood',
+          text: row.neighborhood,
+          subtext: `${row.city || 'Douala'} (Quartier)`
+        });
+      }
+      if (row.landmark && !seenTexts.has(row.landmark.toLowerCase())) {
+        seenTexts.add(row.landmark.toLowerCase());
+        suggestions.push({
+          type: 'landmark',
+          text: row.landmark,
+          subtext: `${row.neighborhood || 'Quartier'}, ${row.city || 'Douala'} (Repère)`
+        });
+      }
+      if (row.name && !seenTexts.has(row.name.toLowerCase())) {
+        seenTexts.add(row.name.toLowerCase());
+        suggestions.push({
+          type: 'store',
+          text: row.name,
+          subtext: `${row.neighborhood || 'Quartier'} (Boutique)`,
+          storeId: row.id
+        });
+      }
+    }
+
+    return suggestions.slice(0, 8);
+  }
 }
+

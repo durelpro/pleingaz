@@ -1,9 +1,42 @@
 'use client';
 
+import { useState } from 'react';
 import Link from 'next/link';
-import { Store, LogIn, ArrowLeft } from 'lucide-react';
+import { Store, LogIn, ArrowLeft, Loader2, AlertCircle } from 'lucide-react';
 
 export default function DistributorPortal() {
+  const [phone, setPhone] = useState('');
+  const [password, setPassword] = useState('');
+  const [errorMsg, setErrorMsg] = useState('');
+  const [isLoading, setIsLoading] = useState(false);
+
+  const handleLogin = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setIsLoading(true);
+    setErrorMsg('');
+    try {
+      const res = await fetch('http://localhost:3001/auth/login/phone', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ phone, pass: password }),
+      });
+      if (res.ok) {
+        const data = await res.json();
+        if (data.accessToken) {
+          localStorage.setItem('accessToken', data.accessToken);
+        }
+        window.location.href = '/distributor/dashboard';
+      } else {
+        const err = await res.json();
+        setErrorMsg(err.message || 'Identifiants incorrects');
+      }
+    } catch (e) {
+      setErrorMsg('Erreur de connexion au serveur');
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-neutral-950 p-6 flex flex-col items-center justify-center relative overflow-hidden">
       
@@ -40,14 +73,23 @@ export default function DistributorPortal() {
               </p>
             </div>
             
-            <form className="space-y-4" onSubmit={(e) => { e.preventDefault(); window.location.href = '/distributor/dashboard'; }}>
+            <form className="space-y-4" onSubmit={handleLogin}>
+              {errorMsg && (
+                <div className="p-3 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-xl flex items-center gap-2 text-xs font-bold text-red-600 dark:text-red-400">
+                  <AlertCircle size={16} />
+                  <span>{errorMsg}</span>
+                </div>
+              )}
+
               <div>
                 <label className="text-sm font-medium text-gray-700 dark:text-gray-300">Numéro de téléphone ou Email</label>
                 <input 
                   type="text" 
                   required
                   placeholder="Ex: 690000000"
-                  className="w-full mt-1 p-3 rounded-xl border border-gray-200 dark:border-neutral-800 bg-gray-50 dark:bg-neutral-950 focus:ring-2 focus:ring-blue-500 outline-none transition-all"
+                  value={phone}
+                  onChange={(e) => setPhone(e.target.value)}
+                  className="w-full mt-1 p-3 rounded-xl border border-gray-200 dark:border-neutral-800 bg-gray-50 dark:bg-neutral-950 focus:ring-2 focus:ring-blue-500 outline-none transition-all font-medium"
                 />
               </div>
               <div>
@@ -56,14 +98,18 @@ export default function DistributorPortal() {
                   type="password" 
                   required
                   placeholder="Votre mot de passe"
-                  className="w-full mt-1 p-3 rounded-xl border border-gray-200 dark:border-neutral-800 bg-gray-50 dark:bg-neutral-950 focus:ring-2 focus:ring-blue-500 outline-none transition-all"
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  className="w-full mt-1 p-3 rounded-xl border border-gray-200 dark:border-neutral-800 bg-gray-50 dark:bg-neutral-950 focus:ring-2 focus:ring-blue-500 outline-none transition-all font-medium"
                 />
               </div>
               <button 
                 type="submit"
-                className="w-full py-4 text-center bg-blue-600 hover:bg-blue-700 text-white font-black text-lg rounded-xl transition-colors"
+                disabled={isLoading}
+                className="w-full py-4 text-center bg-blue-600 hover:bg-blue-700 text-white font-black text-lg rounded-xl transition-colors flex items-center justify-center gap-2 disabled:opacity-70"
               >
-                Se Connecter
+                {isLoading && <Loader2 size={20} className="animate-spin" />}
+                {isLoading ? 'Connexion...' : 'Se Connecter'}
               </button>
             </form>
           </div>

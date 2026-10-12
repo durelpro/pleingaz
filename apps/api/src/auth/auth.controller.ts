@@ -36,4 +36,19 @@ export class AuthController {
 
     return { accessToken: tokens.accessToken };
   }
+
+  @Post('login/phone')
+  @HttpCode(HttpStatus.OK)
+  async loginWithPhonePassword(@Body() body: { phone: string; pass: string }, @Res({ passthrough: true }) res: Response): Promise<{ accessToken: string }> {
+    const tokens = await this.authService.validatePhonePassword(body.phone, body.pass);
+    
+    res.cookie('refresh_token', tokens.refreshToken, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === 'production',
+      sameSite: 'strict',
+      maxAge: 7 * 24 * 60 * 60 * 1000,
+    });
+
+    return { accessToken: tokens.accessToken };
+  }
 }

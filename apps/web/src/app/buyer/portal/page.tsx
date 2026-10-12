@@ -8,15 +8,89 @@ import { motion } from 'framer-motion';
 export default function BuyerPortal() {
   const [profile, setProfile] = useState<any>(null);
   const [orders, setOrders] = useState<any[]>([]);
+  const [firstName, setFirstName] = useState('');
+  const [lastName, setLastName] = useState('');
+  const [isSubmitting, setIsSubmitting] = useState(false);
+
+  const [mode, setMode] = useState<'LOGIN' | 'REGISTER'>('LOGIN');
+  const [phone, setPhone] = useState('');
+  const [password, setPassword] = useState('');
+  const [authError, setAuthError] = useState('');
   const [isLoading, setIsLoading] = useState(true);
 
+  const handleLogin = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setIsSubmitting(true);
+    setAuthError('');
+    try {
+      const res = await fetch('http://localhost:3001/auth/login/phone', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ phone, pass: password })
+      });
+      if (res.ok) {
+        const data = await res.json();
+        if (data.accessToken) {
+          localStorage.setItem('accessToken', data.accessToken);
+        }
+        // Load profile
+        const profRes = await fetch('http://localhost:3001/users/profile', {
+          headers: { 
+            'Authorization': `Bearer ${data.accessToken}`,
+            'x-demo-role': 'customer_1' 
+          }
+        });
+        if (profRes.ok) {
+          const profData = await profRes.json();
+          setProfile({ ...profData, loyaltyPoints: profData.user?.loyaltyPoints || 500 });
+        } else {
+          setProfile({ firstName: 'Client', lastName: '', loyaltyPoints: 500 });
+        }
+      } else {
+        const err = await res.json();
+        setAuthError(err.message || 'Numéro ou mot de passe incorrect.');
+      }
+    } catch (e) {
+      setAuthError('Erreur de connexion au serveur.');
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  const handleRegister = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!firstName.trim()) return;
+    setIsSubmitting(true);
+    setAuthError('');
+    try {
+      const res = await fetch('http://localhost:3001/users/profile', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'x-demo-role': 'customer_1' },
+        body: JSON.stringify({ firstName, lastName: lastName || 'Client' }),
+      });
+      if (res.ok) {
+        const data = await res.json();
+        setProfile({ ...data, loyaltyPoints: 500 });
+      }
+    } catch (err) {
+      console.error(err);
+      setAuthError('Erreur lors de la création du profil.');
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
   useEffect(() => {
+    const token = typeof window !== 'undefined' ? localStorage.getItem('accessToken') : null;
+    const authHeaders: any = { 'x-demo-role': 'customer_1' };
+    if (token) authHeaders['Authorization'] = `Bearer ${token}`;
+
     Promise.all([
       fetch('http://localhost:3001/users/profile', {
-        headers: { 'x-demo-role': 'customer_1' }
+        headers: authHeaders
       }).then(res => res.json()),
       fetch('http://localhost:3001/orders', {
-        headers: { 'x-demo-role': 'customer_1' }
+        headers: authHeaders
       }).then(res => res.json())
     ])
     .then(([profileData, ordersData]) => {
@@ -46,58 +120,114 @@ export default function BuyerPortal() {
         
         {!profile ? (
           <>
-            <div className="text-center mb-12">
+            <div className="text-center mb-10">
               <h1 className="text-4xl md:text-5xl font-black text-gray-900 dark:text-white mb-4">
                 Espace <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-500 to-purple-500">Acheteur</span>
               </h1>
               <p className="text-lg text-gray-500 max-w-2xl mx-auto">
-                Créez un compte pour discuter avec les distributeurs de gaz, cumuler des points de fidélité, et gagner des récompenses !
+                Connectez-vous pour échanger avec les distributeurs de gaz, suivre vos commandes et cumuler des points de fidélité.
               </p>
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6 max-w-4xl mx-auto">
-              {/* Card Register */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-8 max-w-4xl mx-auto">
+              {/* Card Form */}
               <div className="bg-white dark:bg-neutral-900 border-2 border-blue-200 dark:border-blue-900/30 p-8 rounded-[2rem] shadow-sm hover:shadow-xl transition-all flex flex-col justify-between relative overflow-hidden">
                 <div className="absolute top-0 right-0 w-32 h-32 bg-blue-400/10 rounded-full blur-2xl pointer-events-none" />
                 <div className="z-10">
-                  <div className="w-16 h-16 bg-blue-50 dark:bg-blue-900/30 text-blue-500 rounded-2xl flex items-center justify-center mb-4 border border-blue-100 dark:border-blue-900/50">
-                    <User size={32} />
+                  {/* Mode selector */}
+                  <div className="flex bg-gray-100 dark:bg-neutral-800 p-1 rounded-xl mb-6">
+                    <button 
+                      type="button"
+                      onClick={() => setMode('LOGIN')}
+                      className={`flex-1 py-2 font-bold text-sm rounded-lg transition-all ${mode === 'LOGIN' ? 'bg-white dark:bg-neutral-900 text-blue-600 shadow-sm' : 'text-gray-500'}`}
+                    >
+                      Se Connecter
+                    </button>
+                    <button 
+                      type="button"
+                      onClick={() => setMode('REGISTER')}
+                      className={`flex-1 py-2 font-bold text-sm rounded-lg transition-all ${mode === 'REGISTER' ? 'bg-white dark:bg-neutral-900 text-blue-600 shadow-sm' : 'text-gray-500'}`}
+                    >
+                      Créer un compte
+                    </button>
                   </div>
-                  <h2 className="text-2xl font-black text-gray-900 dark:text-white mb-2">Nouveau client ?</h2>
-                  <p className="text-gray-500 mb-6 font-medium text-sm">
-                    Créez votre profil pour cumuler des points de fidélité à chaque achat.
-                  </p>
+
+                  {authError && (
+                    <div className="mb-4 p-3 bg-red-50 text-red-600 text-sm font-semibold rounded-xl border border-red-200">
+                      {authError}
+                    </div>
+                  )}
+
+                  {mode === 'LOGIN' ? (
+                    <form className="space-y-4" onSubmit={handleLogin}>
+                      <div>
+                        <label className="text-sm font-medium text-gray-700 dark:text-gray-300">Numéro de téléphone</label>
+                        <input 
+                          type="tel" 
+                          required
+                          placeholder="Ex: 699000000 ou +237699..."
+                          value={phone}
+                          onChange={(e) => setPhone(e.target.value)}
+                          className="w-full mt-1 p-3.5 rounded-xl border border-gray-200 dark:border-neutral-800 bg-gray-50 dark:bg-neutral-950 focus:ring-2 focus:ring-blue-500 outline-none transition-all font-medium"
+                        />
+                      </div>
+                      <div>
+                        <label className="text-sm font-medium text-gray-700 dark:text-gray-300">Mot de passe</label>
+                        <input 
+                          type="password" 
+                          required
+                          placeholder="••••••••"
+                          value={password}
+                          onChange={(e) => setPassword(e.target.value)}
+                          className="w-full mt-1 p-3.5 rounded-xl border border-gray-200 dark:border-neutral-800 bg-gray-50 dark:bg-neutral-950 focus:ring-2 focus:ring-blue-500 outline-none transition-all font-medium"
+                        />
+                      </div>
+                      <button 
+                        type="submit"
+                        disabled={isSubmitting}
+                        className="w-full py-4 mt-2 bg-gradient-to-r from-blue-500 to-purple-500 text-white font-black text-lg rounded-xl shadow-lg shadow-blue-500/30 hover:shadow-blue-500/50 transition-all flex items-center justify-center gap-2"
+                      >
+                        {isSubmitting ? <Loader2 size={20} className="animate-spin" /> : 'Connexion'}
+                      </button>
+                    </form>
+                  ) : (
+                    <form className="space-y-4" onSubmit={handleRegister}>
+                      <div>
+                        <label className="text-sm font-medium text-gray-700 dark:text-gray-300">Prénom</label>
+                        <input 
+                          type="text" 
+                          required
+                          placeholder="Ex: Alain"
+                          value={firstName}
+                          onChange={(e) => setFirstName(e.target.value)}
+                          className="w-full mt-1 p-3 rounded-xl border border-gray-200 dark:border-neutral-800 bg-gray-50 dark:bg-neutral-950 focus:ring-2 focus:ring-blue-500 outline-none transition-all font-medium"
+                        />
+                      </div>
+                      <div>
+                        <label className="text-sm font-medium text-gray-700 dark:text-gray-300">Nom de famille</label>
+                        <input 
+                          type="text" 
+                          required
+                          placeholder="Ex: Mbarga"
+                          value={lastName}
+                          onChange={(e) => setLastName(e.target.value)}
+                          className="w-full mt-1 p-3 rounded-xl border border-gray-200 dark:border-neutral-800 bg-gray-50 dark:bg-neutral-950 focus:ring-2 focus:ring-blue-500 outline-none transition-all font-medium"
+                        />
+                      </div>
+                      <button 
+                        type="submit"
+                        disabled={isSubmitting}
+                        className="w-full py-4 mt-2 bg-gradient-to-r from-blue-500 to-purple-500 text-white font-black text-lg rounded-xl shadow-lg shadow-blue-500/30 hover:shadow-blue-500/50 transition-all flex items-center justify-center gap-2"
+                      >
+                        {isSubmitting ? <Loader2 size={20} className="animate-spin" /> : 'Activer mon profil'}
+                      </button>
+                    </form>
+                  )}
+                  
+                  <Link href="/buyer/messages" className="block text-center text-sm text-blue-500 hover:underline mt-4 font-semibold">
+                    Accéder directement à mes messages
+                  </Link>
                 </div>
-                
-                <form className="space-y-4 z-10 relative" onSubmit={(e) => { e.preventDefault(); window.location.href = '/buyer/messages'; }}>
-                  <div>
-                    <label className="text-sm font-medium text-gray-700 dark:text-gray-300">Numéro de téléphone</label>
-                    <input 
-                      type="text" 
-                      required
-                      placeholder="Ex: 690000000"
-                      className="w-full mt-1 p-3 rounded-xl border border-gray-200 dark:border-neutral-800 bg-gray-50 dark:bg-neutral-950 focus:ring-2 focus:ring-blue-500 outline-none transition-all"
-                    />
-                  </div>
-                  <div>
-                    <label className="text-sm font-medium text-gray-700 dark:text-gray-300">Créer un mot de passe</label>
-                    <input 
-                      type="password" 
-                      required
-                      placeholder="Mot de passe sécurisé"
-                      className="w-full mt-1 p-3 rounded-xl border border-gray-200 dark:border-neutral-800 bg-gray-50 dark:bg-neutral-950 focus:ring-2 focus:ring-blue-500 outline-none transition-all"
-                    />
-                  </div>
-                  <button 
-                    type="submit"
-                    className="w-full py-4 mt-2 text-center bg-gradient-to-r from-blue-500 to-purple-500 text-white font-black text-lg rounded-xl shadow-lg shadow-blue-500/30 hover:shadow-blue-500/50 transition-all"
-                  >
-                    Créer mon profil
-                  </button>
-                  <p className="text-center text-sm text-gray-500 mt-4 cursor-pointer hover:underline">
-                    Déjà un compte ? Se connecter
-                  </p>
-                </form>
               </div>
 
               {/* Loyalty Teaser */}
@@ -105,9 +235,9 @@ export default function BuyerPortal() {
                 <div className="w-16 h-16 bg-white/20 rounded-2xl flex items-center justify-center mb-6 backdrop-blur-sm">
                   <Award size={32} className="text-yellow-400" />
                 </div>
-                <h2 className="text-2xl font-black mb-3 text-yellow-400">Points de Fidélité Pleingaz</h2>
+                <h2 className="text-2xl font-black mb-3 text-yellow-400">Programme Fidélité Pleingaz</h2>
                 <p className="text-blue-100 mb-4 font-medium leading-relaxed">
-                  Gagnez des points à chaque achat. Échangez-les contre :
+                  Cumulez des points sur vos achats de bouteilles et recharge de gaz. Échangez vos points contre :
                 </p>
                 <ul className="space-y-3 mb-6 font-bold text-sm">
                   <li className="flex items-center gap-2"><div className="w-2 h-2 rounded-full bg-yellow-400"/> Des réductions sur le gaz</li>
@@ -202,10 +332,17 @@ export default function BuyerPortal() {
                           {new Date(order.createdAt).toLocaleDateString()} - Chez {order.store?.name || 'Distributeur'}
                         </p>
                       </div>
-                      <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4">
-                        <span className={`font-black px-3 py-1 rounded-lg text-sm ${order.status === 'COMPLETED' ? 'text-green-500 bg-green-50 dark:bg-green-900/20' : 'text-orange-500 bg-orange-50 dark:bg-orange-900/20'}`}>
+                      <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3">
+                        <span className={`font-black px-3 py-1 rounded-lg text-sm ${order.status === 'DELIVERED' || order.status === 'COMPLETED' ? 'text-green-500 bg-green-50 dark:bg-green-900/20' : 'text-orange-500 bg-orange-50 dark:bg-orange-900/20'}`}>
                           {order.totalAmount} FCFA
                         </span>
+
+                        <Link 
+                          href={`/delivery?orderId=${order.id}`}
+                          className="flex items-center gap-1.5 text-sm font-bold text-orange-600 hover:text-orange-700 bg-orange-50 hover:bg-orange-100 dark:bg-orange-900/20 px-3 py-2 rounded-lg transition-colors"
+                        >
+                          Suivi Live
+                        </Link>
                         
                         {order.invoice && (
                           <button 
@@ -213,7 +350,7 @@ export default function BuyerPortal() {
                             className="flex items-center gap-2 text-sm font-bold text-blue-600 hover:text-blue-700 bg-blue-50 hover:bg-blue-100 dark:bg-blue-900/20 px-3 py-2 rounded-lg transition-colors"
                           >
                             <FileText size={16} />
-                            Facture PDF
+                            Facture
                           </button>
                         )}
                       </div>

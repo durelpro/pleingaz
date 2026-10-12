@@ -56,6 +56,58 @@ export class DistributorService implements OnModuleInit {
     };
   }
 
+  async getMyStore(userId: string): Promise<any> {
+    const store = await this.prisma.store.findFirst({
+      where: { ownerId: userId }
+    });
+    if (store) return store;
+
+    const app = await this.prisma.distributorApplication.findUnique({
+      where: { userId }
+    });
+    return {
+      name: app?.businessName || '',
+      city: app?.city || 'Douala',
+      neighborhood: app?.neighborhood || '',
+      landmark: app?.landmark || '',
+      latitude: app?.latitude || 4.051,
+      longitude: app?.longitude || 9.708,
+      whatsappNumber: app?.whatsappNumber || '',
+    };
+  }
+
+  async updateStoreLocation(userId: string, data: { city?: string; neighborhood?: string; landmark?: string; latitude?: number; longitude?: number }): Promise<any> {
+    await this.prisma.distributorApplication.updateMany({
+      where: { userId },
+      data: {
+        city: data.city,
+        neighborhood: data.neighborhood,
+        landmark: data.landmark,
+        latitude: data.latitude,
+        longitude: data.longitude,
+      }
+    });
+
+    const store = await this.prisma.store.findFirst({
+      where: { ownerId: userId }
+    });
+
+    if (store) {
+      return this.prisma.store.update({
+        where: { id: store.id },
+        data: {
+          city: data.city || store.city,
+          neighborhood: data.neighborhood || store.neighborhood,
+          landmark: data.landmark !== undefined ? data.landmark : store.landmark,
+          latitude: data.latitude !== undefined ? data.latitude : store.latitude,
+          longitude: data.longitude !== undefined ? data.longitude : store.longitude,
+        }
+      });
+    }
+
+    return { success: true };
+  }
+
   // Sauvegarde des étapes intermédiaires du Wizard
   async updateDraft(userId: string, data: any) {
     const application = await this.getOrCreateDraft(userId);

@@ -26,7 +26,14 @@ export class JwtAuthGuard extends AuthGuard('jwt') {
           permissions: ['store:manage', 'inventory:manage'],
         };
       }
-      if (demoRole === 'CUSTOMER' || demoRole === 'customer_1') {
+      if (demoRole === 'distributor_2') {
+        return {
+          userId: 'distributor-demo-2',
+          phone: '+237622222222',
+          permissions: ['store:manage', 'inventory:manage'],
+        };
+      }
+      if (demoRole === 'CUSTOMER' || demoRole === 'customer_1' || demoRole === 'buyer_1' || demoRole === 'buyer') {
         return {
           userId: 'customer-demo-1234',
           phone: '+237699999999',

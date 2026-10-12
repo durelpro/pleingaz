@@ -1,13 +1,15 @@
 "use client";
 
 import { useState, useEffect, Suspense } from 'react';
-import { useRouter, useSearchParams } from 'next/navigation';
+import { useRouter, useParams, useSearchParams } from 'next/navigation';
 import { ShieldCheck, MapPin, CreditCard, Banknote, FileText, ChevronLeft, Loader2, Info, Flame, Store } from 'lucide-react';
 import Link from 'next/link';
 import { motion } from 'framer-motion';
 
-function CheckoutContent({ params }: { params: { storeId: string } }) {
+function CheckoutContent() {
   const router = useRouter();
+  const params = useParams();
+  const storeId = params?.storeId as string;
   const searchParams = useSearchParams();
   const productId = searchParams.get('productId');
   const inventoryId = searchParams.get('inventoryId');
@@ -24,29 +26,36 @@ function CheckoutContent({ params }: { params: { storeId: string } }) {
   const [paymentMethod, setPaymentMethod] = useState<'MOMO' | 'OM' | 'CASH'>('MOMO');
 
   useEffect(() => {
-    if (!inventoryId) {
-      router.push(`/stores/${params.storeId}`);
-      return;
-    }
+    if (!storeId) return;
 
-    fetch(`http://localhost:3001/search/stores/${params.storeId}`)
+    fetch(`http://localhost:3001/search/stores/${storeId}`)
       .then(res => res.json())
       .then(data => {
         setStore(data);
-        const item = data.inventory.find((i: any) => i.id === inventoryId);
-        if (item) setProduct(item);
-        else router.push(`/stores/${params.storeId}`);
+        if (data.inventory && data.inventory.length > 0) {
+          const item = inventoryId 
+            ? data.inventory.find((i: any) => i.id === inventoryId)
+            : data.inventory[0];
+          if (item) setProduct(item);
+        }
       })
       .catch(err => console.error(err))
       .finally(() => setIsLoading(false));
-  }, [params.storeId, inventoryId, router]);
+  }, [storeId, inventoryId, router]);
 
   if (isLoading) return <div className="min-h-screen flex items-center justify-center"><Loader2 className="animate-spin text-pleingaz-red" size={40} /></div>;
-  if (!store || !product) return null;
+  if (!store || !product) return (
+    <div className="min-h-screen flex flex-col items-center justify-center space-y-4">
+      <p className="font-bold text-gray-700">Produit ou boutique indisponible pour la commande.</p>
+      <Link href={storeId ? `/stores/${storeId}` : '/search'} className="px-4 py-2 bg-pleingaz-red text-white font-bold rounded-xl">
+        Retour à la boutique
+      </Link>
+    </div>
+  );
 
   // Calcul du total
   const gasPrice = product.price;
-  const consignePrice = needsConsigne ? 15000 : 0; // Prix de consigne fictif pour MVP
+  const consignePrice = needsConsigne ? 15000 : 0; // Prix de consigne
   const deliveryPrice = deliveryMethod === 'DELIVERY' ? 1000 : 0;
   const total = gasPrice + consignePrice + deliveryPrice;
 
@@ -60,7 +69,7 @@ function CheckoutContent({ params }: { params: { storeId: string } }) {
     try {
       const res = await fetch(`http://localhost:3001/orders`, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json', 'x-demo-role': 'buyer_1' },
+        headers: { 'Content-Type': 'application/json', 'x-demo-role': 'customer_1' },
         body: JSON.stringify({
           storeId: store.id,
           inventoryId: product.id,
@@ -74,8 +83,8 @@ function CheckoutContent({ params }: { params: { storeId: string } }) {
 
       if (res.ok) {
         const orderData = await res.json();
-        // Redirect to success/invoice page
-        router.push(`/buyer/portal?orderSuccess=${orderData.id}`);
+        // Rediriger directement vers la page de suivi en direct
+        router.push(`/delivery?orderId=${orderData.id}`);
       } else {
         const err = await res.json();
         alert(err.message || 'Erreur lors de la création de la commande');
@@ -245,10 +254,10 @@ function CheckoutContent({ params }: { params: { storeId: string } }) {
   );
 }
 
-export default function CheckoutPage({ params }: { params: { storeId: string } }) {
+export default function CheckoutPage() {
   return (
     <Suspense fallback={<div className="min-h-screen flex items-center justify-center"><Loader2 className="animate-spin text-pleingaz-red" size={40} /></div>}>
-      <CheckoutContent params={params} />
+      <CheckoutContent />
     </Suspense>
   );
 }

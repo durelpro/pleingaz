@@ -1,6 +1,7 @@
 "use client";
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, Suspense } from 'react';
+import { useParams } from 'next/navigation';
 import dynamic from 'next/dynamic';
 import { motion } from 'framer-motion';
 import { MapPin, Phone, Clock, ShieldCheck, ShoppingCart, MessageCircle, Star } from 'lucide-react';
@@ -9,19 +10,23 @@ import Link from 'next/link';
 // Chargement dynamique de la carte pour éviter les erreurs SSR Leaflet
 const StoreMap = dynamic(() => import('@/components/map/StoreMap'), { ssr: false });
 
-export default function StoreProfilePage({ params }: { params: { storeId: string } }) {
+function StoreProfileContent() {
+  const params = useParams();
+  const storeId = params?.storeId as string;
   const [store, setStore] = useState<any>(null);
   const [isMounted, setIsMounted] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
     setIsMounted(true);
-    fetch(`http://localhost:3001/search/stores/${params.storeId}`)
+    if (!storeId) return;
+
+    fetch(`http://localhost:3001/search/stores/${storeId}`)
       .then(res => res.json())
       .then(data => setStore(data))
       .catch(err => console.error(err))
       .finally(() => setIsLoading(false));
-  }, [params.storeId]);
+  }, [storeId]);
 
   if (!isMounted) return null;
   if (isLoading) return <div className="min-h-screen flex items-center justify-center bg-gray-50 dark:bg-neutral-950">Chargement de la boutique...</div>;
@@ -68,7 +73,7 @@ export default function StoreProfilePage({ params }: { params: { storeId: string
               </div>
               
               <Link 
-                href={`/buyer/messages?to=distributor_1`} 
+                href={`/buyer/messages?to=${store.ownerId || store.id}`} 
                 className="flex items-center justify-center gap-2 bg-[#25D366] text-white px-6 py-3 rounded-xl font-bold hover:bg-[#1ebd5a] transition-colors shadow-lg shadow-[#25D366]/30"
               >
                 <MessageCircle size={20} />
@@ -77,21 +82,21 @@ export default function StoreProfilePage({ params }: { params: { storeId: string
             </div>
 
             <p className="text-gray-600 dark:text-gray-400 max-w-2xl">
-              {store.description}
+              {store.description || (store.landmark ? `Repère : ${store.landmark}` : 'Point de vente agréé PLEINGAZ.')}
             </p>
 
             <div className="flex flex-col sm:flex-row gap-4 pt-2">
               <div className="flex items-center gap-2 text-sm text-gray-600 dark:text-gray-400">
                 <MapPin size={18} className="text-pleingaz-red" />
-                {store.address}, {store.city}
+                {store.address || store.neighborhood}, {store.city || 'Douala'}
               </div>
               <div className="flex items-center gap-2 text-sm text-gray-600 dark:text-gray-400">
                 <Clock size={18} className="text-pleingaz-red" />
-                {store.hours}
+                {store.hours || '7h30 - 20h00 (7j/7)'}
               </div>
               <div className="flex items-center gap-2 text-sm text-gray-600 dark:text-gray-400">
                 <Phone size={18} className="text-pleingaz-red" />
-                {store.phone}
+                {store.phone || '+237 690 00 00 00'}
               </div>
             </div>
           </div>
@@ -107,43 +112,49 @@ export default function StoreProfilePage({ params }: { params: { storeId: string
               Stock Disponible
             </h2>
             
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              {store.inventory.map((item: any) => (
-                <motion.div 
-                  key={item.id}
-                  whileHover={{ scale: 1.02 }}
-                  className={`p-4 rounded-2xl border-2 ${item.status === 'En stock' ? 'border-gray-100 dark:border-neutral-800 bg-white dark:bg-neutral-900' : 'border-red-100 dark:border-red-900/30 bg-red-50 dark:bg-red-900/10 opacity-75'}`}
-                >
-                  <div className="flex justify-between items-start">
-                    <div className="space-y-1">
-                      <div className="flex items-center gap-2">
-                        <span className={`w-3 h-3 rounded-full ${item.color}`}></span>
-                        <h3 className="font-bold text-gray-900 dark:text-white text-lg">{item.brand}</h3>
-                      </div>
-                      <p className="text-gray-500 font-medium">{item.weight}</p>
-                    </div>
-                    <div className="text-right">
-                      <p className="font-black text-xl text-pleingaz-red">{item.price} FCFA</p>
-                      <span className={`text-xs font-bold px-2 py-1 rounded-md ${item.status === 'En stock' ? 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400' : 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400'}`}>
-                        {item.status}
-                      </span>
-                    </div>
-                  </div>
-                  
-                  <div className="mt-2 text-xs text-gray-500 font-medium flex items-center justify-between">
-                    <span>Mise à jour: {item.freshness || "Inconnu"}</span>
-                  </div>
-                  
-                  <Link 
-                    href={item.status === 'En stock' ? `/checkout/${store.id}?inventoryId=${item.id}&productId=${item.productId || ''}` : '#'}
-                    className={`mt-4 w-full py-3 rounded-xl font-bold flex items-center justify-center gap-2 transition-all ${item.status === 'En stock' ? 'bg-gray-900 dark:bg-white text-white dark:text-gray-900 hover:bg-pleingaz-red hover:text-white' : 'bg-gray-200 dark:bg-neutral-800 text-gray-400 cursor-not-allowed pointer-events-none'}`}
+            {store.inventory && store.inventory.length > 0 ? (
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                {store.inventory.map((item: any) => (
+                  <motion.div 
+                    key={item.id}
+                    whileHover={{ scale: 1.02 }}
+                    className={`p-4 rounded-2xl border-2 ${item.status === 'En stock' ? 'border-gray-100 dark:border-neutral-800 bg-white dark:bg-neutral-900' : 'border-red-100 dark:border-red-900/30 bg-red-50 dark:bg-red-900/10 opacity-75'}`}
                   >
-                    <ShoppingCart size={18} />
-                    {item.status === 'En stock' ? 'Commander' : 'Indisponible'}
-                  </Link>
-                </motion.div>
-              ))}
-            </div>
+                    <div className="flex justify-between items-start">
+                      <div className="space-y-1">
+                        <div className="flex items-center gap-2">
+                          <span className={`w-3 h-3 rounded-full ${item.color}`}></span>
+                          <h3 className="font-bold text-gray-900 dark:text-white text-lg">{item.brand}</h3>
+                        </div>
+                        <p className="text-gray-500 font-medium">{item.weight}</p>
+                      </div>
+                      <div className="text-right">
+                        <p className="font-black text-xl text-pleingaz-red">{item.price} FCFA</p>
+                        <span className={`text-xs font-bold px-2 py-1 rounded-md ${item.status === 'En stock' ? 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400' : 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400'}`}>
+                          {item.status}
+                        </span>
+                      </div>
+                    </div>
+                    
+                    <div className="mt-2 text-xs text-gray-500 font-medium flex items-center justify-between">
+                      <span>Mise à jour: {item.freshness || "Inconnu"}</span>
+                    </div>
+                    
+                    <Link 
+                      href={item.status === 'En stock' ? `/checkout/${store.id}?inventoryId=${item.id}&productId=${item.productId || ''}` : '#'}
+                      className={`mt-4 w-full py-3 rounded-xl font-bold flex items-center justify-center gap-2 transition-all ${item.status === 'En stock' ? 'bg-gray-900 dark:bg-white text-white dark:text-gray-900 hover:bg-pleingaz-red hover:text-white' : 'bg-gray-200 dark:bg-neutral-800 text-gray-400 cursor-not-allowed pointer-events-none'}`}
+                    >
+                      <ShoppingCart size={18} />
+                      {item.status === 'En stock' ? 'Commander' : 'Indisponible'}
+                    </Link>
+                  </motion.div>
+                ))}
+              </div>
+            ) : (
+              <div className="p-8 text-center bg-white dark:bg-neutral-900 rounded-2xl border border-gray-100 dark:border-neutral-800 text-gray-500">
+                Aucune bouteille enregistrée pour ce point de vente pour le moment.
+              </div>
+            )}
           </div>
 
           {/* Right Column: Map & Info */}
@@ -168,5 +179,13 @@ export default function StoreProfilePage({ params }: { params: { storeId: string
         </div>
       </div>
     </div>
+  );
+}
+
+export default function StoreProfilePage() {
+  return (
+    <Suspense fallback={<div className="min-h-screen flex items-center justify-center bg-gray-50 dark:bg-neutral-950 font-bold text-gray-500">Chargement de la boutique...</div>}>
+      <StoreProfileContent />
+    </Suspense>
   );
 }

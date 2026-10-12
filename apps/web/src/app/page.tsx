@@ -34,19 +34,51 @@ export default function Home() {
             Trouvez les distributeurs agréés autour de vous, commandez en ligne et faites-vous livrer en toute sécurité.
           </p>
           
-          <div className="pt-4 flex flex-col sm:flex-row items-center justify-center gap-4">
+          {/* Barre de recherche directe depuis l'accueil */}
+          <div className="pt-2 max-w-xl mx-auto">
+            <form 
+              onSubmit={(e) => {
+                e.preventDefault();
+                const input = (e.currentTarget.elements.namedItem('homeSearch') as HTMLInputElement)?.value;
+                if (input && input.trim()) {
+                  window.location.href = `/search?q=${encodeURIComponent(input.trim())}`;
+                } else {
+                  window.location.href = '/search';
+                }
+              }}
+              className="relative flex items-center bg-white rounded-2xl p-2 shadow-2xl border border-red-200"
+            >
+              <div className="pl-3 pr-2 text-gray-400">
+                <Search size={22} className="text-pleingaz-red" />
+              </div>
+              <input 
+                name="homeSearch"
+                type="text"
+                placeholder="Entrez votre quartier (ex: Bonamoussadi, Akwa, Bastos...)"
+                className="flex-1 bg-transparent border-none outline-none text-gray-800 text-base placeholder-gray-400 font-medium py-2 pr-2"
+              />
+              <button
+                type="submit"
+                className="bg-pleingaz-red hover:bg-[#d9230f] text-white font-bold px-6 py-3 rounded-xl shadow-md transition-all shrink-0 text-sm"
+              >
+                Rechercher
+              </button>
+            </form>
+          </div>
+
+          <div className="pt-2 flex flex-col sm:flex-row items-center justify-center gap-4">
             <Link 
               href="/search" 
-              className="w-full sm:w-auto px-8 py-4 bg-white text-pleingaz-red font-bold text-lg rounded-2xl shadow-xl flex items-center justify-center gap-3 hover:scale-105 transition-transform"
+              className="w-full sm:w-auto px-6 py-3 bg-white/20 hover:bg-white/30 text-white font-bold text-sm rounded-xl backdrop-blur-md flex items-center justify-center gap-2 transition-all"
             >
-              <Search size={22} />
-              Trouver du gaz
+              <MapPin size={18} />
+              Rechercher par carte & GPS
             </Link>
             <Link 
               href="/chat" 
-              className="w-full sm:w-auto px-8 py-4 bg-red-800/40 text-white font-bold text-lg rounded-2xl backdrop-blur-sm flex items-center justify-center gap-3 hover:bg-red-800 transition-colors"
+              className="w-full sm:w-auto px-6 py-3 bg-red-800/40 hover:bg-red-800/60 text-white font-bold text-sm rounded-xl backdrop-blur-md flex items-center justify-center gap-2 transition-all"
             >
-              <Bot size={22} />
+              <Bot size={18} />
               Assistant IA
             </Link>
           </div>

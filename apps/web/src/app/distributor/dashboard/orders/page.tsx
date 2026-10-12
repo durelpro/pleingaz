@@ -13,32 +13,42 @@ export default function DistributorOrdersPage() {
   const [scanningOrder, setScanningOrder] = useState<string | null>(null);
   const [scannedCode, setScannedCode] = useState('');
 
+  const getHeaders = () => {
+    const token = typeof window !== 'undefined' ? localStorage.getItem('accessToken') : null;
+    const h: any = { 'Content-Type': 'application/json', 'x-demo-role': 'distributor_1' };
+    if (token) h['Authorization'] = `Bearer ${token}`;
+    return h;
+  };
+
   const fetchOrders = () => {
     fetch('http://localhost:3001/orders/store', {
-      headers: { 'x-demo-role': 'distributor_1' }
+      headers: getHeaders()
     })
     .then(res => res.json())
-    .then(data => setOrders(data || []))
+    .then(data => setOrders(Array.isArray(data) ? data : []))
     .catch(err => console.error(err))
     .finally(() => setIsLoading(false));
   };
 
   useEffect(() => {
     fetchOrders();
-    const interval = setInterval(fetchOrders, 10000); // Polling every 10s for new orders
+    const interval = setInterval(fetchOrders, 8000); // Polling every 8s for new orders
     return () => clearInterval(interval);
   }, []);
 
-  const updateStatus = async (orderId: string, status: string) => {
+  const updateStatus = async (orderId: string, status: string, otp?: string) => {
     setIsUpdating(orderId);
     try {
       const res = await fetch(`http://localhost:3001/orders/${orderId}/status`, {
         method: 'PATCH',
-        headers: { 'Content-Type': 'application/json', 'x-demo-role': 'distributor_1' },
-        body: JSON.stringify({ status })
+        headers: getHeaders(),
+        body: JSON.stringify({ status, otp })
       });
       if (res.ok) {
         fetchOrders();
+      } else {
+        const err = await res.json();
+        alert(err.message || 'Erreur lors de la mise à jour');
       }
     } catch (e) {
       console.error(e);
@@ -279,14 +289,14 @@ export default function DistributorOrdersPage() {
                   <div className="flex gap-2">
                     <input 
                       type="text" 
-                      placeholder="ORD-XXXX..."
+                      placeholder="Code OTP client (ex: 4815)"
                       value={scannedCode}
                       onChange={(e) => setScannedCode(e.target.value)}
                       className="flex-1 bg-gray-50 dark:bg-neutral-950 border border-gray-200 dark:border-neutral-800 rounded-xl px-4 py-3 font-mono text-sm focus:ring-2 focus:ring-pleingaz-red outline-none transition-all"
                     />
                     <button 
                       onClick={() => {
-                        updateStatus(scanningOrder, 'DELIVERED');
+                        updateStatus(scanningOrder, 'DELIVERED', scannedCode);
                         setScanningOrder(null);
                         setScannedCode('');
                       }}

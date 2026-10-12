@@ -54,6 +54,39 @@ export class AuthService {
     return this.generateTokens(user.id);
   }
 
+  async validatePhonePassword(phoneOrEmail: string, pass: string) {
+    const clean = phoneOrEmail.trim();
+    const user = await this.prisma.user.findFirst({
+      where: {
+        OR: [
+          { phone: clean },
+          { phone: `+237${clean}` },
+          { phone: clean.startsWith('+237') ? clean.replace('+237', '') : `+237${clean}` },
+          { email: clean }
+        ]
+      }
+    });
+
+    if (!user) {
+      throw new UnauthorizedException('Numéro ou mot de passe incorrect');
+    }
+
+    this.checkLockout(user);
+
+    if (!user.passwordHash) {
+      throw new BadRequestException('Aucun mot de passe configuré pour ce compte');
+    }
+
+    const isMatch = await argon2.verify(user.passwordHash, pass);
+    if (!isMatch) {
+      await this.incrementFailedAttempts(user);
+      throw new UnauthorizedException('Numéro ou mot de passe incorrect');
+    }
+
+    await this.resetFailedAttempts(user);
+    return this.generateTokens(user.id);
+  }
+
   private checkLockout(user: any) {
     if (user.lockedUntil && user.lockedUntil > new Date()) {
       throw new ForbiddenException(`Compte verrouillé jusqu'à ${user.lockedUntil.toISOString()}`);
