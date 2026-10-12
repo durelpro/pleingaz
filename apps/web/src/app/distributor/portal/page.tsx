@@ -136,6 +136,28 @@ export default function DistributorPortal() {
           </div>
 
         </div>
+
+        {/* Bannière Flagship Entreprise */}
+        <div className="mt-8 bg-gradient-to-r from-neutral-900 to-neutral-950 border border-neutral-800 rounded-3xl p-6 text-white flex flex-col sm:flex-row items-center justify-between gap-4 shadow-xl">
+          <div className="flex items-center gap-4">
+            <div className="w-12 h-12 rounded-2xl bg-red-600/20 text-red-500 border border-red-500/30 flex items-center justify-center font-black text-xl shrink-0">
+              🏢
+            </div>
+            <div>
+              <div className="flex items-center gap-2">
+                <span className="font-black text-base">Dépôt Central & Flotte Directe PLEINGAZ</span>
+                <span className="px-2 py-0.5 bg-red-600 text-white text-[10px] font-black rounded-full uppercase">Officiel</span>
+              </div>
+              <p className="text-xs text-gray-400 mt-0.5">Accès réservé aux gestionnaires de la boutique propre de l'entreprise INFOTECH S.A.</p>
+            </div>
+          </div>
+          <Link
+            href="/distributor/flagship"
+            className="px-5 py-3 bg-red-600 hover:bg-red-700 text-white font-black text-xs rounded-xl shadow-lg shadow-red-600/30 transition-all shrink-0"
+          >
+            Accéder au Flagship →
+          </Link>
+        </div>
       </div>
     </div>
   );

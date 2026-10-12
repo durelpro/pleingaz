@@ -67,9 +67,13 @@ function CheckoutContent() {
     
     setIsSubmitting(true);
     try {
+      const token = typeof window !== 'undefined' ? localStorage.getItem('accessToken') : null;
+      const headers: any = { 'Content-Type': 'application/json', 'x-demo-role': 'customer_1' };
+      if (token) headers['Authorization'] = `Bearer ${token}`;
+
       const res = await fetch(`http://localhost:3001/orders`, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json', 'x-demo-role': 'customer_1' },
+        headers,
         body: JSON.stringify({
           storeId: store.id,
           inventoryId: product.id,
