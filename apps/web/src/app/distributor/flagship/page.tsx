@@ -447,7 +447,7 @@ export default function FlagshipDashboard() {
                     </h3>
                   </div>
                   <span className="text-xs text-gray-500 font-medium">
-                    Yaoundé (Total Magzi) • Actualisé en direct
+                    {store?.city || 'Yaoundé'} ({store?.landmark || 'Total Magzi'}) • Actualisé en direct
                   </span>
                 </div>
 
@@ -457,6 +457,10 @@ export default function FlagshipDashboard() {
                     storeLng={store?.longitude || 11.5210}
                     driverLat={3.8445}
                     driverLng={11.5230}
+                    storeName={store?.name}
+                    storeLandmark={store?.landmark ? `${store.city}, ${store.neighborhood} (${store.landmark})` : `${store?.city}, ${store?.neighborhood}`}
+                    driverName={driver?.name}
+                    driverVehicle={driver?.vehicle}
                     deliveries={mapDeliveries}
                   />
                 </div>

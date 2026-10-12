@@ -32,6 +32,10 @@ interface DeliveryMapProps {
   storeLng: number;
   driverLat?: number;
   driverLng?: number;
+  storeName?: string;
+  storeLandmark?: string;
+  driverName?: string;
+  driverVehicle?: string;
   deliveries: Array<{
     id: string;
     orderNumber: string;
@@ -51,6 +55,10 @@ export default function FlagshipDeliveryMap({
   storeLng = 11.5210,
   driverLat = 3.8445,
   driverLng = 11.5230,
+  storeName = 'Dépôt Central PLEINGAZ (INFOTECH S.A.)',
+  storeLandmark = 'Yaoundé, Mvog-Mbi (Au niveau de Total Magzi)',
+  driverName = 'Jean-Pierre Mvondo (Livreur Flotte Directe)',
+  driverVehicle = 'Moto-Tricycle PLEINGAZ (DLA-7842-LT)',
   deliveries,
 }: DeliveryMapProps) {
   const storePos: [number, number] = [storeLat || 3.8420, storeLng || 11.5210];
@@ -73,8 +81,8 @@ export default function FlagshipDeliveryMap({
         <Marker position={storePos} icon={storeIcon}>
           <Popup>
             <div className="p-1 space-y-1">
-              <p className="font-black text-sm text-red-600">🏢 Dépôt Central PLEINGAZ (INFOTECH S.A.)</p>
-              <p className="text-xs text-gray-600">Yaoundé, Mvog-Mbi (Au niveau de Total Magzi)</p>
+              <p className="font-black text-sm text-red-600">🏢 {storeName}</p>
+              <p className="text-xs text-gray-600">{storeLandmark}</p>
               <span className="inline-block px-2 py-0.5 bg-red-100 text-red-700 font-bold text-[10px] rounded">
                 Point de départ Flotte
               </span>
@@ -86,8 +94,8 @@ export default function FlagshipDeliveryMap({
         <Marker position={driverPos} icon={driverIcon}>
           <Popup>
             <div className="p-1 space-y-1">
-              <p className="font-black text-sm text-blue-600">🛵 Jean-Pierre Mvondo (Livreur Flotte Directe)</p>
-              <p className="text-xs text-gray-600">Moto-Tricycle PLEINGAZ (DLA-7842-LT)</p>
+              <p className="font-black text-sm text-blue-600">🛵 {driverName}</p>
+              <p className="text-xs text-gray-600">{driverVehicle}</p>
               <p className="text-xs font-semibold text-green-600">Statut : En livraison active</p>
             </div>
           </Popup>
