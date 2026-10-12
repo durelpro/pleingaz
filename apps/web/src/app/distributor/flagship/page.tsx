@@ -7,7 +7,7 @@ import {
   Building2, Truck, DollarSign, Package, CheckCircle2, 
   Clock, AlertTriangle, ArrowUpRight, Phone, MessageSquare, 
   MapPin, Printer, ShieldCheck, ChevronRight, Loader2, Sparkles,
-  BarChart3, FileSpreadsheet, RefreshCw, Send, Check
+  BarChart3, FileSpreadsheet, RefreshCw, Send, Check, Lock, LogOut, ArrowRight, UserCheck
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import InvoiceModal from '@/components/invoice/InvoiceModal';
@@ -27,6 +27,12 @@ const FlagshipDeliveryMap = dynamic(
 );
 
 export default function FlagshipDashboard() {
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [loginName, setLoginName] = useState('');
+  const [loginPassword, setLoginPassword] = useState('');
+  const [authError, setAuthError] = useState('');
+  const [isAuthenticating, setIsAuthenticating] = useState(false);
+
   const [data, setData] = useState<any>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [activeTab, setActiveTab] = useState<'DELIVERIES' | 'FINANCE' | 'INVENTORY'>('DELIVERIES');
@@ -35,6 +41,49 @@ export default function FlagshipDashboard() {
   const [otpInput, setOtpInput] = useState('');
   const [validationError, setValidationError] = useState('');
   const [isActionLoading, setIsActionLoading] = useState(false);
+
+  useEffect(() => {
+    // Vérifier si une session Flagship est déjà ouverte
+    if (typeof window !== 'undefined') {
+      const auth = localStorage.getItem('pleingaz_flagship_auth');
+      if (auth === 'true') {
+        setIsAuthenticated(true);
+      }
+    }
+  }, []);
+
+  const handleFlagshipLogin = (e: React.FormEvent) => {
+    e.preventDefault();
+    setIsAuthenticating(true);
+    setAuthError('');
+
+    // Vérification d'identité demandée par l'utilisateur : mot de passe 12345
+    const cleanName = loginName.trim();
+    if (loginPassword !== '12345') {
+      setAuthError('Mot de passe incorrect. Veuillez saisir le mot de passe habilité.');
+      setIsAuthenticating(false);
+      return;
+    }
+
+    if (!cleanName) {
+      setAuthError('Veuillez renseigner votre nom ou identifiant de service.');
+      setIsAuthenticating(false);
+      return;
+    }
+
+    // Authentification réussie
+    localStorage.setItem('pleingaz_flagship_auth', 'true');
+    localStorage.setItem('pleingaz_flagship_user', cleanName);
+    setIsAuthenticated(true);
+    setIsAuthenticating(false);
+  };
+
+  const handleFlagshipLogout = () => {
+    localStorage.removeItem('pleingaz_flagship_auth');
+    localStorage.removeItem('pleingaz_flagship_user');
+    setIsAuthenticated(false);
+    setLoginPassword('');
+  };
 
   const fetchFlagshipData = async () => {
     try {
@@ -85,6 +134,104 @@ export default function FlagshipDashboard() {
       <div className="min-h-screen bg-gray-50 dark:bg-neutral-950 flex flex-col items-center justify-center">
         <Loader2 className="animate-spin text-red-600 mb-4" size={36} />
         <p className="text-gray-500 font-bold">Connexion au Dépôt Flagship PLEINGAZ (INFOTECH S.A.)...</p>
+      </div>
+    );
+  }
+
+  // ÉCRAN DE VÉRIFICATION D'IDENTITÉ OBLIGATOIRE
+  if (!isAuthenticated) {
+    return (
+      <div className="min-h-screen bg-neutral-950 flex flex-col items-center justify-center p-4 relative overflow-hidden text-white">
+        {/* Glow Effects */}
+        <div className="absolute top-1/4 -left-32 w-96 h-96 bg-red-600/20 rounded-full blur-[120px] pointer-events-none" />
+        <div className="absolute bottom-1/4 -right-32 w-96 h-96 bg-amber-600/15 rounded-full blur-[120px] pointer-events-none" />
+
+        <div className="w-full max-w-md relative z-10 space-y-6">
+          <Link href="/" className="inline-flex items-center gap-2 text-gray-400 hover:text-white transition-colors text-sm font-semibold mb-2">
+            ← Retour à l'accueil
+          </Link>
+
+          <motion.div 
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="bg-neutral-900/90 border border-neutral-800 backdrop-blur-2xl p-8 rounded-3xl shadow-2xl space-y-6"
+          >
+            <div className="text-center space-y-2">
+              <div className="w-16 h-16 mx-auto bg-gradient-to-br from-red-600 to-amber-600 rounded-2xl flex items-center justify-center shadow-lg shadow-red-600/30">
+                <Lock className="text-white" size={30} />
+              </div>
+              <div className="flex items-center justify-center gap-2 pt-2">
+                <span className="px-2.5 py-0.5 bg-red-600 text-white font-black text-[10px] rounded-full uppercase tracking-wider">
+                  Accès Restreint
+                </span>
+                <span className="text-xs text-amber-400 font-bold">INFOTECH S.A.</span>
+              </div>
+              <h2 className="text-2xl font-black text-white">
+                Vérification d'Identité Dépôt Central
+              </h2>
+              <p className="text-xs text-gray-400">
+                Yaoundé — Mvog-Mbi (Au niveau de Total Magzi)
+              </p>
+            </div>
+
+            {authError && (
+              <div className="p-3 bg-red-500/10 border border-red-500/30 rounded-xl text-red-400 text-xs font-bold text-center">
+                {authError}
+              </div>
+            )}
+
+            <form onSubmit={handleFlagshipLogin} className="space-y-4">
+              <div>
+                <label className="text-xs font-bold text-gray-300 block mb-1.5">
+                  Nom du responsable ou livreur autorisé
+                </label>
+                <div className="relative">
+                  <UserCheck className="absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-500" size={18} />
+                  <input
+                    type="text"
+                    required
+                    placeholder="Ex: Jean-Pierre Mvondo ou INFOTECH"
+                    value={loginName}
+                    onChange={(e) => setLoginName(e.target.value)}
+                    className="w-full bg-neutral-950 border border-neutral-800 text-white placeholder-gray-500 rounded-xl py-3.5 pl-11 pr-4 text-sm focus:outline-none focus:border-red-500 focus:ring-1 focus:ring-red-500 font-medium"
+                  />
+                </div>
+              </div>
+
+              <div>
+                <label className="text-xs font-bold text-gray-300 block mb-1.5">
+                  Mot de passe de sécurité
+                </label>
+                <div className="relative">
+                  <Lock className="absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-500" size={18} />
+                  <input
+                    type="password"
+                    required
+                    placeholder="•••••"
+                    value={loginPassword}
+                    onChange={(e) => setLoginPassword(e.target.value)}
+                    className="w-full bg-neutral-950 border border-neutral-800 text-white placeholder-gray-500 rounded-xl py-3.5 pl-11 pr-4 text-sm focus:outline-none focus:border-red-500 focus:ring-1 focus:ring-red-500 font-mono tracking-widest font-bold"
+                  />
+                </div>
+              </div>
+
+              <button
+                type="submit"
+                disabled={isAuthenticating}
+                className="w-full py-4 bg-gradient-to-r from-red-600 to-amber-600 hover:from-red-500 hover:to-amber-500 text-white font-black rounded-xl shadow-lg shadow-red-600/30 transition-all flex items-center justify-center gap-2 text-sm disabled:opacity-50"
+              >
+                {isAuthenticating ? <Loader2 size={18} className="animate-spin" /> : <ArrowRight size={18} />}
+                Déverrouiller le Dépôt
+              </button>
+            </form>
+
+            <div className="pt-2 border-t border-neutral-800/80 text-center">
+              <p className="text-[11px] text-gray-500">
+                Habilitation de service : Mot de passe <code className="text-amber-400 font-mono font-bold">12345</code>
+              </p>
+            </div>
+          </motion.div>
+        </div>
       </div>
     );
   }
@@ -155,6 +302,14 @@ export default function FlagshipDashboard() {
               >
                 <Printer size={18} />
                 Imprimer Bilan
+              </button>
+              <button
+                onClick={handleFlagshipLogout}
+                className="px-4 py-3 bg-neutral-800/80 hover:bg-red-950/40 text-red-400 font-bold text-sm rounded-xl border border-red-500/20 flex items-center gap-2 transition-all"
+                title="Verrouiller la session"
+              >
+                <LogOut size={16} />
+                Verrouiller
               </button>
             </div>
           </div>
