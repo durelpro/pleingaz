@@ -283,16 +283,16 @@ export default function FlagshipDashboard() {
                     </h3>
                   </div>
                   <span className="text-xs text-gray-500 font-medium">
-                    Douala • Actualisé en direct
+                    Yaoundé (Total Magzi) • Actualisé en direct
                   </span>
                 </div>
 
                 <div className="h-[420px] w-full">
                   <FlagshipDeliveryMap 
-                    storeLat={store?.latitude || 4.0505}
-                    storeLng={store?.longitude || 9.702}
-                    driverLat={4.058}
-                    driverLng={9.712}
+                    storeLat={store?.latitude || 3.8420}
+                    storeLng={store?.longitude || 11.5210}
+                    driverLat={3.8445}
+                    driverLng={11.5230}
                     deliveries={mapDeliveries}
                   />
                 </div>

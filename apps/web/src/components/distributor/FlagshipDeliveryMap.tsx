@@ -47,14 +47,14 @@ interface DeliveryMapProps {
 }
 
 export default function FlagshipDeliveryMap({
-  storeLat,
-  storeLng,
-  driverLat = 4.058,
-  driverLng = 9.712,
+  storeLat = 3.8420,
+  storeLng = 11.5210,
+  driverLat = 3.8445,
+  driverLng = 11.5230,
   deliveries,
 }: DeliveryMapProps) {
-  const storePos: [number, number] = [storeLat || 4.0505, storeLng || 9.702];
-  const driverPos: [number, number] = [driverLat, driverLng];
+  const storePos: [number, number] = [storeLat || 3.8420, storeLng || 11.5210];
+  const driverPos: [number, number] = [driverLat || 3.8445, driverLng || 11.5230];
 
   return (
     <div className="h-full w-full rounded-2xl overflow-hidden border border-gray-200 dark:border-neutral-800 shadow-inner">
@@ -74,7 +74,7 @@ export default function FlagshipDeliveryMap({
           <Popup>
             <div className="p-1 space-y-1">
               <p className="font-black text-sm text-red-600">🏢 Dépôt Central PLEINGAZ (INFOTECH S.A.)</p>
-              <p className="text-xs text-gray-600">Akwa, Boulevard de la Liberté</p>
+              <p className="text-xs text-gray-600">Yaoundé, Mvog-Mbi (Au niveau de Total Magzi)</p>
               <span className="inline-block px-2 py-0.5 bg-red-100 text-red-700 font-bold text-[10px] rounded">
                 Point de départ Flotte
               </span>
