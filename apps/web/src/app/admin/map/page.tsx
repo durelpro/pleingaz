@@ -4,25 +4,46 @@ import { MapPin, Search, ArrowLeft, Filter, AlertTriangle, Layers } from 'lucide
 import Link from 'next/link';
 import dynamic from 'next/dynamic';
 
+import { useState } from 'react';
+
 // Disable SSR for Leaflet
 const RadarMap = dynamic(() => import('@/components/admin/RadarMap'), { ssr: false });
 
 export default function GlobalRadarPage() {
+  const [selectedCity, setSelectedCity] = useState<'douala' | 'yaounde' | 'bafoussam'>('douala');
+
   return (
     <div className="h-screen w-full flex flex-col bg-gray-50 dark:bg-neutral-950 overflow-hidden">
       
       {/* Top Navbar */}
-      <div className="h-20 shrink-0 bg-white dark:bg-neutral-900 border-b border-gray-200 dark:border-neutral-800 flex items-center justify-between px-6 z-10">
+      <div className="h-20 shrink-0 bg-white dark:bg-neutral-900 border-b border-gray-200 dark:border-neutral-800 flex items-center justify-between px-6 z-10 gap-4">
         <div className="flex items-center gap-6">
           <Link href="/admin/dashboard" className="p-2 bg-gray-100 dark:bg-neutral-800 rounded-full hover:bg-gray-200 dark:hover:bg-neutral-700 transition-colors">
             <ArrowLeft size={20} className="text-gray-700 dark:text-gray-300" />
           </Link>
           <div>
             <h1 className="text-xl font-black text-gray-900 dark:text-white flex items-center gap-2">
-              <MapPin className="text-pleingaz-red" /> Radar National PLEINGAZ
+              <MapPin className="text-pleingaz-red" /> Radar & Heatmap PLEINGAZ
             </h1>
-            <p className="text-xs text-gray-500 font-medium mt-0.5">Supervision du réseau et de la demande en temps réel</p>
+            <p className="text-xs text-gray-500 font-medium mt-0.5">Supervision de la demande et des ruptures par ville et quartier</p>
           </div>
+        </div>
+
+        {/* Sélecteur de Ville (Douala, Yaoundé, Bafoussam) */}
+        <div className="flex items-center bg-gray-100 dark:bg-neutral-800 p-1 rounded-2xl border border-gray-200 dark:border-neutral-700">
+          {(['douala', 'yaounde', 'bafoussam'] as const).map((city) => (
+            <button
+              key={city}
+              onClick={() => setSelectedCity(city)}
+              className={`px-4 py-2 rounded-xl text-xs font-black capitalize transition-all ${
+                selectedCity === city
+                  ? 'bg-pleingaz-red text-white shadow-md'
+                  : 'text-gray-600 dark:text-gray-300 hover:text-gray-900'
+              }`}
+            >
+              {city}
+            </button>
+          ))}
         </div>
         
         <div className="flex items-center gap-3">
@@ -34,16 +55,12 @@ export default function GlobalRadarPage() {
               className="w-64 pl-9 pr-4 py-2 bg-gray-100 dark:bg-neutral-950 border border-transparent focus:border-gray-300 dark:focus:border-neutral-700 rounded-full text-sm font-medium outline-none transition-all"
             />
           </div>
-          <button className="flex items-center gap-2 px-4 py-2 bg-white dark:bg-neutral-900 border border-gray-200 dark:border-neutral-800 rounded-full text-gray-700 dark:text-gray-300 font-bold hover:border-pleingaz-red transition-colors text-sm">
-            <Filter size={16} />
-            Filtres
-          </button>
         </div>
       </div>
 
       {/* Map Content */}
       <div className="flex-1 relative">
-        <RadarMap />
+        <RadarMap selectedCity={selectedCity} />
 
         {/* Legend Overlay */}
         <div className="absolute bottom-6 right-6 z-[1000] bg-white/90 dark:bg-neutral-900/90 backdrop-blur-md border border-gray-200 dark:border-neutral-800 rounded-2xl p-4 shadow-xl w-64">
