@@ -4,8 +4,9 @@ import { useEffect, useState, Suspense } from 'react';
 import { useParams } from 'next/navigation';
 import dynamic from 'next/dynamic';
 import { motion } from 'framer-motion';
-import { MapPin, Phone, Clock, ShieldCheck, ShoppingCart, MessageCircle, Star } from 'lucide-react';
+import { MapPin, Phone, Clock, ShieldCheck, ShoppingCart, MessageCircle, Star, BellRing, Check } from 'lucide-react';
 import Link from 'next/link';
+import FavoriteButton from '@/components/store/FavoriteButton';
 
 // Chargement dynamique de la carte pour éviter les erreurs SSR Leaflet
 const StoreMap = dynamic(() => import('@/components/map/StoreMap'), { ssr: false });
@@ -16,6 +17,7 @@ function StoreProfileContent() {
   const [store, setStore] = useState<any>(null);
   const [isMounted, setIsMounted] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
+  const [subscribedAlerts, setSubscribedAlerts] = useState<string[]>([]);
 
   useEffect(() => {
     setIsMounted(true);
@@ -26,7 +28,31 @@ function StoreProfileContent() {
       .then(data => setStore(data))
       .catch(err => console.error(err))
       .finally(() => setIsLoading(false));
+
+    if (typeof window !== 'undefined') {
+      try {
+        const raw = localStorage.getItem('pleingaz_stock_alerts');
+        if (raw) setSubscribedAlerts(JSON.parse(raw));
+      } catch {}
+    }
   }, [storeId]);
+
+  const handleToggleStockAlert = (itemId: string, brand: string) => {
+    let next: string[];
+    let added = false;
+    if (subscribedAlerts.includes(itemId)) {
+      next = subscribedAlerts.filter(id => id !== itemId);
+    } else {
+      next = [...subscribedAlerts, itemId];
+      added = true;
+    }
+    setSubscribedAlerts(next);
+    localStorage.setItem('pleingaz_stock_alerts', JSON.stringify(next));
+
+    if (added) {
+      alert(`🔔 Alerte activée !\n\nVous serez notifié dès que ${brand} sera réapprovisionné chez ${store?.name || 'ce point de vente'}.`);
+    }
+  };
 
   if (!isMounted) return null;
   if (isLoading) return <div className="min-h-screen flex items-center justify-center bg-gray-50 dark:bg-neutral-950">Chargement de la boutique...</div>;
@@ -77,13 +103,16 @@ function StoreProfileContent() {
                 </div>
               </div>
               
-              <Link 
-                href={`/buyer/messages?to=${store.ownerId || store.id}`} 
-                className="flex items-center justify-center gap-2 bg-[#25D366] text-white px-6 py-3 rounded-xl font-bold hover:bg-[#1ebd5a] transition-colors shadow-lg shadow-[#25D366]/30"
-              >
-                <MessageCircle size={20} />
-                Contacter
-              </Link>
+              <div className="flex items-center gap-3">
+                <FavoriteButton storeId={store.id} storeName={store.name} size={20} showText={true} className="py-3 px-4 border border-gray-200 dark:border-neutral-800 rounded-xl" />
+                <Link 
+                  href={`/buyer/messages?to=${store.ownerId || store.id}`} 
+                  className="flex items-center justify-center gap-2 bg-[#25D366] text-white px-6 py-3 rounded-xl font-bold hover:bg-[#1ebd5a] transition-colors shadow-lg shadow-[#25D366]/30"
+                >
+                  <MessageCircle size={20} />
+                  Contacter
+                </Link>
+              </div>
             </div>
 
             <p className="text-gray-600 dark:text-gray-400 max-w-2xl">
@@ -146,13 +175,37 @@ function StoreProfileContent() {
                         <span>Mise à jour: {item.freshness || "Inconnu"}</span>
                       </div>
                       
-                      <Link 
-                        href={item.status === 'En stock' ? `/checkout/${store.id}?inventoryId=${item.id}&productId=${item.productId || ''}` : '#'}
-                        className={`mt-4 w-full py-3 rounded-xl font-bold flex items-center justify-center gap-2 transition-all ${item.status === 'En stock' ? 'bg-gray-900 dark:bg-white text-white dark:text-gray-900 hover:bg-pleingaz-red hover:text-white' : 'bg-gray-200 dark:bg-neutral-800 text-gray-400 cursor-not-allowed pointer-events-none'}`}
-                      >
-                        <ShoppingCart size={18} />
-                        {item.status === 'En stock' ? 'Commander' : 'Indisponible'}
-                      </Link>
+                      {item.status === 'En stock' ? (
+                        <Link 
+                          href={`/checkout/${store.id}?inventoryId=${item.id}&productId=${item.productId || ''}`}
+                          className="mt-4 w-full py-3 rounded-xl font-bold flex items-center justify-center gap-2 transition-all bg-gray-900 dark:bg-white text-white dark:text-gray-900 hover:bg-pleingaz-red hover:text-white"
+                        >
+                          <ShoppingCart size={18} />
+                          Commander
+                        </Link>
+                      ) : (
+                        <button
+                          type="button"
+                          onClick={() => handleToggleStockAlert(item.id, `${item.brand} ${item.weight}`)}
+                          className={`mt-4 w-full py-3 rounded-xl font-bold flex items-center justify-center gap-2 transition-all ${
+                            subscribedAlerts.includes(item.id)
+                              ? 'bg-amber-100 dark:bg-amber-950/60 text-amber-700 dark:text-amber-300 border border-amber-300 dark:border-amber-800'
+                              : 'bg-red-500 hover:bg-red-600 text-white shadow-md'
+                          }`}
+                        >
+                          {subscribedAlerts.includes(item.id) ? (
+                            <>
+                              <Check size={18} className="text-amber-600 dark:text-amber-400" />
+                              Alerte activée
+                            </>
+                          ) : (
+                            <>
+                              <BellRing size={18} />
+                              M'alerter dès réassort
+                            </>
+                          )}
+                        </button>
+                      )}
                     </motion.div>
                   ))}
                 </div>

@@ -6,6 +6,7 @@ import { Search, MapPin, BellRing, Flame, MessageCircle, Store, Navigation, Comp
 import { motion, AnimatePresence } from 'framer-motion';
 import Link from 'next/link';
 import dynamic from 'next/dynamic';
+import FavoriteButton from '@/components/store/FavoriteButton';
 
 const SearchStoresMap = dynamic(() => import('@/components/map/SearchStoresMap'), { 
   ssr: false, 
@@ -307,6 +308,7 @@ function SearchContent() {
                       <span className={`px-3 py-1 rounded-full text-xs font-bold ${getBadgeColor(store.stockLevel)}`}>
                         {store.stockLevel === 'HIGH' ? 'BON STOCK' : (store.stockLevel === 'LOW' ? 'STOCK FAIBLE' : 'STOCK MOYEN')}
                       </span>
+                      <FavoriteButton storeId={store.id} storeName={store.name} size={18} />
                       <Link 
                         href={`/buyer/messages?to=${store.ownerId || store.id}`}
                         className="px-3.5 py-2 bg-blue-50 dark:bg-blue-900/20 text-blue-600 dark:text-blue-400 text-sm font-bold rounded-xl hover:bg-blue-100 dark:hover:bg-blue-900/40 transition-colors flex items-center gap-1.5"
