@@ -5,6 +5,7 @@ import 'leaflet/dist/leaflet.css';
 import L from 'leaflet';
 import Link from 'next/link';
 import { MapPin, ShieldCheck, ChevronRight } from 'lucide-react';
+import FavoriteButton from '@/components/store/FavoriteButton';
 
 const icon = L.icon({
   iconUrl: 'https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon.png',
@@ -41,10 +42,13 @@ export default function SearchStoresMap({ stores }: { stores: any[] }) {
               icon={icon}
             >
               <Popup className="custom-popup">
-                <div className="p-1 min-w-[200px] space-y-2">
-                  <div className="flex items-center gap-1.5 font-bold text-gray-900 text-sm">
-                    <ShieldCheck size={16} className="text-pleingaz-red" />
-                    <span>{store.name}</span>
+                <div className="p-1 min-w-[210px] space-y-2">
+                  <div className="flex items-center justify-between gap-1.5 font-bold text-gray-900 text-sm">
+                    <div className="flex items-center gap-1.5 truncate">
+                      <ShieldCheck size={16} className="text-pleingaz-red shrink-0" />
+                      <span className="truncate">{store.name}</span>
+                    </div>
+                    <FavoriteButton storeId={store.id} storeName={store.name} size={15} className="p-1 shrink-0" />
                   </div>
                   <p className="text-xs text-gray-600">
                     <strong>{store.neighborhood || 'Centre'}</strong>, {store.city || 'Douala'}

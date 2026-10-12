@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
-import { User, LogIn, ArrowLeft, MessageSquare, Award, Gift, ShoppingBag, Loader2, FileText, Star, Heart, MapPin, ChevronRight, Store } from 'lucide-react';
+import { User, LogIn, ArrowLeft, MessageSquare, Award, Gift, ShoppingBag, Loader2, FileText, Star, Heart, MapPin, ChevronRight, Store, BellRing, Check } from 'lucide-react';
 import { motion } from 'framer-motion';
 import FavoriteButton, { getFavoriteStoreIds } from '@/components/store/FavoriteButton';
 
@@ -108,9 +108,26 @@ export default function BuyerPortal() {
     }
   };
 
+  const [subscribedAlerts, setSubscribedAlerts] = useState<string[]>([]);
+
+  const loadAlerts = () => {
+    if (typeof window !== 'undefined') {
+      try {
+        const raw = localStorage.getItem('pleingaz_stock_alerts');
+        setSubscribedAlerts(raw ? JSON.parse(raw) : []);
+      } catch {
+        setSubscribedAlerts([]);
+      }
+    }
+  };
+
   useEffect(() => {
     loadFavoriteStores();
-    const handleFavChange = () => loadFavoriteStores();
+    loadAlerts();
+    const handleFavChange = () => {
+      loadFavoriteStores();
+      loadAlerts();
+    };
     window.addEventListener('pleingaz_favorites_changed', handleFavChange);
     return () => window.removeEventListener('pleingaz_favorites_changed', handleFavChange);
   }, []);
@@ -416,6 +433,11 @@ export default function BuyerPortal() {
                               <span className="flex items-center gap-1 font-bold text-gray-700 dark:text-gray-300 bg-white dark:bg-neutral-900 px-2 py-0.5 rounded-md border border-gray-200 dark:border-neutral-800">
                                 <Star size={12} className="fill-amber-400 text-amber-400" />
                                 {store.rating}/5
+                              </span>
+                            )}
+                            {store.inventory?.some((inv: any) => subscribedAlerts.includes(inv.id)) && (
+                              <span className="flex items-center gap-1 text-[11px] font-bold text-amber-700 dark:text-amber-400 bg-amber-50 dark:bg-amber-950/40 px-2 py-0.5 rounded-md border border-amber-200 dark:border-amber-900/40">
+                                <BellRing size={11} /> Alerte réassort active
                               </span>
                             )}
                           </div>
