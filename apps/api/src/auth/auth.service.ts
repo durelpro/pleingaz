@@ -89,6 +89,81 @@ export class AuthService {
     };
   }
 
+  async registerDistributor(dto: { phone: string; password: string; businessName: string; email?: string }) {
+    let cleanPhone = dto.phone.trim().replace(/\s+/g, '');
+    if (!cleanPhone.startsWith('+237')) {
+      if (cleanPhone.startsWith('237')) {
+        cleanPhone = `+${cleanPhone}`;
+      } else {
+        cleanPhone = `+237${cleanPhone}`;
+      }
+    }
+
+    const existing = await this.prisma.user.findFirst({
+      where: {
+        OR: [
+          { phone: cleanPhone },
+          ...(dto.email ? [{ email: dto.email.trim() }] : []),
+        ],
+      },
+    });
+
+    if (existing) {
+      throw new BadRequestException('Un compte existe déjà avec ce numéro de téléphone ou cet email');
+    }
+
+    let distributorRole = await this.prisma.role.findUnique({
+      where: { name: 'DISTRIBUTOR' },
+    });
+    if (!distributorRole) {
+      distributorRole = await this.prisma.role.create({
+        data: { name: 'DISTRIBUTOR', description: 'Distributeur agréé PLEINGAZ' },
+      });
+    }
+
+    const passwordHash = await argon2.hash(dto.password);
+
+    const user = await this.prisma.user.create({
+      data: {
+        phone: cleanPhone,
+        email: dto.email?.trim() || null,
+        passwordHash,
+        isPhoneVerified: true,
+        loyaltyPoints: 0,
+        roles: {
+          create: {
+            roleId: distributorRole.id,
+          },
+        },
+      },
+      include: {
+        roles: { include: { role: true } },
+      },
+    });
+
+    const application = await this.prisma.distributorApplication.create({
+      data: {
+        userId: user.id,
+        businessName: dto.businessName.trim(),
+        status: 'DRAFT',
+        currentStep: 1,
+      },
+    });
+
+    const tokens = await this.generateTokens(user.id);
+    return {
+      accessToken: tokens.accessToken,
+      refreshToken: tokens.refreshToken,
+      user: {
+        id: user.id,
+        phone: user.phone,
+        email: user.email,
+        roles: user.roles.map((r) => r.role.name),
+        application,
+      },
+    };
+  }
+
   async getMe(userId: string) {
     const user = await this.prisma.user.findUnique({
       where: { id: userId },

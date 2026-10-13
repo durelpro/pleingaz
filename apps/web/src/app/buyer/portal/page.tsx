@@ -2,10 +2,11 @@
 
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
-import { User, LogIn, LogOut, ArrowLeft, MessageSquare, Award, Gift, ShoppingBag, Loader2, FileText, Star, Heart, MapPin, ChevronRight, Store, BellRing, Check, Eye, EyeOff } from 'lucide-react';
+import { User, LogIn, LogOut, MessageSquare, Award, Gift, ShoppingBag, Loader2, FileText, Star, Heart, MapPin, ChevronRight, Store, BellRing, Check, Eye, EyeOff, UserPlus } from 'lucide-react';
 import { motion } from 'framer-motion';
 import FavoriteButton, { getFavoriteStoreIds } from '@/components/store/FavoriteButton';
 import InvoiceModal from '@/components/invoice/InvoiceModal';
+import BackButton from '@/components/common/BackButton';
 
 export default function BuyerPortal() {
   const [profile, setProfile] = useState<any>(null);
@@ -31,6 +32,7 @@ export default function BuyerPortal() {
     setProfile(null);
     setCurrentUser(null);
     setOrders([]);
+    setMode('LOGIN');
   };
 
   const handleLogin = async (e: React.FormEvent) => {
@@ -177,6 +179,24 @@ export default function BuyerPortal() {
   }, []);
 
   useEffect(() => {
+    // Check URL parameters for forced view
+    if (typeof window !== 'undefined') {
+      const urlParams = new URLSearchParams(window.location.search);
+      if (urlParams.get('action') === 'logout') {
+        localStorage.removeItem('accessToken');
+        localStorage.removeItem('pleingaz_user_data');
+        setProfile(null);
+        setCurrentUser(null);
+        setIsLoading(false);
+        return;
+      }
+      if (urlParams.get('mode') === 'register') {
+        setMode('REGISTER');
+      } else if (urlParams.get('mode') === 'login') {
+        setMode('LOGIN');
+      }
+    }
+
     const token = typeof window !== 'undefined' ? localStorage.getItem('accessToken') : null;
     if (!token) {
       setIsLoading(false);
@@ -189,6 +209,18 @@ export default function BuyerPortal() {
     .then(async (res) => {
       if (res.ok) {
         const userData = await res.json();
+        const roles = userData.roles || (userData.role ? [userData.role] : []);
+        const isCustomer = roles.includes('CUSTOMER');
+
+        if (!isCustomer) {
+          // Current active session belongs to another role (ADMIN or DISTRIBUTOR)
+          // Do not auto-log into customer dashboard
+          setProfile(null);
+          setCurrentUser(null);
+          setIsLoading(false);
+          return;
+        }
+
         setCurrentUser(userData);
         setProfile({
           firstName: userData.profile?.firstName || 'Client',
@@ -208,10 +240,12 @@ export default function BuyerPortal() {
         // Invalid or expired token
         localStorage.removeItem('accessToken');
         setProfile(null);
+        setCurrentUser(null);
       }
     })
     .catch(() => {
       setProfile(null);
+      setCurrentUser(null);
     })
     .finally(() => setIsLoading(false));
   }, []);
@@ -226,21 +260,35 @@ export default function BuyerPortal() {
       <div className="absolute bottom-1/4 left-0 w-[500px] h-[500px] bg-purple-500/5 rounded-full filter blur-[100px] -z-10" />
 
       <div className="w-full max-w-5xl mx-auto">
-        <Link href="/" className="inline-flex items-center gap-2 text-gray-500 hover:text-blue-500 transition-colors font-semibold mb-8">
-          <ArrowLeft size={20} />
-          Retour à l'accueil
-        </Link>
+        <div className="mb-6">
+          <BackButton fallbackHref="/" label="Retour à l'accueil" />
+        </div>
         
         {!profile ? (
           <>
-            <div className="text-center mb-10">
+            <div className="text-center mb-8">
               <h1 className="text-4xl md:text-5xl font-black text-gray-900 dark:text-white mb-4">
                 Espace <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-500 to-purple-500">Acheteur</span>
               </h1>
               <p className="text-lg text-gray-500 max-w-2xl mx-auto">
-                Connectez-vous pour échanger avec les distributeurs de gaz, suivre vos commandes et cumuler des points de fidélité.
+                Connectez-vous pour échanger avec les distributeurs de gaz, suivre vos commandes et cumuler vos points de fidélité.
               </p>
             </div>
+
+            {typeof window !== 'undefined' && localStorage.getItem('accessToken') && (
+              <div className="mb-6 p-4 bg-amber-50 dark:bg-amber-950/30 border border-amber-200 dark:border-amber-900/50 rounded-2xl flex flex-col sm:flex-row items-center justify-between gap-3 text-sm text-amber-800 dark:text-amber-300 max-w-4xl mx-auto">
+                <div>
+                  <span className="font-bold">Session active dans un autre rôle (Distributeur ou Administrateur).</span> Pour accéder à l'espace acheteur, connectez-vous avec vos identifiants acheteur ou créez un nouveau compte client.
+                </div>
+                <button
+                  type="button"
+                  onClick={handleLogout}
+                  className="px-3 py-1.5 bg-amber-200 dark:bg-amber-800 text-amber-900 dark:text-white rounded-lg font-bold text-xs shrink-0 hover:bg-amber-300 transition-colors cursor-pointer"
+                >
+                  Effacer la session
+                </button>
+              </div>
+            )}
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-8 max-w-4xl mx-auto">
               {/* Card Form */}
@@ -425,14 +473,27 @@ export default function BuyerPortal() {
                   Connecté en tant que <span className="font-bold text-gray-700 dark:text-gray-300">{profile.phone || 'Client'}</span>
                 </p>
               </div>
-              <div className="flex items-center gap-3">
-                <Link href="/buyer/messages" className="flex items-center gap-2 px-5 py-2.5 bg-blue-50 dark:bg-blue-900/20 text-blue-600 rounded-xl font-bold hover:bg-blue-100 dark:hover:bg-blue-900/40 transition-colors">
+              <div className="flex flex-wrap items-center gap-3">
+                <button
+                  type="button"
+                  onClick={() => {
+                    handleLogout();
+                    setMode('REGISTER');
+                  }}
+                  className="flex items-center gap-2 px-4 py-2.5 bg-blue-50 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 rounded-xl font-bold hover:bg-blue-100 dark:hover:bg-blue-900/50 transition-colors text-sm border border-blue-200 dark:border-blue-800/40 cursor-pointer"
+                  title="Créer un nouveau compte acheteur"
+                >
+                  <UserPlus size={18} />
+                  Créer un nouveau profil
+                </button>
+                <Link href="/buyer/messages" className="flex items-center gap-2 px-5 py-2.5 bg-gray-100 dark:bg-neutral-800 text-gray-700 dark:text-gray-300 rounded-xl font-bold hover:bg-gray-200 dark:hover:bg-neutral-700 transition-colors text-sm">
                   <MessageSquare size={18} />
                   Mes Messages
                 </Link>
                 <button 
+                  type="button"
                   onClick={handleLogout}
-                  className="flex items-center gap-2 px-5 py-2.5 bg-red-50 dark:bg-red-900/20 text-red-600 rounded-xl font-bold hover:bg-red-100 dark:hover:bg-red-900/40 transition-colors border border-red-200 dark:border-red-800/30"
+                  className="flex items-center gap-2 px-5 py-2.5 bg-red-50 dark:bg-red-900/20 text-red-600 rounded-xl font-bold hover:bg-red-100 dark:hover:bg-red-900/40 transition-colors border border-red-200 dark:border-red-800/30 text-sm cursor-pointer"
                   title="Se déconnecter"
                 >
                   <LogOut size={18} />

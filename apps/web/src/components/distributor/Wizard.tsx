@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Store, MapPin, FileText, CheckCircle, UploadCloud, Loader2 } from 'lucide-react';
+import { Store, MapPin, FileText, CheckCircle, UploadCloud, Loader2, Eye, EyeOff } from 'lucide-react';
 import dynamic from 'next/dynamic';
 import { useRouter } from 'next/navigation';
 
@@ -28,6 +28,7 @@ export default function DistributorWizard() {
   const [currentStep, setCurrentStep] = useState(1);
   const [isLoading, setIsLoading] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
   
   const [formData, setFormData] = useState({
     phone: '',
@@ -49,18 +50,29 @@ export default function DistributorWizard() {
 
   const getAuthHeaders = (extraHeaders: any = {}) => {
     const token = typeof window !== 'undefined' ? localStorage.getItem('accessToken') : null;
-    const h: any = { 'x-demo-role': 'distributor_1', ...extraHeaders };
+    const h: any = { ...extraHeaders };
     if (token) h['Authorization'] = `Bearer ${token}`;
     return h;
   };
 
   useEffect(() => {
-    // Vérifier si un profil existe déjà
+    const token = typeof window !== 'undefined' ? localStorage.getItem('accessToken') : null;
+    if (!token) {
+      // Nouvel utilisateur sans session : on démarre directement l'inscription à l'étape 1
+      setIsLoading(false);
+      return;
+    }
+
+    // Vérifier si ce compte connecté a déjà une candidature
     fetch('http://localhost:3001/distributor/application', {
-      headers: getAuthHeaders()
+      headers: { 'Authorization': `Bearer ${token}` }
     })
-    .then(res => res.json())
-    .then(data => {
+    .then(async (res) => {
+      if (!res.ok) {
+        setIsLoading(false);
+        return;
+      }
+      const data = await res.json();
       if (data && data.status) {
         if (data.status === 'PENDING' || data.status === 'APPROVED' || data.status === 'REJECTED') {
           router.push('/distributor/dashboard');
@@ -68,9 +80,8 @@ export default function DistributorWizard() {
         }
         
         // Populate DRAFT
-        setFormData({
-          phone: '',
-          password: '',
+        setFormData((prev) => ({
+          ...prev,
           businessName: data.businessName || '',
           taxId: data.taxId || '',
           city: data.city || 'Douala',
@@ -80,7 +91,7 @@ export default function DistributorWizard() {
           longitude: data.longitude || 0,
           momoReceiverNumber: data.momoReceiverNumber || '',
           orangeReceiverNumber: data.orangeReceiverNumber || '',
-        });
+        }));
 
         // Populate documents
         if (data.documents && data.documents.length > 0) {
@@ -94,11 +105,14 @@ export default function DistributorWizard() {
         setCurrentStep(data.currentStep || 1);
       }
     })
-    .catch(err => console.error(err))
+    .catch((err) => console.error(err))
     .finally(() => setIsLoading(false));
   }, [router]);
 
   const saveStep = async () => {
+    const token = typeof window !== 'undefined' ? localStorage.getItem('accessToken') : null;
+    if (!token) return;
+
     setIsSaving(true);
     try {
       await fetch('http://localhost:3001/distributor/application/step', {
@@ -119,6 +133,12 @@ export default function DistributorWizard() {
   const prevStep = () => setCurrentStep((prev) => Math.max(prev - 1, 1));
 
   const handleFileUpload = async (type: string, file: File) => {
+    const token = typeof window !== 'undefined' ? localStorage.getItem('accessToken') : null;
+    if (!token) {
+      alert("Veuillez d'abord valider la première étape pour créer votre compte.");
+      return;
+    }
+
     const formDataUpload = new FormData();
     formDataUpload.append('file', file);
     formDataUpload.append('type', type);
@@ -141,6 +161,55 @@ export default function DistributorWizard() {
   };
 
   const handleNextOrSubmit = async () => {
+    // Étape 1 : Création du compte distributeur si non connecté
+    if (currentStep === 1) {
+      if (!formData.phone.trim() || !formData.password.trim() || !formData.businessName.trim()) {
+        alert('Veuillez renseigner votre numéro de téléphone, mot de passe et le nom de votre boutique.');
+        return;
+      }
+
+      const token = typeof window !== 'undefined' ? localStorage.getItem('accessToken') : null;
+      if (!token) {
+        setIsSaving(true);
+        try {
+          const regRes = await fetch('http://localhost:3001/auth/register/distributor', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              phone: formData.phone,
+              password: formData.password,
+              businessName: formData.businessName,
+            }),
+          });
+          if (regRes.ok) {
+            const regData = await regRes.json();
+            if (regData.accessToken) {
+              localStorage.setItem('accessToken', regData.accessToken);
+            }
+            if (regData.user) {
+              localStorage.setItem('pleingaz_user_data', JSON.stringify(regData.user));
+            }
+            setCurrentStep(2);
+          } else {
+            const err = await regRes.json().catch(() => ({}));
+            alert(err.message || 'Erreur lors de la création du compte distributeur');
+            setIsSaving(false);
+            return;
+          }
+        } catch (e) {
+          alert('Erreur de connexion au serveur');
+          setIsSaving(false);
+          return;
+        }
+        setIsSaving(false);
+        return;
+      } else {
+        await saveStep();
+        setCurrentStep(2);
+        return;
+      }
+    }
+
     // Validation Étape 2 (Quartier et Repère indispensables)
     if (currentStep === 2) {
       if (!formData.neighborhood.trim() || !formData.landmark.trim()) {
@@ -246,14 +315,24 @@ export default function DistributorWizard() {
                   </div>
                   <div className="space-y-2">
                     <label className="text-sm font-medium text-gray-700 dark:text-gray-300">Mot de passe</label>
-                    <input 
-                      type="password" 
-                      required
-                      className="w-full p-4 rounded-xl border border-gray-200 dark:border-neutral-800 bg-gray-50 dark:bg-neutral-950 focus:ring-2 focus:ring-pleingaz-red outline-none transition-all"
-                      placeholder="Créez un mot de passe sécurisé"
-                      value={formData.password}
-                      onChange={(e) => setFormData({...formData, password: e.target.value})}
-                    />
+                    <div className="relative">
+                      <input 
+                        type={showPassword ? 'text' : 'password'} 
+                        required
+                        className="w-full p-4 pr-12 rounded-xl border border-gray-200 dark:border-neutral-800 bg-gray-50 dark:bg-neutral-950 focus:ring-2 focus:ring-pleingaz-red outline-none transition-all font-mono"
+                        placeholder="Créez un mot de passe sécurisé"
+                        value={formData.password}
+                        onChange={(e) => setFormData({...formData, password: e.target.value})}
+                      />
+                      <button
+                        type="button"
+                        onClick={() => setShowPassword(!showPassword)}
+                        className="absolute right-3.5 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 transition-colors p-1"
+                        title={showPassword ? "Masquer le mot de passe" : "Afficher le mot de passe"}
+                      >
+                        {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+                      </button>
+                    </div>
                   </div>
                 </div>
 

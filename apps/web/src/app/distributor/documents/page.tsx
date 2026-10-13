@@ -4,15 +4,27 @@ import Link from 'next/link';
 import { ArrowLeft, FileText, CheckCircle, UploadCloud, X, Eye, Loader2, AlertCircle } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useState, useEffect } from 'react';
+import BackButton from '@/components/common/BackButton';
 
 export default function DocumentsPage() {
   const [viewingDoc, setViewingDoc] = useState<{ id: string, name: string, type: string } | null>(null);
   const [documents, setDocuments] = useState<any[]>([]);
   const [isLoading, setIsLoading] = useState(true);
 
+  const getAuthHeaders = () => {
+    const token = typeof window !== 'undefined' ? localStorage.getItem('accessToken') : null;
+    const headers: Record<string, string> = {};
+    if (token) {
+      headers['Authorization'] = `Bearer ${token}`;
+    } else {
+      headers['x-demo-role'] = 'distributor_1';
+    }
+    return headers;
+  };
+
   useEffect(() => {
     fetch('http://localhost:3001/distributor/documents', {
-      headers: { 'x-demo-role': 'distributor_1' }
+      headers: getAuthHeaders()
     })
     .then(res => res.json())
     .then(data => setDocuments(data || []))
@@ -30,7 +42,7 @@ export default function DocumentsPage() {
     try {
       const res = await fetch('http://localhost:3001/distributor/application/upload', {
         method: 'POST',
-        headers: { 'x-demo-role': 'distributor_1' },
+        headers: getAuthHeaders(),
         body: formData
       });
       if (res.ok) {
@@ -46,10 +58,7 @@ export default function DocumentsPage() {
     <div className="min-h-screen bg-gray-50 dark:bg-neutral-950 p-6 lg:p-10">
       <div className="max-w-3xl mx-auto space-y-8">
         <motion.div initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }}>
-          <Link href="/distributor/dashboard" className="inline-flex items-center gap-2 text-gray-500 hover:text-pleingaz-red transition-colors font-semibold mb-2">
-            <ArrowLeft size={20} />
-            Retour au tableau de bord
-          </Link>
+          <BackButton fallbackHref="/distributor/dashboard" label="Retour au tableau de bord" />
         </motion.div>
         
         <motion.div initial={{ opacity: 0, y: -20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }} className="flex items-center gap-4">

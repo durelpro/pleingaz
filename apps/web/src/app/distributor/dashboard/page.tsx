@@ -3,7 +3,7 @@
 import { useState } from 'react';
 import { 
   Store, Package, TrendingUp, AlertCircle, 
-  MapPin, Star, Settings, FileText, ArrowRight, EyeOff, Eye, Home, Award, ShoppingBag
+  MapPin, Star, Settings, FileText, ArrowRight, EyeOff, Eye, Home, Award, ShoppingBag, LogOut
 } from 'lucide-react';
 import Link from 'next/link';
 import { motion } from 'framer-motion';
@@ -31,9 +31,15 @@ export default function DistributorDashboard() {
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
+    const token = typeof window !== 'undefined' ? localStorage.getItem('accessToken') : null;
+    if (!token) {
+      window.location.href = '/distributor/portal';
+      return;
+    }
+
     Promise.all([
-      fetch('http://localhost:3001/distributor/application', { headers: { 'x-demo-role': 'distributor_1' } }).then(res => res.json()),
-      fetch('http://localhost:3001/distributor/dashboard-metrics', { headers: { 'x-demo-role': 'distributor_1' } }).then(res => res.json())
+      fetch('http://localhost:3001/distributor/application', { headers: { 'Authorization': `Bearer ${token}` } }).then(res => res.json()),
+      fetch('http://localhost:3001/distributor/dashboard-metrics', { headers: { 'Authorization': `Bearer ${token}` } }).then(res => res.json())
     ])
     .then(([appData, metricsData]) => {
       if (appData && appData.status) {
@@ -83,6 +89,18 @@ export default function DistributorDashboard() {
               <Home size={16} />
               Accueil
             </Link>
+            <button 
+              onClick={() => {
+                localStorage.removeItem('accessToken');
+                localStorage.removeItem('pleingaz_user_data');
+                window.location.href = '/distributor/portal';
+              }}
+              className="px-4 py-2 flex items-center gap-2 text-sm font-bold bg-white dark:bg-neutral-900 border border-red-200 dark:border-red-900/40 text-red-600 dark:text-red-400 rounded-xl hover:bg-red-50 dark:hover:bg-red-950/30 transition-colors shadow-sm cursor-pointer"
+              title="Se déconnecter"
+            >
+              <LogOut size={16} />
+              Déconnexion
+            </button>
             <Link href="/distributor/inventory" className="flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-pleingaz-red to-[#ff6a00] text-white font-black rounded-xl shadow-lg shadow-orange-500/30 hover:shadow-orange-500/50 hover:scale-[1.02] active:scale-[0.98] transition-all">
               <Package size={20} />
               Mettre à jour mon stock

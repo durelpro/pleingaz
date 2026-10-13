@@ -46,9 +46,20 @@ export default function InventoryList() {
     return () => clearInterval(interval);
   }, []);
 
+  const getAuthHeaders = () => {
+    const token = typeof window !== 'undefined' ? localStorage.getItem('accessToken') : null;
+    const headers: Record<string, string> = { 'Content-Type': 'application/json' };
+    if (token) {
+      headers['Authorization'] = `Bearer ${token}`;
+    } else {
+      headers['x-demo-role'] = 'distributor_1';
+    }
+    return headers;
+  };
+
   useEffect(() => {
     fetch('http://localhost:3001/inventory/my-store', {
-      headers: { 'x-demo-role': 'distributor_1' }
+      headers: getAuthHeaders()
     })
     .then(res => res.json())
     .then(data => {
@@ -93,7 +104,7 @@ export default function InventoryList() {
     try {
       await fetch(`http://localhost:3001/inventory/my-store/product/${productId}`, {
         method: 'PUT',
-        headers: { 'Content-Type': 'application/json', 'x-demo-role': 'distributor_1' },
+        headers: getAuthHeaders(),
         body: JSON.stringify({ level: newLevel })
       });
     } catch (e) {

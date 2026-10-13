@@ -5,6 +5,7 @@ import Link from 'next/link';
 import { ArrowLeft, MapPin, CheckCircle, Loader2 } from 'lucide-react';
 import { motion } from 'framer-motion';
 import dynamic from 'next/dynamic';
+import BackButton from '@/components/common/BackButton';
 
 const MapPicker = dynamic(() => import('@/components/map/MapPicker'), { ssr: false, loading: () => <div className="h-64 bg-gray-100 dark:bg-neutral-800 animate-pulse rounded-xl" /> });
 
@@ -20,9 +21,20 @@ export default function LocationPage() {
   const [isSaving, setIsSaving] = useState(false);
   const [saveSuccess, setSaveSuccess] = useState(false);
 
+  const getAuthHeaders = () => {
+    const token = typeof window !== 'undefined' ? localStorage.getItem('accessToken') : null;
+    const headers: Record<string, string> = { 'Content-Type': 'application/json' };
+    if (token) {
+      headers['Authorization'] = `Bearer ${token}`;
+    } else {
+      headers['x-demo-role'] = 'distributor_1';
+    }
+    return headers;
+  };
+
   useEffect(() => {
     fetch('http://localhost:3001/distributor/my-store', {
-      headers: { 'x-demo-role': 'distributor_1' }
+      headers: getAuthHeaders()
     })
       .then(res => res.json())
       .then(data => {
@@ -48,10 +60,7 @@ export default function LocationPage() {
     try {
       const res = await fetch('http://localhost:3001/distributor/my-store/location', {
         method: 'PUT',
-        headers: {
-          'Content-Type': 'application/json',
-          'x-demo-role': 'distributor_1',
-        },
+        headers: getAuthHeaders(),
         body: JSON.stringify(formData),
       });
 
@@ -73,10 +82,7 @@ export default function LocationPage() {
     <div className="min-h-screen bg-gray-50 dark:bg-neutral-950 p-6 lg:p-10">
       <div className="max-w-3xl mx-auto space-y-8">
         <motion.div initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }}>
-          <Link href="/distributor/dashboard" className="inline-flex items-center gap-2 text-gray-500 hover:text-pleingaz-red transition-colors font-semibold mb-2">
-            <ArrowLeft size={20} />
-            Retour au tableau de bord
-          </Link>
+          <BackButton fallbackHref="/distributor/dashboard" label="Retour au tableau de bord" />
         </motion.div>
         
         <motion.div initial={{ opacity: 0, y: -20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }} className="flex items-center gap-4">

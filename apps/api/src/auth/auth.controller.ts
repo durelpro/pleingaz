@@ -66,6 +66,33 @@ export class AuthController {
     };
   }
 
+  @Post('register/distributor')
+  @HttpCode(HttpStatus.CREATED)
+  async registerDistributor(
+    @Body()
+    body: {
+      phone: string;
+      password: string;
+      businessName: string;
+      email?: string;
+    },
+    @Res({ passthrough: true }) res: Response,
+  ) {
+    const result = await this.authService.registerDistributor(body);
+
+    res.cookie('refresh_token', result.refreshToken, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === 'production',
+      sameSite: 'strict',
+      maxAge: 7 * 24 * 60 * 60 * 1000,
+    });
+
+    return {
+      accessToken: result.accessToken,
+      user: result.user,
+    };
+  }
+
   @Post('login/phone')
   @HttpCode(HttpStatus.OK)
   async loginWithPhonePassword(

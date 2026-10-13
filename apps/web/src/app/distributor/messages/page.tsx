@@ -21,8 +21,12 @@ export default function DistributorMessages() {
 
   const getHeaders = () => {
     const token = typeof window !== 'undefined' ? localStorage.getItem('accessToken') : null;
-    const h: any = { 'Content-Type': 'application/json', 'x-demo-role': 'distributor_1' };
-    if (token) h['Authorization'] = `Bearer ${token}`;
+    const h: any = { 'Content-Type': 'application/json' };
+    if (token) {
+      h['Authorization'] = `Bearer ${token}`;
+    } else {
+      h['x-demo-role'] = 'distributor_1';
+    }
     return h;
   };
 
