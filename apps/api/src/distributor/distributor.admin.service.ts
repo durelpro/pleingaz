@@ -153,6 +153,21 @@ export class DistributorAdminService {
       },
     });
 
+    // Initialiser l'inventaire complet du catalogue pour ce nouveau point de vente
+    const catalogProducts = await this.prisma.product.findMany();
+    for (const prod of catalogProducts) {
+      await this.prisma.inventory.upsert({
+        where: { storeId_productId: { storeId: store.id, productId: prod.id } },
+        update: {},
+        create: {
+          storeId: store.id,
+          productId: prod.id,
+          level: 'OUT_OF_STOCK',
+          lastConfirmedAt: new Date(),
+        },
+      });
+    }
+
     await this.audit.log({
       userId: adminId,
       action: 'APPROVE_APPLICATION',

@@ -11,9 +11,11 @@ export class InventoryService {
   ) {}
 
   async getStoreInventory(storeId: string) {
+    await this.ensureAllProductsInStore(storeId);
     return this.prisma.inventory.findMany({
       where: { storeId },
       include: { product: true },
+      orderBy: { product: { brand: 'asc' } },
     });
   }
 
@@ -23,10 +25,59 @@ export class InventoryService {
     });
     if (!store) throw new NotFoundException('Boutique introuvable');
 
+    await this.ensureAllProductsInStore(store.id);
+
     return this.prisma.inventory.findMany({
       where: { storeId: store.id },
       include: { product: true },
+      orderBy: { product: { brand: 'asc' } },
     });
+  }
+
+  /**
+   * Garantit que toutes les bouteilles de gaz officielles du catalogue
+   * sont créées dans l'inventaire du magasin (Règle R1 & UX distributeur).
+   */
+  async ensureAllProductsInStore(storeId: string) {
+    const products = await this.prisma.product.findMany();
+    if (products.length === 0) return;
+
+    for (const prod of products) {
+      await this.prisma.inventory.upsert({
+        where: { storeId_productId: { storeId, productId: prod.id } },
+        update: {},
+        create: {
+          storeId,
+          productId: prod.id,
+          level: 'OUT_OF_STOCK',
+          lastConfirmedAt: new Date(),
+        },
+      });
+    }
+  }
+
+  async confirmAllStock(userId: string) {
+    const store = await this.prisma.store.findFirst({
+      where: { ownerId: userId }
+    });
+    if (!store) throw new NotFoundException('Boutique introuvable');
+
+    await this.ensureAllProductsInStore(store.id);
+
+    await this.prisma.inventory.updateMany({
+      where: { storeId: store.id },
+      data: { lastConfirmedAt: new Date() }
+    });
+
+    await this.audit.log({
+      userId,
+      action: 'CONFIRM_ALL_INVENTORY',
+      entity: 'Store',
+      entityId: store.id,
+      details: { timestamp: new Date().toISOString() }
+    });
+
+    return this.getMyStoreInventory(userId);
   }
 
   async updateMyStock(userId: string, productId: string, level: StockLevel) {
