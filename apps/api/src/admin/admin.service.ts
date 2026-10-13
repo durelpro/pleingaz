@@ -192,7 +192,11 @@ export class AdminService {
 
       let parsedBadges: string[] = [];
       try {
-        if (s.badges) parsedBadges = JSON.parse(s.badges);
+        if (typeof s.badges === 'string') {
+          parsedBadges = JSON.parse(s.badges);
+        } else if (Array.isArray(s.badges)) {
+          parsedBadges = s.badges as string[];
+        }
       } catch {
         parsedBadges = [];
       }
@@ -218,7 +222,7 @@ export class AdminService {
 
     const orders = await this.prisma.order.findMany({
       where,
-      include: { customer: true, store: true, items: { include: { product: true } } },
+      include: { customer: true, store: true, payments: true, items: { include: { product: true } } },
       orderBy: { createdAt: 'desc' },
       take: 500,
     });
@@ -230,7 +234,8 @@ export class AdminService {
       const storeName = (o.store?.name || 'Central').replace(/;/g, ' ');
       const c = (o.store?.city || '').replace(/;/g, ' ');
       const n = (o.store?.neighborhood || '').replace(/;/g, ' ');
-      return `${o.orderNumber};${d};${phone};${storeName};${c};${n};${o.totalAmount};${o.status};${o.paymentMethod}`;
+      const paymentMethod = o.payments?.[0]?.method || 'CASH';
+      return `${o.orderNumber};${d};${phone};${storeName};${c};${n};${o.totalAmount};${o.status};${paymentMethod}`;
     }).join('\n');
 
     return header + rows;
