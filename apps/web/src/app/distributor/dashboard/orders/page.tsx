@@ -1,5 +1,6 @@
 "use client";
 
+import { authHeaders } from '@/lib/api';
 import { useState, useEffect, useRef } from 'react';
 import { ShoppingBag, Loader2, CheckCircle, XCircle, MapPin, QrCode, Truck, Check, X, Camera, ArrowLeft, Star, FileText } from 'lucide-react';
 import Link from 'next/link';
@@ -15,16 +16,7 @@ export default function DistributorOrdersPage() {
   const [scannedCode, setScannedCode] = useState('');
   const [selectedInvoiceOrderId, setSelectedInvoiceOrderId] = useState<string | null>(null);
 
-  const getHeaders = () => {
-    const token = typeof window !== 'undefined' ? localStorage.getItem('accessToken') : null;
-    const h: any = { 'Content-Type': 'application/json' };
-    if (token) {
-      h['Authorization'] = `Bearer ${token}`;
-    } else {
-      h['x-demo-role'] = 'distributor_1';
-    }
-    return h;
-  };
+  const getHeaders = () => authHeaders();
 
   const fetchOrders = () => {
     fetch('http://localhost:3001/orders/store', {

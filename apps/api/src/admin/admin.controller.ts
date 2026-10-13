@@ -16,13 +16,40 @@ export class AdminController {
   }
 
   @Get('dashboard-metrics')
-  async getDashboardMetrics() {
-    return this.adminService.getDashboardMetrics();
+  async getDashboardMetrics(@Query('city') city?: string) {
+    return this.adminService.getDashboardMetrics(city);
   }
 
   @Get('sales-stats')
-  async getSalesStats(@Query('timeframe') timeframe?: string) {
-    return this.adminService.getSalesStats(timeframe || 'semaine');
+  async getSalesStats(
+    @Query('timeframe') timeframe?: string,
+    @Query('city') city?: string,
+  ) {
+    return this.adminService.getSalesStats(timeframe || 'semaine', city);
+  }
+
+  @Get('distributors/rankings')
+  async getRankings(@Query('city') city?: string) {
+    return this.adminService.getDistributorRankings(city);
+  }
+
+  @Get('export/orders')
+  async exportOrders(
+    @Query('city') city?: string,
+    @Query('timeframe') timeframe?: string,
+  ) {
+    return {
+      filename: `commandes-pleingaz-${new Date().toISOString().slice(0, 10)}.csv`,
+      content: await this.adminService.exportOrdersCsv(city, timeframe),
+    };
+  }
+
+  @Get('export/stores')
+  async exportStores(@Query('city') city?: string) {
+    return {
+      filename: `distributeurs-pleingaz-${new Date().toISOString().slice(0, 10)}.csv`,
+      content: await this.adminService.exportStoresCsv(city),
+    };
   }
 
   @Get('audit')

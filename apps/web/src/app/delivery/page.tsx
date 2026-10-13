@@ -1,5 +1,6 @@
 'use client';
 
+import { authHeaders } from '@/lib/api';
 import { useState, useEffect, Suspense } from 'react';
 import { useSearchParams } from 'next/navigation';
 import { Truck, CheckCircle2, PackageSearch, PackageOpen, Download, ArrowLeft, Store, MapPin, Loader2, FileText, Check, Star } from 'lucide-react';
@@ -23,12 +24,7 @@ function DeliveryTrackerContent() {
   const [reviewError, setReviewError] = useState<string | null>(null);
   const [reviewSuccess, setReviewSuccess] = useState(false);
 
-  const getHeaders = () => {
-    const token = typeof window !== 'undefined' ? localStorage.getItem('accessToken') : null;
-    const h: any = { 'Content-Type': 'application/json', 'x-demo-role': 'customer_1' };
-    if (token) h['Authorization'] = `Bearer ${token}`;
-    return h;
-  };
+  const getHeaders = () => authHeaders();
 
   const handleSubmitReview = async () => {
     if (!order || selectedRating === 0) return;

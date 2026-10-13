@@ -22,11 +22,12 @@ export default function AdminLogin() {
       const res = await fetch('http://localhost:3001/auth/login/phone', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ phone, pass: password })
+        body: JSON.stringify({ phone: phone.trim(), pass: password })
       });
       if (res.ok) {
         const data = await res.json();
-        if (data.user && !data.user.roles?.includes('ADMIN')) {
+        const roles = data.user?.roles || (data.user?.role ? [data.user.role] : []);
+        if (!roles.includes('ADMIN')) {
           setError('Accès refusé : Ce compte ne dispose pas des privilèges administrateur.');
           return;
         }
@@ -75,16 +76,29 @@ export default function AdminLogin() {
           </p>
         </div>
 
-        <form onSubmit={handleLogin} className="space-y-6">
+        <form onSubmit={handleLogin} className="space-y-5">
           <div>
+            <label className="text-xs font-bold text-zinc-300 block mb-1.5">Numéro de téléphone</label>
+            <input
+              type="tel"
+              value={phone}
+              onChange={(e) => setPhone(e.target.value)}
+              placeholder="Ex: +237600000000"
+              className="w-full bg-black/50 border border-zinc-800 text-white placeholder-zinc-500 rounded-xl py-3.5 px-4 focus:outline-none focus:border-purple-500 focus:ring-1 focus:ring-purple-500 transition-all font-mono"
+              required
+            />
+          </div>
+
+          <div>
+            <label className="text-xs font-bold text-zinc-300 block mb-1.5">Mot de passe</label>
             <div className="relative">
               <Lock className="absolute left-4 top-1/2 -translate-y-1/2 text-zinc-400" size={20} />
               <input
                 type={showPassword ? 'text' : 'password'}
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
-                placeholder="Mot de passe d'accès..."
-                className="w-full bg-black/50 border border-zinc-800 text-white placeholder-zinc-500 rounded-xl py-4 pl-12 pr-12 focus:outline-none focus:border-purple-500 focus:ring-1 focus:ring-purple-500 transition-all font-mono tracking-wider"
+                placeholder="Votre mot de passe administrateur"
+                className="w-full bg-black/50 border border-zinc-800 text-white placeholder-zinc-500 rounded-xl py-3.5 pl-12 pr-12 focus:outline-none focus:border-purple-500 focus:ring-1 focus:ring-purple-500 transition-all font-mono tracking-wider"
                 required
               />
               <button
@@ -101,16 +115,13 @@ export default function AdminLogin() {
 
           <button
             type="submit"
-            className="w-full bg-gradient-to-r from-purple-600 to-blue-600 text-white font-bold rounded-xl py-4 flex items-center justify-center gap-2 hover:opacity-90 transition-opacity"
+            disabled={isLoading}
+            className="w-full bg-gradient-to-r from-purple-600 to-blue-600 text-white font-bold rounded-xl py-4 flex items-center justify-center gap-2 hover:opacity-90 transition-opacity disabled:opacity-50"
           >
-            Accéder au Dashboard
+            {isLoading ? 'Connexion en cours...' : 'Accéder au Dashboard'}
             <ArrowRight size={18} />
           </button>
         </form>
-        
-        <p className="text-zinc-500 text-xs text-center mt-6">
-          Démo : tapez <code className="text-purple-400 font-mono">admin123</code>
-        </p>
       </motion.div>
 
     </div>

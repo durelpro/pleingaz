@@ -1,5 +1,6 @@
 'use client';
 
+import { authHeaders } from '@/lib/api';
 import { useState, useEffect, Suspense } from 'react';
 import { useSearchParams } from 'next/navigation';
 import Link from 'next/link';
@@ -18,12 +19,7 @@ function BuyerMessagesContent() {
   const [profileForm, setProfileForm] = useState({ firstName: '', lastName: '' });
   const [isSubmittingProfile, setIsSubmittingProfile] = useState(false);
 
-  const getHeaders = () => {
-    const token = typeof window !== 'undefined' ? localStorage.getItem('accessToken') : null;
-    const h: any = { 'Content-Type': 'application/json', 'x-demo-role': 'customer_1' };
-    if (token) h['Authorization'] = `Bearer ${token}`;
-    return h;
-  };
+  const getHeaders = () => authHeaders();
 
   useEffect(() => {
     // Check profile

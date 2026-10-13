@@ -68,8 +68,13 @@ function CheckoutContent() {
     setIsSubmitting(true);
     try {
       const token = typeof window !== 'undefined' ? localStorage.getItem('accessToken') : null;
-      const headers: any = { 'Content-Type': 'application/json', 'x-demo-role': 'customer_1' };
-      if (token) headers['Authorization'] = `Bearer ${token}`;
+      if (!token) {
+        alert("Veuillez vous connecter ou créer un compte acheteur pour commander.");
+        setIsSubmitting(false);
+        router.push('/buyer/portal?mode=login');
+        return;
+      }
+      const headers: any = { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` };
 
       const res = await fetch(`http://localhost:3001/orders`, {
         method: 'POST',

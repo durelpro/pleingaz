@@ -1,5 +1,6 @@
 'use client';
 
+import { authHeaders } from '@/lib/api';
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { ArrowLeft, Send, User, Search, Loader2, Phone, Zap } from 'lucide-react';
@@ -19,16 +20,7 @@ export default function DistributorMessages() {
   const [activeConv, setActiveConv] = useState<any>(null);
   const [isLoading, setIsLoading] = useState(true);
 
-  const getHeaders = () => {
-    const token = typeof window !== 'undefined' ? localStorage.getItem('accessToken') : null;
-    const h: any = { 'Content-Type': 'application/json' };
-    if (token) {
-      h['Authorization'] = `Bearer ${token}`;
-    } else {
-      h['x-demo-role'] = 'distributor_1';
-    }
-    return h;
-  };
+  const getHeaders = () => authHeaders();
 
   useEffect(() => {
     loadConversations();

@@ -1,5 +1,6 @@
 'use client';
 
+import { authHeaders } from '@/lib/api';
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { ArrowLeft, MapPin, CheckCircle, Loader2 } from 'lucide-react';
@@ -21,16 +22,7 @@ export default function LocationPage() {
   const [isSaving, setIsSaving] = useState(false);
   const [saveSuccess, setSaveSuccess] = useState(false);
 
-  const getAuthHeaders = () => {
-    const token = typeof window !== 'undefined' ? localStorage.getItem('accessToken') : null;
-    const headers: Record<string, string> = { 'Content-Type': 'application/json' };
-    if (token) {
-      headers['Authorization'] = `Bearer ${token}`;
-    } else {
-      headers['x-demo-role'] = 'distributor_1';
-    }
-    return headers;
-  };
+  const getAuthHeaders = () => authHeaders();
 
   useEffect(() => {
     fetch('http://localhost:3001/distributor/my-store', {

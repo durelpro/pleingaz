@@ -1,5 +1,6 @@
 'use client';
 
+import { authHeaders } from '@/lib/api';
 import Link from 'next/link';
 import { ArrowLeft, FileText, CheckCircle, UploadCloud, X, Eye, Loader2, AlertCircle } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -11,16 +12,7 @@ export default function DocumentsPage() {
   const [documents, setDocuments] = useState<any[]>([]);
   const [isLoading, setIsLoading] = useState(true);
 
-  const getAuthHeaders = () => {
-    const token = typeof window !== 'undefined' ? localStorage.getItem('accessToken') : null;
-    const headers: Record<string, string> = {};
-    if (token) {
-      headers['Authorization'] = `Bearer ${token}`;
-    } else {
-      headers['x-demo-role'] = 'distributor_1';
-    }
-    return headers;
-  };
+  const getAuthHeaders = () => authHeaders(false);
 
   useEffect(() => {
     fetch('http://localhost:3001/distributor/documents', {

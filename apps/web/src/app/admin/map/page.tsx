@@ -11,6 +11,7 @@ const RadarMap = dynamic(() => import('@/components/admin/RadarMap'), { ssr: fal
 
 export default function GlobalRadarPage() {
   const [selectedCity, setSelectedCity] = useState<'douala' | 'yaounde' | 'bafoussam'>('douala');
+  const [searchQuery, setSearchQuery] = useState('');
 
   return (
     <div className="h-screen w-full flex flex-col bg-gray-50 dark:bg-neutral-950 overflow-hidden">
@@ -51,7 +52,9 @@ export default function GlobalRadarPage() {
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={16} />
             <input 
               type="text" 
-              placeholder="Rechercher un quartier ou distributeur..."
+              placeholder="Filtrer un quartier ou distributeur..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
               className="w-64 pl-9 pr-4 py-2 bg-gray-100 dark:bg-neutral-950 border border-transparent focus:border-gray-300 dark:focus:border-neutral-700 rounded-full text-sm font-medium outline-none transition-all"
             />
           </div>
@@ -59,8 +62,8 @@ export default function GlobalRadarPage() {
       </div>
 
       {/* Map Content */}
-      <div className="flex-1 relative">
-        <RadarMap selectedCity={selectedCity} />
+      <div className="flex-1 relative w-full h-[calc(100vh-80px)] min-h-[500px]">
+        <RadarMap selectedCity={selectedCity} searchQuery={searchQuery} />
 
         {/* Legend Overlay */}
         <div className="absolute bottom-6 right-6 z-[1000] bg-white/90 dark:bg-neutral-900/90 backdrop-blur-md border border-gray-200 dark:border-neutral-800 rounded-2xl p-4 shadow-xl w-64">

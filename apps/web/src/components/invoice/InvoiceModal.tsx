@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react';
 import { X, Printer, Download, FileText, ShieldCheck, Flame, Loader2 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
+import { apiFetch } from '@/lib/api';
 
 interface InvoiceModalProps {
   orderId: string;
@@ -21,11 +22,7 @@ export default function InvoiceModal({ orderId, isOpen, onClose }: InvoiceModalP
     setIsLoading(true);
     setError(null);
 
-    const token = typeof window !== 'undefined' ? localStorage.getItem('accessToken') : null;
-    const headers: any = { 'x-demo-role': 'customer_1' };
-    if (token) headers['Authorization'] = `Bearer ${token}`;
-
-    fetch(`http://localhost:3001/invoices/${orderId}`, { headers })
+    apiFetch(`/invoices/${orderId}`)
       .then(async (res) => {
         if (!res.ok) {
           const err = await res.json();

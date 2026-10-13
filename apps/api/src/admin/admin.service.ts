@@ -28,19 +28,26 @@ export class AdminService {
     };
   }
 
-  async getDashboardMetrics() {
+  async getDashboardMetrics(city?: string) {
     // 1. Risque de Rupture (Boutiques avec au moins un produit en OUT_OF_STOCK)
+    const storeWhere: any = {};
+    if (city && city !== 'all') {
+      storeWhere.city = { equals: city, mode: 'insensitive' };
+    }
+
     const outOfStockStores = await this.prisma.store.findMany({
       where: {
+        ...storeWhere,
         inventories: {
           some: { level: 'OUT_OF_STOCK' }
         }
       },
-      select: { name: true, neighborhood: true }
+      select: { id: true, name: true, city: true, neighborhood: true }
     });
 
     // 2. Fiabilité Moyenne
     const storesAgg = await this.prisma.store.aggregate({
+      where: storeWhere,
       _avg: { reliabilityScore: true }
     });
     const avgReliability = storesAgg._avg.reliabilityScore ? Math.round(storesAgg._avg.reliabilityScore) : 100;
@@ -50,16 +57,28 @@ export class AdminService {
       where: { status: 'PENDING' }
     });
 
+    // 4. Liste des villes disponibles pour le filtre
+    const storesCities = await this.prisma.store.findMany({
+      select: { city: true },
+      distinct: ['city']
+    });
+    const cities = storesCities.map(s => s.city).filter(Boolean);
+
     return {
       outOfStockCount: outOfStockStores.length,
       outOfStockStores: outOfStockStores,
       averageReliability: avgReliability,
       pendingDocsCount: pendingDocsCount,
+      cities,
     };
   }
 
-  async getSalesStats(timeframe: string) {
+  async getSalesStats(timeframe: string, city?: string) {
     const result = [];
+    const orderWhereExtra: any = {};
+    if (city && city !== 'all') {
+      orderWhereExtra.store = { city: { equals: city, mode: 'insensitive' } };
+    }
 
     if (timeframe === 'jour') {
       // Les 24 dernières heures, regroupées par intervalles de 4h
@@ -70,7 +89,11 @@ export class AdminService {
         end.setHours(end.getHours() + 4);
 
         const orders = await this.prisma.order.findMany({
-          where: { createdAt: { gte: start, lt: end }, status: { in: ['DELIVERED', 'CONFIRMED'] } },
+          where: {
+            createdAt: { gte: start, lt: end },
+            status: { in: ['DELIVERED', 'CONFIRMED'] },
+            ...orderWhereExtra
+          },
           select: { totalAmount: true }
         });
         
@@ -93,7 +116,11 @@ export class AdminService {
         start.setDate(start.getDate() - 7);
 
         const orders = await this.prisma.order.findMany({
-          where: { createdAt: { gte: start, lt: end }, status: { in: ['DELIVERED', 'CONFIRMED'] } },
+          where: {
+            createdAt: { gte: start, lt: end },
+            status: { in: ['DELIVERED', 'CONFIRMED'] },
+            ...orderWhereExtra
+          },
           select: { totalAmount: true }
         });
 
@@ -119,7 +146,11 @@ export class AdminService {
         nextDay.setDate(nextDay.getDate() + 1);
 
         const orders = await this.prisma.order.findMany({
-          where: { createdAt: { gte: d, lt: nextDay }, status: { in: ['DELIVERED', 'CONFIRMED'] } },
+          where: {
+            createdAt: { gte: d, lt: nextDay },
+            status: { in: ['DELIVERED', 'CONFIRMED'] },
+            ...orderWhereExtra
+          },
           select: { totalAmount: true }
         });
         
@@ -136,6 +167,100 @@ export class AdminService {
     }
 
     return result;
+  }
+
+  async getDistributorRankings(city?: string) {
+    const storeWhere: any = {};
+    if (city && city !== 'all') {
+      storeWhere.city = { equals: city, mode: 'insensitive' };
+    }
+
+    const stores = await this.prisma.store.findMany({
+      where: storeWhere,
+      include: {
+        inventories: true,
+        orders: { select: { status: true } },
+      },
+      orderBy: { reliabilityScore: 'desc' },
+      take: 20,
+    });
+
+    return stores.map(s => {
+      const totalInv = s.inventories.length;
+      const outOfStock = s.inventories.filter(i => i.level === 'OUT_OF_STOCK').length;
+      const ruptureRate = totalInv > 0 ? `${Math.round((outOfStock / totalInv) * 100)}%` : '0%';
+
+      let parsedBadges: string[] = [];
+      try {
+        if (s.badges) parsedBadges = JSON.parse(s.badges);
+      } catch {
+        parsedBadges = [];
+      }
+
+      return {
+        id: s.id,
+        name: s.name,
+        city: s.city,
+        neighborhood: s.neighborhood,
+        score: s.reliabilityScore || 80,
+        badges: Array.isArray(parsedBadges) ? parsedBadges : [],
+        rupture: ruptureRate,
+        totalOrders: s.orders.length,
+      };
+    });
+  }
+
+  async exportOrdersCsv(city?: string, timeframe?: string): Promise<string> {
+    const where: any = {};
+    if (city && city !== 'all') {
+      where.store = { city: { equals: city, mode: 'insensitive' } };
+    }
+
+    const orders = await this.prisma.order.findMany({
+      where,
+      include: { customer: true, store: true, items: { include: { product: true } } },
+      orderBy: { createdAt: 'desc' },
+      take: 500,
+    });
+
+    const header = 'Numero_Commande;Date;Client_Telephone;Boutique;Ville;Quartier;Montant_FCFA;Statut;Methode_Paiement\n';
+    const rows = orders.map(o => {
+      const d = o.createdAt.toISOString();
+      const phone = o.customer?.phone || '';
+      const storeName = (o.store?.name || 'Central').replace(/;/g, ' ');
+      const c = (o.store?.city || '').replace(/;/g, ' ');
+      const n = (o.store?.neighborhood || '').replace(/;/g, ' ');
+      return `${o.orderNumber};${d};${phone};${storeName};${c};${n};${o.totalAmount};${o.status};${o.paymentMethod}`;
+    }).join('\n');
+
+    return header + rows;
+  }
+
+  async exportStoresCsv(city?: string): Promise<string> {
+    const where: any = {};
+    if (city && city !== 'all') {
+      where.city = { equals: city, mode: 'insensitive' };
+    }
+
+    const stores = await this.prisma.store.findMany({
+      where,
+      include: {
+        inventories: { include: { product: true } },
+      },
+      orderBy: { name: 'asc' },
+    });
+
+    const header = 'Nom_Boutique;Ville;Quartier;Score_Fiabilite;Visible;Total_Produits;Produits_En_Rupture\n';
+    const rows = stores.map(s => {
+      const name = s.name.replace(/;/g, ' ');
+      const c = s.city.replace(/;/g, ' ');
+      const n = s.neighborhood.replace(/;/g, ' ');
+      const total = s.inventories.length;
+      const ruptures = s.inventories.filter(i => i.level === 'OUT_OF_STOCK').length;
+      return `${name};${c};${n};${s.reliabilityScore || 0};${s.isVisible ? 'OUI' : 'NON'};${total};${ruptures}`;
+    }).join('\n');
+
+    return header + rows;
   }
 
   async getAuditLogs(limit: number = 50): Promise<any> {

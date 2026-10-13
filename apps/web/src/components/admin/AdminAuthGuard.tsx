@@ -1,7 +1,8 @@
-"use client";
+'use client';
 
 import { useEffect, useState } from "react";
 import { useRouter, usePathname } from "next/navigation";
+import { apiFetch, clearSession } from "@/lib/api";
 
 export default function AdminAuthGuard({ children }: { children: React.ReactNode }) {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
@@ -9,22 +10,48 @@ export default function AdminAuthGuard({ children }: { children: React.ReactNode
   const pathname = usePathname();
 
   useEffect(() => {
-    // Si on est déjà sur la page de login, on ne fait rien de spécial au départ
+    // Si on est déjà sur la page de login, on ne bloque pas
     if (pathname === '/admin/login') {
-      setIsAuthenticated(true); // Pour laisser la page se rendre
+      setIsAuthenticated(true);
       return;
     }
 
-    const auth = localStorage.getItem("pleingaz_admin_auth");
-    if (auth !== "true") {
-      router.replace("/admin/login");
-    } else {
-      setIsAuthenticated(true);
+    const token = typeof window !== 'undefined' ? localStorage.getItem('accessToken') : null;
+    if (!token) {
+      clearSession();
+      router.replace('/admin/login');
+      return;
     }
+
+    apiFetch('/auth/me')
+      .then(async (res) => {
+        if (!res.ok) {
+          clearSession();
+          router.replace('/admin/login');
+          return;
+        }
+        const data = await res.json();
+        const roles = data.roles || (data.role ? [data.role] : []);
+        if (!roles.includes('ADMIN')) {
+          clearSession();
+          router.replace('/admin/login');
+          return;
+        }
+        setIsAuthenticated(true);
+      })
+      .catch(() => {
+        clearSession();
+        router.replace('/admin/login');
+      });
   }, [router, pathname]);
 
-  if (!isAuthenticated) {
-    return <div className="min-h-screen bg-zinc-950 flex flex-col items-center justify-center text-white"><div className="w-8 h-8 border-4 border-purple-500 border-t-transparent rounded-full animate-spin"></div><p className="mt-4">Vérification des accès...</p></div>;
+  if (!isAuthenticated && pathname !== '/admin/login') {
+    return (
+      <div className="min-h-screen bg-zinc-950 flex flex-col items-center justify-center text-white">
+        <div className="w-8 h-8 border-4 border-purple-500 border-t-transparent rounded-full animate-spin"></div>
+        <p className="mt-4 text-sm text-zinc-400">Vérification des privilèges administrateur...</p>
+      </div>
+    );
   }
 
   return <>{children}</>;

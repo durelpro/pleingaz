@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react';
 import { Shield, Activity, Database, Users, AlertCircle, FileText, Download, Fingerprint, Lock, ShieldAlert, CheckCircle2 } from 'lucide-react';
 import Link from 'next/link';
 import BackButton from '@/components/common/BackButton';
+import { apiFetch } from '@/lib/api';
 
 export default function SystemAuditPage() {
   const [kpis, setKpis] = useState<any>(null);
@@ -11,14 +12,14 @@ export default function SystemAuditPage() {
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-    // Fetch KPIs and Logs
+    // Fetch KPIs and Logs avec jeton réel
     Promise.all([
-      fetch('http://localhost:3001/admin/system/kpis', { headers: { 'x-demo-role': 'admin_1' } }).then(res => res.json()),
-      fetch('http://localhost:3001/admin/system/audit?limit=20', { headers: { 'x-demo-role': 'admin_1' } }).then(res => res.json())
+      apiFetch('/admin/system/kpis').then(res => res.json()),
+      apiFetch('/admin/system/audit?limit=50').then(res => res.json())
     ])
     .then(([kpisData, logsData]) => {
       setKpis(kpisData);
-      setLogs(logsData);
+      setLogs(Array.isArray(logsData) ? logsData : []);
     })
     .catch(console.error)
     .finally(() => setIsLoading(false));

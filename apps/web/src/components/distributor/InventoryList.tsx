@@ -1,5 +1,6 @@
 'use client';
 
+import { authHeaders } from '@/lib/api';
 import { useState, useEffect } from 'react';
 import { RefreshCw, WifiOff, CheckCircle2, Clock, ShoppingCart, Info, X } from 'lucide-react';
 import Link from 'next/link';
@@ -46,16 +47,7 @@ export default function InventoryList() {
     return () => clearInterval(interval);
   }, []);
 
-  const getAuthHeaders = () => {
-    const token = typeof window !== 'undefined' ? localStorage.getItem('accessToken') : null;
-    const headers: Record<string, string> = { 'Content-Type': 'application/json' };
-    if (token) {
-      headers['Authorization'] = `Bearer ${token}`;
-    } else {
-      headers['x-demo-role'] = 'distributor_1';
-    }
-    return headers;
-  };
+  const getAuthHeaders = () => authHeaders();
 
   useEffect(() => {
     fetch('http://localhost:3001/inventory/my-store', {

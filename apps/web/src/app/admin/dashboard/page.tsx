@@ -1,68 +1,143 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { 
   BarChart3, TrendingUp, AlertTriangle, PackageX, 
-  MapPin, Store, Star, Download, Filter, FileText, CheckCircle, XCircle, Search, Eye, X, LogOut
+  MapPin, Store, Star, Download, Filter, FileText, CheckCircle, XCircle, Search, Eye, X, LogOut, Printer, ChevronDown
 } from 'lucide-react';
 import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
 import { motion, AnimatePresence } from 'framer-motion';
-import { useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import BackButton from '@/components/common/BackButton';
-
-const mockChartData = [
-  { name: 'Lun', ventes: 4000, ruptures: 24 },
-  { name: 'Mar', ventes: 3000, ruptures: 13 },
-  { name: 'Mer', ventes: 2000, ruptures: 98 },
-  { name: 'Jeu', ventes: 2780, ruptures: 39 },
-  { name: 'Ven', ventes: 1890, ruptures: 48 },
-  { name: 'Sam', ventes: 2390, ruptures: 38 },
-  { name: 'Dim', ventes: 3490, ruptures: 43 },
-];
+import { apiFetch, clearSession, getToken, API_URL } from '@/lib/api';
 
 export default function PilotageDashboard() {
   const router = useRouter();
   const [timeframe, setTimeframe] = useState('semaine');
+  const [selectedCity, setSelectedCity] = useState('all');
+  const [availableCities, setAvailableCities] = useState<string[]>([]);
+  const [showFilters, setShowFilters] = useState(false);
+  const [showExportMenu, setShowExportMenu] = useState(false);
+
   const [viewingDoc, setViewingDoc] = useState<{ id: string, name: string } | null>(null);
   const [pendingDocs, setPendingDocs] = useState<any[]>([]);
-  const [metrics, setMetrics] = useState({ outOfStockCount: 0, outOfStockStores: [], averageReliability: 100, pendingDocsCount: 0 });
-  const [chartData, setChartData] = useState<any[]>(mockChartData);
+  const [metrics, setMetrics] = useState({ outOfStockCount: 0, outOfStockStores: [], averageReliability: 100, pendingDocsCount: 0, cities: [] });
+  const [chartData, setChartData] = useState<any[]>([]);
+  const [distributorRankings, setDistributorRankings] = useState<any[]>([]);
+  const [products, setProducts] = useState<any[]>([]);
+
+  // Modification de prix
+  const [editingProduct, setEditingProduct] = useState<any | null>(null);
+  const [newPublicPrice, setNewPublicPrice] = useState<number>(0);
+  const [newDistributorPrice, setNewDistributorPrice] = useState<number>(0);
+  const [isUpdatingPrice, setIsUpdatingPrice] = useState(false);
 
   const handleLogout = () => {
-    localStorage.removeItem('pleingaz_admin_auth');
-    localStorage.removeItem('accessToken');
-    localStorage.removeItem('pleingaz_user_data');
+    clearSession();
     router.replace('/admin/login');
   };
 
-  useEffect(() => {
+  const loadData = () => {
+    const cityParam = selectedCity !== 'all' ? `&city=${encodeURIComponent(selectedCity)}` : '';
+    const cityQueryOnly = selectedCity !== 'all' ? `?city=${encodeURIComponent(selectedCity)}` : '';
+
     Promise.all([
-      fetch('http://localhost:3001/admin/distributors/pending', { headers: { 'x-demo-role': 'admin_1' } }).then(res => res.json()),
-      fetch('http://localhost:3001/admin/system/dashboard-metrics', { headers: { 'x-demo-role': 'admin_1' } }).then(res => res.json()),
-      fetch(`http://localhost:3001/admin/system/sales-stats?timeframe=${timeframe}`, { headers: { 'x-demo-role': 'admin_1' } }).then(res => res.json())
+      apiFetch('/admin/distributors/pending').then(res => res.json()),
+      apiFetch(`/admin/system/dashboard-metrics${cityQueryOnly}`).then(res => res.json()),
+      apiFetch(`/admin/system/sales-stats?timeframe=${timeframe}${cityParam}`).then(res => res.json()),
+      apiFetch(`/admin/system/distributors/rankings${cityQueryOnly}`).then(res => res.json()),
+      apiFetch('/catalog/products').then(res => res.json())
     ])
-    .then(([pendingData, metricsData, chartDataRes]) => {
+    .then(([pendingData, metricsData, chartDataRes, rankingsData, productsData]) => {
       if (Array.isArray(pendingData)) setPendingDocs(pendingData);
-      if (metricsData) setMetrics(metricsData);
+      if (metricsData) {
+        setMetrics(metricsData);
+        if (Array.isArray(metricsData.cities) && metricsData.cities.length > 0) {
+          setAvailableCities(metricsData.cities);
+        }
+      }
       if (Array.isArray(chartDataRes)) setChartData(chartDataRes);
+      if (Array.isArray(rankingsData)) setDistributorRankings(rankingsData);
+      if (Array.isArray(productsData)) setProducts(productsData);
     })
     .catch(err => console.error(err));
-  }, [timeframe]);
+  };
+
+  useEffect(() => {
+    loadData();
+  }, [timeframe, selectedCity]);
 
   const handleValidation = async (id: string, action: 'APPROVED' | 'REJECTED') => {
     try {
       const endpoint = action === 'APPROVED' ? 'approve' : 'reject';
-      await fetch(`http://localhost:3001/admin/distributors/${id}/${endpoint}`, {
+      await apiFetch(`/admin/distributors/${id}/${endpoint}`, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json', 'x-demo-role': 'admin_1' },
         body: JSON.stringify({ reason: action === 'REJECTED' ? 'Dossier incomplet' : undefined })
       });
       // Mettre à jour la liste localement
       setPendingDocs(prev => prev.map(doc => doc.id === id ? { ...doc, status: action } : doc));
     } catch (e) {
       console.error(e);
+    }
+  };
+
+  const handleExportCsv = async (type: 'orders' | 'stores') => {
+    try {
+      const cityParam = selectedCity !== 'all' ? `?city=${encodeURIComponent(selectedCity)}` : '';
+      const endpoint = type === 'orders' 
+        ? `/admin/system/export/orders${cityParam ? cityParam + `&timeframe=${timeframe}` : `?timeframe=${timeframe}`}`
+        : `/admin/system/export/stores${cityParam}`;
+      
+      const res = await apiFetch(endpoint);
+      if (res.ok) {
+        const data = await res.json();
+        const blob = new Blob([data.content], { type: 'text/csv;charset=utf-8;' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = data.filename || `export-${type}.csv`;
+        a.click();
+        URL.revokeObjectURL(url);
+      } else {
+        alert("Erreur lors de l'exportation CSV");
+      }
+    } catch (e) {
+      console.error(e);
+      alert("Erreur réseau");
+    } finally {
+      setShowExportMenu(false);
+    }
+  };
+
+  const handlePrintPdf = () => {
+    setShowExportMenu(false);
+    window.print();
+  };
+
+  const handleSavePrice = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!editingProduct) return;
+    setIsUpdatingPrice(true);
+    try {
+      const res = await apiFetch(`/catalog/admin/products/${editingProduct.id}/price`, {
+        method: 'PUT',
+        body: JSON.stringify({
+          publicPrice: Number(newPublicPrice),
+          distributorPrice: Number(newDistributorPrice),
+        })
+      });
+      if (res.ok) {
+        setProducts(prev => prev.map(p => p.id === editingProduct.id ? { ...p, publicPrice: newPublicPrice, distributorPrice: newDistributorPrice } : p));
+        setEditingProduct(null);
+      } else {
+        alert("Erreur lors de la mise à jour du prix");
+      }
+    } catch (e) {
+      console.error(e);
+      alert("Erreur réseau");
+    } finally {
+      setIsUpdatingPrice(false);
     }
   };
 
@@ -87,15 +162,54 @@ export default function PilotageDashboard() {
             </h1>
             <p className="text-gray-500 mt-2">Vision globale, fiabilité des distributeurs et prévention des ruptures.</p>
           </div>
-          <div className="flex gap-3">
-            <button className="flex items-center gap-2 px-4 py-2.5 bg-white dark:bg-neutral-900 border border-gray-200 dark:border-neutral-800 rounded-xl text-gray-700 dark:text-gray-300 font-bold hover:border-pleingaz-red transition-colors">
+          <div className="flex gap-3 relative">
+            <button 
+              onClick={() => setShowFilters(!showFilters)}
+              className={`flex items-center gap-2 px-4 py-2.5 border rounded-xl font-bold transition-colors ${showFilters ? 'bg-orange-50 border-pleingaz-red text-pleingaz-red dark:bg-orange-950/30' : 'bg-white dark:bg-neutral-900 border-gray-200 dark:border-neutral-800 text-gray-700 dark:text-gray-300 hover:border-pleingaz-red'}`}
+            >
               <Filter size={18} />
-              Filtres
+              Filtres {selectedCity !== 'all' && `(${selectedCity})`}
+              <ChevronDown size={14} className={`transition-transform ${showFilters ? 'rotate-180' : ''}`} />
             </button>
-            <button className="flex items-center gap-2 px-4 py-2.5 bg-gray-900 dark:bg-white text-white dark:text-gray-900 font-bold rounded-xl hover:opacity-90 transition-opacity">
-              <Download size={18} />
-              Exporter (PDF/CSV)
-            </button>
+
+            <div className="relative">
+              <button 
+                onClick={() => setShowExportMenu(!showExportMenu)}
+                className="flex items-center gap-2 px-4 py-2.5 bg-gray-900 dark:bg-white text-white dark:text-gray-900 font-bold rounded-xl hover:opacity-90 transition-opacity"
+              >
+                <Download size={18} />
+                Exporter (PDF/CSV)
+                <ChevronDown size={14} />
+              </button>
+
+              {showExportMenu && (
+                <div className="absolute right-0 mt-2 w-64 bg-white dark:bg-neutral-900 border border-gray-200 dark:border-neutral-800 rounded-2xl shadow-2xl p-2 z-50 space-y-1">
+                  <button 
+                    onClick={() => handleExportCsv('orders')}
+                    className="w-full text-left px-3 py-2.5 rounded-xl hover:bg-gray-100 dark:hover:bg-neutral-800 text-sm font-bold text-gray-800 dark:text-gray-200 flex items-center gap-2"
+                  >
+                    <FileText size={16} className="text-pleingaz-red" />
+                    Exporter Commandes (CSV)
+                  </button>
+                  <button 
+                    onClick={() => handleExportCsv('stores')}
+                    className="w-full text-left px-3 py-2.5 rounded-xl hover:bg-gray-100 dark:hover:bg-neutral-800 text-sm font-bold text-gray-800 dark:text-gray-200 flex items-center gap-2"
+                  >
+                    <Store size={16} className="text-blue-500" />
+                    Exporter Distributeurs (CSV)
+                  </button>
+                  <div className="border-t border-gray-100 dark:border-neutral-800 my-1" />
+                  <button 
+                    onClick={handlePrintPdf}
+                    className="w-full text-left px-3 py-2.5 rounded-xl hover:bg-gray-100 dark:hover:bg-neutral-800 text-sm font-bold text-gray-800 dark:text-gray-200 flex items-center gap-2"
+                  >
+                    <Printer size={16} className="text-purple-500" />
+                    Imprimer / Sauvegarder en PDF
+                  </button>
+                </div>
+              )}
+            </div>
+
             <button 
               onClick={handleLogout}
               className="flex items-center gap-2 px-4 py-2.5 bg-red-500/10 hover:bg-red-500/20 text-red-500 font-bold rounded-xl border border-red-500/20 transition-colors"
@@ -106,6 +220,54 @@ export default function PilotageDashboard() {
             </button>
           </div>
         </div>
+
+        {/* Panneau de filtres dynamique */}
+        {showFilters && (
+          <motion.div 
+            initial={{ opacity: 0, height: 0 }}
+            animate={{ opacity: 1, height: 'auto' }}
+            exit={{ opacity: 0, height: 0 }}
+            className="p-5 bg-white dark:bg-neutral-900 border border-gray-200 dark:border-neutral-800 rounded-2xl shadow-sm space-y-4"
+          >
+            <div className="flex flex-wrap items-center gap-6">
+              <div>
+                <label className="text-xs font-bold text-gray-500 block mb-1.5">Filtrer par Ville :</label>
+                <div className="flex flex-wrap gap-2">
+                  <button
+                    onClick={() => setSelectedCity('all')}
+                    className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all ${selectedCity === 'all' ? 'bg-pleingaz-red text-white' : 'bg-gray-100 dark:bg-neutral-800 text-gray-700 dark:text-gray-300'}`}
+                  >
+                    Toutes les villes
+                  </button>
+                  {availableCities.map(city => (
+                    <button
+                      key={city}
+                      onClick={() => setSelectedCity(city)}
+                      className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all ${selectedCity === city ? 'bg-pleingaz-red text-white' : 'bg-gray-100 dark:bg-neutral-800 text-gray-700 dark:text-gray-300'}`}
+                    >
+                      {city}
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              <div>
+                <label className="text-xs font-bold text-gray-500 block mb-1.5">Période du Graphique :</label>
+                <div className="flex gap-2">
+                  {(['jour', 'semaine', 'mois'] as const).map(p => (
+                    <button
+                      key={p}
+                      onClick={() => setTimeframe(p)}
+                      className={`px-3 py-1.5 rounded-lg text-xs font-bold capitalize transition-all ${timeframe === p ? 'bg-gray-900 dark:bg-white text-white dark:text-gray-900' : 'bg-gray-100 dark:bg-neutral-800 text-gray-700 dark:text-gray-300'}`}
+                    >
+                      {p === 'jour' ? "Aujourd'hui" : p === 'semaine' ? '7 jours' : '4 semaines'}
+                    </button>
+                  ))}
+                </div>
+              </div>
+            </div>
+          </motion.div>
+        )}
 
         {/* Actionable Insights (Tâche 9.1) */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
@@ -301,54 +463,64 @@ export default function PilotageDashboard() {
           </div>
         </motion.div>
 
-        {/* Top Distributeurs (Tâche 9.4) */}
+        {/* Top Distributeurs Réels */}
         <div className="bg-white dark:bg-neutral-900 border border-gray-200 dark:border-neutral-800 rounded-3xl p-6">
-          <h3 className="font-black text-xl text-gray-900 dark:text-white mb-6">Classement Distributeurs (Fiabilité)</h3>
+          <h3 className="font-black text-xl text-gray-900 dark:text-white mb-6">Classement Distributeurs (Fiabilité Réelle)</h3>
           <div className="overflow-x-auto">
             <table className="w-full text-left">
               <thead>
                 <tr className="text-gray-500 border-b border-gray-100 dark:border-neutral-800">
                   <th className="pb-3 font-bold">Boutique</th>
+                  <th className="pb-3 font-bold">Ville & Quartier</th>
                   <th className="pb-3 font-bold">Score Interne</th>
                   <th className="pb-3 font-bold">Badges</th>
                   <th className="pb-3 font-bold">Taux de Rupture</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-gray-100 dark:divide-neutral-800">
-                {[
-                  { name: 'Total Énergies Akwa', score: 98, badges: ['TOP_SELLER', 'FAST_DELIVERY'], rupture: '2%' },
-                  { name: 'Boutique Maman Gaz', score: 85, badges: ['RELIABLE'], rupture: '12%' },
-                  { name: 'Dépôt SCTM Bonamoussadi', score: 45, badges: [], rupture: '48%' },
-                ].map((store, i) => (
-                  <tr key={i} className="group hover:bg-gray-50 dark:hover:bg-neutral-950/50 transition-colors">
+                {distributorRankings.map((store, i) => (
+                  <tr key={store.id || i} className="group hover:bg-gray-50 dark:hover:bg-neutral-950/50 transition-colors">
                     <td className="py-4 font-bold text-gray-900 dark:text-white flex items-center gap-3">
                       <div className="w-8 h-8 rounded-full bg-gray-100 dark:bg-neutral-800 flex items-center justify-center">
                         <Store size={14} />
                       </div>
                       {store.name}
                     </td>
+                    <td className="py-4 text-sm text-gray-600 dark:text-gray-400">
+                      {store.city || 'Douala'} {store.neighborhood ? `• ${store.neighborhood}` : ''}
+                    </td>
                     <td className="py-4">
-                      <span className={`font-black \${store.score > 80 ? 'text-green-500' : store.score > 50 ? 'text-orange-500' : 'text-red-500'}`}>
+                      <span className={`font-black ${store.score > 80 ? 'text-green-500' : store.score > 50 ? 'text-orange-500' : 'text-red-500'}`}>
                         {store.score}/100
                       </span>
                     </td>
                     <td className="py-4 flex gap-2">
-                      {store.badges.map(b => (
-                        <span key={b} className="px-2 py-1 bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-400 text-xs font-bold rounded-lg border border-blue-200 dark:border-blue-800">
-                          {b}
-                        </span>
-                      ))}
-                      {store.badges.length === 0 && <span className="text-gray-400">-</span>}
+                      {store.badges && store.badges.length > 0 ? (
+                        store.badges.map((b: string) => (
+                          <span key={b} className="px-2 py-1 bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-400 text-xs font-bold rounded-lg border border-blue-200 dark:border-blue-800">
+                            {b}
+                          </span>
+                        ))
+                      ) : (
+                        <span className="text-gray-400 text-xs">Standard</span>
+                      )}
                     </td>
                     <td className="py-4 font-bold text-gray-700 dark:text-gray-300">{store.rupture}</td>
                   </tr>
                 ))}
+                {distributorRankings.length === 0 && (
+                  <tr>
+                    <td colSpan={5} className="py-8 text-center text-gray-500 font-medium">
+                      Aucun distributeur enregistré pour cette sélection.
+                    </td>
+                  </tr>
+                )}
               </tbody>
             </table>
           </div>
         </div>
 
-        {/* Gestion du Catalogue (Tâche 4.1) */}
+        {/* Gestion du Catalogue Réel */}
         <motion.div 
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
@@ -356,13 +528,13 @@ export default function PilotageDashboard() {
           className="bg-white dark:bg-neutral-900 border border-gray-200 dark:border-neutral-800 rounded-3xl p-6 shadow-sm"
         >
           <div className="flex justify-between items-center mb-6">
-            <h3 className="font-black text-xl text-gray-900 dark:text-white flex items-center gap-2">
-              <PackageX className="text-blue-500" />
-              Catalogue Produits
-            </h3>
-            <button className="px-4 py-2 bg-blue-50 dark:bg-blue-900/20 text-blue-600 dark:text-blue-400 font-bold rounded-xl text-sm border border-blue-200 dark:border-blue-900/30 hover:bg-blue-100 transition-colors">
-              + Nouveau Produit
-            </button>
+            <div>
+              <h3 className="font-black text-xl text-gray-900 dark:text-white flex items-center gap-2">
+                <PackageX className="text-blue-500" />
+                Catalogue Produits Officiel
+              </h3>
+              <p className="text-xs text-gray-500 mt-1">Prix homologués et tarifs distributeurs administrés</p>
+            </div>
           </div>
           <div className="overflow-x-auto">
             <table className="w-full text-left">
@@ -372,33 +544,104 @@ export default function PilotageDashboard() {
                   <th className="pb-3 font-bold">Marque</th>
                   <th className="pb-3 font-bold">Poids</th>
                   <th className="pb-3 font-bold">Prix Public (XAF)</th>
+                  <th className="pb-3 font-bold">Prix Distributeur (XAF)</th>
                   <th className="pb-3 font-bold text-right">Actions</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-gray-100 dark:divide-neutral-800">
-                {[
-                  { id: 1, name: 'Bouteille 12.5Kg', brand: 'Camgaz', weight: '12.5 kg', price: '6 500' },
-                  { id: 2, name: 'Bouteille 12.5Kg', brand: 'SCTM', weight: '12.5 kg', price: '6 500' },
-                  { id: 3, name: 'Bouteille 12.5Kg', brand: 'Tradex', weight: '12.5 kg', price: '6 500' },
-                ].map((prod) => (
+                {products.map((prod) => (
                   <tr key={prod.id} className="group hover:bg-gray-50 dark:hover:bg-neutral-950/50 transition-colors">
-                    <td className="py-4 font-bold text-gray-900 dark:text-white">{prod.name}</td>
+                    <td className="py-4 font-bold text-gray-900 dark:text-white">{prod.brand} {prod.weightKg}kg</td>
                     <td className="py-4">
                       <span className="px-3 py-1 bg-gray-100 dark:bg-neutral-800 text-gray-700 dark:text-gray-300 text-xs font-bold rounded-lg border border-gray-200 dark:border-neutral-700">
                         {prod.brand}
                       </span>
                     </td>
-                    <td className="py-4 text-sm text-gray-600 dark:text-gray-400">{prod.weight}</td>
-                    <td className="py-4 font-bold text-green-600">{prod.price}</td>
+                    <td className="py-4 text-sm text-gray-600 dark:text-gray-400">{prod.weightKg} kg</td>
+                    <td className="py-4 font-bold text-green-600">{new Intl.NumberFormat('fr-CM').format(prod.publicPrice)} FCFA</td>
+                    <td className="py-4 font-medium text-gray-500">{new Intl.NumberFormat('fr-CM').format(prod.distributorPrice || prod.publicPrice)} FCFA</td>
                     <td className="py-4 flex justify-end gap-2">
-                      <button className="text-sm font-bold text-blue-500 hover:text-blue-600 underline">Éditer</button>
+                      <button 
+                        onClick={() => {
+                          setEditingProduct(prod);
+                          setNewPublicPrice(prod.publicPrice);
+                          setNewDistributorPrice(prod.distributorPrice || prod.publicPrice);
+                        }}
+                        className="text-sm font-bold text-blue-500 hover:text-blue-600 underline cursor-pointer"
+                      >
+                        Modifier prix
+                      </button>
                     </td>
                   </tr>
                 ))}
+                {products.length === 0 && (
+                  <tr>
+                    <td colSpan={6} className="py-8 text-center text-gray-500 font-medium">
+                      Aucun produit dans le catalogue.
+                    </td>
+                  </tr>
+                )}
               </tbody>
             </table>
           </div>
         </motion.div>
+
+        {/* Modal d'édition des prix */}
+        {editingProduct && (
+          <div className="fixed inset-0 z-50 bg-black/70 backdrop-blur-sm flex items-center justify-center p-4">
+            <div className="bg-white dark:bg-neutral-900 border border-gray-200 dark:border-neutral-800 rounded-3xl p-6 max-w-md w-full shadow-2xl space-y-5">
+              <div className="flex justify-between items-center">
+                <h3 className="text-lg font-black text-gray-900 dark:text-white">
+                  Modifier le prix : {editingProduct.brand} {editingProduct.weightKg}kg
+                </h3>
+                <button onClick={() => setEditingProduct(null)} className="p-1 rounded-full hover:bg-gray-100 dark:hover:bg-neutral-800">
+                  <X size={20} />
+                </button>
+              </div>
+
+              <form onSubmit={handleSavePrice} className="space-y-4">
+                <div>
+                  <label className="text-xs font-bold text-gray-700 dark:text-gray-300 block mb-1">Prix Public Homologué (FCFA)</label>
+                  <input
+                    type="number"
+                    value={newPublicPrice}
+                    onChange={(e) => setNewPublicPrice(Number(e.target.value))}
+                    className="w-full p-3 rounded-xl border border-gray-200 dark:border-neutral-800 bg-gray-50 dark:bg-neutral-950 font-bold"
+                    required
+                  />
+                </div>
+
+                <div>
+                  <label className="text-xs font-bold text-gray-700 dark:text-gray-300 block mb-1">Prix Distributeur / Dépôt (FCFA)</label>
+                  <input
+                    type="number"
+                    value={newDistributorPrice}
+                    onChange={(e) => setNewDistributorPrice(Number(e.target.value))}
+                    className="w-full p-3 rounded-xl border border-gray-200 dark:border-neutral-800 bg-gray-50 dark:bg-neutral-950 font-bold"
+                    required
+                  />
+                </div>
+
+                <div className="flex gap-3 pt-2">
+                  <button
+                    type="button"
+                    onClick={() => setEditingProduct(null)}
+                    className="flex-1 py-3 bg-gray-100 dark:bg-neutral-800 text-gray-700 dark:text-gray-300 font-bold rounded-xl"
+                  >
+                    Annuler
+                  </button>
+                  <button
+                    type="submit"
+                    disabled={isUpdatingPrice}
+                    className="flex-1 py-3 bg-pleingaz-red text-white font-bold rounded-xl hover:opacity-90 disabled:opacity-50"
+                  >
+                    {isUpdatingPrice ? 'Enregistrement...' : 'Valider'}
+                  </button>
+                </div>
+              </form>
+            </div>
+          </div>
+        )}
 
       </div>
       
@@ -427,7 +670,7 @@ export default function PilotageDashboard() {
               </div>
               <div className="flex-1 bg-gray-100 dark:bg-neutral-950 overflow-hidden">
                 <iframe 
-                  src={`http://localhost:3001/admin/distributors/documents/${viewingDoc.id}/file`} 
+                  src={`${API_URL}/admin/distributors/documents/${viewingDoc.id}/file?token=${encodeURIComponent(getToken() || '')}`} 
                   className="w-full h-full border-0"
                   title="Document Admin"
                 />
