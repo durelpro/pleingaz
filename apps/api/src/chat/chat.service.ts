@@ -130,4 +130,119 @@ export class ChatService {
       }
     });
   }
+
+  /**
+   * Recherche dynamique de correspondants :
+   * - Boutiques / Distributeurs agréés (visibles pour tous les utilisateurs)
+   * - Clients (recherche par les distributeurs)
+   * - Support officiel PLEINGAZ
+   */
+  async searchContacts(userId: string, query?: string): Promise<any[]> {
+    const q = (query || '').trim();
+
+    // 1. Déterminer le rôle de l'utilisateur demandeur
+    const currentUser = await this.prisma.user.findUnique({
+      where: { id: userId },
+      include: { roles: { include: { role: true } }, stores: true },
+    });
+
+    const isDistributorOrAdmin = currentUser?.roles.some(
+      r => r.role.name === 'DISTRIBUTOR' || r.role.name === 'ADMIN'
+    );
+
+    const results: any[] = [];
+
+    // 2. Boutiques agréées (recherche par nom, ville, quartier, repère)
+    const storeWhere: any = {
+      isVisible: true,
+    };
+    if (q) {
+      storeWhere.OR = [
+        { name: { contains: q, mode: 'insensitive' } },
+        { city: { contains: q, mode: 'insensitive' } },
+        { neighborhood: { contains: q, mode: 'insensitive' } },
+        { landmark: { contains: q, mode: 'insensitive' } },
+      ];
+    }
+
+    const stores = await this.prisma.store.findMany({
+      where: storeWhere,
+      select: {
+        id: true,
+        name: true,
+        city: true,
+        neighborhood: true,
+        landmark: true,
+        ownerId: true,
+        isVerifiedBadge: true,
+        reliabilityScore: true,
+      },
+      take: 20,
+    });
+
+    for (const store of stores) {
+      // Éviter de s'afficher soi-même si distributeur
+      if (store.ownerId === userId) continue;
+
+      results.push({
+        id: store.ownerId || store.id,
+        storeId: store.id,
+        name: store.name,
+        type: 'STORE',
+        subtitle: `${store.city} - ${store.neighborhood}${store.landmark ? ` (${store.landmark})` : ''}`,
+        isVerified: store.isVerifiedBadge,
+        score: store.reliabilityScore || 90,
+      });
+    }
+
+    // 3. Si l'utilisateur est distributeur ou admin, il peut aussi chercher des clients
+    if (isDistributorOrAdmin && q.length >= 2) {
+      const customers = await this.prisma.user.findMany({
+        where: {
+          id: { not: userId },
+          OR: [
+            { phone: { contains: q } },
+            { customerProfile: { firstName: { contains: q, mode: 'insensitive' } } },
+            { customerProfile: { lastName: { contains: q, mode: 'insensitive' } } },
+          ],
+        },
+        select: {
+          id: true,
+          phone: true,
+          customerProfile: { select: { firstName: true, lastName: true } },
+        },
+        take: 10,
+      });
+
+      for (const cust of customers) {
+        const fullName = cust.customerProfile 
+          ? `${cust.customerProfile.firstName} ${cust.customerProfile.lastName}`.trim()
+          : null;
+        results.push({
+          id: cust.id,
+          name: fullName || `Client (${cust.phone})`,
+          type: 'CUSTOMER',
+          subtitle: `Client PLEINGAZ - ${cust.phone}`,
+        });
+      }
+    }
+
+    // 4. Contact Assistance PLEINGAZ (toujours disponible si non admin)
+    const adminUser = await this.prisma.userRole.findFirst({
+      where: { role: { name: 'ADMIN' } },
+      include: { user: true },
+    });
+
+    if (adminUser && adminUser.userId !== userId && (!q || 'support assistance pleingaz'.includes(q.toLowerCase()))) {
+      results.unshift({
+        id: adminUser.userId,
+        name: 'Assistance Officielle PLEINGAZ',
+        type: 'SUPPORT',
+        subtitle: 'Support client & urgences de livraison',
+        isVerified: true,
+      });
+    }
+
+    return results;
+  }
 }

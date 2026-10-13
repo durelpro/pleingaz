@@ -17,6 +17,12 @@ export class ChatController {
     return this.chatService.saveMessage(req.user.userId, body.recipientId, body.content, body.attachmentUrl);
   }
 
+  @Get('contacts')
+  async searchContacts(@Request() req: any) {
+    const q = req.query?.q as string | undefined;
+    return this.chatService.searchContacts(req.user.userId, q);
+  }
+
   @Get('conversations/:id/messages')
   async getMessages(@Param('id') conversationId: string) {
     return this.chatService.getMessages(conversationId);
