@@ -153,6 +153,26 @@
 | **Immutabilité** | Mutable uniquement via la machine d'état (`PENDING` -> `COLLECTED` -> `REMITTED_TO_PLEINGAZ` / `DISPUTED`). |
 | **Rétention** | 10 ans légal. |
 
+### 1.16 `Product` — Catalogue Exclusif PLEINGAZ (CR-001 D-01)
+| Propriété | Règle / Instruction SQL |
+|---|---|
+| **Clés & Unicités** | `id` (PK). `sku` (Unique). |
+| **Clés Étrangères**| `category_id` (Ref: ProductCategory). |
+| **CHECK & Intégrité**| Aucun champ `brand` libre. Référence BDD obligatoire (`ON DELETE RESTRICT`) depuis `order_item(product_id)`, `inventory(product_id)`, `invoice_item(product_id)`. Interdiction formelle de créer un produit hors catalogue officiel PLEINGAZ. |
+| **Immutabilité** | Mutable uniquement par l'administrateur catalogue. Archivage logique (`is_active = false`), jamais de suppression physique si lié à des commandes. |
+| **Rétention** | Permanente. |
+
+### 1.17 `ProductPrice` — Tarification Centralisée Maker-Checker (CR-001 D-01, D-06)
+| Propriété | Règle / Instruction SQL |
+|---|---|
+| **Clés & Unicités** | `id` (PK). Index sur `(product_id, effective_from, status)`. |
+| **Clés Étrangères**| `product_id` (Ref: Product), `created_by` (Ref: User), `approved_by` (Ref: User nullable). |
+| **CHECK** | `CHECK (public_price > 0 AND distributor_price > 0 AND distributor_price <= public_price)`. `CHECK (status IN ('PROPOSED', 'APPROVED', 'REJECTED', 'EXPIRED'))`. |
+| **Maker-Checker** | `CHECK (approved_by IS NULL OR approved_by != created_by)`. L'approbateur doit obligatoirement être distinct du proposant. |
+| **Règle Serveur** | Le serveur recalcule obligatoirement le prix à la commande selon le tarif actif (`status = 'APPROVED'` et `NOW() BETWEEN effective_from AND COALESCE(effective_to, NOW())`). Tout montant envoyé par le client est écrasé. |
+| **Immutabilité** | Une fois `APPROVED`, le barème est immuable dans le temps. Toute modification génère une nouvelle ligne et une trace dans `PriceHistory`. |
+| **Rétention** | 10 ans légal. |
+
 ---
 
 ## 2. Modèle Économique : Règles Validées et Impacts (CR-001)

@@ -441,4 +441,13 @@ erDiagram
 - Settlement
 - Store (capacité estimée)
 - DistributorApplication (capacité estimée)
-- Setting (coordonnées de contact PLEINGAZ)
+- Setting (coordonnées de contact, seuils de caisse, rayons géographiques)
+- CourierZone (zone géographique d'intervention du livreur — CR-001 D-05)
+- CourierAvailability (disponibilité opérationnelle temps réel — CR-001 D-05)
+- DeliveryAssignment (affectation, timeout et acceptation de course — CR-001 D-05)
+- CashCollection (suivi des espèces encaissées à la remise — CR-001 D-05, D-06)
+- LedgerAccount (plan de comptes immuable — CR-001 D-06)
+- LedgerEntry (écritures à double entrée équilibrées Insert-Only — CR-001 D-06)
+- PayoutBatch (lots de reversement groupés Maker-Checker — CR-001 D-06)
+- DeliveryFeeSchedule (barème versionné des frais de livraison — CR-001 D-05, D-06)
+

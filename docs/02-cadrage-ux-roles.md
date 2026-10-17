@@ -7,17 +7,17 @@ L'application repose sur un modèle d'authentification centralisé : un seul com
 ### 1.1 Portail Public (Visiteurs non connectés)
 Ces pages sont accessibles librement. L'inscription (via OTP SMS/WhatsApp) n'est exigée qu'au moment de valider une action engageante (réserver, commander).
 - **Home** : Présentation du service.
-- **J'ai besoin de gaz** : Carte/liste des points de vente à proximité et recherche.
-- **Devenir distributeur** : Formulaire de pré-inscription pour les commerçants.
-- **Products & Services** : Vitrine (Données réelles À CONFIRMER).
+- **J'ai besoin de gaz** : Recherche au clic exclusivement (mention de transparence) ou sélection libre du lieu (Ville -> Quartier, repère textuel, carte interactive avec bascule sur liste texte de secours 20 Ko — CR-001 D-02).
+- **Devenir distributeur** : Formulaire d'inscription avec KYC simplifié à 3 pièces exclusives (CNI, portrait, boutique extérieure — CR-001 D-04).
+- **Products & Services** : Vitrine catalogue exclusif PLEINGAZ (zéro marque tierce, zéro marketplace — CR-001 D-01).
 - **About / FAQ / Blog / Contact** : Contenus informatifs existants.
 - **Sécurité d'utilisation du gaz** : Bonnes pratiques et urgences (Contenu à fournir par PLEINGAZ).
 - **Mentions légales, CGV, Confidentialité** : Pages légales obligatoires (Textes À CONFIRMER).
 
 ### 1.2 Espace Client (Authentification par OTP)
-- **Tableau de bord** : Résumé des commandes en cours.
-- **Mes Commandes** : Historique et factures.
-- **Mon Profil & Adresses** : Gestion des informations personnelles et repères de livraison.
+- **Tableau de bord** : Résumé des commandes en cours, affichage du **Code de Confirmation confidentiel** (4-6 chiffres) à fournir au livreur lors de la remise (CR-001 D-05).
+- **Mes Commandes** : Historique et factures immuables émises par le système.
+- **Mon Profil & Adresses** : Gestion des informations personnelles et repères textuels de livraison locale ("en face de...", "derrière...").
 
 ### 1.3 Espace Distributeur (Authentification par OTP)
 - **Ma Boutique** : Horaires, localisation, statut d'ouverture.
