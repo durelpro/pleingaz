@@ -6,6 +6,7 @@ Ces questions sont fondamentales et bloquent les choix d'architecture des Phases
 1. **Catalogue et Prix** : **[RÉSOLU PAR CR-001 D-01 / ADR D5]** Seuls les produits et accessoires officiels PLEINGAZ sont vendus, gérés et affichés ; la marketplace est exclue ; les prix publics et distributeurs sont nationaux, fixés centralement dans `ProductPrice` et recalculés côté serveur. *(Reste à fournir : barème numérique officiel initial pour le seed de production).*
 2. **Frais de service / Commission** : PLEINGAZ prend-il une commission sur les ventes générées via la plateforme ? Qui paye les frais de transaction Mobile Money ?
 3. **Consigne** : Quelles sont les règles exactes en cas d'achat d'une bouteille avec consigne versus un simple échange ?
+3b. **Échange multimarque de bouteilles (X-01.07)** : Accepte-t-on l'échange de bouteilles vides d'autres marques agréées (ex: Total, Camgaz, Tradex) contre une recharge PLEINGAZ, ou applique-t-on un refus strict (bouteilles PLEINGAZ uniquement) ? *(Défaut appliqué en conception : strict échange de bouteilles PLEINGAZ uniquement, à confirmer).*
 
 ## 2. Paiement et Flux Financiers
 4. **Encaissement** : **[RÉSOLU PAR CR-001 D-06 / ADR D10]** Encaissement centralisé par PLEINGAZ (Mobile Money ou régularisation espèces), reversements consolidés périodiques en Maker-Checker (`PayoutBatch`), comptabilité immuable en partie double (`LedgerAccount`, `LedgerEntry`).
@@ -21,6 +22,7 @@ Ces questions sont fondamentales et bloquent les choix d'architecture des Phases
 
 ## 4. Législation et Communication
 12. **Mentions légales et CGV** : Des textes conformes à la réglementation camerounaise (commerce, facturation électronique, données personnelles) sont-ils en cours de rédaction par votre juriste ?
+12b. **Réglementation et agrément vente de gaz (X-04.06)** : Une autorisation administrative, licence commerciale ou agrément ministériel spécifique (ex: Ministère de l'Eau et de l'Énergie - MINEE) est-il formellement exigé par la loi camerounaise pour les revendeurs de gaz domestique, en plus des 3 pièces KYC (CNI, portrait, façade de boutique) ? *(À confirmer avec un juriste local).*
 13. **Numéros officiels** : Quels seront les numéros WhatsApp Business officiels et les horaires d'ouverture du support client ?
 
 ## Actions Parallèles à lancer dès aujourd'hui :

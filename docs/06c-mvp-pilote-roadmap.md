@@ -6,9 +6,12 @@ L'objectif du MVP est de lancer rapidement une application fonctionnelle prouvan
 ### Ce qui est DANS le MVP
 | Fonctionnalité | Justification | Critère d'Acceptation |
 |---|---|---|
-| **Recherche "J'ai besoin de gaz"** | Cœur de valeur : trouver du gaz près de soi. | Affiche les boutiques avec le statut `BON` ou `MOYEN`, triées par distance (liste texte ou carte). |
-| **Carte & Liste de secours** | Adaptabilité réseau (ADR D3). | Si la carte (1.5Mo) échoue, la liste texte (20Ko) s'affiche obligatoirement. |
-| **Profils Distributeurs Validés** | La confiance est essentielle. | Seul un profil validé (KYC S3, état `APPROVED`) apparaît publiquement. |
+| **Recherche au clic & 8 états IHM** | Respect vie privée et adaptabilité réseau (CR-001 D-02 / M30). | Géoloc au clic avec consentement bref, repli formulaire manuel prioritaire, liste 20 Ko. |
+| **Catalogue exclusif & Prix centralisés** | Identité de marque et conformité tarifaire (CR-001 D-01 / M31). | Catalogue PLEINGAZ exclusif, stock qualitatif (BON/MOYEN/FAIBLE/RUPTURE), prix serveur. |
+| **Profils Distributeurs validés (KYC 3 pièces)** | Confiance et onboarding allégé (CR-001 D-04 / M32). | Dossier limité à 3 pièces (CNI, portrait, boutique), URLs signées 15 min, stripping EXIF. |
+| **Livreurs Plateforme & Code de remise** | Maîtrise logistique et sécurité remise (CR-001 D-05 / M33). | PWA légère Livreur, attribution assistée, validation par code client secret, suivi caisse. |
+| **Grand Livre & Maker-Checker** | Rigueur comptable et anti-fraude interne (CR-001 D-06 / M34). | Grand livre en partie double Insert-Only, validation prix et PayoutBatch par deux personnes. |
+| **Control Center sur données réelles** | Vérité terrain et pilotage sans artifice (CR-001 D-03 / M35). | 15 rapports exhaustifs sur chiffres réels BDD, zéro valeur fictive, états vides explicites. |
 | **Commande Retrait & Livraison** | Validation du modèle d'achat. | Création de commande avec réservation de stock (15 min). |
 | **Paiement en ligne & Présentiel** | Paiement hybride selon les préférences. | Intégration MTN/Orange et Code de Remise manuel (Espèces). |
 | **Facturation PDF** | Obligation légale et preuve d'achat. | Le PDF est généré, sécurisé sur S3, et partageable sans lien public. |
