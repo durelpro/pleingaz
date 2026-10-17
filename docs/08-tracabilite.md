@@ -32,8 +32,69 @@ Ce document prouve que chaque exigence atomique des 5 fichiers sources (Vision, 
 | Pages | Le maintien des pages existantes était listé, mais pas planifié explicitement. | `06c-mvp-pilote-roadmap.md` | Migration des pages ajoutée à la Phase 2B (correction effectuée). |
 
 ## DÉCISIONS DU PROPRIÉTAIRE
+- **D-01 : Catalogue exclusif PLEINGAZ** : Validée. Seuls les produits de marque PLEINGAZ sont vendus, gérés, recherchés et affichés. Marketplace écartée. *Défaut appliqué, à confirmer : prix fixés uniquement par l'admin (ProductPrice, PriceHistory), recalcul systématique serveur, suppression des prix libres distributeurs.*
+- **D-02 : Recherche au clic + lieu choisi librement** : Validée. Géolocalisation déclenchée uniquement au clic après phrase de consentement court ; recherche manuelle toujours accessible et prioritaire sur le GPS ; 8 états spécifiés ; coordonnées fines non persistées. *Défaut appliqué, à confirmer : rayon de recherche par défaut fixé à 5 km.*
+- **D-03 : Tous les comptes rendus dans l'administration, zéro donnée fictive** : Validée. 15 rapports du Control Center dans l'administration uniquement, alimentés par la base réelle, états vides explicites, exclusion des seeds démo en prod. *Défaut appliqué, à confirmer : distributeur limité à un relevé personnel en lecture seule.*
+- **D-04 : Documents du distributeur : trois seulement** : Validée. CNI, photo portrait, photo boutique uniquement. Suppression totale de registre de commerce, NIU ou documents administratifs. *Défaut appliqué, à confirmer : recto et verso obligatoires pour la CNI.*
+- **D-05 : Livreurs sur la plateforme** : Validée. Rôle LIVREUR (COURIER) à part entière, 9 rôles au total, interface mobile dédiée, rémunération et gestion sous contrôle admin. *Défaut appliqué, à confirmer : livreurs créés et validés par l'admin, cumul possible avec acheteur, pièces CNI + portrait.*
+- **D-06 : Finances contrôlées par l'administrateur** : Validée. Encaissement centralisé en ligne par PLEINGAZ, espèces = créances, grand livre immuable à double entrée, séparation des tâches maker-checker. *Défaut appliqué, à confirmer : exécution manuelle des reversements au MVP avec preuve, seuil de double signature.*
 - **Mobile Money** : Sandbox en phase 6, le pilote démarre avec le paiement en présentiel confirmé par code.
-- **Exigences écartées** : Aucune exigence de la vision n'a été écartée sans décision explicite du propriétaire.
+- **Exigences écartées** : La marketplace et la vente de produits tiers sont officiellement écartées du périmètre sur décision souveraine du propriétaire (CR-001 D-01).
+
+---
+
+## BLOC X : Amendements du Propriétaire (CR-001) (`05-amendements-proprietaire.md`)
+
+| ID | Exigence | Entité(s) | Écran(s) | Document(s) | Phase | Statut | Justification |
+|---|---|---|---|---|---|---|---|
+| X-01.01 | Catalogue UNIQUE géré par admin (Bouteilles, Accessoires existants vérifiés) | Product, ProductCategory | Admin Catalogue | 03 §1, 04 §4 | 4 | MVP | 06c M31 (CR-001 D-01) |
+| X-01.02 | Distributeur déclare stock qualitatif (BON/MOYEN/FAIBLE/RUPTURE) sans création de produit | Inventory | Distributeur Stock | 02 §1.3, 03 §1 | 4 | MVP | 06c M31 (CR-001 D-01) |
+| X-01.03 | Prix fixés uniquement par admin (ProductPrice, PriceHistory), recalcul serveur | ProductPrice, PriceHistory | Admin Prix | 03 §1, 05a §1 | 4 | MVP | 06c M31 (CR-001 D-01) |
+| X-01.04 | Clé étrangère BDD obligatoire vers Product (OrderItem, InventoryItem, InvoiceItem) | OrderItem, InventoryItem | N/A | 03c §1, 03 §1 | 2 | MVP | 06c M31 (CR-001 D-01) |
+| X-01.05 | Exclusion formelle de la marketplace et des produits tiers | N/A | N/A | 06c §1, 08 | Transversal | Écarté | CR-001 X-01.05 / Décision du propriétaire |
+| X-01.06 | IA et base de connaissances restreintes à PLEINGAZ, refus poli des marques tierces | KnowledgeDocument | Chatbot IA | 05c §1, 05c §4 | 8 | Plus tard | 06c H09 (CR-001 D-01) |
+| X-01.07 | Question ouverte consignée : échange éventuel de bouteilles tierces à la consigne | Setting | N/A | 03c §2, 11 §1 | 4 | MVP | 06c M31 (CR-001 D-01) |
+| X-02.01 | Géolocalisation au clic uniquement après phrase de consentement court (HTTPS) | Setting | Recherche | 02 §1.1, 04 §4 | 4 | MVP | 06c M30 (CR-001 D-02) |
+| X-02.02 | Résultats distributeurs avec distance, stock, fraîcheur, horaires, tri multi-critères | Store, Inventory | Résultats Recherche | 04 §4, 02 §1.1 | 4 | MVP | 06c M30 (CR-001 D-02) |
+| X-02.03 | Choix de lieu manuel toujours accessible (ville/quartier, repère, point carte) | StoreLocation | Sélecteur Lieu | 04 §7, 02 §1.5 | 4 | MVP | 06c M30 (CR-001 D-02) |
+| X-02.04 | Spécification complète des 8 états IHM de géolocalisation et recherche | N/A | Recherche IHM | 02 §2.1, 04 §4 | 4 | MVP | 06c M30 (CR-001 D-02) |
+| X-02.05 | Rayon par défaut dans Setting (5 km, options 2/5/10/ville), pas de géoloc IP | Setting | Recherche Filtres | 04 §4, 03c §1 | 4 | MVP | 06c M30 (CR-001 D-02) |
+| X-02.06 | Vie privée : pas de coordonnées fines persistées, SearchEvent par zone grossière | SearchEvent | N/A | 07 §1, 04 §4 | 4 | MVP | 06c M30 (CR-001 D-02) |
+| X-02.07 | API GET /api/v1/stores/search bornée et sécurisée, composant mobile accessible | Store | API / Web | 04 §4, 02 §1.5 | 4 | MVP | 06c M30 (CR-001 D-02) |
+| X-02.08 | IA demande ville/quartier ou propose bouton position sans géolocaliser seule | N/A | Chatbot IA | 05c §4, 05c §2 | 8 | Plus tard | 06c H09 (CR-001 D-02) |
+| X-02.09 | Tests automatisés recherche : refus, timeout, coordonnées hors bornes, 3G | N/A | N/A | 06b §3, 04 §4 | 4 | MVP | 06c M30 (CR-001 D-02) |
+| X-03.01 | 15 rapports exhaustifs du Control Center avec métriques, filtres, perms, export | Order, Payment | Control Center | 02 §1.4, 05a §5 | 6 | MVP | 06c M35 (CR-001 D-03) |
+| X-03.02 | Profils client/distributeur/livreur cloisonnés, relevé personnel distributeur | Store, Order | Espace Distributeur | 02 §1.3, 03 §1 | 3 | MVP | 06c M35 (CR-001 D-03) |
+| X-03.03 | Zéro donnée fictive : aucune valeur en dur, seeds is_demo exclus en prod | Setting | Tous Admin | 06a §1, 06b §1 | 2 | MVP | 06c M35 (CR-001 D-03) |
+| X-03.04 | États vides explicites par écran distincts des erreurs, compteurs à 0 réel | N/A | Écrans Admin | 02 §1.4, 04 §4 | 2 | MVP | 06c M35 (CR-001 D-03) |
+| X-03.05 | MVP administration et audit sur données réelles, analyses avancées en phase 9 | AuditLog | Admin Dashboard | 06c §1, 02 §1.4 | 2 | MVP | 06c M35 (CR-001 D-03) |
+| X-03.06 | Test automatisé : base de données VIDE -> écrans admin sans crash ni valeur inventée | N/A | N/A | 06b §3, 06b §1 | 2 | MVP | 06c M35 (CR-001 D-03) |
+| X-04.01 | DistributorDocument.type limité à ID_CARD_FRONT, ID_CARD_BACK, PORTRAIT, SHOP | DistributorDocument | Inscription KYC | 03 §1, 03c §1.11 | 3 | MVP | 06c M32 (CR-001 D-04) |
+| X-04.02 | Upload technique : compression client, stripping EXIF, scan antivirus | Setting | Upload KYC | 04 §5, 06a §1 | 3 | MVP | 06c M32 (CR-001 D-04) |
+| X-04.03 | Confidentialité : CNI et portrait en S3 privé avec URL signées, accès audité | DistributorDocument | N/A | 04 §5, 07 §1 | 3 | MVP | 06c M32 (CR-001 D-04) |
+| X-04.04 | Écran validation admin : 3 documents, checklist conformité, APPROVED/REJECTED | DistributorApplication | Admin KYC | 02 §1.4, 03b §1 | 3 | MVP | 06c M32 (CR-001 D-04) |
+| X-04.05 | UX mobile KYC : cadrage caméra guidé, prévisualisation, erreurs français simple | N/A | Mobile Inscription | 02 §2.2, 04 §6 | 3 | MVP | 06c M32 (CR-001 D-04) |
+| X-04.06 | Question ouverte : conformité juridique autorisation de vente gaz au Cameroun | Setting | N/A | 11 §4, 03c §2 | 3 | MVP | 06c M32 (CR-001 D-04) |
+| X-05.01 | Profil livreur créé et validé par admin, cumul acheteur/livreur possible | Courier | Admin Livreurs | 03 §1, 02 §1.4 | 3 | MVP | 06c M33 (CR-001 D-05) |
+| X-05.02 | Interface mobile livreur légère : liste missions, statuts, code client, gains | Courier, Delivery | Espace Livreur | 02 §1.5, 03b §7 | 5 | MVP | 06c M33 (CR-001 D-05) |
+| X-05.03 | Attribution manuelle assistée par admin, réattribution après timeout | DeliveryAssignment | Admin Dispatch | 03b §7, 02 §1.4 | 5 | MVP | 06c M33 (CR-001 D-05) |
+| X-05.04 | Minimisation données client pour livreur, masquage immédiat après livraison | Delivery | Espace Livreur | 07 §1, 02 §3 | 5 | MVP | 06c M33 (CR-001 D-05) |
+| X-05.05 | Barème versionné frais de livraison et rémunération livreur (FeeSchedule) | FeeSchedule | Admin Tarifs | 03c §2, 05a §1 | 5 | MVP | 06c M33 (CR-001 D-05) |
+| X-05.06 | Espèces collectées à la livraison, plafond Setting, suspension automatique | CashCollection | Espace Livreur | 03c §2, 05a §4 | 5 | MVP | 06c M33 (CR-001 D-05) |
+| X-05.07 | Modèle logistique : Courier, CourierZone, Assignment, FeeSchedule, CashCollection | Courier, Delivery | N/A | 03 §1, 03b §7 | 5 | MVP | 06c M33 (CR-001 D-05) |
+| X-05.08 | Rôle LIVREUR (COURIER) dans RBAC (9 rôles), permissions courier:* | Role, Permission | N/A | 02 §3.2, 02 §3.1 | 2 | MVP | 06c M33 (CR-001 D-05) |
+| X-05.09 | Écrans admin logistique : gestion livreurs, performance, espèces en circulation | Delivery, Courier | Admin Logistique | 02 §1.4, 05a §4 | 5 | MVP | 06c M33 (CR-001 D-05) |
+| X-05.10 | Tests logistique : livreur non approuvé, mission d'autrui, code client erroné | N/A | N/A | 06b §3, 03b §7 | 5 | MVP | 06c M33 (CR-001 D-05) |
+| X-06.01 | Barèmes versionnés (ProductPrice, FeeSchedule) avec principe maker-checker | ProductPrice, FeeSchedule | Admin Finances | 03c §1, 05a §1 | 6 | MVP | 06c M34 (CR-001 D-06) |
+| X-06.02 | Grand livre immuable double entrée (LedgerAccount, LedgerEntry), débit = crédit | LedgerAccount, LedgerEntry | Admin Grand Livre | 03c §1, 05a §5 | 6 | MVP | 06c M34 (CR-001 D-06) |
+| X-06.03 | PayoutBatch créé par Finance, approbation à deux au-delà de seuil, exécution manuelle | PayoutBatch, Payout | Admin Reversements | 03b §9, 05a §5 | 6 | MVP | 06c M34 (CR-001 D-06) |
+| X-06.04 | Remboursements gérés par admin (LATE_SUCCESS auto par défaut), avoirs CreditNote | Refund, CreditNote | Admin Remboursements | 05a §3, 03b §10 | 6 | MVP | 06c M34 (CR-001 D-06) |
+| X-06.05 | Recouvrement créances espèces distributeurs et livreurs, alertes et suspension | Settlement, CashCollection | Admin Trésorerie | 05a §4, 03c §2 | 6 | MVP | 06c M34 (CR-001 D-06) |
+| X-06.06 | Factures immuables émises uniquement par le système, numérotation séquentielle | Invoice, InvoiceSequence | Factures | 03c §1.5, 05a §6 | 6 | MVP | 06c M34 (CR-001 D-06) |
+| X-06.07 | Matrice de séparation des tâches : tableau permission x rôle financier strict | Role, Permission | Admin RBAC | 02 §3.3, 02 §3.1 | 2 | MVP | 06c M34 (CR-001 D-06) |
+| X-06.08 | Tableau de bord financier sur données réelles avec alertes sur écarts et créances | LedgerAccount | Admin Tableau de bord | 05a §5, 02 §1.4 | 6 | MVP | 06c M34 (CR-001 D-06) |
+| X-06.09 | Sécurité financière : TOTP obligatoire, sessions courtes, audit, contre-mesures menaces | AuditLog | Sécurité Admin | 06a §1, 04 §4 | 2 | MVP | 06c M34 (CR-001 D-06) |
+| X-06.10 | Cohérence transversale : machines à états Payout/Refund, immutabilité 03c, tests 06b | N/A | N/A | 03b §5, 06b §3 | 6 | MVP | 06c M34 (CR-001 D-06) |
 
 ---
 
@@ -440,8 +501,8 @@ Ce document prouve que chaque exigence atomique des 5 fichiers sources (Vision, 
 | V-08.03 | (8) identité prénom | User | N/A | 03 §1 | 2 | MVP | 06c M01 |
 | V-08.04 | (8) identité téléphone | User | N/A | 03 §1 | 2 | MVP | 06c M01 |
 | V-08.05 | (8) identité email | User | N/A | 03 §1 | 2 | MVP | 06c M01 |
-| V-08.06 | (8) identité pièce d'identité | DistributorDocument | N/A | 03 §1 | 2 | MVP | 06c M01 |
-| V-08.07 | (8) identité documents | DistributorDocument | N/A | 03 §1 | 2 | MVP | 06c M01 |
+| V-08.06 | (8) identité pièce d'identité | DistributorDocument | N/A | 03 §1, 07 §1 | 2 | MVP | 06c M32 (CR-001 X-04.01 : CNI recto/verso et portrait uniquement) |
+| V-08.07 | (8) identité documents | N/A | N/A | 06c §1, 08 | Transversal | Écarté | CR-001 X-04.01 : documents administratifs/registre écartés sur décision du propriétaire |
 | V-08.08 | (8) boutique nom commercial | Store | N/A | 03 §1 | 2 | MVP | 06c M01 |
 | V-08.09 | (8) boutique description | Store | N/A | 03 §1 | 2 | MVP | 06c M01 |
 | V-08.10 | (8) boutique adresse | StoreLocation | N/A | 03 §1 | 2 | MVP | 06c M01 |
@@ -452,7 +513,7 @@ Ce document prouve que chaque exigence atomique des 5 fichiers sources (Vision, 
 | V-08.15 | (8) boutique horaires | Store | N/A | 03 §1 | 2 | MVP | 06c M01 |
 | V-08.16 | (8) boutique photo | Store | N/A | 03 §1 | 2 | MVP | 06c M01 |
 | V-08.17 | (8) boutique coordonnées GPS | StoreLocation | N/A | 03 §1 | 2 | MVP | 06c M01 |
-| V-08.18 | (8) activité types de produits | Store | N/A | 03 §1 | 2 | MVP | 06c M01 |
+| V-08.18 | (8) activité types de produits | Store, Product | N/A | 03 §1, 04 §4 | 2 | MVP | 06c M31 (CR-001 X-01.02 : sélection stricte catalogue PLEINGAZ) |
 | V-08.19 | (8) activité capacité estimée | Store | N/A | 03 §1 | 2 | MVP | 06c M01 |
 | V-08.20 | (8) activité zone desservie | Store | N/A | 03 §1 | 2 | MVP | 06c M01 |
 | V-08.21 | (8) activité possibilité de livraison | Store | N/A | 03 §1 | 2 | MVP | 06c M01 |
@@ -645,7 +706,7 @@ Ce document prouve que chaque exigence atomique des 5 fichiers sources (Vision, 
 | V-22.07 | (22) statut lu/non lu | Message | N/A | 03 §1 | 7 | Plus tard | 06c H09 |
 | V-22.08 | (22) historique | Conversation | N/A | 03 §1 | 7 | Plus tard | 06c H09 |
 | V-22.09 | (22) transfert vers agent humain | N/A | N/A | 05c §1 | 8 | Plus tard | 06c H03 |
-| V-23.01 | (23) Dashboard complet | N/A | N/A | 02 §3.4 | 2 | MVP | 06c M02 |
+| V-23.01 | (23) Dashboard complet | N/A | N/A | 02 §3.4, 04 §4 | 2 | MVP | 06c M35 (CR-001 X-03.01 : données 100% réelles, zéro fictif) |
 | V-23.02 | (23) chiffre d'affaires | N/A | N/A | 02 §3.4 | 9 | Plus tard | 06c H10 |
 | V-23.03 | (23) commandes | N/A | N/A | 02 §3.4 | 2 | MVP | 06c M02 |
 | V-23.04 | (23) commandes en attente | N/A | N/A | 02 §3.4 | 2 | MVP | 06c M02 |
@@ -660,7 +721,7 @@ Ce document prouve que chaque exigence atomique des 5 fichiers sources (Vision, 
 | V-23.13 | (23) livraisons | N/A | N/A | 02 §3.4 | 5 | Plus tard | 06c H06 |
 | V-23.14 | (23) conversations | N/A | N/A | 02 §3.4 | 7 | Plus tard | 06c H09 |
 | V-23.15 | (23) incidents | Report | N/A | 03 §1 | 9 | Plus tard | 06c H10 |
-| V-23.16 | (23) graphiques | N/A | N/A | 02 §3.4 | 9 | Plus tard | 06c H10 |
+| V-23.16 | (23) graphiques | N/A | N/A | 02 §3.4, 06c §1 | 9 | Plus tard | 06c H17 (CR-001 X-03.03 : aucun graphique fictif, analyses avancées plus tard) |
 | V-23.17 | (23) Filtre par jour | N/A | N/A | 02 §3.4 | 9 | Plus tard | 06c H10 |
 | V-23.18 | (23) Filtre par semaine/mois/année | N/A | N/A | 02 §3.4 | 9 | Plus tard | 06c H10 |
 | V-23.19 | (23) Filtre par ville | N/A | N/A | 02 §3.4 | 9 | Plus tard | 06c H10 |
@@ -697,20 +758,20 @@ Ce document prouve que chaque exigence atomique des 5 fichiers sources (Vision, 
 | V-25.11 | (25) tarif distributeur | Product | N/A | 03 §1 | 5 | Plus tard | 06c H02 |
 | V-25.12 | (25) tarif promotionnel | Product | N/A | 03 §1 | 9 | Plus tard | 06c H11 |
 | V-25.13 | (25) produit | Product | N/A | 03 §1 | 2 | MVP | 06c M02 |
-| V-26.01 | (26) module livraison | Delivery | N/A | 03 §1 | 5 | Plus tard | 06c H06 |
-| V-26.02 | (26) statut PENDING | Delivery | N/A | 03b §1 | 5 | Plus tard | 06c H06 |
-| V-26.03 | (26) statut ASSIGNED | Delivery | N/A | 03b §1 | 5 | Plus tard | 06c H06 |
-| V-26.04 | (26) statut PICKED_UP | Delivery | N/A | 03b §1 | 5 | Plus tard | 06c H06 |
-| V-26.05 | (26) statut IN_TRANSIT | Delivery | N/A | 03b §1 | 5 | Plus tard | 06c H06 |
-| V-26.06 | (26) statut DELIVERED | Delivery | N/A | 03b §1 | 5 | Plus tard | 06c H06 |
-| V-26.07 | (26) statut FAILED | Delivery | N/A | 03b §1 | 5 | Plus tard | 06c H06 |
-| V-26.08 | (26) statut CANCELLED | Delivery | N/A | 03b §1 | 5 | Plus tard | 06c H06 |
-| V-26.09 | (26) adresse | Delivery | N/A | 03 §1 | 5 | Plus tard | 06c H06 |
-| V-26.10 | (26) téléphone | Delivery | N/A | 03 §1 | 5 | Plus tard | 06c H06 |
-| V-26.11 | (26) instructions | Delivery | N/A | 03 §1 | 5 | Plus tard | 06c H06 |
-| V-26.12 | (26) créneau | Delivery | N/A | 03 §1 | 5 | Plus tard | 06c H06 |
-| V-26.13 | (26) livreur | Delivery | N/A | 03 §1 | 5 | Plus tard | 06c H06 |
-| V-26.14 | (26) tracking GPS plus tard | N/A | N/A | 04 §1 | 10 | Plus tard | 06c H12 |
+| V-26.01 | (26) module livraison | Delivery, Courier | Espace Livreur | 03 §1, 02 §1.5 | 5 | MVP | 06c M33 (CR-001 X-05.01 : livreurs sur la plateforme au MVP) |
+| V-26.02 | (26) statut PENDING | Delivery | N/A | 03b §7 | 5 | MVP | 06c M33 (CR-001 X-05.07 : machine d'états livraison) |
+| V-26.03 | (26) statut ASSIGNED | Delivery, Assignment | Admin Dispatch | 03b §7 | 5 | MVP | 06c M33 (CR-001 X-05.03 : attribution manuelle assistée) |
+| V-26.04 | (26) statut PICKED_UP | Delivery | Espace Livreur | 03b §7 | 5 | MVP | 06c M33 (CR-001 X-05.02 : interface mobile livreur) |
+| V-26.05 | (26) statut IN_TRANSIT | Delivery | Espace Livreur | 03b §7 | 5 | MVP | 06c M33 (CR-001 X-05.02 : interface mobile livreur) |
+| V-26.06 | (26) statut DELIVERED | Delivery | Espace Livreur | 03b §7 | 5 | MVP | 06c M33 (CR-001 X-05.02 : validation code client) |
+| V-26.07 | (26) statut FAILED | Delivery | Espace Livreur | 03b §7 | 5 | MVP | 06c M33 (CR-001 X-05.02 : échec avec motif obligatoire) |
+| V-26.08 | (26) statut CANCELLED | Delivery | Admin Logistique | 03b §7 | 5 | MVP | 06c M33 (CR-001 X-05.02 : annulation tracée) |
+| V-26.09 | (26) adresse | Delivery, Address | Espace Livreur | 03 §1, 07 §1 | 5 | MVP | 06c M33 (CR-001 X-05.04 : minimisation données) |
+| V-26.10 | (26) téléphone | Delivery, User | Espace Livreur | 03 §1, 07 §1 | 5 | MVP | 06c M33 (CR-001 X-05.04 : contact direct/masqué) |
+| V-26.11 | (26) instructions | Delivery | Espace Livreur | 03 §1, 02 §1.5 | 5 | MVP | 06c M33 (CR-001 X-05.02 : repères livraison) |
+| V-26.12 | (26) créneau | Delivery | Espace Livreur | 03 §1, 02 §1.5 | 5 | MVP | 06c M33 (CR-001 X-05.02 : créneau horaire) |
+| V-26.13 | (26) livreur | Courier | Espace Livreur | 03 §1, 02 §3.2 | 5 | MVP | 06c M33 (CR-001 X-05.01 : rôle et profil livreur) |
+| V-26.14 | (26) tracking GPS plus tard | N/A | N/A | 04 §1, 06c §1 | 10 | Plus tard | 06c H16 (CR-001 X-05.03 : tracking GPS en temps réel plus tard) |
 | V-27.01 | (27) IA prévision demande | N/A | N/A | 05c §1 | 8 | Plus tard | 06c H03 |
 | V-27.02 | (27) analyser historique | N/A | N/A | 05c §1 | 8 | Plus tard | 06c H03 |
 | V-27.03 | (27) analyser saison | N/A | N/A | 05c §1 | 8 | Plus tard | 06c H03 |
@@ -902,7 +963,7 @@ Ce document prouve que chaque exigence atomique des 5 fichiers sources (Vision, 
 | V-40.34 | entité StockAlert | N/A | N/A | 03 §1 | 8 | Plus tard | 06c H04 |
 | V-40.35 | entité DemandAlert | N/A | N/A | 03 §1 | 2 | MVP | 06c M12 |
 | V-40.36 | entité Address | N/A | N/A | 03 §1 | 8 | Plus tard | 06c H05 |
-| V-41.01 | Créer un système RBAC. | N/A | N/A | 03 §1 | 2 | MVP | 06c M13 |
+| V-41.01 | Créer un système RBAC. | Role, Permission | N/A | 02 §3.2, 03 §1 | 2 | MVP | 06c M33 (CR-001 X-05.08 : RBAC 9 rôles intégrant le rôle LIVREUR) |
 | V-41.02 | Exemple : | N/A | N/A | 03 §1 | 8 | Plus tard | 06c H06 |
 | V-41.03 | rôle CUSTOMER : | N/A | N/A | 03 §1 | 2 | MVP | 06c M14 |
 | V-41.04 | consulter | N/A | N/A | 03 §1 | 8 | Plus tard | 06c H07 |
@@ -1246,7 +1307,7 @@ Ce document prouve que chaque exigence atomique des 5 fichiers sources (Vision, 
 | V-59.09 | application iOS | N/A | N/A | 03 §1 | 2 | MVP | 06c M05 |
 | V-59.10 | réseau national de distributeurs | N/A | N/A | 03 §1 | 8 | Plus tard | 06c H08 |
 | V-59.11 | programme de fidélité | N/A | N/A | 03 §1 | 2 | MVP | 06c M06 |
-| V-59.12 | marketplace | N/A | N/A | 03 §1 | 8 | Plus tard | 06c H09 |
+| V-59.12 | marketplace | N/A | N/A | 06c §1, 08 | Transversal | Écarté | CR-001 X-01.05 : Vente de produits tiers et marketplace écartées sur décision du propriétaire |
 | V-59.13 | analytics avancés | N/A | N/A | 03 §1 | 2 | MVP | 06c M07 |
 | V-59.14 | automatisation logistique | N/A | N/A | 03 §1 | 8 | Plus tard | 06c H10 |
 | V-59.15 | expansion dans d'autres pays africains. | N/A | N/A | 03 §1 | 2 | MVP | 06c M08 |

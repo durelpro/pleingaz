@@ -46,43 +46,43 @@ echo "(cibles = estimation par lecture, marge d'erreur de 1 à 2 par section ; l
 
 echo
 echo "=== 2. STATUTS PAR SOURCE ==="
-awk -F'|' 'NF==10 && $2 ~ /^ *[SANPV]-/ { id=$2; gsub(/ /,"",id); src=substr(id,1,1); st=$8; gsub(/^ +| +$/,"",st); c[src" | "st]++ } END { for (k in c) print c[k]" x "k }' "$TRACE" | sort -t'|' -k1,1 -k2
+awk -F'|' 'NF==10 && $2 ~ /^ *[SANPVX]-/ { id=$2; gsub(/ /,"",id); src=substr(id,1,1); st=$8; gsub(/^ +| +$/,"",st); c[src" | "st]++ } END { for (k in c) print c[k]" x "k }' "$TRACE" | sort -t'|' -k1,1 -k2
 echo "-- Stack : la source marque 4 lignes 'Plus tard' (Temps réel, Recherche avancée, IA, Monitoring). Lignes S 'Plus tard' dans la matrice :"
 awk -F'|' 'NF==10 && $2 ~ /^ *S-/ { st=$8; gsub(/^ +| +$/,"",st); if (st ~ /^[Pp]lus tard/) n++ } END { print n+0 }' "$TRACE"
 
 echo
 echo "=== 3. STATUTS NON VALIDES (valides : MVP, Plus tard, Écarté) ==="
-awk -F'|' 'NF==10 && $2 ~ /^ *[SANPV]-/ { st=$8; gsub(/^ +| +$/,"",st); if (st !~ /^(MVP|Plus tard|plus tard|Écarté|Ecarté|écarté)/) { id=$2; gsub(/ /,"",id); print id" -> \""st"\"" } }' "$TRACE" | head -40
+awk -F'|' 'NF==10 && $2 ~ /^ *[SANPVX]-/ { st=$8; gsub(/^ +| +$/,"",st); if (st !~ /^(MVP|Plus tard|plus tard|Écarté|Ecarté|écarté)/) { id=$2; gsub(/ /,"",id); print id" -> \""st"\"" } }' "$TRACE" | head -40
 
 echo
 echo "=== 4. CELLULES VIDES ==="
-awk -F'|' 'NF==10 && $2 ~ /^ *[SANPV]-/ { for(i=2;i<=9;i++){ x=$i; gsub(/ /,"",x); if(x==""){ id=$2; gsub(/ /,"",id); print id" : colonne "(i-1)" vide"; break } } }' "$TRACE" | head -40
+awk -F'|' 'NF==10 && $2 ~ /^ *[SANPVX]-/ { for(i=2;i<=9;i++){ x=$i; gsub(/ /,"",x); if(x==""){ id=$2; gsub(/ /,"",id); print id" : colonne "(i-1)" vide"; break } } }' "$TRACE" | head -40
 
 echo
 echo "=== 5. TROUS RÉELS : documents = AUCUN (information, pas une erreur : un trou caché est l'erreur) ==="
-awk -F'|' 'NF==10 && $2 ~ /^ *[SANPV]-/ && $6 ~ /AUCUN/ { id=$2; gsub(/ /,"",id); print id }' "$TRACE" | tr '\n' ' '; echo
+awk -F'|' 'NF==10 && $2 ~ /^ *[SANPVX]-/ && $6 ~ /AUCUN/ { id=$2; gsub(/ /,"",id); print id }' "$TRACE" | tr '\n' ' '; echo
 echo "-- lignes dont la SEULE couverture citée est '06c §1' (suspect : rattachement artificiel) :"
-awk -F'|' 'NF==10 && $2 ~ /^ *[SANPV]-/ { d=$6; gsub(/^ +| +$/,"",d); if (d ~ /^06c *§? *1$/) { n++; ids=ids" "$2 } } END { print n+0" lignes"; }' "$TRACE"
+awk -F'|' 'NF==10 && $2 ~ /^ *[SANPVX]-/ { d=$6; gsub(/^ +| +$/,"",d); if (d ~ /^06c *§? *1$/) { n++; ids=ids" "$2 } } END { print n+0" lignes"; }' "$TRACE"
 
 echo
 echo "=== 6. PHASES (valides : 2, 2B, 3 à 10, Transversal) ==="
-awk -F'|' 'NF==10 && $2 ~ /^ *[SANPV]-/ { ph=$7; gsub(/^ +| +$/,"",ph); sub(/^Phase /,"",ph); c[ph]++; t++ } END { for (k in c) printf "%d x \"%s\" (%.0f%%)\n", c[k], k, 100*c[k]/t }' "$TRACE" | sort -rn
+awk -F'|' 'NF==10 && $2 ~ /^ *[SANPVX]-/ { ph=$7; gsub(/^ +| +$/,"",ph); sub(/^Phase /,"",ph); c[ph]++; t++ } END { for (k in c) printf "%d x \"%s\" (%.0f%%)\n", c[k], k, 100*c[k]/t }' "$TRACE" | sort -rn
 echo "-- phases valides sans AUCUNE ligne (le projet en comporte 4 produits/stock, 9 analytics, 10 optimisation) :"
-for ph in 2 2B 3 4 5 6 7 8 9 10; do n=$(awk -F'|' -v ph="$ph" 'NF==10 && $2 ~ /^ *[SANPV]-/ { x=$7; gsub(/^ +| +$/,"",x); sub(/^Phase /,"",x); if (x==ph) n++ } END{print n+0}' "$TRACE"); [ "$n" -eq 0 ] && echo "   phase $ph : 0 ligne"; done
+for ph in 2 2B 3 4 5 6 7 8 9 10; do n=$(awk -F'|' -v ph="$ph" 'NF==10 && $2 ~ /^ *[SANPVX]-/ { x=$7; gsub(/^ +| +$/,"",x); sub(/^Phase /,"",x); if (x==ph) n++ } END{print n+0}' "$TRACE"); [ "$n" -eq 0 ] && echo "   phase $ph : 0 ligne"; done
 echo "-- phases non valides :"
-awk -F'|' 'NF==10 && $2 ~ /^ *[SANPV]-/ { ph=$7; gsub(/^ +| +$/,"",ph); sub(/^Phase /,"",ph); if (ph !~ /^(2|2B|3|4|5|6|7|8|9|10|Transversal)$/) { id=$2; gsub(/ /,"",id); print id" phase=\""ph"\"" } }' "$TRACE" | head -20
+awk -F'|' 'NF==10 && $2 ~ /^ *[SANPVX]-/ { ph=$7; gsub(/^ +| +$/,"",ph); sub(/^Phase /,"",ph); if (ph !~ /^(2|2B|3|4|5|6|7|8|9|10|Transversal)$/) { id=$2; gsub(/ /,"",id); print id" phase=\""ph"\"" } }' "$TRACE" | head -20
 echo "-- lignes en Phase 2 (fondations : auth, comptes, rôles, base, sécurité) dont l'exigence parle d'un autre sujet :"
-awk -F'|' 'NF==10 && $2 ~ /^ *[SANPV]-/ { ph=$7; gsub(/^ +| +$/,"",ph); sub(/^Phase /,"",ph); if (ph=="2" && tolower($3) ~ /(stock|carte|commande|paiement|mobile money|facture|livraison|chat|chatbot|recherche|boutique|distributeur|heatmap|prévision|whatsapp|notification|rapport|tableau de bord|avis|fidélité)/ && tolower($3) !~ /(compte|auth|rôle|rbac|profil|mot de passe|session|audit)/) { n++; if (n<=12) { id=$2; gsub(/ /,"",id); print "   "id" : "substr($3,1,70) } } } END { print "   total suspect : "n+0 }' "$TRACE"
+awk -F'|' 'NF==10 && $2 ~ /^ *[SANPVX]-/ { ph=$7; gsub(/^ +| +$/,"",ph); sub(/^Phase /,"",ph); if (ph=="2" && tolower($3) ~ /(stock|carte|commande|paiement|mobile money|facture|livraison|chat|chatbot|recherche|boutique|distributeur|heatmap|prévision|whatsapp|notification|rapport|tableau de bord|avis|fidélité)/ && tolower($3) !~ /(compte|auth|rôle|rbac|profil|mot de passe|session|audit)/) { n++; if (n<=12) { id=$2; gsub(/ /,"",id); print "   "id" : "substr($3,1,70) } } } END { print "   total suspect : "n+0 }' "$TRACE"
 
 echo
 echo "=== 7. DOCUMENTS CITÉS INEXISTANTS ==="
-for t in $(awk -F'|' 'NF==10 && $2 ~ /^ *[SANPV]-/ {print $6}' "$TRACE" | grep -o -E '(^|[^0-9.])0[0-9][a-c]?([^0-9]|$)' | grep -o -E '0[0-9][a-c]?' | sort -u); do
+for t in $(awk -F'|' 'NF==10 && $2 ~ /^ *[SANPVX]-/ {print $6}' "$TRACE" | grep -o -E '(^|[^0-9.])0[0-9][a-c]?([^0-9]|$)' | grep -o -E '0[0-9][a-c]?' | sort -u); do
   ls docs/${t}-*.md >/dev/null 2>&1 || echo "document cité mais absent : $t"
 done
 
 echo
 echo "=== 8. IDENTIFIANTS EN DOUBLE (tableaux principaux) ==="
-awk -F'|' 'NF==10 && $2 ~ /^ *[SANPV]-/ { id=$2; gsub(/ /,"",id); print id }' "$TRACE" | sort | uniq -d | head -20
+awk -F'|' 'NF==10 && $2 ~ /^ *[SANPVX]-/ { id=$2; gsub(/ /,"",id); print id }' "$TRACE" | sort | uniq -d | head -20
 
 echo
 echo "=== 9. LIGNES MVP : référence VÉRIFIABLE à 06c (identifiant M<nn> défini dans docs/06c-*.md) ==="
@@ -90,7 +90,7 @@ C06=$(ls docs/06c-*.md 2>/dev/null | head -1)
 if [ -z "$C06" ]; then echo "06c introuvable"; else
   echo "-- identifiants M<nn> définis dans 06c : $(grep -o -E '\bM[0-9]{2}\b' "$C06" | sort -u | wc -l)"
   awk -F'|' -v C="$C06" 'BEGIN{ while ((getline l < C) > 0) { while (match(l, /M[0-9][0-9]/)) { d[substr(l,RSTART,RLENGTH)]=1; l=substr(l,RSTART+RLENGTH) } } }
-  NF==10 && $2 ~ /^ *[SANPV]-/ { st=$8; gsub(/^ +| +$/,"",st)
+  NF==10 && $2 ~ /^ *[SANPVX]-/ { st=$8; gsub(/^ +| +$/,"",st)
     if (st ~ /^MVP/) {
       if (match($9, /06c M[0-9][0-9]/)) { k=substr($9,RSTART+4,3); if (!(k in d)) { bad++; if (bad<=15) { id=$2; gsub(/ /,"",id); printf "%s cite %s inexistant dans 06c\n", id, k } } else ok++ }
       else { sans++; if (sans<=15) { id=$2; gsub(/ /,"",id); printf "%s sans référence M<nn>\n", id } }
@@ -100,9 +100,9 @@ if [ -z "$C06" ]; then echo "06c introuvable"; else
   for k in $(grep -o -E '\bM[0-9]{2}\b' "$C06" | sort -u); do grep -q "06c $k" "$TRACE" || printf "%s " "$k"; done; echo
 fi
 echo "-- justifications du type '06c §1 : ...' (formule passe-partout, suspect) :"
-awk -F'|' 'NF==10 && $2 ~ /^ *[SANPV]-/ { j=$9; gsub(/^ +/,"",j); if (j ~ /^06c §1/) n++ } END { print n+0" lignes" }' "$TRACE"
+awk -F'|' 'NF==10 && $2 ~ /^ *[SANPVX]-/ { j=$9; gsub(/^ +/,"",j); if (j ~ /^06c §1/) n++ } END { print n+0" lignes" }' "$TRACE"
 echo "-- lignes MVP placées en phase 7 à 10 (incohérent avec un MVP livré avant ; la phase 6 peut contenir le paiement en présentiel) :"
-awk -F'|' 'NF==10 && $2 ~ /^ *[SANPV]-/ { st=$8; gsub(/^ +| +$/,"",st); ph=$7; gsub(/^ +| +$/,"",ph); sub(/^Phase /,"",ph); if (st ~ /^MVP/ && ph ~ /^(7|8|9|10)$/) { n++; if (n<=15) { id=$2; gsub(/ /,"",id); print "   "id" phase "ph" : "substr($3,1,60) } } } END { print "   total : "n+0 }' "$TRACE"
+awk -F'|' 'NF==10 && $2 ~ /^ *[SANPVX]-/ { st=$8; gsub(/^ +| +$/,"",st); ph=$7; gsub(/^ +| +$/,"",ph); sub(/^Phase /,"",ph); if (st ~ /^MVP/ && ph ~ /^(7|8|9|10)$/) { n++; if (n<=15) { id=$2; gsub(/ /,"",id); print "   "id" phase "ph" : "substr($3,1,60) } } } END { print "   total : "n+0 }' "$TRACE"
 echo "-- section DÉCISIONS DU PROPRIÉTAIRE :"
 grep -q -i "^#.*DÉCISIONS DU PROPRIÉTAIRE" "$TRACE" && echo "   présente" || echo "   ABSENTE (elle doit contenir Mobile Money MVP ou phase 6, et toute proposition de ne pas faire une exigence)"
 
@@ -287,20 +287,20 @@ echo "(aucune ligne ci-dessus = tous les éléments requis des sections traitée
 
 echo
 echo "=== 13. LIGNES DONT LE SEUL DOCUMENT EST 06c (aucun document de conception) PAR STATUT ==="
-awk -F'|' 'NF==10 && $2 ~ /^ *[SANPV]-/ { d=$6; gsub(/^ +| +$/,"",d); st=$8; gsub(/^ +| +$/,"",st); if (d ~ /^06c( *§ *[0-9]+)?$/) c[st]++ } END { for (k in c) print c[k]" x "k }' "$TRACE"
+awk -F'|' 'NF==10 && $2 ~ /^ *[SANPVX]-/ { d=$6; gsub(/^ +| +$/,"",d); st=$8; gsub(/^ +| +$/,"",st); if (d ~ /^06c( *§ *[0-9]+)?$/) c[st]++ } END { for (k in c) print c[k]" x "k }' "$TRACE"
 echo "(une exigence MVP qui n'a que 06c comme document n'est décrite dans aucun document de conception : à justifier)"
 
 echo
 echo "=== 14. LIGNES 'Plus tard' DES PHASES 2 À 6 SANS RÉFÉRENCE À 06c H<nn> ==="
-awk -F'|' 'NF==10 && $2 ~ /^ *[SANPV]-/ { st=$8; gsub(/^ +| +$/,"",st); ph=$7; gsub(/^ +| +$/,"",ph); sub(/^Phase /,"",ph); if (st ~ /^[Pp]lus tard/ && ph ~ /^(2|2B|3|4|5|6)$/ && $9 !~ /06c H[0-9][0-9]/) n++ } END { print n+0" lignes" }' "$TRACE"
+awk -F'|' 'NF==10 && $2 ~ /^ *[SANPVX]-/ { st=$8; gsub(/^ +| +$/,"",st); ph=$7; gsub(/^ +| +$/,"",ph); sub(/^Phase /,"",ph); if (st ~ /^[Pp]lus tard/ && ph ~ /^(2|2B|3|4|5|6)$/ && $9 !~ /06c H[0-9][0-9]/) n++ } END { print n+0" lignes" }' "$TRACE"
 echo "(un 'Plus tard' placé dans une phase du MVP doit dire pourquoi : 06c H<nn>, ou être placé dans une phase postérieure)"
 
 echo
 echo "=== 15. COHÉRENCE DU TABLEAU TROUS AVEC LA MATRICE (même ID = même exigence ?) ==="
 awk -F'|' '
 function words(t, arr,   i,n,w,a) { delete arr; t=tolower(t); gsub(/\([^)]*\)/," ",t); gsub(/[^a-zà-ÿ ]/," ",t); n=split(t,a," "); for(i=1;i<=n;i++) if (length(a[i])>=5) arr[a[i]]=1 }
-NF==10 && $2 ~ /^ *[SANPV]-/ { id=$2; gsub(/ /,"",id); main[id]=$3 }
-NF==7 && $2 ~ /^ *[SANPV]-/ { id=$2; gsub(/ /,"",id); tr[id]=$3 }
+NF==10 && $2 ~ /^ *[SANPVX]-/ { id=$2; gsub(/ /,"",id); main[id]=$3 }
+NF==7 && $2 ~ /^ *[SANPVX]-/ { id=$2; gsub(/ /,"",id); tr[id]=$3 }
 END {
   for (id in tr) { if (!(id in main)) continue
     words(tr[id], A); words(main[id], B); ok=0; for (w in A) if (w in B) ok=1
@@ -310,7 +310,7 @@ END {
 }' "$TRACE"
 
 echo "=== 16. TOTAUX ==="
-for p in S A N P V; do printf "%s : " "$p"; awk -F'|' -v p="$p" 'NF==10 && $2 ~ ("^ *" p "-") { id=$2; gsub(/ /,"",id); print id }' "$TRACE" | sort -u | wc -l; done
+for p in S A N P V X; do printf "%s : " "$p"; awk -F'|' -v p="$p" 'NF==10 && $2 ~ ("^ *" p "-") { id=$2; gsub(/ /,"",id); print id }' "$TRACE" | sort -u | wc -l; done
 echo "Sections de décisions :"; grep -n -i "^#.*\(DÉCISIONS DU PROPRIÉTAIRE\|TROUS\|INCOHÉRENCES\)" "$TRACE" | head
 
 

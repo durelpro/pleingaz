@@ -23,6 +23,7 @@ L'objectif du MVP est de lancer rapidement une application fonctionnelle prouvan
 | **Auto-hébergement des tuiles de carte** | Lourdeur d'infrastructure injustifiée pour un pilote. | Phase 5 |
 | **Reversement automatisé (Payout)** | Risques de fraude financière, validation comptable manuelle requise au début. | Phase 3 |
 | **Avis clients** | Nécessite un volume critique pour être pertinent. | Phase 2B |
+| **Marketplace & Produits tiers** | Écarté sur décision souveraine du propriétaire (CR-001 D-01). | Hors périmètre |
 
 ## 2. Définition du Pilote
 Le pilote est le premier test grandeur nature sur une cible restreinte pour ajuster la logistique et la technique.
@@ -104,6 +105,12 @@ Le pilote est le premier test grandeur nature sur une cible restreinte pour ajus
 - M27 Fonctionnalité 27
 - M28 Fonctionnalité 28
 - M29 Fonctionnalité 29
+- M30 Recherche avec localisation au clic et lieu choisi librement
+- M31 Catalogue exclusif PLEINGAZ et prix centralisés
+- M32 Validation des distributeurs à 3 documents uniquement
+- M33 Livreurs sur la plateforme et attribution manuelle
+- M34 Grand livre immuable et reversements avec approbation à deux
+- M35 Administration à données réelles et comptes rendus Control Center
 - H01 Fonctionnalité hors MVP 1
 - H02 Fonctionnalité hors MVP 2
 - H03 Fonctionnalité hors MVP 3
@@ -119,6 +126,10 @@ Le pilote est le premier test grandeur nature sur une cible restreinte pour ajus
 - H13 Fonctionnalité hors MVP 13
 - H14 Fonctionnalité hors MVP 14
 - H15 Fonctionnalité hors MVP 15
+- H16 Suivi GPS temps réel des livreurs
+- H17 Analyses avancées, prévisions IA et cartes de chaleur
+- H18 Automatisation des reversements via API Payout
+- H19 Marketplace et vente de produits tiers (Hors périmètre)
 
 ## Phase 2B
 - Pages existantes (About, Products, Services, FAQ, Blog, Contact, points de vente)
