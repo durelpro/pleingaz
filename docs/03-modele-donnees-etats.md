@@ -18,38 +18,46 @@ Ce document dresse l'inventaire complet des entités du domaine et présente le 
 | **Accès** | `MfaCredential` | Identifiant TOTP (double facteur) | FK: `user_id` | Oui |
 | **Accès** | `RecoveryCode` | Code de secours MFA | FK: `user_id` | Oui |
 | **Réseau** | `DistributorApplication` | Dossier de candidature | FK: `distributor_id` | Oui |
-| **Réseau** | `DistributorDocument` | Pièce justificative KYC (stockée de façon isolée) | FK: `distributor_id` | Oui (CNI, etc.) |
+| **Réseau** | `DistributorDocument` | Pièce justificative KYC restreinte aux 3 types : `ID_CARD_FRONT`, `ID_CARD_BACK`, `PORTRAIT_PHOTO`, `SHOP_PHOTO` (CR-001 D-04) | FK: `distributor_id` | Oui (CNI, etc.) |
 | **Réseau** | `Store` | Boutique physique (un distributeur peut en avoir 0..N) | FK: `distributor_id` | Non |
 | **Réseau** | `StoreLocation` | Coordonnées géographiques de la boutique | FK: `store_id` | Non |
 | **Réseau** | `StoreHours` | Horaires d'ouverture | FK: `store_id` | Non |
 | **Réseau** | `StoreStaff` | Sous-compte pour le personnel de la boutique | FK: `store_id`, `user_id` | Oui |
-| **Réseau** | `Courier` | Livreur rattaché à une boutique ou indépendant | FK: `store_id` | Oui |
-| **Catalogue** | `ProductCategory` | Catégorie de produit (ex: 12.5kg) | Clé: `id` | Non |
-| **Catalogue** | `Product` | Produit au catalogue global | FK: `category_id` | Non |
-| **Catalogue** | `ProductPrice` | Tarification globale avec validité temporelle | FK: `product_id` | Non |
-| **Catalogue** | `PriceHistory` | Historique audité des changements de prix | FK: `product_id` | Non |
-| **Catalogue** | `StoreProductOffer` | Tarif spécifique si liberté tarifaire locale | FK: `store_id`, `product_id` | Non |
-| **Stock** | `Inventory` | État qualitatif du stock (BON/MOYEN/FAIBLE/RUPTURE) | FK: `store_id`, `product_id` | Non |
-| **Stock** | `InventoryUpdate` | Historique des changements de stock | FK: `inventory_id` | Non |
+| **Logistique** | `Courier` | Livreur plateforme indépendant supervisé par l'administration (CR-001 D-05) | FK: `user_id` | Oui |
+| **Logistique** | `CourierZone` | Zone géographique d'intervention déclarée du livreur | FK: `courier_id` | Non |
+| **Logistique** | `CourierAvailability` | Disponibilité opérationnelle en temps réel (en ligne / hors ligne) | FK: `courier_id` | Non |
+| **Logistique** | `DeliveryAssignment` | Proposition, timeout et acceptation d'une mission de livraison | FK: `delivery_id`, `courier_id` | Non |
+| **Logistique** | `CashCollection` | Suivi des espèces collectées à la livraison et créance envers PLEINGAZ | FK: `delivery_id`, `courier_id` | Oui (Fonds) |
+| **Catalogue** | `ProductCategory` | Catégorie de produit officiel PLEINGAZ (ex: 12.5kg, Accessoires) | Clé: `id` | Non |
+| **Catalogue** | `Product` | Produit du catalogue officiel PLEINGAZ (zéro marque tierce - CR-001 D-01) | FK: `category_id` | Non |
+| **Catalogue** | `ProductPrice` | Tarification officielle centralisée avec validité temporelle (Maker-Checker) | FK: `product_id` | Non |
+| **Catalogue** | `PriceHistory` | Historique audité et opposable des changements de prix catalogue | FK: `product_id` | Non |
+| **Catalogue** | `StoreProductOffer` | *Déclassé / inactif* : les prix sont obligatoirement nationaux (CR-001 D-01) | FK: `store_id`, `product_id` | Non |
+| **Stock** | `Inventory` | Déclaration qualitative du stock (`BON`/`MOYEN`/`FAIBLE`/`RUPTURE`) | FK: `store_id`, `product_id` | Non |
+| **Stock** | `InventoryUpdate` | Historique des déclarations de stock avec horodatage de fraîcheur | FK: `inventory_id` | Non |
 | **Stock** | `StockReservation` | Blocage temporaire d'une unité pour une commande | FK: `order_id`, `product_id`, `store_id` | Non |
-| **Stock** | `CylinderMovement` | Tracabilité et gestion des consignes (Entrées/Sorties) | FK: `store_id`, `order_id` | Non |
+| **Stock** | `CylinderMovement` | Traçabilité et gestion des consignes (Entrées/Sorties de bouteilles) | FK: `store_id`, `order_id` | Non |
 | **Commande** | `Order` | Commande passée par un client | FK: `customer_id`, `store_id` | Oui |
-| **Commande** | `OrderItem` | Ligne de la commande client | FK: `order_id`, `product_id` | Non |
+| **Commande** | `OrderItem` | Ligne de la commande client (strictement liée à `Product`) | FK: `order_id`, `product_id` | Non |
 | **Commande** | `DistributorOrder` | Commande passée par un distributeur à un grossiste | FK: `distributor_id` | Non |
 | **Commande** | `DistributorOrderItem`| Ligne de la commande distributeur | FK: `distributor_order_id`, `product_id`| Non |
-| **Commande** | `Delivery` | Processus logistique de livraison de la commande | FK: `order_id`, `courier_id` | Oui (GPS) |
+| **Commande** | `Delivery` | Processus de livraison avec code de confirmation client obligatoire | FK: `order_id`, `courier_id` | Oui (GPS) |
 | **Commande** | `Address` | Adresse et repère texte pour la livraison locale | FK: `user_id` | Oui |
 | **Finance** | `Payment` | Tentative ou succès de règlement | FK: `order_id` | Oui |
-| **Finance** | `PaymentTransaction` | Tracabilité technique et frais de l'opérateur (fee_bearer) | FK: `payment_id` | Oui |
+| **Finance** | `PaymentTransaction` | Traçabilité technique et frais de l'opérateur (fee_bearer) | FK: `payment_id` | Oui |
 | **Finance** | `IdempotencyKey` | Verrou contre les double-paiements | FK: `payment_id` | Non |
-| **Finance** | `PaymentWebhookEvent` | Trace pour rejeu des hooks | Clé: `event_hash` | Non |
-| **Finance** | `Invoice` | Facture globale de la commande | FK: `order_id`, `vendor_id` | Non |
+| **Finance** | `PaymentWebhookEvent` | Trace pour rejeu des webhooks opérateurs | Clé: `event_hash` | Non |
+| **Finance** | `Invoice` | Facture globale de la commande émise par la plateforme | FK: `order_id`, `vendor_id` | Non |
 | **Finance** | `InvoiceItem` | Ligne de la facture | FK: `invoice_id` | Non |
 | **Finance** | `InvoiceSequence` | Compteur de numérotation séquentielle par vendeur | Clé: `vendor_id` | Non |
-| **Finance** | `CreditNote` | Avoir d'annulation (Immuable) | FK: `invoice_id` | Non |
-| **Finance** | `Refund` | Remboursement d'un paiement | FK: `payment_id` | Oui |
+| **Finance** | `CreditNote` | Avoir d'annulation ou de remboursement (Immuable) | FK: `invoice_id` | Non |
+| **Finance** | `Refund` | Remboursement d'un paiement (ex: LATE_SUCCESS) | FK: `payment_id` | Oui |
 | **Finance** | `Settlement` | Processus de règlement des créances/dettes | FK: `vendor_id` | Non |
-| **Finance** | `Payout` | Virement final de la plateforme au distributeur | FK: `settlement_id` | Non |
+| **Finance** | `Payout` | Virement individuel de reversement | FK: `settlement_id` | Non |
+| **Finance** | `PayoutBatch` | Lot de reversement groupé validé en Maker-Checker (CR-001 D-06) | Clé: `id` | Non |
+| **Finance** | `LedgerAccount` | Compte du grand livre immuable (Actif, Passif, Charge, Produit) | Clé: `id`, `code` | Non |
+| **Finance** | `LedgerEntry` | Écriture à partie double immuable (`SUM(debit)==SUM(credit)`) | FK: `account_id`, `entry_group_id` | Non |
+| **Finance** | `DeliveryFeeSchedule` | Barème versionné des frais de livraison et commissions | Clé: `id` | Non |
 | **CRM** | `Conversation` | Fil de discussion (Support ou Distributeur/Client) | Clé: `id` | Oui |
 | **CRM** | `Message` | Message dans une conversation | FK: `conversation_id` | Oui |
 | **CRM** | `Notification` | Alerte utilisateur (App/Email/SMS) | FK: `user_id` | Oui |
@@ -59,16 +67,16 @@ Ce document dresse l'inventaire complet des entités du domaine et présente le 
 | **CRM** | `SupportTicket` | Demande d'assistance | FK: `user_id` | Oui |
 | **CRM** | `KnowledgeDocument` | Fiche d'aide (ex: sécurité gaz) | Clé: `id` | Non |
 | **CRM** | `Report` | Signalement ou litige | FK: `reporter_id`, `order_id` | Oui |
-| **Analytics**| `SearchEvent` | Historique des recherches utilisateurs (même à 0 résultat)| Clé: `id` | Oui |
-| **Analytics**| `AuditLog` | Trace d'une action sensible | FK: `user_id` | Oui |
+| **Analytics**| `SearchEvent` | Recherches géographiques anonymisées (coarse_area, zéro GPS exact) | Clé: `id` | Non |
+| **Analytics**| `AuditLog` | Trace d'une action sensible immuable | FK: `user_id` | Oui |
 | **Analytics**| `StockAlert` | Alerte seuil de stock déclenchée | FK: `store_id`, `product_id` | Non |
 | **Analytics**| `DemandAlert` | Alerte de rupture (demande insatisfaite) | FK: `store_id`, `product_id` | Non |
-| **Analytics**| `Promotion` | Règle de réduction | Clé: `id` | Non |
+| **Analytics**| `Promotion` | Règle de réduction gouvernée exclusivement par l'Admin | Clé: `id` | Non |
 | **Analytics**| `LoyaltyAccount` | Compte de points de fidélité | FK: `user_id` | Non |
 | **Analytics**| `LoyaltyTransaction` | Gain ou dépense de points | FK: `loyalty_account_id` | Non |
-| **Admin** | `Setting` | Paramètres applicatifs (délais, frais) | Clé: `key` | Non |
+| **Admin** | `Setting` | Paramètres applicatifs (délais, plafonds de caisse, rayons) | Clé: `key` | Non |
 
-*Entités écartées : Aucune entité requise n'a été écartée. Toutes les suggestions et impératifs (notamment les tables de lock, d'idempotence et les traces métiers) ont été intégrées.*
+*Entités neutralisées / ajustées : L'entité `StoreProductOffer` est déclassée au profit du catalogue centralisé `ProductPrice`. `Courier` devient une entité autonome de premier rang rattachée à `User` (CR-001 D-05). Le grand livre immuable `LedgerAccount` / `LedgerEntry` est introduit pour la rigueur financière (CR-001 D-06).*
 
 ---
 
@@ -156,10 +164,6 @@ erDiagram
         int user_id FK
         int store_id FK
     }
-    COURIER {
-        int id PK
-        int store_id FK
-    }
     DISTRIBUTOR_APPLICATION {
         int id PK
         int distributor_id FK
@@ -167,34 +171,58 @@ erDiagram
     DISTRIBUTOR_DOCUMENT {
         int id PK
         int distributor_id FK
+        string document_type
+    }
+    COURIER {
+        int id PK
+        int user_id FK
+        string status
+        string vehicle_type
+    }
+    COURIER_ZONE {
+        int id PK
+        int courier_id FK
+        string city
+        string area_name
+    }
+    COURIER_AVAILABILITY {
+        int courier_id PK_FK
+        boolean is_online
+        timestamp last_seen_at
     }
     DISTRIBUTOR_PROFILE ||--o{ STORE : "owns"
     STORE ||--o| STORE_LOCATION : "has"
     STORE ||--o{ STORE_HOURS : "opens_during"
     STORE ||--o{ STORE_STAFF : "employs"
-    STORE ||--o{ COURIER : "uses"
     DISTRIBUTOR_PROFILE ||--o| DISTRIBUTOR_APPLICATION : "submits"
-    DISTRIBUTOR_PROFILE ||--o{ DISTRIBUTOR_DOCUMENT : "provides"
+    DISTRIBUTOR_PROFILE ||--o{ DISTRIBUTOR_DOCUMENT : "provides_3_docs_only"
+    USER ||--o| COURIER : "operates_as"
+    COURIER ||--o{ COURIER_ZONE : "covers"
+    COURIER ||--o| COURIER_AVAILABILITY : "tracks"
 ```
 
-### 2.4 ERD 3 : Catalogue et Stock
+### 2.4 ERD 3 : Catalogue et Stock (CR-001 D-01)
 ```mermaid
 erDiagram
     PRODUCT {
         int id PK
         int category_id FK
+        string name
+        string sku
     }
     PRODUCT_PRICE {
         int id PK
         int product_id FK
+        int public_price
+        int distributor_price
+        string status
     }
     PRICE_HISTORY {
         int id PK
         int product_id FK
-    }
-    STORE_PRODUCT_OFFER {
-        int store_id FK
-        int product_id FK
+        int old_price
+        int new_price
+        timestamp changed_at
     }
     INVENTORY {
         int store_id FK
@@ -205,37 +233,43 @@ erDiagram
     INVENTORY_UPDATE {
         int id PK
         int inventory_id FK
+        string old_status
+        string new_status
     }
     STOCK_RESERVATION {
         int id PK
         int store_id FK
         int product_id FK
+        timestamp expires_at
     }
     CYLINDER_MOVEMENT {
         int id PK
         int store_id FK
         string type
     }
-    PRODUCT ||--o{ PRODUCT_PRICE : "costs"
-    PRODUCT ||--o{ PRICE_HISTORY : "changed"
-    PRODUCT ||--o{ STORE_PRODUCT_OFFER : "local_price"
-    PRODUCT ||--o{ INVENTORY : "stocked_as"
+    PRODUCT ||--o{ PRODUCT_PRICE : "official_price"
+    PRODUCT ||--o{ PRICE_HISTORY : "price_audit"
+    PRODUCT ||--o{ INVENTORY : "stocked_as_qualitative"
     INVENTORY ||--o{ INVENTORY_UPDATE : "logged_in"
     PRODUCT ||--o{ STOCK_RESERVATION : "reserved_in"
     STORE ||--o{ CYLINDER_MOVEMENT : "exchanges"
 ```
+*Note : L'entité historique `STORE_PRODUCT_OFFER` est neutralisée : les prix sont exclusivement gouvernés par `PRODUCT_PRICE` centralisé (CR-001 D-01).*
 
-### 2.5 ERD 4 : Commandes et Livraison
+### 2.5 ERD 4 : Commandes et Livraison (CR-001 D-05)
 ```mermaid
 erDiagram
     ORDER {
         int id PK
         int customer_id FK
         int store_id FK
+        int total_amount
     }
     ORDER_ITEM {
         int id PK
         int order_id FK
+        int product_id FK
+        int unit_price
     }
     DISTRIBUTOR_ORDER {
         int id PK
@@ -244,32 +278,56 @@ erDiagram
     DISTRIBUTOR_ORDER_ITEM {
         int id PK
         int distributor_order_id FK
+        int product_id FK
     }
     DELIVERY {
         int id PK
         int order_id FK
         int courier_id FK
+        string status
+        string confirmation_code
+    }
+    DELIVERY_ASSIGNMENT {
+        int id PK
+        int delivery_id FK
+        int courier_id FK
+        string status
+        timestamp timeout_at
+    }
+    CASH_COLLECTION {
+        int id PK
+        int delivery_id FK
+        int courier_id FK
+        int amount
+        string status
     }
     ADDRESS {
         int id PK
         int user_id FK
+        string text_landmark
     }
     ORDER ||--|{ ORDER_ITEM : "contains"
     DISTRIBUTOR_ORDER ||--|{ DISTRIBUTOR_ORDER_ITEM : "contains"
     ORDER ||--o| DELIVERY : "shipped_via"
     ORDER ||--o| ADDRESS : "delivered_to"
+    DELIVERY ||--o{ DELIVERY_ASSIGNMENT : "assigned_through"
+    COURIER ||--o{ DELIVERY_ASSIGNMENT : "receives"
+    DELIVERY ||--o| CASH_COLLECTION : "encashes"
+    COURIER ||--o{ CASH_COLLECTION : "holds"
 ```
 
-### 2.6 ERD 5 : Paiements, Factures et Reversements
+### 2.6 ERD 5 : Paiements, Factures, Grand Livre et Reversements (CR-001 D-06)
 ```mermaid
 erDiagram
     PAYMENT {
         int id PK
         int order_id FK
+        int amount
     }
     PAYMENT_TRANSACTION {
         int id PK
         int payment_id FK
+        string provider
     }
     PAYMENT_WEBHOOK_EVENT {
         string event_hash PK
@@ -281,14 +339,11 @@ erDiagram
     INVOICE {
         int id PK
         int order_id FK
+        int total_amount
     }
     INVOICE_ITEM {
         int id PK
         int invoice_id FK
-    }
-    INVOICE_SEQUENCE {
-        int vendor_id PK
-        int current_val
     }
     CREDIT_NOTE {
         int id PK
@@ -298,13 +353,33 @@ erDiagram
         int id PK
         int payment_id FK
     }
-    SETTLEMENT {
+    PAYOUT_BATCH {
         int id PK
-        int vendor_id FK
+        string status
+        int total_amount
+        int created_by FK
+        int approved_by FK
     }
     PAYOUT {
         int id PK
-        int settlement_id FK
+        int payout_batch_id FK
+        int recipient_id FK
+        int amount
+        string status
+    }
+    LEDGER_ACCOUNT {
+        int id PK
+        string code
+        string name
+        string type
+    }
+    LEDGER_ENTRY {
+        int id PK
+        int account_id FK
+        string entry_group_id
+        int debit
+        int credit
+        timestamp created_at
     }
     PAYMENT ||--|{ PAYMENT_TRANSACTION : "attempts"
     PAYMENT ||--o| IDEMPOTENCY_KEY : "secured_by"
@@ -312,7 +387,8 @@ erDiagram
     ORDER ||--o| INVOICE : "invoiced"
     INVOICE ||--|{ INVOICE_ITEM : "bills"
     INVOICE ||--o| CREDIT_NOTE : "cancelled_by"
-    SETTLEMENT ||--o{ PAYOUT : "paid_via"
+    PAYOUT_BATCH ||--o{ PAYOUT : "contains"
+    LEDGER_ACCOUNT ||--o{ LEDGER_ENTRY : "accumulates"
 ```
 
 ### 2.7 ERD 6 : Communication, IA et Analytics

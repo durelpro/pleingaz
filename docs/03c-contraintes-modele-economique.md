@@ -102,15 +102,15 @@
 | **Immutabilité** | Mutable (Révocable). |
 | **Rétention** | Soft delete (conservation des logs d'accès). |
 
-### 1.11 `DistributorDocument`
+### 1.11 `DistributorDocument` (CR-001 D-04)
 | Propriété | Règle / Instruction SQL |
 |---|---|
 | **Clés & Unicités** | `id` (PK). `UNIQUE (distributor_id, type)`. |
-| **Clés Étrangères**| `distributor_id`. |
-| **CHECK** | - |
-| **Logique** | Fichiers chiffrés au repos sur le bucket. Isolation des URL. |
-| **Immutabilité** | Mutable (Mise à jour d'un doc rejeté). |
-| **Rétention** | Hard delete immédiat si demande RGPD ("Droit à l'oubli"). |
+| **Clés Étrangères**| `distributor_id` (Ref: DistributorProfile). |
+| **CHECK** | `CHECK (type IN ('ID_CARD_FRONT', 'ID_CARD_BACK', 'PORTRAIT_PHOTO', 'SHOP_PHOTO'))` (3 pièces exclusives : CNI recto/verso, portrait, boutique). |
+| **Logique** | Fichiers chiffrés au repos sur bucket S3 privé (pièces d'identité) ou public après approbation (boutique). Purge systématique des métadonnées EXIF (GPS). Accès via URL signées 15 min. |
+| **Immutabilité** | Mutable en cas de rejet motivé pour soumission d'une nouvelle version. |
+| **Rétention** | 5 ans légal après clôture de compte. Droit à l'effacement si rejet définitif. |
 
 ### 1.12 `AuditLog`
 | Propriété | Règle / Instruction SQL |
@@ -122,48 +122,86 @@
 | **Immutabilité** | Strictement immuable. Ne doit JAMAIS faire l'objet d'un `UPDATE` ou `DELETE`. |
 | **Rétention** | Permanente (ou archivage à froid après N années). |
 
+### 1.13 `LedgerEntry` — Grand Livre Immuable (CR-001 D-06)
+| Propriété | Règle / Instruction SQL |
+|---|---|
+| **Clés & Unicités** | `id` (PK). Index sur `entry_group_id` (regroupement de l'opération comptable). |
+| **Clés Étrangères**| `account_id` (Ref: LedgerAccount). |
+| **CHECK** | `CHECK (debit >= 0 AND credit >= 0 AND (debit > 0 OR credit > 0))`. |
+| **Invariant Comptable**| `SUM(debit) == SUM(credit)` obligatoire par `entry_group_id` (vérifié par trigger ou transaction atomique). |
+| **Immutabilité** | Strictement Insert-Only. Interdiction absolue de `UPDATE` ou `DELETE`. Rectification uniquement par écriture inverse (contre-passation). |
+| **Rétention** | 10 ans légal. |
+
+### 1.14 `PayoutBatch` — Lots de Reversement (CR-001 D-06)
+| Propriété | Règle / Instruction SQL |
+|---|---|
+| **Clés & Unicités** | `id` (PK). |
+| **Clés Étrangères**| `created_by` (Ref: User), `approved_by` (Ref: User nullable). |
+| **CHECK** | `CHECK (status IN ('DRAFT', 'SUBMITTED', 'APPROVED', 'REJECTED', 'EXECUTED', 'CANCELLED'))`. |
+| **Maker-Checker** | `CHECK (approved_by IS NULL OR approved_by != created_by)` (Interdiction formelle d'auto-approbation). |
+| **Exécution** | Le passage à `EXECUTED` exige obligatoirement `payment_proof_url IS NOT NULL` et `external_transaction_id IS NOT NULL`. |
+| **Immutabilité** | Montants et lignes scellés dès le passage à `SUBMITTED`. |
+| **Rétention** | 10 ans légal. |
+
+### 1.15 `CashCollection` — Suivi Espèces Livreur (CR-001 D-05, D-06)
+| Propriété | Règle / Instruction SQL |
+|---|---|
+| **Clés & Unicités** | `id` (PK). `UNIQUE (delivery_id)`. |
+| **Clés Étrangères**| `delivery_id` (Ref: Delivery), `courier_id` (Ref: Courier). |
+| **CHECK** | `CHECK (amount > 0 AND currency = 'XAF')`. |
+| **Plafond & Alerte**| Comparé au seuil configuré dans `Setting` (défaut : 50 000 FCFA). Si `SUM(amount)` des lignes `COLLECTED` dépasse le plafond, blocage immédiat de nouvelles courses pour le livreur. |
+| **Immutabilité** | Mutable uniquement via la machine d'état (`PENDING` -> `COLLECTED` -> `REMITTED_TO_PLEINGAZ` / `DISPUTED`). |
+| **Rétention** | 10 ans légal. |
+
 ---
 
-## 2. Modèle Économique : Alternatives et Impacts
+## 2. Modèle Économique : Règles Validées et Impacts (CR-001)
 
-L'architecture est "Configuration-Driven". Une table `Setting` permet de basculer entre les modes sans migration de code lourde. L'hypothèse de travail centrale est : **L'encaissement est centralisé chez PLEINGAZ, qui reverse (Settlement) au distributeur après livraison, avec support du paiement espèces local.**
+L'architecture est "Configuration-Driven" via la table `Setting`. Les décisions souveraines du propriétaire ont définitivement tranché les options fondamentales :
+- **Catalogue & Prix (D-01)** : Catalogue exclusivement officiel PLEINGAZ. Prix strictement nationaux recalculés côté serveur sur `ProductPrice` ; l'entité `StoreProductOffer` est déclassée/inopérante.
+- **Reporting & Contrôle (D-03)** : Tous les rapports et tableaux de bord de synthèse sont réservés au Control Center admin, basés sur des données 100% réelles en BDD.
+- **Livreurs (D-05)** : Les livreurs (`COURIER`) sont des utilisateurs à part entière supervisés par la plateforme, avec validation de remise par code client secret et suivi des espèces.
+- **Gouvernance Financière (D-06)** : Encaissement centralisé chez PLEINGAZ, séparation des tâches Maker-Checker pour les barèmes et reversements, grand livre immuable à double entrée.
 
 ### 2.1 Tableau : Impact des Décisions
 
-| Décision Métier | Impact Modèle / Base de données |
-|---|---|
-| **Qui encaisse ? (Centralisé vs Direct)** | Modifie le `vendor_id` de l'`Invoice` et le sens du `Settlement` (Plateforme doit Vendeur, ou Vendeur doit Plateforme). Géré par configuration. |
-| **Qui paie les frais ? (fee_bearer)** | Le champ `fee_bearer` (`PLATFORM`, `SELLER`, `CUSTOMER`) dans `PaymentTransaction` ajuste dynamiquement le Total Facture vs Total Payé. Les frais réels exacts sont stockés. |
-| **Prix : National vs Libre** | Si `National`, l'API lit `ProductPrice`. Si `Libre`, l'API vérifie en priorité `StoreProductOffer`. Géré par une feature flag. |
-| **Livraison : Interne vs Externe** | Les `Coursiers/livreurs` peuvent être assignés au niveau `Store` (employés) ou au niveau global (partenaires indépendants). Géré par le scope du `UserRole`. |
-| **Consigne** | Si l'utilisateur paie la bouteille, une ligne "Deposit" est ajoutée à l'`Invoice` et déclenche un `CylinderMovement` de type `OUT`. **(À CONFIRMER)** |
+| Décision Métier | Règle Validée (CR-001) | Impact Modèle / Base de données |
+|---|---|---|
+| **Qui encaisse ?** | Encaissement centralisé par PLEINGAZ (Mobile Money ou régularisation espèces). | L'`Invoice` globale émise par la plateforme. Les flux alimentent le Grand Livre (`LedgerEntry`). |
+| **Qui paie les frais ? (fee_bearer)** | Paramétré dans `Setting` (`PLATFORM` par défaut). | `PaymentTransaction.fee` et `operator_fee` stockés avec exactitude au centime. |
+| **Prix : National vs Libre** | **National exclusif (CR-001 D-01)**. | L'API lit exclusivement `ProductPrice` actif. `StoreProductOffer` est neutralisé. |
+| **Livraison : Interne vs Externe** | **Plateforme indépendante (CR-001 D-05)**. | Rôle dédié `COURIER` (9e rôle), entités `Courier`, `CourierZone`, `DeliveryAssignment`. |
+| **Reversements & Barèmes** | **Maker-Checker strict (CR-001 D-06)**. | Proposition par `FINANCE_MANAGER`, approbation distincte par `ADMIN`/`SUPER_ADMIN`, lot `PayoutBatch`. |
 
-### 2.2 Paiement en Espèces (Recouvrement)
-1. Le client paie le distributeur de la main à la main lors du retrait.
-2. L'encaissement est validé **uniquement** quand le client remet au distributeur un "Code de Confirmation de Remise" généré sur son interface. *(Ce n'est pas un SMS OTP, c'est un code visuel à 4-6 chiffres).*
-3. Le distributeur saisit ce code. Le système marque `Order` comme `DELIVERED` et le `Payment` comme `CASH_PAID`.
-4. L'espèce étant dans la caisse du distributeur, la commission PLEINGAZ est insérée comme une **créance/dette** dans `Settlement` (Le distributeur doit X FCFA à PLEINGAZ).
-5. PLEINGAZ se rembourse en prélevant sur les Payouts futurs des ventes Mobile Money, ou bloque temporairement le distributeur si la dette dépasse un seuil.
-6. *Désaccord* : Si le distributeur refuse de valider le code (ex: affirme ne pas avoir reçu l'argent), le client ou le distributeur ouvre un `Report`. L'ordre passe en litige, gelant la comptabilité jusqu'à résolution par le support.
+### 2.2 Paiement en Espèces (Recouvrement Sécurisé)
+1. Le client paie de la main à la main lors de la livraison ou du retrait.
+2. L'encaissement est validé **uniquement** quand le client remet au livreur/distributeur son **Code de Confirmation** confidentiel à 4-6 chiffres.
+3. La saisie de ce code valide la commande (`DELIVERED`) et crée l'enregistrement `CashCollection`.
+4. L'espèce en main constitue une créance envers PLEINGAZ enregistrée au débit du compte de caisse livreur (`1030`) ou distributeur (`1020`) et au passif envers le réseau.
+5. PLEINGAZ régularise la créance lors de la remise physique des fonds ou par compensation automatique sur les futurs lots de reversement `PayoutBatch`.
+6. Si le plafond d'espèces en circulation (défaut : 50 000 FCFA dans `Setting`) est franchi, le compte livreur est automatiquement suspendu d'attribution jusqu'à régularisation.
 
 ---
 
 ## 3. Stock et Logistique Locale
 
-- **Multi-Boutique** : Un distributeur (entité `DistributorProfile`) peut posséder **plusieurs boutiques** (`Store`). Chaque boutique possède son propre `Inventory`.
-- **Modèle de Fraîcheur** : Calculée dynamiquement. Si `last_updated_at` < 2h, affiché "Frais/Vérifié récemment". Sinon, la fiabilité baisse visuellement.
+- **Multi-Boutique** : Un distributeur (entité `DistributorProfile`) peut posséder plusieurs boutiques (`Store`). Chaque boutique possède son propre `Inventory`.
+- **Modèle Qualitatif Exclusif (CR-001 D-01)** : Le stock ne gère pas de compteurs numériques bruts sujets aux erreurs de saisie, mais un état qualitatif parmi `BON`, `MOYEN`, `FAIBLE`, `RUPTURE`.
+- **Modèle de Fraîcheur** : Calculé dynamiquement. Si `last_updated_at` < 2h, affiché "Frais/Vérifié récemment". Au-delà du seuil configurable dans `Setting`, une alerte de mise à jour est levée.
 - **Sources de mise à jour** (`InventoryUpdate.source`) :
-  1. `declared_manual` : Saisie manuelle par le gérant ("J'ai 5 bouteilles").
-  2. `one_click_confirm` : Bouton "Mon stock est toujours à ce niveau".
-  3. `deducted_auto` : Décrémentation après commande. Si l'algo voit `deducted_auto` s'empiler pendant 3 jours sans validation manuelle, le stock est jugé "non fiable" et requiert l'intervention du gérant.
+  1. `declared_manual` : Saisie par le gérant via l'IHM tactile (`BON`/`MOYEN`/`FAIBLE`/`RUPTURE`).
+  2. `one_click_confirm` : Bouton rapide "Mon stock est toujours conforme".
+  3. `deducted_auto` : Dégradation automatique suggérée après enchaînement de commandes.
 
 ---
 
-## 4. Décisions Urgentes à Confirmer avec PLEINGAZ
+## 4. Points Tranchés et Paramètres Opérationnels (CR-001)
 
-Ces décisions bloquent la finalisation des algorithmes de paiement et de facturation :
+Les 6 décisions souveraines du propriétaire (`D-01` à `D-06`) ont formellement résolu les questions majeures d'architecture :
+1. **Consigne et Gestion des Bouteilles** : Gestion des consignes par échange standard de bouteille vide de même format ou facturation de consigne selon barème officiel PLEINGAZ.
+2. **Liberté des prix** : **Résolu (D-01)** — Prix strictement centralisé, aucune liberté locale, `StoreProductOffer` neutralisé.
+3. **Recouvrement Espèces** : **Résolu (D-05, D-06)** — Enregistrement systématique dans `CashCollection`, suivi en grand livre immuable, plafond bloquant dans `Setting`.
+4. **Statut des Livreurs** : **Résolu (D-05)** — Livreurs indépendants de la plateforme (`COURIER`), supervisés centralement par PLEINGAZ.
 
-1. **Consigne et Gestion des Bouteilles (Urgent)** : Vendez-vous uniquement le gaz (échange de bouteille vide) ou le client paie-t-il un "dépôt" pour une nouvelle consigne ? Si consigne, appartient-elle au distributeur ou à PLEINGAZ ? (Impact : Modélisation des lignes de factures et créances).
-2. **Liberté des prix (StoreProductOffer)** : Les distributeurs ont-ils le droit de fixer leur propre prix de vente par produit, ou le prix public est-il strict et national ? (Impact : Requêtes de recherche et filtrage).
-3. **Recouvrement Espèces** : Le mécanisme de constitution de dette (Settlement) décrit en 2.2 est-il validé pour la gestion des paiements espèces ?
-4. **Logistique** : Les coursiers/livreurs sont-ils des employés de la boutique, des indépendants, ou des livreurs PLEINGAZ ? (Impact : Matrice RBAC et règles d'affectation des livraisons).
+Les seuls arbitrages résiduels portent sur des seuils numériques (plafonds de caisse, délais d'acceptation de course, frais de livraison par zone) qui sont externalisés et ajustables sans modification de code via la table `Setting`.
+
