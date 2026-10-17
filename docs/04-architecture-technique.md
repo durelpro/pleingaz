@@ -6,31 +6,38 @@ graph TD
     %% Clients
     ClientApp[Client PWA/Web] --> CDN[Cloudflare CDN]
     DistApp[Distributeur PWA] --> CDN
+    CourierApp[Livreur PWA Mobile] --> CDN
     AdminApp[Admin Control Center] --> CDN
 
     %% Façade
-    CDN --> API[API REST / Backend]
+    CDN --> API[API REST / Backend NestJS]
     
     %% Base et Caches
     API --> PG[(PostgreSQL + PostGIS)]
     API --> Redis[(Redis)]
     
     %% Stockage Fichiers
-    API --> S3_Public[(S3 Bucket: Public Images)]
-    API --> S3_Private[(S3 Bucket: KYC & Factures)]
+    API --> S3_Public[(S3 Bucket Public : Boutique validée)]
+    API --> S3_Private[(S3 Bucket Privé : KYC 3 pièces & Factures)]
+    
+    %% Services Métier Internes
+    API --> LedgerSvc[Service Grand Livre Immuable]
+    API --> DispatchSvc[Service Logistique & Attribution Courses]
+    LedgerSvc --> PG
+    DispatchSvc --> PG
     
     %% Workers & Files d'attente
-    Redis --> Worker[Background Workers]
+    Redis --> Worker[Background Workers BullMQ]
     Worker --> PG
     
     %% Services Tiers
-    API --> PayGateway[Agrégateur Paiement]
+    API --> PayGateway[Agrégateur Paiement MoMo]
     PayGateway --> API
-    API --> SMS[Provider SMS]
-    API --> WhatsApp[Meta WhatsApp API]
-    API --> Nominatim[Serveur Géocodage]
-    ClientApp --> Tiles[Fournisseur Tuiles Carte]
-    Worker --> LLM[Service IA]
+    API --> SMS[Provider SMS OTP]
+    API --> WhatsApp[WhatsApp Click-to-Chat / API]
+    API --> Nominatim[Serveur Géocodage Nominatim bridé]
+    ClientApp --> Tiles[Fournisseur Tuiles Carte / Secours 20Ko]
+    Worker --> LLM[Service IA catalogue PLEINGAZ exclusif]
 ```
 
 ## 2. Hébergement et CDN (ADR D2)
@@ -47,41 +54,54 @@ Il est critique de séparer les contenus statiques des contenus dynamiques (stoc
 - **Images publiques** : Durée de cache de 30 jours au niveau du CDN.
 - **Pages Vitrines (SSR Next.js)** : Pré-rendues avec ISR (Incremental Static Regeneration). Durée de cache/TTL de 1 heure.
 - **Blocs Dynamiques (ex: Stock d'un point de vente)** : Le squelette de la page du distributeur est en cache, mais **le bloc affichant le stock est toujours chargé dynamiquement (Client-Side Fetch)** et porte un TTL de 0 seconde (pas de cache). Il affiche systématiquement la "date de dernière mise à jour".
-- **Données Sensibles (Factures, Profils)** : En-têtes HTTP `Cache-Control: no-store, no-cache, max-age=0`.
+- **Données Sensibles (Factures, Profils, KYC)** : En-têtes HTTP `Cache-Control: no-store, no-cache, max-age=0`.
 - **Redis** : Utilisé pour les caches temporaires (TTL courts, ex: 5 min pour une recherche sans géolocalisation), le rate limiting et le TTL des OTP (ex: 5 minutes). **Règle absolue : jamais de données qui doivent survivre à un redémarrage.**
 
-## 4. API REST et Recherche
+## 4. API REST et Recherche (CR-001 D-01, D-02)
 - **Standards** : API versionnée (`/api/v1`). Documentation OpenAPI (Swagger) générée automatiquement depuis le code. Erreurs standardisées (RFC 7807), CORS restrictif. 
 - **Politique de Versionnement** : Ajouts permis. Casseurs de compatibilité = `/api/v2`. Dépréciation annoncée 6 mois à l'avance via un en-tête `Deprecation: true`.
 - **Rate Limiting** : Limites strictes par endpoint via Redis pour contrer le flood :
   - `POST /otp` (Génération) : 3/heure.
   - `POST /login` (Connexion) : 10/heure.
-  - `GET /search` (Recherche) : 30/minute.
+  - `GET /stores/search` (Recherche) : 30/minute.
+  - `POST /geo/geocode` (Géocodage backend) : 1/seconde max par session/IP.
   - `POST /orders` (Création de commande) : 5/heure.
   - `POST /webhooks/*` : 100/minute (avec vérification stricte de signature).
-- **Recherche** : Dans un premier temps, recherche PostgreSQL (extensions `pg_trgm`, `unaccent`, gestion des synonymes de quartiers). La bascule vers OpenSearch ne sera envisagée que si la recherche textuelle dépasse 500ms sur des millions de requêtes ou nécessite des filtres à facettes très complexes.
+- **Architecture de Recherche Respectueuse de la Vie Privée (CR-001 D-02)** :
+  - **Déclenchement au clic uniquement** : L'API `navigator.geolocation` n'est jamais appelée au chargement. Elle est sollicitée uniquement suite au clic explicite sur "Ma position" ou "J'ai besoin de gaz", précédé de la mention de transparence. HTTPS obligatoire.
+  - **Primauté du choix manuel** : L'utilisateur peut à tout instant chercher par Ville -> Quartier, par repère textuel ("en face de..."), ou par marqueur sur carte Leaflet.
+  - **Spécification des 8 états IHM** : Gestion complète côté frontend et backend (autorisation accordée, chargement avec timeout 8s, refus utilisateur, GPS indisponible, faible précision, hors Cameroun, zéro distributeur dans le rayon, réseau faible avec bascule sur liste de secours textuelle 20 Ko).
+  - **Anonymisation SearchEvent** : Seule la zone grossière (`coarse_area`, ville/quartier ou maille 1 km) est persistée à des fins d'analyse de la demande. Zéro latitude/longitude fine conservée. Pas de géolocalisation par adresse IP. Rayon par défaut de 5 km configuré dans `Setting`.
+- **Catalogue Exclusif (CR-001 D-01)** : Les requêtes de recherche ne portent que sur les références officielles PLEINGAZ. Recalcul systématique des prix par le serveur depuis `ProductPrice`.
 
-## 5. Stockage S3 et Fichiers
-- **S3 Public** : Logos, photos des boutiques.
-- **S3 Privé (Isolé)** : Pièces d'identité (KYC) et Factures PDF.
-- **Sécurité S3 Privé** : Accès backend exclusif, génération d'**URL signées** (TTL de 15 minutes) pour l'affichage ponctuel, vérification du type MIME, limitation de taille (ex: 5Mo), analyse antivirus à l'upload, et journalisation stricte des accès (`document:view_identity`).
+## 5. Stockage S3 et Fichiers Sécurisés (CR-001 D-04)
+- **S3 Public** : Logos officiels PLEINGAZ et photos de boutiques (`SHOP_PHOTO`) transférées uniquement après validation `APPROVED`.
+- **S3 Privé (Chiffré au repos)** :
+  - Pièces d'identité du KYC distributeur restreintes strictement aux 3 types : `ID_CARD_FRONT`, `ID_CARD_BACK`, `PORTRAIT_PHOTO`.
+  - Factures PDF immuables.
+- **Sécurité et Traitement des Uploads** :
+  - Compression locale côté client (Canvas HTML5 / WebP) avant transfert sur réseaux mobiles instables.
+  - **Purge systématique des métadonnées EXIF** (coordonnées GPS, modèle de smartphone) côté serveur avant enregistrement définitif.
+  - Analyse antivirus et vérification des magic bytes (JPEG, PNG, WebP uniquement).
+  - Accès aux pièces d'identité strictement restreint aux administrateurs habilités (`document:view_identity`) via des **URL signées éphémères (TTL de 15 minutes)**, avec journalisation obligatoire dans `AuditLog`.
 
-## 6. Frontend, PWA et Gestion de la Faible Connexion
-- **Architecture** : Next.js. Séparation en 3 portails (Public/Client, Distributeur, Admin).
+## 6. Frontend, PWA et Gestion de la Faible Connexion (CR-001 D-05)
+- **Architecture** : Next.js (SSR / PWA). Séparation en 4 espaces : Public/Client, Distributeur, Livreur (`/courier`), Control Center Admin.
+- **Espace Livreur Mobile (CR-001 D-05)** :
+  - PWA ultra-légère optimisée pour smartphones d'entrée de gamme Android.
+  - Mode hors ligne partiel : mémorisation de la mission active et synchronisation différée.
+  - Interface axée sur l'action : bouton d'appel/WhatsApp client, bouton de signalement d'état (`PICKED_UP`, `IN_TRANSIT`), et **saisie obligatoire du code de confirmation** remis par le client pour marquer la course `DELIVERED`.
 - **Offline / PWA (Mode faible connexion)** : 
   - Service Workers pour le cache des assets vitaux.
   - Sauvegarde locale d'une commande interrompue pour reprise automatique.
   - Affichage explicite des états hors-ligne ("*Vous êtes hors ligne, données potentiellement anciennes*").
-  - **Mise à jour de stock Distributeur hors ligne** : Le distributeur modifie son stock sans réseau. L'action va dans une file locale (IndexedDB). À la reconnexion, la mise à jour part vers l'API avec **l'horodatage réel** de la déclaration. La résolution des conflits côté backend priorise toujours l'heure de la déclaration locale face aux déductions automatiques.
+  - **Mise à jour de stock Distributeur hors ligne** : Le distributeur modifie qualitativement son stock (`BON`/`MOYEN`/`FAIBLE`/`RUPTURE`) sans réseau. L'action est stockée dans IndexedDB avec l'horodatage réel de saisie et envoyée à la reconnexion.
 
-## 7. Cartographie, Géocodage et Tuiles (ADR D3)
+## 7. Cartographie, Géocodage et Tuiles (ADR D3, CR-001 D-02)
 **Statut de l'ADR D3 : PROPOSÉ.**
-- **Géocodage** : Le distributeur cible son adresse à l'inscription. Nominatim utilisé en backend via file d'attente (1 req/sec, User-Agent identifié, cache base de données). Interface `GeocodingProvider` pour changer de fournisseur. Source de vérité = Marqueur validé manuellement + repère texte. Pas d'autocomplétion à la frappe.
-- **Tuiles de la carte** : Le serveur public OSM est interdit pour ce trafic.
-  - *Option commerciale (Mapbox/JawgMaps)* : Fiable, SLA garanti, mais coût par vue.
-  - *Auto-hébergement OSM* : Gratuit à l'usage, mais charge de maintenance serveur complexe (à faire plus tard).
-  - *Impact data* : Le chargement vectoriel/raster d'une carte consomme environ **1.5 Mo par écran de carte**. C'est un coût en données (Ko) important au Cameroun.
-- **Liste de secours** : Si la carte ne charge pas (échec réseau, blocage pub, ou timeout fournisseur), une **liste textuelle de secours** ordonnée par distance s'affiche obligatoirement. L'impact réseau chute alors à ~20 Ko (JSON pur).
+- **Géocodage Bridé** : Nominatim utilisé en backend via file d'attente (1 req/sec max par IP/session, cache local PostGIS, User-Agent identifié). Interface `GeocodingProvider` pour substitution ultérieure. Pas d'autocomplétion à la frappe.
+- **Tuiles de la carte et Poids Data** : Une vue cartographique consomme environ 1.5 Mo. En cas de réseau bridé (3G), d'erreur de chargement ou de refus de géolocalisation, bascule immédiate sur la **liste de secours textuelle** (~20 Ko JSON pur) ordonnée par quartier ou distance approximative.
+
 
 ## 8. Tâches en Arrière-plan (Workers)
 Gestion des processus asynchrones via files d'attente (ex: BullMQ sur Redis).
@@ -185,13 +205,71 @@ sequenceDiagram
     API->>Dist: Notification Succès
 ```
 
+### 10.5 Cycle de Livraison, Code Secret Client et Caisse Espèces (CR-001 D-05)
+```mermaid
+sequenceDiagram
+    actor Client
+    actor Courier as Livreur (COURIER)
+    participant API as Backend NestJS
+    participant PG as PostgreSQL
+    actor Admin as Admin Dispatch
+
+    Admin->>API: Assigne course à un livreur disponible
+    API->>PG: Crée DeliveryAssignment (PROPOSED, timeout 10m)
+    API->>Courier: Notification de mission
+    Courier->>API: Accepte la course -> Statut ASSIGNED
+    Courier->>API: Confirme retrait boutique -> Statut PICKED_UP
+    Courier->>API: Prise de route -> Statut IN_TRANSIT
+    Courier->>Client: Arrivée sur site / Appel / Repère
+    Client->>Courier: Remet le code de confirmation (+ espèces si Cash)
+    Courier->>API: Saisie code confirmation (+ montant cash)
+    API->>PG: Vérifie hash du code client
+    alt Code Valide
+        API->>PG: Delivery passe DELIVERED
+        opt Paiement Espèces à la livraison
+            API->>PG: Crée CashCollection (COLLECTED)
+            API->>PG: Incrémente solde caisse livreur (contrôle seuil 50 000 FCFA)
+        end
+        API-->>Courier: Course clôturée avec succès
+        API-->>Client: Notification "Livraison effectuée, facture disponible"
+    else Code Erroné
+        API-->>Courier: Erreur 400 "Code invalide" (Tentatives bornées)
+    end
+```
+
+### 10.6 Règle Maker-Checker Finance et Grand Livre à Double Entrée (CR-001 D-06)
+```mermaid
+sequenceDiagram
+    actor FinMgr as FINANCE_MANAGER
+    actor Admin as ADMIN / SUPER_ADMIN
+    participant API as Backend NestJS
+    participant Ledger as Service Grand Livre
+    participant PG as PostgreSQL (Insert-Only)
+
+    FinMgr->>API: Propose nouveau barème tarifaire ou lot PayoutBatch
+    API->>PG: Enregistre à l'état PROPOSED / SUBMITTED (created_by = FinMgr.id)
+    Admin->>API: Revoit le lot ou le barème (TOTP exigé)
+    API->>API: Vérifie Maker-Checker (Admin.id != FinMgr.id)
+    alt Approbateur distinct
+        Admin->>API: Approuve (Statut APPROVED)
+        opt Exécution d'un lot PayoutBatch
+            FinMgr->>API: Saisit référence transaction bancaire/MoMo + upload preuve
+            API->>Ledger: Déclenche écritures comptables
+            Ledger->>PG: Insert LedgerEntry Débit Dettes / Crédit Trésorerie (debit == credit)
+            API->>PG: PayoutBatch passe EXECUTED
+        end
+    else Même utilisateur (Tentative d'auto-approbation)
+        API-->>Admin: Rejet HTTP 403 "Maker-Checker violation"
+    end
+```
+
 ---
 
 ## 11. Correctifs Rapides Existants (Indépendants)
 Les correctifs identifiés lors de l'audit initial (notamment le comportement défectueux de Nginx renvoyant des 200 OK sur les fichiers `robots.txt` et `sitemap.xml` non trouvés) sont **indépendants de cette refonte technique globale**. Ils peuvent et doivent être corrigés immédiatement sur l'infrastructure actuelle sans attendre la migration vers Next.js.
 
 ## 12. Dépendances des ADR
-Tous les ADR restent au statut **PROPOSÉ**. Ce tableau indique quels choix techniques devront être revus si un ADR est finalement rejeté.
+Les ADR D1 à D4 sont proposés ; les ADR D5 à D10 résultent des **décisions souveraines validées du propriétaire (CR-001)** et sont opposables.
 
 | ADR | Sujet | Statut | Choix techniques dépendants |
 |---|---|---|---|
@@ -199,14 +277,13 @@ Tous les ADR restent au statut **PROPOSÉ**. Ce tableau indique quels choix tech
 | **D2** | Hébergement (VPS + CF) | PROPOSÉ | Stratégie de Cache Edge Cloudflare, latence cible, IP filtering. |
 | **D3** | Tuiles de la carte | PROPOSÉ | Budget d'affichage, gestion des écrans de secours (texte pur), consommation data. |
 | **D4** | Agrégateur Paiement | PROPOSÉ | Webhooks `LATE_SUCCESS`, UX de paiement redirigé vs intégré. |
+| **D5** | Catalogue exclusif & Prix centralisés (CR-001 D-01) | **VALIDÉ** | Suppression marketplace, recalcul systématique serveur, restriction FK. |
+| **D6** | Géolocalisation au clic & Primauté manuel (CR-001 D-02) | **VALIDÉ** | Composant sélecteur lieu, 8 états IHM, anonymisation `SearchEvent`, liste secours 20 Ko. |
+| **D7** | Reporting Control Center & Zéro fictif (CR-001 D-03) | **VALIDÉ** | 15 rapports réels SQL, états vides explicites, exclusion stricte seeds démo. |
+| **D8** | KYC Distributeur 3 pièces exclusives (CR-001 D-04) | **VALIDÉ** | S3 privé chiffré, URL signées 15 min, stripping EXIF systématique, checklist admin. |
+| **D9** | Rôle Livreur & Code confirmation (CR-001 D-05) | **VALIDÉ** | 9e rôle RBAC `COURIER`, PWA livreur légère, attribution manuelle, suivi caisse espèces. |
+| **D10**| Maker-Checker & Grand Livre immuable (CR-001 D-06) | **VALIDÉ** | Insert-Only `LedgerEntry`, débit=crédit, double signature reversements, TOTP obligatoire. |
 
----
-
-## 13. Décisions Urgentes à Confirmer (Ajoutées à OPEN_QUESTIONS.md)
-1. **Hébergement et Devises** : Le VPS européen (ADR D2) implique des factures en Euro/USD. L'entreprise PLEINGAZ peut-elle régler ces frais internationaux ?
-2. **Confidentialité et CDN** : L'utilisation de Cloudflare (US) doit être validée juridiquement et inscrite dans les mentions légales.
-3. **Fournisseur de Tuiles (Budget)** : Valider l'enveloppe budgétaire pour JawgMaps, Mapbox ou un auto-hébergement de tuiles OSM.
-4. **Environnements Cloud** : Accord sur la séparation des coûts pour financer une vraie Pré-production identique à la Prod.
 
 ## 14. Stack technique retenue
 La stack de l'audit préliminaire (04-stack.md) a été validée pour le MVP, ajustée par nos ADRs :

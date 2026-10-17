@@ -2,11 +2,14 @@
 
 L'implémentation de l'Intelligence Artificielle n'intervient qu'une fois les bases solides établies (Phases 3 à 5 validées). Elle repose sur une interface `LLMProvider`. En cas d'indisponibilité, le système retombe gracieusement sur une barre de recherche classique.
 
-## 1. Gouvernance et Base de Connaissances (RAG)
-L'IA répond sur la base de documents internes gérés par PLEINGAZ (RAG).
-- **Gouvernance** : L'interface permet aux administrateurs de rédiger, valider, versionner et retirer des documents d'aide (ex: politiques, manuel de sécurité).
-- **Transparence** : Chaque réponse issue de l'IA cite sa source et sa date de validité. Le LLM doit préciser si l'information est "Officielle", "Dynamique" (avec horodatage, ex: statut de commande), "Estimée", ou "Indisponible".
-- L'IA n'invente **jamais** un prix, un stock, ou un horaire d'ouverture (Règle R9). C'est un échec bloquant.
+## 1. Gouvernance et Base de Connaissances (RAG) — Catalogue Exclusif (CR-001 D-01)
+L'IA répond sur la base de documents internes gérés par PLEINGAZ (RAG) et sur le catalogue officiel de la marque.
+- **Périmètre Restreint Strict** : L'assistant est formellement bridé au catalogue officiel PLEINGAZ (bouteilles de gaz et accessoires certifiés). Toute notion de marketplace ou de produits tiers est exclue.
+- **Règle de Refus Poli et Recentrage** : Lorsqu'un utilisateur mentionne ou recherche une marque tierce de gaz ou un produit non référencé, l'assistant refuse poliment et recentre immédiatement la conversation :
+  > *"PLEINGAZ distribue exclusivement ses propres bouteilles et accessoires officiels garantis en termes de sécurité. Souhaitez-vous trouver un point de vente PLEINGAZ à proximité ?"*
+- **Gouvernance** : L'interface permet aux administrateurs de rédiger, valider, versionner et retirer des documents d'aide (politiques, consignes de sécurité du gaz).
+- **Transparence** : Chaque réponse cite sa source et sa validité. Le LLM doit préciser si l'information est "Officielle", "Dynamique" (avec horodatage réel), "Estimée", ou "Indisponible".
+- **Tolérance Zéro Inventions** : L'IA n'invente **jamais** un prix, un stock, ou un horaire d'ouverture (Règle R9).
 
 ## 2. Outils Internes (Function Calling)
 L'assistant agit en accédant à des **outils internes typés et en lecture seule**.
@@ -20,9 +23,14 @@ L'assistant agit en accédant à des **outils internes typés et en lecture seul
 - L'IA choisit un **outil de lecture prédéfini** (ex: `list_out_of_stock_stores(city)`, `count_delivered_orders(date_range)`). La base de données calcule le résultat avec certitude. Le modèle reformule les données reçues sans modifier un seul chiffre. S'il n'y a pas d'outil correspondant, l'IA annonce ne pas avoir accès à cette information.
 - Les appels d'outils vérifient les permissions (RBAC) de l'administrateur et sont journalisés dans `AuditLog`. Les prévisions de demande utiliseront d'abord des règles explicites avant toute modélisation IA.
 
-## 4. Compréhension du Langage et Assistant Géo
+## 4. Compréhension du Langage et Assistant Géo (CR-001 D-02)
 - **Langues** : Français courant, Anglais, et mélange linguistique toléré. Le support des parlers locaux (pidgin, camfranglais) est hors périmètre initial (**À CONFIRMER**).
-- **Assistant Géographique** : La localisation GPS automatique est facultative. Sans elle, l'IA demande simplement la "ville" ou le "quartier". Aucune géolocalisation fine de l'utilisateur n'est stockée inutilement. L'algorithme inclut des tables de synonymes pour les noms de quartiers (via PostgreSQL `pg_trgm` et `unaccent`).
+- **Assistant Géographique Respectueux** :
+  - L'IA ne déclenche **jamais** d'appel autonome en arrière-plan à la géolocalisation native.
+  - Elle invite l'utilisateur à exprimer sa ville et son quartier (ex: *"Dans quel quartier de Yaoundé ou Douala cherchez-vous ?"*), ou affiche un composant avec le bouton tactile explicite *"Ma position"* précédé de la mention de transparence.
+  - Aucune coordonnée fine n'est injectée dans le prompt ni stockée dans `SearchEvent` (seule la zone grossière est conservée).
+  - Algorithme de correspondance avec tables de synonymes pour les quartiers camerounais (`pg_trgm` et `unaccent`).
+
 
 ## 5. Sécurité et Garde-Fous
 - **Injection de Prompt Indirecte** : Les descriptions de boutiques, les avis, et les messages des utilisateurs sont des contenus "non fiables" et ne sont **jamais** traités comme des instructions. Ils sont passés dans des blocs strictement délimités (`<untrusted_content>`) et sans impact sur l'exécution.

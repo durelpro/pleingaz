@@ -3,32 +3,30 @@
 *Note : Le RGPD européen n'est cité ici que comme référentiel de bonnes pratiques d'ingénierie (Privacy by Design). Le cadre légal applicable au Cameroun (données personnelles, communications électroniques, durées de conservation, notification d'incident) est **À CONFIRMER** avec un juriste local. Ne rien tenir pour acquis sans source juridique locale.*
 
 ## 1. Inventaire des Traitements et Données Personnelles
-Toutes les durées de conservation proposées et les bases légales proposées sont des hypothèses de conception et sont strictement **À CONFIRMER** par PLEINGAZ et son juriste.
-
-| Donnée | Nature | Finalité | Sensibilité | Rétention Proposée | Base Légale Proposée | Accès (Rôle) | Stockage |
+Toutes les durées de conservation proposées et les bases légales proposées sont des hypothèses de conception et sont strictement **À CONFIRMER** par PLEINGA| Donnée | Nature | Finalité | Sensibilité | Rétention Proposée | Base Légale Proposée | Accès (Rôle) | Stockage |
 |---|---|---|---|---|---|---|---|
 | Téléphone | Contact | Auth (OTP), Alertes | Élevée | Actif + 1 an (**À CONFIRMER**) | Contrat (**À CONFIRMER**) | Utilisateur, Distr. | PostgreSQL |
 | Email | Contact | Notifications, Auth | Élevée | Actif + 1 an (**À CONFIRMER**) | Contrat (**À CONFIRMER**) | Utilisateur, Admin | PostgreSQL |
 | Nom Complet | Identité | Facturation, Profil | Moyenne | Actif + 10 ans (**À CONFIRMER**) | Obligation légale (**À CONFIRMER**) | Utilisateur, Finance | PostgreSQL |
-| Adresses & Repères | Livraison | Acheminement de colis | Élevée | Actif + 1 an (**À CONFIRMER**) | Contrat (**À CONFIRMER**) | Utilisateur, Livreur | PostgreSQL |
+| Adresses & Repères | Livraison | Acheminement de colis | Élevée | Actif + 1 an (**À CONFIRMER**) | Contrat (**À CONFIRMER**) | Utilisateur, Livreur (actif) | PostgreSQL |
 | Coordonnées GPS | Géoloc | Carte (Distributeur) | Moyenne | Actif + 1 an (**À CONFIRMER**) | Consentement (**À CONFIRMER**) | Public (Distributeur) | PostgreSQL |
-| Localisation Nav. | Tech | Filtrage proximité | Élevée | Fin de session (**À CONFIRMER**) | Consentement (**À CONFIRMER**) | Non conservée | Volatile |
-| Pièces d'identité | Admin | KYC (Distributeurs) | Maximale | Actif + 1 an (**À CONFIRMER**) | Obligation légale (**À CONFIRMER**) | Admin (S3 Signed URL) | S3 Privé |
+| Localisation Nav. | Tech | Filtrage proximité (D-02)| Élevée | Fin de session (**À CONFIRMER**) | Consentement au clic (**À CONFIRMER**) | Non conservée (volatile) | Mémoire / Session |
+| Pièces d'identité (3 max)| Admin | KYC Distributeur (D-04) | Maximale | Actif + 1 an (**À CONFIRMER**) | Obligation légale (**À CONFIRMER**) | Admin (`SUPER_ADMIN`, `ADMIN`)| S3 Privé (URL 15 min)|
 | Photos Boutique | Public | Visibilité Distributeur | Faible | Actif + 1 an (**À CONFIRMER**) | Intérêt lég. (**À CONFIRMER**) | Public | S3 Public |
 | Horaires Boutique | Info | Ouvertures | Faible | Actif + 1 an (**À CONFIRMER**) | Contrat (**À CONFIRMER**) | Public | PostgreSQL |
 | Historique Commandes| Transac | Prestation, Litiges | Moyenne | 5 ans (**À CONFIRMER**) | Contrat (**À CONFIRMER**) | Utilisateur, Distributeur | PostgreSQL |
-| Factures PDF | Transac | Preuve fiscale | Moyenne | 10 ans (**À CONFIRMER**) | Obligation légale (**À CONFIRMER**) | Utilisateur, Admin | S3 Privé |
-| Paiement (MoMo) | Finance | Remboursement | Élevée | Actif + 10 ans (**À CONFIRMER**) | Contrat (**À CONFIRMER**) | API, Finance Admin | PostgreSQL |
+| Factures PDF | Transac | Preuve fiscale (D-06)| Moyenne | 10 ans (**À CONFIRMER**) | Obligation légale (**À CONFIRMER**) | Utilisateur, Admin | S3 Privé |
+| Paiement & Ledger | Finance | Rapprochement, Écritures | Élevée | 10 ans (**À CONFIRMER**) | Obligation légale (**À CONFIRMER**) | Finance Admin, Auditeur | PostgreSQL (Immuable)|
 | Messages & Chat | Comms | Support, Logistique | Élevée | 1 an (**À CONFIRMER**) | Contrat (**À CONFIRMER**) | Utilisateur, Support | PostgreSQL |
 | Conversations IA | Comms | Assistance LLM | Moyenne | 30 jours (**À CONFIRMER**) | Consentement (**À CONFIRMER**) | Utilisateur, Admin | PostgreSQL |
 | Avis Clients | Social | Réputation Boutique | Moyenne | Actif + 5 ans (**À CONFIRMER**) | Intérêt lég. (**À CONFIRMER**) | Public (Pseudonyme) | PostgreSQL |
-| AuditLog | Traces | Traçabilité légale | Moyenne | 1 an (**À CONFIRMER**) | Obligation légale (**À CONFIRMER**) | Super-Admin | PostgreSQL |
+| AuditLog & Maker-Checker| Traces | Traçabilité légale / D-06| Élevée | 10 ans (**À CONFIRMER**) | Obligation légale (**À CONFIRMER**) | Super-Admin, Auditeur | PostgreSQL (Append-only)|
 | Journaux Techniques | Tech | Sécurité & Debugging | Faible | 30 jours (**À CONFIRMER**) | Intérêt lég. (**À CONFIRMER**) | DevOps | Monitoring |
-| SearchEvent | Analytics| Mots-clés de recherche| Faible | 1 an (**À CONFIRMER**) | Intérêt lég. (**À CONFIRMER**) | Analyste | PostgreSQL |
+| SearchEvent | Analytics| Mots-clés / Zone (D-02)| Faible | 1 an (**À CONFIRMER**) | Intérêt lég. (**À CONFIRMER**) | Analyste | PostgreSQL (Zone grossière)|
 | Alertes (Stock) | Préfs | Notifications push | Moyenne | Jusqu'à désinscription (**À CONFIRMER**)| Consentement (**À CONFIRMER**)| Utilisateur, Système | PostgreSQL |
 | Consentements | Preuve | Conformité légale | Faible | 3 ans après opt-out (**À CONFIRMER**) | Obligation légale (**À CONFIRMER**)| Admin | PostgreSQL |
 | Appareils & Sessions| Tech | Sécurité (JWT) | Faible | 30 jours après fin (**À CONFIRMER**) | Sécurité (**À CONFIRMER**) | Système | Redis / PG |
-| Données Livreurs | Contact | Acheminement Logistique| Moyenne | Actif + 1 an (**À CONFIRMER**) | Contrat (**À CONFIRMER**) | Distributeur, Admin | PostgreSQL |
+| Données Livreurs | Contact | Acheminement Logistique| Moyenne | Actif + 1 an (**À CONFIRMER**) | Contrat (**À CONFIRMER**) | Admin, Dispatch | PostgreSQL |
 
 ## 2. Flux et Prestataires (Transferts de Données)
 La légalité de ces transferts, souvent hors du Cameroun, est **À CONFIRMER** par un juriste.
@@ -43,16 +41,19 @@ La légalité de ces transferts, souvent hors du Cameroun, est **À CONFIRMER** 
 9. **Monitoring (Datadog/Sentry)** : Reçoit les journaux techniques anonymisés (traces d'erreurs, URIs).
 10. **Email** : Reçoit l'adresse email et le contenu transactionnel.
 
-## 3. Minimisation et Accès Distributeur (Vendeur)
+## 3. Minimisation et Accès Tiers (Distributeur, Livreur, Admin)
 - **Minimisation globale** : Le modèle collecte uniquement ce qui est strictement requis pour opérer la plateforme. Par exemple, aucun numéro de compte Mobile Money complet n'est stocké si l'identifiant transactionnel généré par l'opérateur suffit. Les numéros de CNI ne sont jamais saisis en texte clair, seule la photo de la pièce est stockée, limitant le risque d'indexation accidentelle.
 - **Accès post-commande (Distributeur)** : Le distributeur est le vendeur final et juridiquement responsable de la transaction. À ce titre, il ne "perd pas" la vue des données de son acheteur immédiatement. Une fenêtre d'accès complet (ex: 30 jours, **À CONFIRMER**) est octroyée après `DELIVERED` ou `CANCELLED` pour permettre la gestion des réclamations, les retours, et le support client. Au-delà de cette fenêtre, l'accès est restreint exclusivement aux données fiscales (celles inscrites en dur sur le PDF de facture). Tout accès à l'historique prolongé est soumis à l'enregistrement d'une trace dans le journal d'audit.
+- **Minimisation stricte pour les Livreurs (`COURIER` - D-05)** : Le livreur a accès aux détails de contact du client (numéro d'appel, repère textuel) **exclusivement pendant la durée active de la livraison** (`ASSIGNED`, `PICKED_UP`, `EN_ROUTE`). Dès la finalisation par validation du code de livraison client (`DELIVERED`) ou en cas d'annulation/échec (`FAILED`), ces données sont masquées de l'interface mobile du livreur. Aucun carnet d'adresses client ni historique d'itinéraires clients n'est accessible localement au livreur.
+- **Minimisation des données de recherche (`SearchEvent` - D-02)** : Les coordonnées GPS précises issues du navigateur lors d'une recherche ne sont JAMAIS persistées en base. Seule la zone géographique grossière (ville / quartier résolu ou arrondi à 1-2 km) est conservée dans `SearchEvent` à des fins d'analyse de la demande non servie.
 - **Sous-comptes Boutique (StoreStaff)** : Les vendeurs et employés (`StoreStaff`) ne voient que les commandes en cours qu'ils gèrent à un instant T. Ils n'ont aucun droit d'accès à l'extraction de clientèle, aux données globales de la boutique, ni aux historiques financiers complexes. Ces données sont réservées au rôle supérieur `Distributor Manager`.
 
-## 4. Sécurité Spécifique des Pièces d'Identité (KYC)
-- Isolées sur S3 Privé, chiffrées au repos. 
-- Accessibles uniquement par URL signée de très courte durée. 
-- Seuls les rôles possédant la permission stricte `document:view_identity` peuvent y accéder, avec journalisation implacable. 
-- Rétention : conservées tant que le compte vit. En cas de rejet définitif du KYC, suppression automatique après un délai probatoire de 30 jours (**À CONFIRMER**).
+## 4. Sécurité Spécifique des Pièces d'Identité et Documents KYC (D-04)
+- **Liste limitative des documents** : Conformément à la décision D-04, la collecte documentaire des distributeurs est strictement bornée à 3 pièces : CNI recto/verso (`ID_CARD_FRONT`, `ID_CARD_BACK`), photo portrait du gérant (`PORTRAIT_PHOTO`), et photo de façade de la boutique (`SHOP_PHOTO`). Aucun registre du commerce, NIU ou document fiscal n'est requis ni stocké.
+- **Stripping EXIF systématique** : Dès la réception de l'upload sur l'API, les métadonnées EXIF (particulièrement les coordonnées GPS, type d'appareil, date/heure de prise de vue) sont purgées avant écriture sur le stockage objet.
+- **Stockage S3 Privé et URLs signées éphémères** : Les pièces d'identité sont isolées dans un bucket S3 strictement privé, chiffré au repos (AES-256 / SSE-S3). Aucune URL publique directe n'existe. L'accès des administrateurs habilités (`ADMIN`, `SUPER_ADMIN`) se fait exclusivement par URL présignée d'une durée de validité maximale de **15 minutes**.
+- **Accès restreint et tracé** : Seuls les administrateurs disposant des habilitations requises peuvent générer ces URLs. Chaque consultation génère un événement `AuditLog` horodaté avec identité de l'administrateur et adresse IP.
+- **Rétention** : Les documents sont conservés pendant toute la durée d'activité du compte distributeur. En cas de rejet définitif du dossier KYC, les documents sont purgés après un délai de recours de 30 jours (**À CONFIRMER**).
 
 ## 5. Droits des Personnes (Procédure et Vérification)
 Les droits fondamentaux (accès, rectification, effacement, retrait du consentement) sont centralisés et gérés par le service client ou le Responsable des Données.
@@ -64,7 +65,7 @@ Les droits fondamentaux (accès, rectification, effacement, retrait du consentem
 ## 6. Suppression de Compte, Sauvegarde et Anonymisation
 - **Anonymisation (Soft Delete)** : La contrainte d'unicité (téléphone, email) est libérée lors d'une suppression par un *Soft Delete* (champs PII écrasés par un UUID ou un hash). Les messages privés sont vidés. Le numéro de téléphone original peut ainsi être réutilisé pour une nouvelle inscription.
 - **Intégrité de l'Audit** : Cette approche garantit de ne jamais casser la piste de l'`AuditLog` ou les relations avec les anciennes commandes de la boutique.
-- **Rétention Comptable** : Les factures PDF et journaux d'audit (expurgés des PII directs) sont conservés selon la loi comptable (**À CONFIRMER**).
+- **Rétention Comptable & Grand Livre (D-06)** : Les factures PDF, écritures du Grand Livre (`LedgerEntry`) et journaux d'audit (expurgés des PII directs) sont conservés selon la loi comptable (10 ans, **À CONFIRMER**).
 - **Blocage** : Les commandes en cours (`PENDING`, `EN_ROUTE`) bloquent la demande de suppression jusqu'à leur résolution.
 - **Sauvegarde et Restauration** : Les données supprimées subsistent temporairement dans les sauvegardes (Backups chiffrés). Elles "disparaissent" naturellement quand la sauvegarde expire (ex: 30 jours, rétention **À CONFIRMER**). Si une restauration d'urgence est nécessaire avant expiration, la procédure technique implique obligatoirement de relancer les routines de *Soft Delete* sur l'instance restaurée pour honorer rétroactivement les droits à l'oubli des clients.
 
@@ -72,6 +73,7 @@ Les droits fondamentaux (accès, rectification, effacement, retrait du consentem
 - **Preuve** : Versionnement exact des textes acceptés (CGU/Politiques) enregistré en BDD avec un horodatage (timestamp) inaltérable. Cela sert de preuve en cas de contrôle.
 - **Canaux** : L'envoi de messages via WhatsApp, les communications Marketing, et les Alertes de Stock font l'objet d'un Opt-In clair (décoché par défaut).
 - **Cookies & Audience** : PLEINGAZ compte utiliser des trackers d'audience (Analytics). Un bandeau explicite sera requis (**À CONFIRMER**). Les cookies strictement techniques (JWT) en sont exemptés.
+- **Géolocalisation au clic uniquement (D-02)** : Aucun appel à l'API de géolocalisation du navigateur n'est effectué de manière passive ou au chargement de page. L'accès à la localisation GPS est sollicité UNIQUEMENT lors d'un clic explicite de l'utilisateur sur le bouton "Me localiser", précédé ou accompagné d'une mention claire sur l'utilisation immédiate des coordonnées pour classer les distributeurs. L'utilisateur peut révoquer cette permission à tout moment dans son navigateur ou privilégier la localisation manuelle (ville, quartier, repère, sélecteur cartographique), qui prévaut toujours et ne nécessite aucun partage de coordonnées GPS de l'appareil. Aucune géolocalisation par adresse IP n'est employée.
 - **Localisation** : Autorisée dynamiquement au niveau du navigateur, révocable via les paramètres de l'OS.
 
 ## 8. Conversations IA, Avis et Signalements

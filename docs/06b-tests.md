@@ -33,18 +33,38 @@ Chaque cas d'abus correspond à une menace identifiée dans `06a-securite.md`.
 | M02 | Réutilisation d'un refresh token rotatif volé. | Auth | Intégration | Invalidation immédiate de l'ensemble de la famille de tokens de la session. |
 | M08 | Accès aux pièces d'identité (KYC) sans permission admin. | Fichiers | API | Réponse 403 Forbidden. |
 | M09 | Tentative de modification manuelle de l'AuditLog. | BDD | API / BDD | Rejet SQL via Trigger "Append-Only". |
+| M18 | Auto-approbation financière Maker-Checker (même utilisateur). | Finance | API | Rejet HTTP 403 Forbidden (`approved_by != created_by` obligatoire). |
+| M14 | Livraison sans code client valide (tentative de clôture frauduleuse). | Logistique | API | Rejet HTTP 400 Bad Request, la course reste à l'état `IN_TRANSIT`. |
+| M14 | Attribution de course à un livreur ayant dépassé le plafond d'espèces. | Logistique | API | Blocage automatique, renvoi HTTP 409 Conflict. |
+| M19 | Chargement initial de la recherche sans interaction utilisateur. | Recherche | E2E | Vérification : zéro appel à `navigator.geolocation` sans clic explicite. |
+| M19 | Persistance des coordonnées GPS de recherche dans la BDD. | Analytics | API | Vérification : `SearchEvent` ne contient que `coarse_area` (zéro GPS exact). |
+| M12 | Téléversement d'image KYC contenant des métadonnées EXIF GPS. | Fichiers | API | Stripping complet : métadonnées EXIF purgées avant stockage S3. |
+| D01 | Commande d'un produit hors catalogue officiel PLEINGAZ. | Catalogue | API | Rejet HTTP 400, prix injecté côté client écrasé par `ProductPrice`. |
 
-## 4. Tests de Résilience (Conditions Réelles)
-L'environnement cible (Cameroun) exige de tester la résilience face aux défaillances réseau. Tests automatisés Playwright (Throttling) :
-- **Petit Android & 3G bridée** : Validation du LCP et des requêtes limitées.
+## 4. Tests de Résilience et Conformité Métier (Conditions Réelles)
+L'environnement cible (Cameroun) exige de tester la résilience face aux défaillances réseau et la rigueur des données :
+- **Test Base de Données Vide (CR-001 D-03 / Tolérance Zéro Fictif)** :
+  - *Scénario* : Base de données entièrement purgée de lignes métier (`orders`, `stores`, `payments`).
+  - *Validation* : Appel des 15 endpoints de reporting du Control Center (`GET /api/v1/admin/reports/:id`).
+  - *Attendu* : HTTP 200 sur tous les endpoints, compteurs à 0 réel, affichage des messages d'états vides explicites (*"Aucune commande pour le moment"*), zéro plantage 500 et zéro donnée fictive ou placeholder en dur.
+- **Suite de Tests des 8 États IHM de Recherche (CR-001 D-02)** :
+  1. *Autorisation accordée* : Coordonnées GPS récupérées, affichage *"Distance depuis : Ma position"*.
+  2. *Localisation en cours* : Spinner affiché, bouton d'annulation actif, expiration après 8s.
+  3. *Autorisation refusée* : Fermeture propre de la demande native, affichage direct du volet manuel (Ville/Quartier) sans alerte intrusive.
+  4. *GPS indisponible* : Message bienveillant *"Position inaccessible"*, focus sur sélecteur de quartier.
+  5. *Précision faible* : Badge *"Position approximative"*, lien d'ajustement sur carte.
+  6. *Hors Cameroun* : Message *"PLEINGAZ assure actuellement la distribution au Cameroun"*, proposition des villes desservies.
+  7. *Aucun distributeur dans le rayon* : Message explicite, boutons pour élargir le rayon (10 km, ville entière).
+  8. *Réseau dégradé / Tuiles bloquées* : Bascule automatique en moins de 2,5s sur la **liste de secours textuelle** (~20 Ko JSON).
+- **Petit Android & 3G bridée** : Validation du LCP (< 2,5 s) et des requêtes limitées.
 - **Coupure réseau PENDANT un paiement** :
   - *Action* : Le client clique "Payer", le réseau coupe instantanément.
   - *Système* : L'API crée la commande en `PENDING`. MTN traite le paiement et envoie le webhook succès.
   - *Vue Utilisateur* : Le client voit un écran d'erreur de connexion. À la reconnexion, la PWA requête l'API, voit le statut à jour et affiche "Commande validée avec succès". Si le webhook manque, le backend fait un polling auprès de MTN.
-  - *Test automatisé* : Playwright déclenche la requête d'initiation, coupe l'interface réseau virtuelle, injecte le webhook via Supertest, puis rétablit le réseau et vérifie l'UI.
-- **Reprise d'une commande interrompue** : L'utilisateur abandonne au checkout. À la reconnexion, la commande DRAFT locale est resynchronisée.
-- **Mise à jour de stock hors ligne** : Le distributeur (hors réseau) met à jour son stock. La PWA l'enregistre en IndexedDB. À la reconnexion, la synchronisation s'effectue avec l'horodatage initial. Test validant l'absence d'écrasement erroné.
-- **Expiration d'une réservation pendant un paiement** : Le client ouvre l'interface de paiement à `T+14m59s`. Le paiement aboutit à `T+15m05s`. Le cron d'expiration a pu marquer `EXPIRED`. Le système traite cela comme un `LATE_SUCCESS` (Remboursement).
+- **Mémorisation et Mode Hors Ligne Livreur (CR-001 D-05)** :
+  - Le livreur en course perd la connexion réseau. La mission active reste accessible sur son mobile.
+  - Saisie du code client en local : synchronisation différée avec horodatage dès reconnexion.
+
 
 ## 5. Tests de Charge
 Des scénarios de stress sont exécutés avant le pilote pour valider les limites de l'infrastructure (ex: limites VPS / PostgreSQL). **Volumes proposés À CONFIRMER** par les cibles business de PLEINGAZ :

@@ -17,27 +17,31 @@
 | M12 | Upload malveillant | Distributeur | S3 / Serveurs | Upload d'un exécutable ou script déguisé en `.jpg` ou `.pdf` lors du processus KYC. | Vérification stricte des "magic bytes" (type MIME réel), analyse antivirus, pas d'exécution possible. | T-M12 | Haute | Faible | MVP |
 | M17 | Injection SQL | Attaquant | BDD | Injection de requêtes via des champs non échappés. | Utilisation stricte de l'ORM (Prisma) ou requêtes SQL paramétrées obligatoires. | T-M17 | Critique | Faible | MVP |
 | M13 | Déni de service | Attaquant | API / CDN | Saturer le serveur de requêtes lourdes (recherches PostGIS) pour faire tomber l'application. | Cloudflare en façade (WAF), rate limiting Redis par IP. | T-M13 | Haute | Moyenne | MVP |
-| M14 | Fraude d'un distributeur sur les espèces | Distributeur | Trésorerie PLEINGAZ | Vendre en espèces sans valider le code pour éviter de payer la commission à la plateforme. | Suspension automatique si le plafond de dette via `Settlement` est dépassé ; procédure de litige client. | T-M14 | Moyenne | Moyenne | MVP |
+| M14 | Fraude sur les espèces à la livraison | Livreur / Distributeur | Trésorerie PLEINGAZ | Encaisser des espèces sans valider la course ou conserver les fonds au-delà du seuil. | Saisie obligatoire du code de confirmation client pour `DELIVERED`, enregistrement `CashCollection`, plafond de caisse `Setting` (défaut 50 000 FCFA) avec suspension automatique des courses. | T-M14 | Haute | Moyenne | MVP |
 | M15 | Avis frauduleux | Distributeur / Troll | Réputation | Noter massivement une boutique avec de faux comptes pour manipuler la visibilité. | Avis strictement restreints aux commandes à l'état `DELIVERED`, détection d'IPs identiques. | T-M15 | Faible | Moyenne | Après MVP |
 | M16 | Compromission de la chaîne d'approvisionnement logicielle | Hacker | Dépôt de code | Dépendance NPM ou conteneur Docker vérolé intégré au projet via une mise à jour. | Versions épinglées, `npm audit` bloquant en CI, verrouillage des modifications, images minimales. | T-M16 | Haute | Faible | MVP |
+| M18 | Fraude financière interne / Auto-approbation | Employé malveillant | Trésorerie / Tarifs | Modifier un tarif ou créer un lot de reversement indu à son propre bénéfice. | Principe **Maker-Checker** strict (`approved_by != created_by`), validation TOTP obligatoire, grand livre immuable Insert-Only. | T-M18 | Critique | Faible | MVP |
+| M19 | Traçage illicite et fuite de géolocalisation | Attaquant / Espion | Vie privée utilisateurs | Collecte non consentie de positions GPS ou extraction de métadonnées EXIF des photos KYC. | Déclenchement géoloc au clic uniquement, anonymisation `SearchEvent` (zone grossière, zéro GPS exact), purge systématique des métadonnées EXIF sur tout upload. | T-M19 | Haute | Faible | MVP |
+
 
 ## 2. Authentification et Sessions
 - **Politique de mots de passe** : Hachage fort via **Argon2id** (paramétrage OWASP). Cette protection s'applique au **personnel de PLEINGAZ** et aux **distributeurs** qui choisissent de définir un mot de passe classique. Les mots de passe exigent 12 caractères, avec majuscules, chiffres et symboles.
 - **OTP (Clients)** : Les clients se connectent via OTP (SMS/WhatsApp) uniquement.
 - **Ré-authentification pour actions sensibles** : Une ré-authentification (mot de passe ou nouvel OTP vocal/email) est exigée pour le changement de numéro de téléphone, la modification des coordonnées de reversement financier, ou la suppression de compte.
 - **Verrouillage Progressif** : Blocage d'un compte (15m, 1h, puis 24h) après 5 tentatives échouées d'authentification.
-- **MFA / TOTP** : Authentification à deux facteurs via application TOTP (Authenticator) **obligatoire** pour tout le personnel (Admin, Support, Finance).
+- **MFA / TOTP** : Authentification à deux facteurs via application TOTP (Authenticator) **obligatoire** pour tout le personnel (Admin, Support, Finance) et **strictement exigée pour toute action d'approbation financière Maker-Checker** (tarifs `ProductPrice`, barèmes `DeliveryFeeSchedule`, lots `PayoutBatch`).
 - **Création des comptes Staff** : Création sur **invitation uniquement** par un super-administrateur. Aucune inscription ouverte.
 - **Sessions** :
-  - Tokens d'accès à très courte durée (ex: JWT 15 minutes).
+  - Tokens d'accès à très courte durée (ex: JWT 15 minutes). Sessions limitées à 15 minutes d'inactivité pour les rôles financiers et administrateurs.
   - **Refresh Token Rotatif** : Un nouveau refresh token est émis à chaque rafraîchissement.
   - **Détection de réutilisation** : Si un vieux refresh token est présenté, l'ensemble de la chaîne de tokens (la session entière) est immédiatement invalidé.
   - Endpoint de révocation globale permettant à un utilisateur ou admin de déconnecter un compte de tous les appareils.
 - **Récupération de compte** : Délais de grâce, notification croisée sur l'ancien et le nouveau numéro de téléphone, intervention du support pour les cas complexes.
 
-## 3. Secrets, BDD et Sauvegardes
+## 3. Secrets, BDD, Uploads et Sauvegardes
 - **Secrets** : Jamais de clés (API MTN, S3, JWT) dans le dépôt de code. Rotation trimestrielle imposée. Un scanner de fuite (GitLeaks) tourne en CI/CD.
 - **Chiffrement** : Chiffrement TDE (Transparent Data Encryption) pour les données sensibles au repos. Les flux sont exclusivement en TLS 1.3 (HTTPS strict).
+- **Purge EXIF et Fichiers Téléversés (CR-001 D-04)** : Tout fichier image téléversé (pièces d'identité, portrait, boutique) subit une vérification stricte des magic bytes et une **purge systématique et irréversible de l'ensemble des métadonnées EXIF** (incluant coordonnées géographiques GPS et modèle d'appareil) avant persistance sur S3.
 - **Journalisation** : Les logs ne tracent jamais de PII (mots de passe, tokens, numéros complets masqués en `+237 6XX XX XX 12`).
 - **AuditLog (Limites du append-only)** : Les triggers empêchent l'`UPDATE`/`DELETE` par l'application. Cependant, cela ne protège pas contre un attaquant contrôlant le rôle propriétaire de la base. Mesures supplémentaires :
   - Chaînage de hachage cryptographique des entrées (Après MVP, **À CONFIRMER**).
