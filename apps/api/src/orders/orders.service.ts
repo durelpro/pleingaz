@@ -1,4 +1,4 @@
-import { Injectable, BadRequestException, NotFoundException } from '@nestjs/common';
+import { Injectable, BadRequestException, NotFoundException, ForbiddenException } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 import { AuditService } from '../audit/audit.service';
 import { InjectQueue } from '@nestjs/bullmq';
@@ -92,15 +92,32 @@ export class OrdersService {
         throw new BadRequestException('Produit en rupture de stock.');
       }
 
+      // Règle R5 : Vérification de la boutique (Visible & Approuvée)
+      if (!inventory.store || !inventory.store.isVisible) {
+        throw new BadRequestException('Boutique non disponible ou non validée par PLEINGAZ.');
+      }
+
+      // Recalcul strict et infalsifiable du prix côté serveur
+      const officialGasPrice = inventory.product.publicPrice;
+      const depositPrice = data.needsConsigne ? 15000 : 0;
+      const verifiedUnitPrice = officialGasPrice + depositPrice;
+      const verifiedTotal = verifiedUnitPrice * 1; // 1 unité par commande en direct
+
+      // Rejet immédiat si tentative de manipulation du prix côté client
+      if (data.totalAmount && Number(data.totalAmount) !== verifiedTotal) {
+        throw new BadRequestException(
+          `Montant altéré détecté : le montant officiel requis est de ${verifiedTotal} FCFA.`
+        );
+      }
+
       const orderType = data.deliveryMethod === 'DELIVERY' ? 'B2C_DELIVERY' : 'B2C_PICKUP';
       const paymentMethodMapped = data.paymentMethod === 'MOMO' ? 'MTN_MOMO' : data.paymentMethod === 'OM' ? 'ORANGE_MONEY' : 'CASH';
 
-      const unitPrice = data.needsConsigne ? (inventory.product.publicPrice + 15000) : inventory.product.publicPrice;
       const itemsToCreate: any[] = [{ 
         productId: inventory.productId, 
         quantity: 1, 
-        unitPrice, 
-        totalPrice: unitPrice 
+        unitPrice: verifiedUnitPrice, 
+        totalPrice: verifiedTotal 
       }];
 
       // 1. Create Order
@@ -111,7 +128,7 @@ export class OrdersService {
           status: 'SUBMITTED', // SUBMITTED awaiting store processing
           customerId: userId,
           storeId: data.storeId,
-          totalAmount: data.totalAmount,
+          totalAmount: verifiedTotal,
           deliveryAddress: data.address,
           items: {
             create: itemsToCreate
@@ -124,7 +141,7 @@ export class OrdersService {
           },
           payments: {
             create: [{
-              amount: data.totalAmount,
+              amount: verifiedTotal,
               method: paymentMethodMapped,
               status: data.paymentMethod === 'CASH' ? 'PENDING' : 'SUCCESS', // Simulating successful MoMo/OM for MVP
               idempotencyKey: `IDEMP-${Date.now()}`,
@@ -140,7 +157,7 @@ export class OrdersService {
           invoiceNumber: `INV-${Date.now()}`,
           orderId: order.id,
           sellerName: `Distributeur Agréé : ${inventory.store.name}`,
-          totalAmount: data.totalAmount,
+          totalAmount: verifiedTotal,
         }
       });
 
@@ -155,7 +172,7 @@ export class OrdersService {
         action: 'CREATE_CHECKOUT_ORDER',
         entity: 'Order',
         entityId: order.id,
-        details: { data, invoiceId: invoice.id }
+        details: { verifiedTotal, invoiceId: invoice.id }
       });
 
       return order;
@@ -299,6 +316,20 @@ export class OrdersService {
     });
 
     if (!order) throw new NotFoundException('Commande introuvable.');
+
+    // Contrôle d'accès strict (Cas d'abus : accès à la commande d'autrui)
+    const isCustomer = order.customerId === userId;
+    const isStoreOwner = order.store && order.store.ownerId === userId;
+    const caller = await this.prisma.user.findUnique({
+      where: { id: userId },
+      include: { roles: { include: { role: true } } }
+    });
+    const isAdmin = caller?.roles.some(r => r.role.name === 'ADMIN');
+
+    if (!isCustomer && !isStoreOwner && !isAdmin) {
+      throw new ForbiddenException("Accès refusé : vous n'êtes pas autorisé à consulter cette commande.");
+    }
+
     return order;
   }
 

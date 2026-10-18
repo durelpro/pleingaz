@@ -1,4 +1,4 @@
-import { Injectable, BadRequestException } from '@nestjs/common';
+import { Injectable, BadRequestException, NotFoundException, ForbiddenException } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 import { AuditService } from '../audit/audit.service';
 
@@ -18,8 +18,20 @@ export class InvoicesService {
       include: { store: true, invoice: true }
     });
 
-    if (!order) throw new BadRequestException('Commande introuvable.');
+    if (!order) throw new NotFoundException('Commande introuvable.');
     if (order.invoice) throw new BadRequestException('La facture existe déjà pour cette commande (Immuable).');
+
+    // Vérifier l'autorisation : Propriétaire de la boutique ou Administrateur
+    const caller = await this.prisma.user.findUnique({
+      where: { id: adminOrSellerId },
+      include: { roles: { include: { role: true } } }
+    });
+    const isAdmin = caller?.roles.some(r => r.role.name === 'ADMIN');
+    const isStoreOwner = order.store && order.store.ownerId === adminOrSellerId;
+
+    if (!isAdmin && !isStoreOwner) {
+      throw new ForbiddenException("Accès refusé : vous n'êtes pas autorisé à générer cette facture.");
+    }
     
     // On ne facture que les commandes CONFIRMED ou plus
     if (order.status === 'DRAFT' || order.status === 'CANCELLED') {
@@ -74,8 +86,21 @@ export class InvoicesService {
       }
     });
 
-    if (!order) throw new BadRequestException('Commande introuvable.');
+    if (!order) throw new NotFoundException('Commande introuvable.');
     if (!order.invoice) throw new BadRequestException('Facture non encore émise pour cette commande.');
+
+    // Contrôle d'accès strict (Cas d'abus : accès à la facture d'autrui)
+    const isCustomer = order.customerId === userId;
+    const isStoreOwner = order.store && order.store.ownerId === userId;
+    const caller = await this.prisma.user.findUnique({
+      where: { id: userId },
+      include: { roles: { include: { role: true } } }
+    });
+    const isAdmin = caller?.roles.some(r => r.role.name === 'ADMIN');
+
+    if (!isCustomer && !isStoreOwner && !isAdmin) {
+      throw new ForbiddenException("Accès refusé : vous n'êtes pas autorisé à consulter cette facture.");
+    }
 
     return {
       invoice: order.invoice,
