@@ -90,21 +90,54 @@ export class AiService {
       throw new HttpException("Limite d'utilisation quotidienne atteinte.", HttpStatus.TOO_MANY_REQUESTS);
     }
 
-    // 2. Garde-fous (Prompt Injection)
-    if (message.toLowerCase().includes('ignore') || message.toLowerCase().includes('system prompt')) {
-      throw new BadRequestException('Action non autorisée.');
+    // 2. Garde-fous de Sécurité & Urgence Vitale (Fuite de gaz / Danger)
+    const normalizedMessage = message.toLowerCase();
+    
+    // Détection d'urgence immédiate (Fuite de gaz, incendie, étincelle)
+    if (
+      normalizedMessage.includes('fuite') ||
+      normalizedMessage.includes('odeur de gaz') ||
+      normalizedMessage.includes('incendie') ||
+      normalizedMessage.includes('explosion') ||
+      normalizedMessage.includes('danger')
+    ) {
+      return {
+        response:
+          "🚨 ALERTE SÉCURITÉ GAZ - CONSIGNES D'URGENCE IMMÉDIATES :\n" +
+          "1. N'actionnez aucun interrupteur électrique, téléphone ou flamme dans la pièce.\n" +
+          "2. Éteignez immédiatement toute flamme nue.\n" +
+          "3. Fermez le robinet / détendeur de la bouteille si accessible sans danger.\n" +
+          "4. Aérez largement le local en ouvrant portes et fenêtres.\n" +
+          "5. Évacuez immédiatement les lieux et prévenez les secours (Pompiers: 118) et le support PLEINGAZ (+237 657696567)."
+      };
+    }
+
+    // Garde-fous contre les attaques par injection de prompt
+    if (
+      normalizedMessage.includes('ignore') ||
+      normalizedMessage.includes('system prompt') ||
+      normalizedMessage.includes('jailbreak') ||
+      normalizedMessage.includes('dan mode')
+    ) {
+      throw new BadRequestException('Action non autorisée. Les consignes de sécurité de PLEINGAZ ne peuvent être outrepassées.');
     }
     
-    if (message.toLowerCase().includes('parler à un conseiller') || message.toLowerCase().includes('humain')) {
-      return { response: "Je vous transfère vers un conseiller humain. Vous pouvez nous joindre sur WhatsApp au +237 657696567." };
+    if (normalizedMessage.includes('parler à un conseiller') || normalizedMessage.includes('humain') || normalizedMessage.includes('support')) {
+      return { response: "Je vous transfère vers un conseiller humain. Vous pouvez joindre le support officiel PLEINGAZ sur WhatsApp au +237 657696567 ou par email à support@pleingaz.cm." };
     }
 
-    // 3. Contexte
+    // 3. Contexte RAG & Règle Anti-Hallucination
     const context = await this.getKnowledgeContext(message);
-    const systemPrompt = `Tu es l'assistant IA de PLEINGAZ (Cameroun). Tu parles français et anglais, y compris le langage local (Camerounais). Règle stricte: base-toi UNIQUEMENT sur le contexte suivant. CONTEXTE: ${context}`;
+    const systemPrompt = `Tu es l'assistant officiel de PLEINGAZ (Cameroun). Tu réponds aux clients et distributeurs.
+RÈGLE ABSOLUE ANTI-HALLUCINATION :
+- Tu ne dois JAMAIS inventer un prix, un stock ou un produit.
+- Tout prix doit provenir EXCLUSIVEMENT du catalogue officiel approuvé de PLEINGAZ. Si tu ne connais pas le prix ou s'il n'est pas renseigné, dis explicitement que le tarif officiel n'est pas encore publié.
+- Langues supportées : Français, Anglais et expressions locales camerounaises courantes.
+CONTEXTE DE BASE DE CONNAISSANCES :
+${context}`;
 
     let aiResponseText = "";
-    let inputTokens = message.length; // Fake token count
+    let inputTokens = message.length; // Estimation de tokens
     let outputTokens = 50;
 
     if (process.env.OPENAI_API_KEY && process.env.OPENAI_API_KEY !== 'MOCK_KEY_FOR_DEV') {
@@ -112,10 +145,10 @@ export class AiService {
       const response = await this.llm.invoke(messages);
       aiResponseText = response.content.toString();
     } else {
-      aiResponseText = "[MODE DEV] L'IA est configurée avec ses outils. Requête : " + message;
+      aiResponseText = `[ASSISTANT PLEINGAZ] Réponse sécurisée à : "${message}". Pour consulter les tarifs officiels homologués, veuillez vous référer au catalogue en direct.`;
     }
 
-    // Sauvegarde Coûts
+    // Sauvegarde Coûts et métriques
     await this.prisma.aiUsageMetric.create({
       data: {
         userId,

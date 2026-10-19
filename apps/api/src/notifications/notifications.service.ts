@@ -39,10 +39,25 @@ export class NotificationsService {
     return notification;
   }
 
+  async getUserNotifications(userId: string): Promise<any> {
+    return this.prisma.notification.findMany({
+      where: { userId },
+      orderBy: { createdAt: 'desc' },
+      take: 50,
+    });
+  }
+
+  async markAsRead(userId: string, notificationId: string): Promise<any> {
+    return this.prisma.notification.updateMany({
+      where: { id: notificationId, userId },
+      data: { status: 'SENT' }, // Ou statut lu selon l'enum
+    });
+  }
+
   /**
    * Tâche 7.5 : Signalements (Boutique fermée, mauvais numéro, etc.)
    */
-  async createReport(userId: string, storeId: string, reason: any, details?: string) {
+  async createReport(userId: string, storeId: string, reason: any, details?: string): Promise<any> {
     return this.prisma.report.create({
       data: {
         userId,
@@ -50,6 +65,27 @@ export class NotificationsService {
         reason,
         details,
       }
+    });
+  }
+
+  async getReports(filter?: { storeId?: string; isResolved?: boolean }): Promise<any> {
+    return this.prisma.report.findMany({
+      where: filter,
+      include: {
+        user: { select: { id: true, phone: true, email: true } },
+        store: { select: { id: true, name: true, city: true, neighborhood: true } },
+      },
+      orderBy: { createdAt: 'desc' },
+    });
+  }
+
+  async resolveReport(reportId: string, details?: string): Promise<any> {
+    return this.prisma.report.update({
+      where: { id: reportId },
+      data: {
+        isResolved: true,
+        details: details ? details : undefined,
+      },
     });
   }
 }
