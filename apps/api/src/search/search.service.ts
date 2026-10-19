@@ -187,6 +187,8 @@ export class SearchService {
 
       const dist = store.distanceKm !== null && store.distanceKm !== undefined ? Number(store.distanceKm) : null;
 
+      const isOfficial = store.id === 'store-pleingaz-siege-officiel';
+
       return {
         id: store.id,
         name: store.name,
@@ -195,18 +197,20 @@ export class SearchService {
         landmark: store.landmark,
         whatsappNumber: store.whatsappNumber,
         deliveryAvailable: store.deliveryAvailable,
-        reliabilityScore: store.reliabilityScore,
+        reliabilityScore: isOfficial ? 100 : store.reliabilityScore,
         stockLevel: store.stockLevel,
         lastConfirmedAt: store.lastConfirmedAt,
         distanceKm: dist !== null ? Math.round(dist * 10) / 10 : null,
         distanceStr: dist !== null ? `${(dist).toFixed(1)} km` : null,
-        stockFreshness: freshnessLabel,
-        recommendationBadge:
-          dist !== null && dist <= 2.0
-            ? '📍 Point relais à proximité (< 2 km)'
-            : store.stockLevel === 'BON'
-            ? '🔥 Stock optimal garanti'
-            : null,
+        stockFreshness: isOfficial ? 'Stock certifié en direct par la plateforme PLEINGAZ (🟢 Garanti)' : freshnessLabel,
+        isOfficialCompanyStore: isOfficial,
+        recommendationBadge: isOfficial
+          ? '🏆 Boutique Officielle Siège PLEINGAZ (Stock Garanti Direct Concepteur)'
+          : dist !== null && dist <= 2.0
+          ? '📍 Point relais à proximité (< 2 km)'
+          : store.stockLevel === 'BON'
+          ? '🔥 Stock optimal garanti'
+          : null,
       };
     });
   }

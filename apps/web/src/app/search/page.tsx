@@ -16,13 +16,8 @@ export default function SearchPage() {
   // Déclencheur automatique si l'utilisateur arrive avec le paramètre ?auto=true
   useEffect(() => {
     if (typeof window !== 'undefined') {
-      const urlParams = new URLSearchParams(window.location.search);
-      if (urlParams.get('auto') === 'true') {
-        handleUseGPS();
-      } else {
-        // Charger les dépôts de Douala par défaut
-        fetchNearbyStores(4.0511, 9.7085, 'Douala - Akwa');
-      }
+      // Déclenchement automatique de la géolocalisation GPS dès l'accès à la recherche
+      handleUseGPS();
     }
   }, []);
 
