@@ -1,8 +1,15 @@
-import { Injectable, BadRequestException, NotFoundException } from '@nestjs/common';
+import {
+  Injectable,
+  BadRequestException,
+  NotFoundException,
+  ForbiddenException,
+} from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 import { AuditService } from '../audit/audit.service';
 import { InjectQueue } from '@nestjs/bullmq';
 import { Queue } from 'bullmq';
+import * as crypto from 'crypto';
+import { CreateOrderDto } from './dto/create-order.dto';
 
 @Injectable()
 export class OrdersService {
@@ -13,225 +20,275 @@ export class OrdersService {
   ) {}
 
   /**
-   * Tâche 5.3 : Réservation temporaire de stock sans surréservation (Verrous via Transaction Prisma)
+   * Création d'une commande B2C avec réservation éphémère de 15 minutes et code SHA-256 (D-05)
    */
-  async createReservation(userId: string, storeId: string, productId: string, quantity: number) {
+  async createOrder(customerId: string, dto: CreateOrderDto): Promise<any> {
+    if (!dto.items || dto.items.length === 0) {
+      throw new BadRequestException('La commande doit contenir au moins un produit.');
+    }
+
     return this.prisma.$transaction(async (tx) => {
-      // 1. Vérifier le stock actuel (Tâche 5.3: Pas de surréservation)
-      const inventory = await tx.inventory.findUnique({
-        where: { storeId_productId: { storeId, productId } },
-      });
-
-      if (!inventory || inventory.level === 'RUPTURE') {
-        throw new BadRequestException('Produit en rupture de stock dans cette boutique.');
-      }
-      
-      // En vrai on gère la quantité exacte, ici on se fie au "Level" mais si Level == FAIBLE on limite
-      if (inventory.level === 'FAIBLE' && quantity > 1) {
-        throw new BadRequestException('Stock faible, maximum 1 article par commande.');
+      // 1. Vérification de la boutique si spécifiée
+      let store = null;
+      if (dto.storeId) {
+        store = await tx.store.findUnique({
+          where: { id: dto.storeId },
+        });
+        if (!store || !store.isVisible) {
+          throw new BadRequestException('Boutique sélectionnée indisponible.');
+        }
       }
 
-      // 2. Créer la commande en brouillon avec prix officiel actif (D-01)
-      const product = await tx.product.findUnique({
-        where: { id: productId },
-        include: { prices: { where: { status: 'APPROVED' }, orderBy: { effectiveFrom: 'desc' }, take: 1 } },
-      });
-      if (!product || product.prices.length === 0) {
-        throw new BadRequestException('Produit ou barème de prix introuvable.');
-      }
-      const unitPrice = product.prices[0].publicPrice;
-      const totalAmount = unitPrice * quantity;
+      // 2. Vérification des produits et calcul du montant avec prix approuvés (D-01)
+      let totalAmount = 0;
+      const orderItemsData: any[] = [];
+      const reservationsData: any[] = [];
+      const now = new Date();
+      const expiresAt = new Date(now.getTime() + 15 * 60000); // 15 minutes strictes
 
+      for (const item of dto.items) {
+        if (item.quantity <= 0) {
+          throw new BadRequestException('La quantité doit être strictement positive.');
+        }
+
+        const product = await tx.product.findUnique({
+          where: { id: item.productId },
+          include: {
+            prices: {
+              where: { status: 'APPROVED' },
+              orderBy: { effectiveFrom: 'desc' },
+              take: 1,
+            },
+          },
+        });
+
+        if (!product || !product.isActive) {
+          throw new NotFoundException(`Produit PLEINGAZ indisponible (ID: ${item.productId})`);
+        }
+
+        const activePrice = product.prices[0];
+        if (!activePrice) {
+          throw new BadRequestException(`Aucun barème tarifaire approuvé pour ${product.name}`);
+        }
+
+        const unitPrice = activePrice.publicPrice;
+        const lineTotal = unitPrice * item.quantity;
+        totalAmount += lineTotal;
+
+        orderItemsData.push({
+          productId: item.productId,
+          quantity: item.quantity,
+          unitPrice,
+          totalPrice: lineTotal,
+        });
+
+        if (dto.storeId) {
+          // Réservation temporaire de 15 minutes
+          reservationsData.push({
+            storeId: dto.storeId,
+            productId: item.productId,
+            quantity: item.quantity,
+            expiresAt,
+          });
+        }
+      }
+
+      // 3. Génération du numéro de commande unique (ex: PG-20261019-XXXX)
+      const dateStr = now.toISOString().slice(0, 10).replace(/-/g, '');
+      const randomSuffix = Math.floor(1000 + Math.random() * 9000);
+      const orderNumber = `PG-${dateStr}-${randomSuffix}`;
+
+      const orderType =
+        dto.deliveryMode === 'HOME_DELIVERY' ? 'B2C_DELIVERY' : 'B2C_PICKUP';
+
+      // 4. Création de la commande
       const order = await tx.order.create({
         data: {
-          orderNumber: `ORD-${Date.now()}`,
-          type: 'B2C_PICKUP',
-          status: 'DRAFT',
-          customerId: userId,
-          storeId,
+          orderNumber,
+          type: orderType,
+          status: 'SUBMITTED',
+          customerId,
+          storeId: dto.storeId,
           totalAmount,
+          deliveryAddress: dto.deliveryAddress,
+          deliveryNotes: dto.deliveryNotes,
+          deliveryLat: dto.deliveryLat,
+          deliveryLng: dto.deliveryLng,
           items: {
-            create: [{ productId, quantity, unitPrice, totalPrice: totalAmount }]
-          }
-        }
+            create: orderItemsData,
+          },
+          reservations: {
+            create: reservationsData,
+          },
+        },
       });
 
-      // 3. Créer la réservation temporaire (15 minutes)
-      const expiresAt = new Date(Date.now() + 15 * 60000);
-      const reservation = await tx.stockReservation.create({
-        data: {
-          orderId: order.id,
-          storeId,
-          productId,
-          quantity,
-          expiresAt,
-        }
-      });
+      // 5. Si livraison à domicile, génération du code secret SHA-256 (D-05)
+      let clearOtpCode: string | null = null;
+      if (dto.deliveryMode === 'HOME_DELIVERY') {
+        clearOtpCode = Math.floor(1000 + Math.random() * 9000).toString();
+        const confirmationCodeHash = crypto
+          .createHash('sha256')
+          .update(clearOtpCode)
+          .digest('hex');
 
-      // 4. Programmer l'expiration dans BullMQ
-      await this.reservationsQueue.add(
-        'expire-reservation',
-        { reservationId: reservation.id, orderId: order.id },
-        { delay: 15 * 60000 } // 15 mins
-      );
+        await tx.delivery.create({
+          data: {
+            orderId: order.id,
+            status: 'PENDING',
+            confirmationCodeHash,
+          },
+        });
+      }
+
+      // 6. Planification de l'expiration automatique après 15 minutes dans BullMQ
+      if (reservationsData.length > 0) {
+        await this.reservationsQueue.add(
+          'expire-reservation',
+          { orderId: order.id },
+          { delay: 15 * 60000 }
+        );
+      }
 
       await this.audit.log({
-        userId,
-        action: 'CREATE_RESERVATION',
+        userId: customerId,
+        action: 'CREATE_ORDER',
         entity: 'Order',
         entityId: order.id,
-        details: { storeId, productId, quantity, expiresAt }
+        details: {
+          orderNumber,
+          totalAmount,
+          deliveryMode: dto.deliveryMode,
+          expiresAt,
+        },
       });
 
-      return order;
+      return {
+        order,
+        reservationExpiresAt: reservationsData.length > 0 ? expiresAt : null,
+        clientConfirmationCode: clearOtpCode, // Remis au client pour la livraison
+      };
     });
   }
 
   /**
-   * Confirmer la commande (Convertir le brouillon)
+   * Consultation des commandes du client connecté
    */
-  async confirmOrder(userId: string, orderId: string, deliveryAddress?: string) {
+  async getMyOrders(userId: string): Promise<any> {
+    return this.prisma.order.findMany({
+      where: { customerId: userId },
+      orderBy: { createdAt: 'desc' },
+      include: {
+        items: {
+          include: { product: true },
+        },
+        delivery: {
+          select: {
+            id: true,
+            status: true,
+            courier: {
+              select: {
+                id: true,
+                vehicleType: true,
+                user: { select: { phone: true } },
+              },
+            },
+          },
+        },
+        store: {
+          select: { id: true, name: true, city: true, neighborhood: true },
+        },
+      },
+    });
+  }
+
+  /**
+   * Détail d'une commande
+   */
+  async getOrderById(userId: string, orderId: string): Promise<any> {
     const order = await this.prisma.order.findUnique({
       where: { id: orderId },
-      include: { reservations: true }
-    });
-
-    if (!order || order.status !== 'DRAFT') throw new NotFoundException('Commande non valide.');
-    if (order.customerId !== userId) throw new BadRequestException('Accès refusé.');
-
-    // Marquer la réservation comme consommée
-    const activeReservation = order.reservations.find(r => !r.isConsumed && r.expiresAt > new Date());
-    if (!activeReservation) {
-      throw new BadRequestException('La réservation a expiré, veuillez recommencer.');
-    }
-
-    const type = deliveryAddress ? 'B2C_DELIVERY' : 'B2C_PICKUP';
-
-    const confirmedOrder = await this.prisma.order.update({
-      where: { id: orderId },
-      data: {
-        status: 'SUBMITTED',
-        type,
-        deliveryAddress,
-      }
-    });
-
-    await this.prisma.stockReservation.update({
-      where: { id: activeReservation.id },
-      data: { isConsumed: true }
-    });
-
-    await this.audit.log({
-      userId,
-      action: 'CONFIRM_ORDER',
-      entity: 'Order',
-      entityId: orderId,
-    });
-
-    return confirmedOrder;
-  }
-
-  /**
-   * Tâche 5.7 : Commande assistée (Agent ou Distributeur pour un client)
-   */
-  async createAssistedOrder(agentId: string, customerPhone: string, storeId: string, productId: string, quantity: number, deliveryAddress?: string) {
-    // 1. Trouver ou créer le client
-    let customer = await this.prisma.user.findUnique({ where: { phone: customerPhone } });
-    if (!customer) {
-      const customerRole = await this.prisma.role.findUnique({ where: { name: 'CUSTOMER' } });
-      customer = await this.prisma.user.create({
-        data: {
-          phone: customerPhone,
-          passwordHash: 'GENERATED_NO_LOGIN',
-          roles: customerRole ? { create: [{ roleId: customerRole.id }] } : undefined,
-        }
-      });
-    }
-
-    // 2. Créer la commande directement avec prix officiel actif (D-01)
-    const product = await this.prisma.product.findUnique({
-      where: { id: productId },
-      include: { prices: { where: { status: 'APPROVED' }, orderBy: { effectiveFrom: 'desc' }, take: 1 } },
-    });
-    if (!product || product.prices.length === 0) {
-      throw new BadRequestException('Produit ou barème de prix introuvable.');
-    }
-    const unitPrice = product.prices[0].publicPrice;
-    const totalAmount = unitPrice * quantity;
-    const type = deliveryAddress ? 'B2C_DELIVERY' : 'B2C_PICKUP';
-
-    const order = await this.prisma.order.create({
-      data: {
-        orderNumber: `ORD-${Date.now()}`,
-        type,
-        status: 'SUBMITTED',
-        customerId: customer.id,
-        storeId,
-        totalAmount,
-        deliveryAddress,
-        assistedById: agentId,
+      include: {
         items: {
-          create: [{ productId, quantity, unitPrice, totalPrice: totalAmount }]
-        }
-      }
+          include: { product: true },
+        },
+        delivery: {
+          include: {
+            courier: {
+              select: {
+                id: true,
+                vehicleType: true,
+                user: { select: { phone: true } },
+              },
+            },
+          },
+        },
+        store: true,
+        reservations: true,
+      },
     });
 
-    await this.audit.log({
-      userId: agentId,
-      action: 'CREATE_ASSISTED_ORDER',
-      entity: 'Order',
-      entityId: order.id,
-      details: { customerPhone }
-    });
+    if (!order) {
+      throw new NotFoundException(`Commande introuvable (ID: ${orderId})`);
+    }
+
+    if (order.customerId !== userId) {
+      throw new ForbiddenException('Accès refusé à cette commande.');
+    }
 
     return order;
   }
 
-  async getUserOrders(userId: string) {
-    return this.prisma.order.findMany({
-      where: { customerId: userId },
-      include: { items: true, delivery: true, review: true },
-      orderBy: { createdAt: 'desc' }
-    });
-  }
-
   /**
-   * Tâche 9.6: Laisser un avis et gagner des points de fidélité
+   * Annulation de commande et libération de la réservation
    */
-  async leaveReview(userId: string, orderId: string, rating: number, comment?: string) {
+  async cancelOrder(userId: string, orderId: string, reason?: string): Promise<any> {
     const order = await this.prisma.order.findUnique({
       where: { id: orderId },
-      include: { review: true }
+      include: { delivery: true },
     });
 
-    if (!order) throw new NotFoundException('Commande introuvable');
-    if (order.customerId !== userId) throw new BadRequestException('Non autorisé');
-    if (order.status !== 'DELIVERED') throw new BadRequestException('Commande non livrée');
-    if (order.review) throw new BadRequestException('Avis déjà soumis');
+    if (!order) {
+      throw new NotFoundException('Commande introuvable.');
+    }
 
-    // Enregistrer l'avis
-    const review = await this.prisma.review.create({
-      data: {
-        orderId,
-        rating,
-        comment,
+    if (order.customerId !== userId) {
+      throw new ForbiddenException('Action non autorisée.');
+    }
+
+    if (['DELIVERED', 'SHIPPED', 'CANCELLED'].includes(order.status)) {
+      throw new BadRequestException(`Impossible d'annuler une commande au statut ${order.status}.`);
+    }
+
+    return this.prisma.$transaction(async (tx) => {
+      const updatedOrder = await tx.order.update({
+        where: { id: orderId },
+        data: { status: 'CANCELLED' },
+      });
+
+      // Libérer les réservations
+      await tx.stockReservation.updateMany({
+        where: { orderId, isConsumed: false },
+        data: { isConsumed: true },
+      });
+
+      // Annuler la livraison si elle était programmée
+      if (order.delivery) {
+        await tx.delivery.update({
+          where: { id: order.delivery.id },
+          data: { status: 'CANCELLED', failedReason: reason || 'Annulation par le client' },
+        });
       }
-    });
 
-    // Programme de fidélité (Optionnel): +10 points pour un avis !
-    await this.prisma.user.update({
-      where: { id: userId },
-      data: { loyaltyPoints: { increment: 10 } }
-    });
-
-    await this.prisma.loyaltyTransaction.create({
-      data: {
+      await this.audit.log({
         userId,
-        points: 10,
-        description: `Récompense pour l'avis sur la commande ${order.orderNumber}`
-      }
-    });
+        action: 'CANCEL_ORDER',
+        entity: 'Order',
+        entityId: orderId,
+        details: { reason },
+      });
 
-    return review;
+      return updatedOrder;
+    });
   }
 }
