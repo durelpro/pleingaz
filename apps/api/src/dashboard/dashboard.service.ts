@@ -91,11 +91,19 @@ export class DashboardService {
       } 
     });
 
+    const avgScoreQuery = await this.prisma.store.aggregate({
+      _avg: { reliabilityScore: true },
+      where: {
+        isVisible: true,
+        ...(filters.city ? { city: filters.city } : {})
+      }
+    });
+
     return {
       totalOrders,
       totalRevenue: revenueQuery._sum.totalAmount || 0,
       activeStores,
-      averageReliabilityScore: 92 // Mock
+      averageReliabilityScore: Math.round(avgScoreQuery._avg.reliabilityScore ?? 100)
     };
   }
 
