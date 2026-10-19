@@ -1,127 +1,319 @@
 'use client';
 
-import { useState } from 'react';
-import { Search, MapPin, BellRing, Flame } from 'lucide-react';
+import { useState, useEffect } from 'react';
+import { Search, MapPin, Flame, Store, Navigation, Phone, ShieldCheck, Sparkles, AlertCircle, ArrowRight, Clock } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import Link from 'next/link';
 
 export default function SearchPage() {
   const [query, setQuery] = useState('');
-  const [results, setResults] = useState<any[]>([
-    { id: 'store-akwa-1', name: "Dépôt Agréé PLEINGAZ Akwa", city: "Douala", distanceStr: "0.8 km", stockFreshness: "Confirmé il y a 15 min (🟢 Frais)", recommendationReason: "📍 Le plus proche", stockLevel: "BON" },
-    { id: 'store-bonapriso-2', name: "Point Relais PLEINGAZ Bonapriso", city: "Douala", distanceStr: "1.4 km", stockFreshness: "Confirmé il y a 1h (🟠 Récent)", recommendationReason: "⚡ Forte disponibilité", stockLevel: "MOYEN" },
-  ]);
-  const [hasSearched, setHasSearched] = useState(false);
+  const [loading, setLoading] = useState(false);
+  const [gpsLoading, setGpsLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [locationName, setLocationName] = useState<string>('Douala (Par défaut)');
+  const [stores, setStores] = useState<any[]>([]);
 
-  const handleSearch = (e: React.FormEvent) => {
-    e.preventDefault();
-    setHasSearched(true);
+  // Déclencheur automatique si l'utilisateur arrive avec le paramètre ?auto=true
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      const urlParams = new URLSearchParams(window.location.search);
+      if (urlParams.get('auto') === 'true') {
+        handleUseGPS();
+      } else {
+        // Charger les dépôts de Douala par défaut
+        fetchNearbyStores(4.0511, 9.7085, 'Douala - Akwa');
+      }
+    }
+  }, []);
+
+  const fetchNearbyStores = async (lat: number, lng: number, label?: string) => {
+    setLoading(true);
+    setError(null);
+    if (label) setLocationName(label);
+
+    try {
+      const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001';
+      const res = await fetch(`${apiUrl}/search/nearby?latitude=${lat}&longitude=${lng}`);
+      
+      if (!res.ok) {
+        throw new Error('Impossible de joindre le serveur de recherche.');
+      }
+
+      const data = await res.json();
+      setStores(data || []);
+    } catch (err: any) {
+      // Fallback gracieux si l'API est inaccessible ou réseau instable
+      setError('Mode secours local : affichage des points de distribution officiels de référence.');
+      setStores([
+        {
+          id: 'store-pleingaz-siege-officiel',
+          name: 'Boutique Officielle PLEINGAZ (Siège Central & Vente Directe)',
+          city: 'Douala',
+          neighborhood: 'Akwa',
+          landmark: 'Boulevard de la Liberté, Immeuble Infotech S.A.',
+          whatsappNumber: '+237699000000',
+          stockLevel: 'BON',
+          distanceStr: '0.3 km',
+          stockFreshness: 'Stock officiel vérifié en temps réel (🟢 Optimal)',
+          isOfficialCompanyStore: true,
+          reliabilityScore: 100,
+        },
+        {
+          id: 'store-akwa-1',
+          name: 'Dépôt Agréé PLEINGAZ Akwa',
+          city: 'Douala',
+          neighborhood: 'Akwa',
+          landmark: 'Face Boulangerie Saker',
+          whatsappNumber: '+237690112233',
+          stockLevel: 'BON',
+          distanceStr: '0.8 km',
+          stockFreshness: 'Confirmé il y a 15 min (🟢 Frais)',
+          reliabilityScore: 98,
+        },
+      ]);
+    } finally {
+      setLoading(false);
+      setGpsLoading(false);
+    }
   };
 
-  const getBadgeColor = (level: string) => {
+  const handleUseGPS = () => {
+    if (!navigator.geolocation) {
+      setError('La géolocalisation n\'est pas supportée par votre navigateur.');
+      return;
+    }
+
+    setGpsLoading(true);
+    setError(null);
+
+    navigator.geolocation.getCurrentPosition(
+      (pos) => {
+        const { latitude, longitude } = pos.coords;
+        fetchNearbyStores(latitude, longitude, 'Ma position GPS en direct');
+      },
+      (err) => {
+        setGpsLoading(false);
+        setError('Accès GPS non autorisé ou indisponible. Vous pouvez rechercher manuellement par quartier.');
+        fetchNearbyStores(4.0511, 9.7085, 'Douala');
+      },
+      { timeout: 10000, enableHighAccuracy: true }
+    );
+  };
+
+  const handleManualSearch = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!query.trim()) return;
+
+    // Coordonnées approximatives selon la recherche textuelle
+    const q = query.toLowerCase();
+    if (q.includes('yaound')) {
+      fetchNearbyStores(3.8480, 11.5021, query);
+    } else if (q.includes('bafoussam')) {
+      fetchNearbyStores(5.4778, 10.4176, query);
+    } else {
+      fetchNearbyStores(4.0511, 9.7085, query);
+    }
+  };
+
+  const getBadgeStyle = (level: string) => {
     switch (level) {
-      case 'BON': return 'bg-emerald-100 text-emerald-800 border-emerald-200';
-      case 'MOYEN': return 'bg-amber-100 text-amber-800 border-amber-200';
-      case 'FAIBLE': return 'bg-orange-100 text-orange-800 border-orange-200';
-      case 'RUPTURE': return 'bg-rose-100 text-rose-800 border-rose-200';
-      default: return 'bg-gray-100 text-gray-700 border-gray-200';
+      case 'BON':
+        return 'bg-emerald-500/15 text-emerald-400 border-emerald-500/30';
+      case 'MOYEN':
+        return 'bg-amber-500/15 text-amber-400 border-amber-500/30';
+      case 'FAIBLE':
+        return 'bg-orange-500/15 text-orange-400 border-orange-500/30';
+      case 'RUPTURE':
+        return 'bg-rose-500/15 text-rose-400 border-rose-500/30';
+      default:
+        return 'bg-neutral-800 text-neutral-300 border-neutral-700';
     }
   };
 
   return (
-    <div className="min-h-screen bg-gray-50 dark:bg-neutral-950 py-12 px-4">
-      <div className="max-w-3xl mx-auto space-y-8">
+    <div className="min-h-screen bg-neutral-950 text-white py-12 px-4 relative overflow-hidden">
+      {/* Background Orbs */}
+      <div className="absolute top-0 left-1/3 w-[600px] h-96 bg-orange-600/15 rounded-full blur-[140px] pointer-events-none" />
+      <div className="absolute bottom-10 right-10 w-96 h-96 bg-red-600/15 rounded-full blur-[120px] pointer-events-none" />
+
+      <div className="max-w-4xl mx-auto space-y-8 relative z-10">
         
         {/* Header */}
-        <div className="text-center space-y-4">
-          <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-red-100 dark:bg-red-950/40 text-pleingaz-red mb-2">
-            <Flame size={32} />
-          </div>
-          <h1 className="text-4xl font-extrabold text-gray-900 dark:text-white">
-            J'ai besoin de gaz ! (D-02)
-          </h1>
-          <p className="text-gray-500 text-lg">
-            Recherchez les dépôts agréés <strong className="text-pleingaz-red">PLEINGAZ</strong> avec stock disponible en direct.
+        <div className="text-center space-y-3">
+          <motion.div
+            initial={{ scale: 0.8, opacity: 0 }}
+            animate={{ scale: 1, opacity: 1 }}
+            className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-gradient-to-r from-orange-500/20 to-red-500/20 border border-orange-500/30 text-orange-400 text-xs font-bold uppercase tracking-wider"
+          >
+            <Flame size={14} className="text-orange-500 animate-pulse" />
+            Réseau Officiel PLEINGAZ Cameroun (D-02)
+          </motion.div>
+
+          <motion.h1
+            initial={{ y: 20, opacity: 0 }}
+            animate={{ y: 0, opacity: 1 }}
+            transition={{ delay: 0.1 }}
+            className="text-3xl sm:text-5xl font-black tracking-tight"
+          >
+            Où trouver du gaz <span className="text-transparent bg-clip-text bg-gradient-to-r from-orange-400 to-red-500">maintenant ?</span>
+          </motion.h1>
+
+          <p className="text-neutral-400 text-sm sm:text-base max-w-xl mx-auto">
+            Disponibilité certifiée en temps réel chez les distributeurs agréés et dans la <strong>Boutique Officielle PLEINGAZ</strong>.
           </p>
         </div>
 
-        {/* Search Bar */}
-        <form onSubmit={handleSearch} className="relative group">
-          <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
-            <Search className="text-gray-400 group-focus-within:text-pleingaz-red transition-colors" />
-          </div>
-          <input
-            type="text"
-            className="w-full pl-12 pr-16 py-4 bg-white dark:bg-neutral-900 border-2 border-gray-100 dark:border-neutral-800 rounded-2xl text-lg focus:border-pleingaz-red focus:ring-0 outline-none shadow-sm transition-all"
-            placeholder="Ex: Akwa, Bonamoussadi, ou 'Ma position'"
-            value={query}
-            onChange={(e) => setQuery(e.target.value)}
-          />
-          <button 
-            type="button"
-            className="absolute inset-y-2 right-2 px-4 bg-gray-100 dark:bg-neutral-800 hover:bg-gray-200 dark:hover:bg-neutral-700 text-gray-600 dark:text-gray-300 rounded-xl transition-colors flex items-center justify-center"
-            title="Utiliser ma position GPS"
-          >
-            <MapPin size={20} />
-          </button>
-        </form>
-
-        {/* Results */}
-        <AnimatePresence>
-          {hasSearched && (
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              className="space-y-4"
+        {/* Instant Action Bar : GPS Click & Manual Search */}
+        <div className="p-4 sm:p-6 bg-white/5 backdrop-blur-xl border border-white/10 rounded-3xl shadow-2xl space-y-4">
+          <div className="flex flex-col sm:flex-row gap-3">
+            {/* Primary GPS button */}
+            <motion.button
+              whileHover={{ scale: 1.02 }}
+              whileTap={{ scale: 0.98 }}
+              onClick={handleUseGPS}
+              disabled={gpsLoading}
+              className="flex-1 py-4 px-6 rounded-2xl bg-gradient-to-r from-orange-500 to-red-600 text-white font-extrabold text-sm sm:text-base shadow-xl shadow-orange-500/25 flex items-center justify-center gap-3 transition-all"
             >
-              <h2 className="font-bold text-gray-900 dark:text-white text-xl">Dépôts officiels disponibles</h2>
-              
-              {results.length > 0 ? (
-                results.map((store) => (
-                  <motion.div 
-                    key={store.id}
-                    whileHover={{ scale: 1.01 }}
-                    className="bg-white dark:bg-neutral-900 p-5 rounded-2xl border border-gray-100 dark:border-neutral-800 shadow-sm flex flex-col sm:flex-row sm:items-center justify-between gap-4"
-                  >
-                    <div>
-                      <div className="flex items-center gap-2 mb-1">
-                        <h3 className="font-bold text-lg text-gray-900 dark:text-white">{store.name}</h3>
-                        {store.recommendationReason && (
-                          <span className="px-2.5 py-0.5 bg-blue-50 dark:bg-blue-900/20 text-blue-600 dark:text-blue-400 text-xs font-semibold rounded-full border border-blue-100 dark:border-blue-800">
-                            {store.recommendationReason}
+              {gpsLoading ? (
+                <>
+                  <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                  Localisation en cours...
+                </>
+              ) : (
+                <>
+                  <Navigation size={20} className="animate-bounce" />
+                  Prendre ma position & trouver les dépôts proches
+                </>
+              )}
+            </motion.button>
+          </div>
+
+          {/* Manual input */}
+          <form onSubmit={handleManualSearch} className="relative">
+            <input
+              type="text"
+              value={query}
+              onChange={(e) => setQuery(e.target.value)}
+              placeholder="Ou entrez un quartier : Akwa, Bonamoussadi, Bastos, Bepanda..."
+              className="w-full bg-black/40 border border-neutral-800 rounded-2xl py-3.5 pl-12 pr-28 text-sm focus:outline-none focus:border-orange-500 focus:ring-1 focus:ring-orange-500 transition-all text-white placeholder-neutral-500"
+            />
+            <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-neutral-500" size={18} />
+            <button
+              type="submit"
+              className="absolute right-2 top-1/2 -translate-y-1/2 px-4 py-2 bg-white/10 hover:bg-white/20 rounded-xl text-xs font-bold text-white transition-all"
+            >
+              Chercher
+            </button>
+          </form>
+
+          {/* Location status pill */}
+          <div className="flex items-center justify-between text-xs text-neutral-400 px-2 pt-1">
+            <div className="flex items-center gap-1.5">
+              <MapPin size={14} className="text-orange-400" />
+              <span>Zone active : <strong className="text-white">{locationName}</strong></span>
+            </div>
+            <span className="text-[11px] text-neutral-500">Coordonnées GPS jamais conservées (D-02)</span>
+          </div>
+        </div>
+
+        {error && (
+          <div className="p-4 rounded-2xl bg-amber-500/10 border border-amber-500/20 text-amber-300 text-xs flex items-center gap-2">
+            <AlertCircle size={16} className="shrink-0" />
+            <span>{error}</span>
+          </div>
+        )}
+
+        {/* Results List */}
+        <div className="space-y-4">
+          <div className="flex items-center justify-between px-2">
+            <h2 className="text-lg font-bold flex items-center gap-2">
+              <Store size={18} className="text-orange-400" />
+              Points de distribution disponibles ({stores.length})
+            </h2>
+            {loading && <div className="w-4 h-4 border-2 border-orange-500 border-t-transparent rounded-full animate-spin" />}
+          </div>
+
+          <AnimatePresence>
+            {stores.map((store, idx) => {
+              const isOfficial = store.id === 'store-pleingaz-siege-officiel' || store.isOfficialCompanyStore;
+
+              return (
+                <motion.div
+                  key={store.id || idx}
+                  initial={{ opacity: 0, y: 15 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: idx * 0.08 }}
+                  className={`p-5 sm:p-6 rounded-3xl border transition-all ${
+                    isOfficial
+                      ? 'bg-gradient-to-r from-orange-950/40 via-neutral-900 to-neutral-900 border-orange-500/40 shadow-xl shadow-orange-500/10'
+                      : 'bg-white/5 backdrop-blur-md border-white/10 hover:border-white/20'
+                  }`}
+                >
+                  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                    <div className="space-y-2">
+                      <div className="flex flex-wrap items-center gap-2">
+                        {isOfficial && (
+                          <span className="px-3 py-1 rounded-full bg-gradient-to-r from-orange-500 to-red-500 text-white text-[11px] font-black uppercase tracking-wider flex items-center gap-1 shadow-md">
+                            <Sparkles size={12} />
+                            Siège & Boutique Officielle PLEINGAZ
+                          </span>
+                        )}
+                        <h3 className="text-lg font-extrabold text-white">{store.name}</h3>
+                      </div>
+
+                      <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-xs text-neutral-300">
+                        <span className="flex items-center gap-1 text-neutral-400">
+                          <MapPin size={13} className="text-orange-400" />
+                          {store.neighborhood}, {store.city} {store.landmark && `(${store.landmark})`}
+                        </span>
+                        {store.distanceStr && (
+                          <span className="font-bold text-orange-400 bg-orange-500/10 px-2 py-0.5 rounded-md border border-orange-500/20">
+                            📍 {store.distanceStr}
                           </span>
                         )}
                       </div>
-                      <p className="text-sm text-gray-500 font-medium">{store.distanceStr} • {store.stockFreshness}</p>
+
+                      <div className="flex flex-wrap items-center gap-2 pt-1">
+                        <span className={`px-2.5 py-0.5 rounded-full text-xs font-bold border ${getBadgeStyle(store.stockLevel || 'BON')}`}>
+                          Stock : {store.stockLevel || 'BON'}
+                        </span>
+                        <span className="text-[11px] text-neutral-400 flex items-center gap-1">
+                          <Clock size={12} />
+                          {store.stockFreshness || 'Stock vérifié aujourd\'hui'}
+                        </span>
+                      </div>
                     </div>
-                    
-                    <div className="flex items-center gap-3">
-                      <span className={`px-3 py-1 rounded-full text-xs font-bold border ${getBadgeColor(store.stockLevel)}`}>
-                        {store.stockLevel}
-                      </span>
-                      <Link 
-                        href={`/checkout?storeId=${store.id}`}
-                        className="px-5 py-2.5 bg-pleingaz-red text-white font-bold rounded-xl shadow-md hover:bg-red-700 transition-colors"
+
+                    <div className="flex sm:flex-col items-center sm:items-end justify-between gap-2 border-t sm:border-t-0 border-white/5 pt-3 sm:pt-0">
+                      <div className="text-left sm:text-right">
+                        <div className="text-lg font-black text-white">6 500 FCFA</div>
+                        <div className="text-[11px] text-neutral-400">Prix officiel homologué (12.5kg)</div>
+                      </div>
+
+                      <Link
+                        href={`/stores/${store.id}`}
+                        className={`px-5 py-2.5 rounded-xl font-bold text-xs flex items-center gap-1.5 transition-all shadow-md ${
+                          isOfficial
+                            ? 'bg-gradient-to-r from-orange-500 to-red-600 text-white hover:scale-105'
+                            : 'bg-white/10 hover:bg-white/20 text-white'
+                        }`}
                       >
-                        Commander
+                        Commander ici
+                        <ArrowRight size={14} />
                       </Link>
                     </div>
-                  </motion.div>
-                ))
-              ) : (
-                <div className="bg-orange-50 dark:bg-orange-900/20 border border-orange-200 dark:border-orange-800 p-8 rounded-2xl text-center space-y-4">
-                  <h3 className="text-orange-800 dark:text-orange-400 font-bold text-lg">Oups, rupture de stock par ici !</h3>
-                  <p className="text-orange-700 dark:text-orange-300">Aucun distributeur n'a de gaz dans cette zone actuellement.</p>
-                  <button className="inline-flex items-center gap-2 px-6 py-3 bg-pleingaz-red text-white font-bold rounded-xl shadow-lg shadow-orange-500/30 hover:-translate-y-0.5 transition-all">
-                    <BellRing size={20} />
-                    Alertez-moi quand le gaz revient
-                  </button>
-                </div>
-              )}
-            </motion.div>
-          )}
-        </AnimatePresence>
+                  </div>
+                </motion.div>
+              );
+            })}
+          </AnimatePresence>
+        </div>
 
+        {/* Footer Guarantee */}
+        <div className="p-4 rounded-2xl bg-white/5 border border-white/5 text-center text-xs text-neutral-400 flex items-center justify-center gap-2">
+          <ShieldCheck size={16} className="text-emerald-400" />
+          <span>Garantie PLEINGAZ : Aucun revendeur n'est autorisé à vendre au-dessus du prix homologué.</span>
+        </div>
       </div>
     </div>
   );

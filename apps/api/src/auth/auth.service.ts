@@ -84,6 +84,117 @@ export class AuthService {
     }
   }
 
+  async registerCustomer(dto: {
+    phone: string;
+    firstName?: string;
+    lastName?: string;
+    password?: string;
+    city?: string;
+    neighborhood?: string;
+    landmark?: string;
+  }) {
+    if (!dto.phone || dto.phone.trim().length < 8) {
+      throw new BadRequestException('Un numéro de téléphone valide est obligatoire (ex: +2376XXXXXXXX).');
+    }
+
+    const cleanPhone = dto.phone.startsWith('+') ? dto.phone.trim() : `+237${dto.phone.replace(/^0+/, '').trim()}`;
+
+    const existing = await this.prisma.user.findUnique({
+      where: { phone: cleanPhone },
+    });
+    if (existing) {
+      throw new BadRequestException('Un compte existe déjà avec ce numéro de téléphone. Veuillez vous connecter.');
+    }
+
+    const passwordHash = dto.password ? await argon2.hash(dto.password) : null;
+
+    const customerRole = await this.prisma.role.findUnique({
+      where: { name: 'CUSTOMER' },
+    });
+
+    const user = await this.prisma.user.create({
+      data: {
+        phone: cleanPhone,
+        passwordHash,
+        isPhoneVerified: true,
+        roles: customerRole ? { create: [{ roleId: customerRole.id }] } : undefined,
+        customerProfile: {
+          create: {
+            firstName: dto.firstName,
+            lastName: dto.lastName,
+            loyaltyPoints: 100, // 100 points offerts à l'inscription
+            addresses: dto.city && dto.neighborhood ? {
+              create: [
+                {
+                  city: dto.city,
+                  neighborhood: dto.neighborhood,
+                  landmark: dto.landmark,
+                  isDefault: true,
+                },
+              ],
+            } : undefined,
+          },
+        },
+      },
+      include: {
+        customerProfile: {
+          include: { addresses: true },
+        },
+      },
+    });
+
+    const tokens = await this.generateTokens(user.id);
+    return {
+      message: 'Compte acheteur créé avec succès ! 100 points de bienvenue ont été crédités.',
+      user: {
+        id: user.id,
+        phone: user.phone,
+        firstName: user.customerProfile?.firstName,
+        lastName: user.customerProfile?.lastName,
+        loyaltyPoints: user.customerProfile?.loyaltyPoints ?? 100,
+      },
+      tokens,
+    };
+  }
+
+  async getMe(userId: string): Promise<any> {
+    const user = await this.prisma.user.findUnique({
+      where: { id: userId },
+      select: {
+        id: true,
+        phone: true,
+        email: true,
+        roles: { include: { role: true } },
+        customerProfile: {
+          include: { addresses: true },
+        },
+        distributorApp: {
+          include: { documents: true, store: true },
+        },
+        courierProfile: true,
+      },
+    });
+
+    if (!user) {
+      throw new UnauthorizedException('Utilisateur introuvable');
+    }
+
+    const recentOrders = await this.prisma.order.findMany({
+      where: { customerId: userId },
+      orderBy: { createdAt: 'desc' },
+      take: 5,
+      include: {
+        items: { include: { product: true } },
+        store: { select: { name: true, city: true } },
+      },
+    });
+
+    return {
+      ...user,
+      recentOrders,
+    };
+  }
+
   async generateTokens(userId: string) {
     const payload = { sub: userId };
     
