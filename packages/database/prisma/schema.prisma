@@ -108,16 +108,17 @@ model RolePermission {
 }
 
 model CustomerProfile {
-  id        String    @id @default(uuid())
-  userId    String    @unique
-  firstName String?
-  lastName  String?
-  addresses Address[]
+  id            String    @id @default(uuid())
+  userId        String    @unique
+  firstName     String?
+  lastName      String?
+  loyaltyPoints Int       @default(100)
+  addresses     Address[]
 
-  user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  user          User      @relation(fields: [userId], references: [id], onDelete: Cascade)
 
-  createdAt DateTime  @default(now())
-  updatedAt DateTime  @updatedAt
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
 }
 
 model Address {
@@ -224,11 +225,11 @@ model StoreDocument {
 }
 
 model Store {
-  id              String                 @id @default(uuid())
-  applicationId   String                 @unique
-  application     DistributorApplication @relation(fields: [applicationId], references: [id])
+  id              String                  @id @default(uuid())
+  applicationId   String?                 @unique
+  application     DistributorApplication? @relation(fields: [applicationId], references: [id])
   ownerId         String
-  owner           User                   @relation(fields: [ownerId], references: [id])
+  owner           User                    @relation(fields: [ownerId], references: [id])
 
   name            String
   city            String

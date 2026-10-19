@@ -222,6 +222,64 @@ async function main() {
   console.log('✅ Catalogue exclusif et barèmes de prix officiels PLEINGAZ (D-01) créés.');
 
   // ==========================================
+  // 5b. BOUTIQUE OFFICIELLE CENTRALE PLEINGAZ (CONCEPTEUR & SIÈGE OFFICIEL INFOTECH S.A.)
+  // ==========================================
+  const officialHeadquarterStore = await prisma.store.upsert({
+    where: { id: 'store-pleingaz-siege-officiel' },
+    update: {
+      name: 'Boutique Officielle PLEINGAZ (Siège Central & Vente Directe)',
+      city: 'Douala',
+      neighborhood: 'Akwa',
+      landmark: 'Boulevard de la Liberté, Immeuble Infotech S.A.',
+      latitude: 4.0511,
+      longitude: 9.7085,
+      whatsappNumber: '+237699000000',
+      isVerifiedBadge: true,
+      isVisible: true,
+      deliveryAvailable: true,
+      reliabilityScore: 100,
+    },
+    create: {
+      id: 'store-pleingaz-siege-officiel',
+      ownerId: adminUser.id,
+      name: 'Boutique Officielle PLEINGAZ (Siège Central & Vente Directe)',
+      city: 'Douala',
+      neighborhood: 'Akwa',
+      landmark: 'Boulevard de la Liberté, Immeuble Infotech S.A.',
+      latitude: 4.0511,
+      longitude: 9.7085,
+      whatsappNumber: '+237699000000',
+      isVerifiedBadge: true,
+      isVisible: true,
+      deliveryAvailable: true,
+      reliabilityScore: 100,
+    },
+  });
+
+  const allOfficialProducts = await prisma.product.findMany();
+  for (const prod of allOfficialProducts) {
+    await prisma.inventory.upsert({
+      where: {
+        storeId_productId: {
+          storeId: officialHeadquarterStore.id,
+          productId: prod.id,
+        },
+      },
+      update: {
+        level: 'BON',
+        lastConfirmedAt: new Date(),
+      },
+      create: {
+        storeId: officialHeadquarterStore.id,
+        productId: prod.id,
+        level: 'BON',
+        lastConfirmedAt: new Date(),
+      },
+    });
+  }
+  console.log('✅ Boutique Officielle Centrale PLEINGAZ (Siège & Vente Directe) créée avec stock optimal.');
+
+  // ==========================================
   // 6. DONNÉES DE SIMULATION / DÉMO (SI ALLOW_DEMO_SEED=true)
   // ==========================================
   if (allowDemoSeed) {

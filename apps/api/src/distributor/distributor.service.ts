@@ -236,4 +236,140 @@ export class DistributorService {
 
     return application;
   }
+
+  /**
+   * D-04: Candidature publique directe avec upload simultané des 3 pièces KYC
+   * Permet à un nouveau distributeur de soumettre son dossier sans être préalablement authentifié
+   */
+  async submitPublicApplication(
+    dto: {
+      businessName: string;
+      city: string;
+      neighborhood: string;
+      landmark?: string;
+      whatsappNumber: string;
+      latitude?: number;
+      longitude?: number;
+    },
+    files: {
+      idCardFront?: Express.Multer.File[];
+      idCardBack?: Express.Multer.File[];
+      portraitPhoto?: Express.Multer.File[];
+      shopPhoto?: Express.Multer.File[];
+    },
+  ) {
+    if (!dto.businessName || !dto.city || !dto.neighborhood || !dto.whatsappNumber) {
+      throw new BadRequestException('Le nom de la boutique, la ville, le quartier et le numéro WhatsApp sont obligatoires.');
+    }
+
+    const cleanPhone = dto.whatsappNumber.startsWith('+')
+      ? dto.whatsappNumber.trim()
+      : `+237${dto.whatsappNumber.replace(/^0+/, '').trim()}`;
+
+    // 1. Recherche ou création du compte utilisateur distributeur
+    const distRole = await this.prisma.role.findUnique({
+      where: { name: 'DISTRIBUTOR' },
+    });
+
+    let user = await this.prisma.user.findUnique({
+      where: { phone: cleanPhone },
+    });
+
+    if (!user) {
+      user = await this.prisma.user.create({
+        data: {
+          phone: cleanPhone,
+          isPhoneVerified: true,
+          roles: distRole ? { create: [{ roleId: distRole.id }] } : undefined,
+        },
+      });
+    }
+
+    // 2. Initialisation / mise à jour de la candidature
+    let application = await this.prisma.distributorApplication.findUnique({
+      where: { userId: user.id },
+    });
+
+    if (application && application.status === 'APPROVED') {
+      throw new BadRequestException('Ce point de vente est déjà un distributeur officiel validé.');
+    }
+
+    if (!application) {
+      application = await this.prisma.distributorApplication.create({
+        data: {
+          userId: user.id,
+          businessName: dto.businessName,
+          city: dto.city,
+          neighborhood: dto.neighborhood,
+          landmark: dto.landmark,
+          whatsappNumber: cleanPhone,
+          latitude: dto.latitude ? Number(dto.latitude) : undefined,
+          longitude: dto.longitude ? Number(dto.longitude) : undefined,
+          status: 'PENDING',
+          currentStep: 3,
+        },
+      });
+    } else {
+      application = await this.prisma.distributorApplication.update({
+        where: { id: application.id },
+        data: {
+          businessName: dto.businessName,
+          city: dto.city,
+          neighborhood: dto.neighborhood,
+          landmark: dto.landmark,
+          whatsappNumber: cleanPhone,
+          latitude: dto.latitude ? Number(dto.latitude) : application.latitude,
+          longitude: dto.longitude ? Number(dto.longitude) : application.longitude,
+          status: 'PENDING',
+          currentStep: 3,
+        },
+      });
+    }
+
+    // 3. Traitement et sauvegarde des 4 documents obligatoires D-04
+    const docMap: Array<{ key: keyof typeof files; type: DocumentType; label: string }> = [
+      { key: 'idCardFront', type: 'ID_CARD_FRONT', label: 'CNI Recto' },
+      { key: 'idCardBack', type: 'ID_CARD_BACK', label: 'CNI Verso' },
+      { key: 'portraitPhoto', type: 'PORTRAIT_PHOTO', label: 'Photo Portrait' },
+      { key: 'shopPhoto', type: 'SHOP_PHOTO', label: 'Photo Façade Boutique' },
+    ];
+
+    const savedDocs = [];
+    for (const item of docMap) {
+      const fileList = files[item.key];
+      if (fileList && fileList.length > 0) {
+        const file = fileList[0];
+        const fileUrl = `uploads/kyc/${application.id}_${item.type}_${Date.now()}_${file.originalname || 'doc.jpg'}`;
+
+        const doc = await this.prisma.storeDocument.create({
+          data: {
+            applicationId: application.id,
+            type: item.type,
+            fileUrl,
+          },
+        });
+        savedDocs.push(doc);
+      }
+    }
+
+    await this.audit.log({
+      userId: user.id,
+      action: 'PUBLIC_DISTRIBUTOR_APPLICATION_SUBMITTED',
+      entity: 'DistributorApplication',
+      entityId: application.id,
+      details: {
+        businessName: dto.businessName,
+        phone: cleanPhone,
+        documentsUploaded: savedDocs.length,
+      },
+    });
+
+    return {
+      message: 'Votre dossier de candidature distributeur PLEINGAZ a été soumis avec succès ! Notre équipe administrative l\'instruira dans les plus brefs délais.',
+      applicationId: application.id,
+      status: 'PENDING',
+      businessName: application.businessName,
+      documentsCount: savedDocs.length,
+    };
+  }
 }
