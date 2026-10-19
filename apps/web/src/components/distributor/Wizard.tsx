@@ -17,10 +17,13 @@ export default function DistributorWizard() {
   const [currentStep, setCurrentStep] = useState(1);
   const [formData, setFormData] = useState({
     businessName: '',
-    taxId: '',
     landmark: '',
     latitude: 0,
     longitude: 0,
+    idCardFront: null as File | null,
+    idCardBack: null as File | null,
+    portraitPhoto: null as File | null,
+    shopPhoto: null as File | null,
   });
 
   const nextStep = () => setCurrentStep((prev) => Math.min(prev + 1, steps.length));
@@ -71,13 +74,13 @@ export default function DistributorWizard() {
           >
             {currentStep === 1 && (
               <div className="space-y-4">
-                <h2 className="text-2xl font-bold text-gray-900 dark:text-white">Dites-nous en plus sur vous</h2>
+                <h2 className="text-2xl font-bold text-gray-900 dark:text-white">Identité du Point de Vente</h2>
                 <div className="space-y-2">
-                  <label className="text-sm font-medium text-gray-700 dark:text-gray-300">Nom de la boutique</label>
+                  <label className="text-sm font-medium text-gray-700 dark:text-gray-300">Nom commercial de la boutique</label>
                   <input 
                     type="text" 
                     className="w-full p-4 rounded-xl border border-gray-200 dark:border-neutral-800 bg-gray-50 dark:bg-neutral-950 focus:ring-2 focus:ring-pleingaz-red outline-none transition-all"
-                    placeholder="Ex: ETS Pleingaz Bonamoussadi"
+                    placeholder="Ex: Dépôt Gaz Bonamoussadi"
                     value={formData.businessName}
                     onChange={(e) => setFormData({...formData, businessName: e.target.value})}
                   />
@@ -88,18 +91,18 @@ export default function DistributorWizard() {
             {currentStep === 2 && (
               <div className="space-y-4">
                 <h2 className="text-2xl font-bold text-gray-900 dark:text-white">Localisation précise</h2>
-                <p className="text-sm text-gray-500">Placez le curseur sur la carte pour nous aider à vous trouver.</p>
+                <p className="text-sm text-gray-500">Placez le curseur sur la carte pour permettre à vos clients de vous trouver facilement.</p>
                 <div className="h-64 rounded-xl overflow-hidden border border-gray-200 dark:border-neutral-800">
                   <MapPicker 
                     onChange={(lat, lng) => setFormData({...formData, latitude: lat, longitude: lng})} 
                   />
                 </div>
                 <div className="space-y-2">
-                  <label className="text-sm font-medium text-gray-700 dark:text-gray-300">Repère textuel (Facultatif)</label>
+                  <label className="text-sm font-medium text-gray-700 dark:text-gray-300">Repère textuel connu</label>
                   <input 
                     type="text" 
                     className="w-full p-4 rounded-xl border border-gray-200 dark:border-neutral-800 bg-gray-50 dark:bg-neutral-950 focus:ring-2 focus:ring-pleingaz-red outline-none transition-all"
-                    placeholder="Ex: Derrière la boulangerie Saker"
+                    placeholder="Ex: Face Boulangerie Saker"
                     value={formData.landmark}
                     onChange={(e) => setFormData({...formData, landmark: e.target.value})}
                   />
@@ -109,13 +112,35 @@ export default function DistributorWizard() {
 
             {currentStep === 3 && (
               <div className="space-y-4">
-                <h2 className="text-2xl font-bold text-gray-900 dark:text-white">Pièces justificatives</h2>
-                <div className="border-2 border-dashed border-gray-300 dark:border-neutral-800 rounded-2xl p-8 text-center hover:border-pleingaz-red transition-colors cursor-pointer group bg-gray-50 dark:bg-neutral-950">
-                  <div className="w-16 h-16 bg-orange-100 dark:bg-orange-900/30 text-pleingaz-red rounded-full flex items-center justify-center mx-auto mb-4 group-hover:scale-110 transition-transform">
-                    <FileText size={24} />
+                <div>
+                  <h2 className="text-2xl font-bold text-gray-900 dark:text-white">Dossier KYC Strict (3 documents D-04)</h2>
+                  <p className="text-sm text-gray-500 mt-1">Conformément à la réglementation PLEINGAZ, seuls ces 3 documents sont requis.</p>
+                </div>
+
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  {/* Doc 1: CNI */}
+                  <div className="p-4 border-2 border-dashed border-gray-200 dark:border-neutral-800 rounded-2xl bg-gray-50 dark:bg-neutral-950 text-center hover:border-pleingaz-red transition-colors">
+                    <FileText className="mx-auto text-pleingaz-red mb-2" size={24} />
+                    <h3 className="font-bold text-sm text-gray-800 dark:text-gray-200">1. CNI Recto & Verso</h3>
+                    <p className="text-xs text-gray-500 mt-1">Pièce d'identité officielle du gérant</p>
+                    <span className="inline-block mt-3 px-3 py-1 bg-white dark:bg-neutral-900 text-xs font-semibold rounded-lg border border-gray-200 dark:border-neutral-700">Sélectionner</span>
                   </div>
-                  <p className="text-sm font-medium text-gray-700 dark:text-gray-300">Uploader votre CNI et Registre de Commerce</p>
-                  <p className="text-xs text-gray-500 mt-2">JPEG, PNG ou PDF (Max 5Mo)</p>
+
+                  {/* Doc 2: Photo Portrait */}
+                  <div className="p-4 border-2 border-dashed border-gray-200 dark:border-neutral-800 rounded-2xl bg-gray-50 dark:bg-neutral-950 text-center hover:border-pleingaz-red transition-colors">
+                    <FileText className="mx-auto text-pleingaz-red mb-2" size={24} />
+                    <h3 className="font-bold text-sm text-gray-800 dark:text-gray-200">2. Photo Portrait</h3>
+                    <p className="text-xs text-gray-500 mt-1">Photo nette du visage du gérant</p>
+                    <span className="inline-block mt-3 px-3 py-1 bg-white dark:bg-neutral-900 text-xs font-semibold rounded-lg border border-gray-200 dark:border-neutral-700">Sélectionner</span>
+                  </div>
+
+                  {/* Doc 3: Photo Boutique */}
+                  <div className="sm:col-span-2 p-4 border-2 border-dashed border-gray-200 dark:border-neutral-800 rounded-2xl bg-gray-50 dark:bg-neutral-950 text-center hover:border-pleingaz-red transition-colors">
+                    <Store className="mx-auto text-pleingaz-red mb-2" size={24} />
+                    <h3 className="font-bold text-sm text-gray-800 dark:text-gray-200">3. Photo du Point de Vente</h3>
+                    <p className="text-xs text-gray-500 mt-1">Vue extérieure avec enseigne ou stock visible</p>
+                    <span className="inline-block mt-3 px-3 py-1 bg-white dark:bg-neutral-900 text-xs font-semibold rounded-lg border border-gray-200 dark:border-neutral-700">Sélectionner</span>
+                  </div>
                 </div>
               </div>
             )}

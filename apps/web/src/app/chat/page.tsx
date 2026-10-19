@@ -26,52 +26,57 @@ export default function AssistantPage() {
       let action = undefined;
       const msg = userMsg.toLowerCase().trim();
       
-      // Moteur NLP (Natural Language Processing) de base avec Regex et Mots-clés
+      // Moteur NLP aligné avec CR-001
       const rules = [
         {
+          patterns: ['fuite', 'odeur de gaz', 'incendie', 'danger', 'explosion', 'secours', 'bouteille qui fuit'],
+          reply: "🚨 ALERTE SÉCURITÉ GAZ - CONSIGNES D'URGENCE IMMÉDIATES :\n1. N'actionnez aucun interrupteur électrique ni flamme.\n2. Fermez le robinet / détendeur de votre bouteille.\n3. Aérez largement la pièce en ouvrant portes et fenêtres.\n4. Évacuez les lieux et appelez les sapeurs-pompiers (118) ainsi que le support d'urgence PLEINGAZ au +237 657696567."
+        },
+        {
           patterns: ['prix', 'coute', 'coûte', 'combien', 'tarif', 'fcfa'],
-          reply: "Le prix officiel homologué d'une recharge de bouteille SCTM, Camgaz ou Tradex de 12.5Kg est de 6 500 FCFA. Il n'y a aucune surfacturation chez nos distributeurs agréés !"
+          reply: "Le tarif public homologué officiel de la bouteille PLEINGAZ 12.5 kg est fixé à 6 500 FCFA. Il n'y a aucune surfacturation chez nos distributeurs agréés officiels !"
         },
         {
           patterns: ['livraison', 'livrer', 'apporter', 'domicile', 'chez moi'],
-          reply: "Nous proposons une livraison express de vos bouteilles de gaz à domicile. Une fois votre commande passée dans l'application, un livreur vous l'apportera. Un code OTP secret vous sera fourni pour valider la réception en toute sécurité."
+          reply: "Nous proposons une livraison express sécurisée à domicile. Un code secret OTP (haché SHA-256) vous est transmis dans l'application : ne le remettez au livreur qu'après réception physique de votre bouteille PLEINGAZ."
         },
         {
           patterns: ['distributeur', 'proche', 'trouver', 'boutique', 'magasin', 'relais', 'autour'],
-          reply: "J'ai trouvé un distributeur ouvert et certifié très proche de votre position ! Vous pouvez visiter sa Boutique Virtuelle pour voir son stock, son emplacement exact sur la carte, ou discuter avec lui sur WhatsApp.",
-          action: { label: "Visiter la boutique", href: "/stores/sctm-bonamoussadi" }
+          reply: "J'ai repéré les points de distribution agréés PLEINGAZ autour de vous avec stock en direct. Vous pouvez consulter la carte interactive pour réserver votre bouteille avec garantie de 15 minutes.",
+          action: { label: "Trouver du gaz", href: "/search" }
         },
         {
           patterns: ['partenaire', 'vendre', 'devenir'],
-          reply: "Vous souhaitez devenir distributeur agréé PLEINGAZ ? Super ! Rendez-vous dans la section 'Devenir Distributeur' de l'application. Vous devrez fournir votre CNI et votre RCCM. Une fois validé, votre point de vente apparaîtra sur notre carte avec votre stock en temps réel."
+          reply: "Vous souhaitez devenir distributeur agréé PLEINGAZ ? Rendez-vous dans la section 'Devenir Distributeur'. Selon la règle stricte D-04, seuls 3 documents sont requis : votre CNI, votre photo portrait et la photo de votre point de vente (aucun RCCM ni document fiscal n'est exigé).",
+          action: { label: "Devenir Distributeur", href: "/distributor/apply" }
         },
         {
           patterns: ['rupture', 'vide', 'plus de gaz', 'fini', 'stock'],
-          reply: "Notre technologie IoT surveille les stocks de tous nos distributeurs en temps réel. S'il n'y a plus de gaz près de chez vous, c'est que nous sommes déjà en route pour les réapprovisionner ! Vous pouvez consulter la carte pour trouver un autre point de vente avec du stock."
+          reply: "Tous les distributeurs confirment régulièrement leur stock qualitatif (BON, MOYEN, FAIBLE, RUPTURE). Si un dépôt est en rupture, notre algorithme géolocalisé vous oriente immédiatement vers le point agréé le plus proche approvisionné."
         },
         {
           patterns: ['paiement', 'payer', 'orange money', 'mtn momo', 'cash', 'espece'],
-          reply: "Nous acceptons les paiements via MTN Mobile Money, Orange Money, et également le paiement en Cash à la livraison ou en point de retrait. Vos transactions sont 100% sécurisées."
+          reply: "Nous acceptons les règlements instantanés MTN Mobile Money, Orange Money, ainsi que le paiement en espèces à la livraison. Vos paiements en ligne sont protégés par séquestre et clé d'idempotence."
         },
         {
           patterns: ['marque', 'sctm', 'camgaz', 'tradex', 'greenoil', 'oilibya', 'bocom'],
-          reply: "L'application PLEINGAZ regroupe toutes vos marques préférées : SCTM, Camgaz, Tradex, BOCOM, GreenOil, etc. Vous pouvez filtrer la carte par marque pour trouver exactement ce que vous cherchez."
+          reply: "PLEINGAZ est une marque exclusive et intégrée. Pour garantir la sécurité et la conformité des bouteilles, nous distribuons exclusivement les calibres officiels de la marque PLEINGAZ au Cameroun."
         },
         {
           patterns: ['horaire', 'ouvert', 'ferme', 'heure'],
-          reply: "Les horaires varient selon les distributeurs. Cependant, la majorité de nos points relais sont ouverts de 08:00 à 18:00, du lundi au samedi. La carte interactive vous indiquera en temps réel si une boutique est ouverte ou fermée."
+          reply: "La majorité des dépôts agréés PLEINGAZ sont ouverts de 08:00 à 18:00, du lundi au samedi. La recherche en direct vous indique les dépôts actuellement ouverts."
         },
         {
           patterns: ['probleme', 'reclamation', 'arnaque', 'surfacturation', 'cher', 'plainte'],
-          reply: "Nous prenons les infractions très au sérieux. Si un distributeur surfacture le gaz ou est fermé alors qu'il est indiqué ouvert, vous pouvez le signaler directement via le bouton 'Signaler' sur sa boutique virtuelle. Son score de fiabilité baissera automatiquement."
+          reply: "Toute surfacturation ou non-conformité est sanctionnée. Vous pouvez déposer un signalement direct sur la boutique en cause. Notre équipe support prend en charge le dossier."
         },
         {
           patterns: ['bonjour', 'salut', 'coucou', 'hello'],
-          reply: "Bonjour ! Je suis l'Intelligence Artificielle PLEINGAZ. Comment puis-je vous aider aujourd'hui concernant votre approvisionnement en gaz ?"
+          reply: "Bonjour ! Je suis l'assistant officiel de PLEINGAZ. Comment puis-je vous accompagner pour votre approvisionnement en gaz aujourd'hui ?"
         },
         {
           patterns: ['merci', 'super', 'génial', 'genial', 'ok', 'd\'accord'],
-          reply: "C'est un plaisir de vous aider ! N'hésitez pas si vous avez d'autres questions. PLEINGAZ est là pour vous faciliter la vie."
+          reply: "C'est un plaisir de vous servir ! PLEINGAZ vous garantit la sécurité et les tarifs officiels sans compromis."
         }
       ];
 
