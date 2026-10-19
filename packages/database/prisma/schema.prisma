@@ -9,6 +9,10 @@ datasource db {
   extensions = [postgis, pg_trgm, unaccent]
 }
 
+// ==========================================
+// 1. UTILISATEURS, SESSIONS & RBAC (9 RÔLES)
+// ==========================================
+
 model User {
   id              String           @id @default(uuid())
   phone           String           @unique
@@ -18,18 +22,38 @@ model User {
   isEmailVerified Boolean          @default(false)
   failedAttempts  Int              @default(0)
   lockedUntil     DateTime?
+
   roles           UserRole[]
   customerProfile CustomerProfile?
   distributorApp  DistributorApplication?
+  courierProfile  Courier?
   stores          Store[]
   sessions        Session[]
   auditLogs       AuditLog[]       @relation("UserAuditLogs")
   demandAlerts    DemandAlert[]
-  
+
+  // Commandes & Livraisons
   customerOrders  Order[]          @relation("CustomerOrders")
   assistedOrders  Order[]          @relation("AssistedOrders")
-  driverDeliveries Delivery[]      @relation("DriverDeliveries")
-  
+
+  // D-01: Prix Catalogue
+  createdPrices   ProductPrice[]   @relation("PriceCreatedBy")
+  approvedPrices  ProductPrice[]   @relation("PriceApprovedBy")
+  priceHistoriesChanged PriceHistory[] @relation("PriceHistoryChangedBy")
+
+  // D-05: Barèmes & Gestion Livreur
+  createdFees     FeeSchedule[]    @relation("FeeCreatedBy")
+  approvedFees    FeeSchedule[]    @relation("FeeApprovedBy")
+  cashReconciled  CashCollection[] @relation("CashReconciledBy")
+
+  // D-06: Finances & Grand Livre
+  createdPayouts  PayoutBatch[]    @relation("PayoutCreatedBy")
+  approvedPayouts PayoutBatch[]    @relation("PayoutApprovedBy")
+  secondApprovedPayouts PayoutBatch[] @relation("PayoutSecondApprovedBy")
+  createdCreditNotes CreditNote[]  @relation("CreditNoteCreatedBy")
+  ledgerEntriesCreated LedgerEntry[] @relation("LedgerEntryCreatedBy")
+
+  // Notifications, Rapports, Chat & Support
   notifications   Notification[]
   reports         Report[]
   sentMessages    ChatMessage[]    @relation("SentMessages")
@@ -44,7 +68,7 @@ model User {
 
 model Role {
   id          String           @id @default(uuid())
-  name        String           @unique // e.g. ADMIN, DISTRIBUTOR, CUSTOMER
+  name        String           @unique // CUSTOMER, DISTRIBUTOR, COURIER, LOGISTICS_MANAGER, FINANCE_MANAGER, SUPPORT_AGENT, CONTENT_MANAGER, ADMIN, SUPER_ADMIN
   description String?
   permissions RolePermission[]
   users       UserRole[]
@@ -65,7 +89,7 @@ model UserRole {
 
 model Permission {
   id          String           @id @default(uuid())
-  action      String           @unique // e.g. "orders:read", "stores:write"
+  action      String           @unique // e.g. "orders:read", "price:approve", "payout:create"
   description String?
   roles       RolePermission[]
 
@@ -101,7 +125,7 @@ model Address {
   customerProfileId String
   city              String
   neighborhood      String
-  landmark          String?         // Repère textuel (ex: "en face de la boulangerie")
+  landmark          String?         // Repère textuel (ex: "face pharmacie")
   latitude          Float?
   longitude         Float?
   isDefault         Boolean         @default(false)
@@ -140,6 +164,10 @@ model AuditLog {
   createdAt DateTime @default(now())
 }
 
+// ==========================================
+// 2. DISTRIBUTEURS & KYC (D-04: 3 DOCUMENTS)
+// ==========================================
+
 enum ApplicationStatus {
   DRAFT
   PENDING
@@ -148,12 +176,12 @@ enum ApplicationStatus {
   SUSPENDED
 }
 
+// D-04: Strictement 3 documents (CNI recto/verso, photo portrait, photo lieu)
 enum DocumentType {
-  CNI_FRONT
-  CNI_BACK
-  REGISTRE_COMMERCE
-  PLAN_LOCALISATION
-  PHOTO_BOUTIQUE
+  ID_CARD_FRONT
+  ID_CARD_BACK
+  PORTRAIT_PHOTO
+  SHOP_PHOTO
 }
 
 model DistributorApplication {
@@ -161,26 +189,24 @@ model DistributorApplication {
   userId          String            @unique
   user            User              @relation(fields: [userId], references: [id], onDelete: Cascade)
   status          ApplicationStatus @default(DRAFT)
-  currentStep     Int               @default(1) // Pour la reprise du wizard
-  
+  currentStep     Int               @default(1)
+
   businessName    String?
-  taxId           String?
-  
   city            String?
   neighborhood    String?
   landmark        String?
   latitude        Float?
   longitude       Float?
   whatsappNumber  String?
-  
+
   documents       StoreDocument[]
-  
+
   rejectionReason String?
   verifiedAt      DateTime?
-  
+
   createdAt       DateTime          @default(now())
   updatedAt       DateTime          @updatedAt
-  
+
   store           Store?
 }
 
@@ -189,10 +215,10 @@ model StoreDocument {
   applicationId  String
   application    DistributorApplication @relation(fields: [applicationId], references: [id], onDelete: Cascade)
   type           DocumentType
-  fileUrl        String                 // Chemin ou URI privé
+  fileUrl        String                 // S3 bucket privé (ou public post-approbation pour SHOP_PHOTO)
   isValid        Boolean?
   rejectedReason String?
-  
+
   createdAt      DateTime               @default(now())
   updatedAt      DateTime               @updatedAt
 }
@@ -203,90 +229,121 @@ model Store {
   application     DistributorApplication @relation(fields: [applicationId], references: [id])
   ownerId         String
   owner           User                   @relation(fields: [ownerId], references: [id])
-  
+
   name            String
   city            String
   neighborhood    String
   landmark        String?
   latitude        Float?
   longitude       Float?
-  
+
   whatsappNumber  String?
-  openingHours    Json?                  // ex: { monday: "08:00-18:00" }
-  
+  openingHours    Json?
+
   isVerifiedBadge Boolean                @default(true)
   isVisible       Boolean                @default(true)
-  
-  reliabilityScore Float                 @default(100) // Tâche 9.4
-  badges          Json?                  // ["FAST", "TOP_RATED"]
-  
-  // Paiements (Numéros de réception des fonds du distributeur)
+  deliveryAvailable Boolean              @default(false)
+
+  reliabilityScore Float                 @default(100)
+  badges          Json?
+
+  // Numéros réels de réception des règlements MoMo
   momoReceiverNumber   String?
   orangeReceiverNumber String?
-  
+
   inventories     Inventory[]
   orders          Order[]
   stockReservations StockReservation[]
   reports         Report[]
-  
+
   createdAt       DateTime               @default(now())
   updatedAt       DateTime               @updatedAt
 }
 
 // ==========================================
-// PHASE 4: PRODUITS, STOCKS & RECHERCHE
+// 3. CATALOGUE EXCLUSIF PLEINGAZ (D-01)
 // ==========================================
 
 model ProductCategory {
-  id          String    @id @default(uuid())
-  name        String    @unique
-  description String?
-  products    Product[]
-  
-  createdAt   DateTime  @default(now())
-  updatedAt   DateTime  @updatedAt
+  id           String    @id @default(uuid())
+  name         String    @unique // "Bouteilles", "Accessoires"
+  slug         String    @unique
+  description  String?
+  displayOrder Int       @default(0)
+  products     Product[]
+
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
 }
 
 model Product {
   id              String          @id @default(uuid())
   categoryId      String
   category        ProductCategory @relation(fields: [categoryId], references: [id])
-  brand           String          // ex: SCTM, Camgaz, Tradex, BOCOM, OLA, GreenOil
-  weightKg        Float           // ex: 12.5, 6, 50
-  publicPrice     Float           // Prix public conseillé
-  distributorPrice Float          // Prix distributeur
-  promoPrice      Float?          // Prix promotionnel éventuel
-  
-  inventories     Inventory[]
+  name            String          // Libellé officiel PLEINGAZ
+  sku             String          @unique // ex: PG-BOT-125, PG-ACC-DET
+  description     String?
+  weightKg        Float           // ex: 12.5, 6, 0 (accessoires)
+  imageUrl        String?
+  isActive        Boolean         @default(true)
+
+  prices          ProductPrice[]
   priceHistories  PriceHistory[]
+  inventories     Inventory[]
   demandAlerts    DemandAlert[]
   orderItems      OrderItem[]
   stockReservations StockReservation[]
-  
+
   createdAt       DateTime        @default(now())
   updatedAt       DateTime        @updatedAt
+}
 
-  @@unique([brand, weightKg])
+enum PriceStatus {
+  PROPOSED
+  APPROVED
+  REJECTED
+  EXPIRED
+}
+
+model ProductPrice {
+  id               String      @id @default(uuid())
+  productId        String
+  product          Product     @relation(fields: [productId], references: [id], onDelete: Cascade)
+  publicPrice      Int         // FCFA entier (pas de décimales)
+  distributorPrice Int         // FCFA entier
+  effectiveFrom    DateTime    @default(now())
+  effectiveTo      DateTime?
+  status           PriceStatus @default(PROPOSED)
+
+  createdById      String
+  createdBy        User        @relation("PriceCreatedBy", fields: [createdById], references: [id])
+  approvedById     String?
+  approvedBy       User?       @relation("PriceApprovedBy", fields: [approvedById], references: [id])
+
+  createdAt        DateTime    @default(now())
+  updatedAt        DateTime    @updatedAt
 }
 
 model PriceHistory {
-  id               String   @id @default(uuid())
-  productId        String
-  product          Product  @relation(fields: [productId], references: [id], onDelete: Cascade)
-  oldPublicPrice   Float
-  newPublicPrice   Float
-  oldDistributorPrice Float
-  newDistributorPrice Float
-  changedByUserId  String?  // Admin ID
-  
-  createdAt        DateTime @default(now())
+  id                  String   @id @default(uuid())
+  productId           String
+  product             Product  @relation(fields: [productId], references: [id], onDelete: Cascade)
+  oldPublicPrice      Int
+  newPublicPrice      Int
+  oldDistributorPrice Int
+  newDistributorPrice Int
+  changeReason        String?
+  changedAt           DateTime @default(now())
+  changedByUserId     String?
+  changedByUser       User?    @relation("PriceHistoryChangedBy", fields: [changedByUserId], references: [id])
 }
 
+// Déclaration qualitative stricte de stock (BON / MOYEN / FAIBLE / RUPTURE)
 enum StockLevel {
-  HIGH
-  MEDIUM
-  LOW
-  OUT_OF_STOCK
+  BON
+  MOYEN
+  FAIBLE
+  RUPTURE
 }
 
 model Inventory {
@@ -295,54 +352,202 @@ model Inventory {
   store            Store      @relation(fields: [storeId], references: [id], onDelete: Cascade)
   productId        String
   product          Product    @relation(fields: [productId], references: [id], onDelete: Cascade)
-  
-  level            StockLevel @default(OUT_OF_STOCK)
-  lastConfirmedAt  DateTime   @default(now()) // Pour le calcul d'ancienneté (Vert/Orange/Rouge/Gris)
-  
+
+  level            StockLevel @default(RUPTURE)
+  lastConfirmedAt  DateTime   @default(now())
+
   createdAt        DateTime   @default(now())
   updatedAt        DateTime   @updatedAt
 
   @@unique([storeId, productId])
 }
 
+// D-02: Recherche et protection de la vie privée (zone grossière, zéro coordonnées fines stockées)
 model SearchEvent {
   id            String   @id @default(uuid())
   userId        String?
-  searchQuery   String?  // Terme recherché (ex: quartier)
-  latitude      Float?
-  longitude     Float?
-  radiusKm      Float?
+  coarseArea    String?  // Ville ou quartier
+  productId     String?
   resultsCount  Int
-  
+
   createdAt     DateTime @default(now())
 }
 
 model DemandAlert {
-  id          String   @id @default(uuid())
+  id          String    @id @default(uuid())
   userId      String
-  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  user        User      @relation(fields: [userId], references: [id], onDelete: Cascade)
   productId   String
-  product     Product  @relation(fields: [productId], references: [id], onDelete: Cascade)
-  
-  latitude    Float?
-  longitude   Float?
-  radiusKm    Float?
-  storeId     String?  // Si alerte sur une boutique spécifique
-  
-  isFulfilled Boolean  @default(false)
+  product     Product   @relation(fields: [productId], references: [id], onDelete: Cascade)
+
+  city        String?
+  neighborhood String?
+  storeId     String?
+
+  isFulfilled Boolean   @default(false)
   fulfilledAt DateTime?
-  
-  createdAt   DateTime @default(now())
+
+  createdAt   DateTime  @default(now())
 }
 
 // ==========================================
-// PHASE 5: COMMANDES & LIVRAISONS
+// 4. LOGISTIQUE & LIVREURS (D-05)
+// ==========================================
+
+enum VehicleType {
+  MOTO
+  VELO
+  VOITURE
+  PIED
+}
+
+enum CourierStatus {
+  PENDING
+  APPROVED
+  SUSPENDED
+  INACTIVE
+  REJECTED
+}
+
+model Courier {
+  id              String              @id @default(uuid())
+  userId          String              @unique
+  user            User                @relation(fields: [userId], references: [id], onDelete: Cascade)
+  vehicleType     VehicleType         @default(MOTO)
+  status          CourierStatus       @default(PENDING)
+  cashBalance     Int                 @default(0) // Solde d'espèces cumulé en FCFA
+
+  availability    CourierAvailability?
+  zones           CourierZone[]
+  assignments     DeliveryAssignment[]
+  deliveries      Delivery[]          @relation("CourierDeliveries")
+  cashCollections CashCollection[]
+  payouts         CourierPayout[]
+
+  createdAt       DateTime            @default(now())
+  updatedAt       DateTime            @updatedAt
+}
+
+model CourierAvailability {
+  id          String   @id @default(uuid())
+  courierId   String   @unique
+  courier     Courier  @relation(fields: [courierId], references: [id], onDelete: Cascade)
+  isOnline    Boolean  @default(false)
+  lastSeenAt  DateTime?
+  currentLat  Float?
+  currentLng  Float?
+
+  updatedAt   DateTime @updatedAt
+}
+
+model CourierZone {
+  id        String   @id @default(uuid())
+  courierId String
+  courier   Courier  @relation(fields: [courierId], references: [id], onDelete: Cascade)
+  city      String
+  areaName  String
+
+  createdAt DateTime @default(now())
+}
+
+enum AssignmentStatus {
+  PROPOSED
+  ACCEPTED
+  REJECTED
+  EXPIRED
+}
+
+model DeliveryAssignment {
+  id         String           @id @default(uuid())
+  deliveryId String
+  delivery   Delivery         @relation(fields: [deliveryId], references: [id], onDelete: Cascade)
+  courierId  String
+  courier    Courier          @relation(fields: [courierId], references: [id], onDelete: Cascade)
+  status     AssignmentStatus @default(PROPOSED)
+  timeoutAt  DateTime
+
+  createdAt  DateTime         @default(now())
+  updatedAt  DateTime         @updatedAt
+}
+
+enum CashCollectionStatus {
+  COLLECTED
+  REMITTED_TO_PLEINGAZ
+  DISPUTED
+}
+
+model CashCollection {
+  id           String               @id @default(uuid())
+  deliveryId   String
+  delivery     Delivery             @relation(fields: [deliveryId], references: [id])
+  courierId    String
+  courier      Courier              @relation(fields: [courierId], references: [id])
+  amount       Int                  // FCFA entier
+  status       CashCollectionStatus @default(COLLECTED)
+  remittedAt   DateTime?
+
+  reconciledById String?
+  reconciledBy User?                @relation("CashReconciledBy", fields: [reconciledById], references: [id])
+
+  createdAt    DateTime             @default(now())
+  updatedAt    DateTime             @updatedAt
+}
+
+enum FeeScheduleStatus {
+  PROPOSED
+  APPROVED
+  EXPIRED
+}
+
+model FeeSchedule {
+  id                  String            @id @default(uuid())
+  areaId              String?
+  deliveryFeeCustomer Int               // FCFA
+  courierPayout       Int               // FCFA
+  pleingazMargin      Int               // FCFA
+  effectiveFrom       DateTime          @default(now())
+  effectiveTo         DateTime?
+  status              FeeScheduleStatus @default(PROPOSED)
+
+  createdById         String
+  createdBy           User              @relation("FeeCreatedBy", fields: [createdById], references: [id])
+  approvedById        String?
+  approvedBy          User?             @relation("FeeApprovedBy", fields: [approvedById], references: [id])
+
+  createdAt           DateTime          @default(now())
+  updatedAt           DateTime          @updatedAt
+}
+
+enum CourierPayoutStatus {
+  PENDING
+  APPROVED
+  PAID
+  CANCELLED
+}
+
+model CourierPayout {
+  id                    String              @id @default(uuid())
+  courierId             String
+  courier               Courier             @relation(fields: [courierId], references: [id])
+  payoutBatchId         String?
+  payoutBatch           PayoutBatch?        @relation(fields: [payoutBatchId], references: [id])
+  grossDeliveriesAmount Int                 // FCFA
+  cashDeductionAmount   Int                 // FCFA
+  netPayoutAmount       Int                 // FCFA
+  status                CourierPayoutStatus @default(PENDING)
+
+  createdAt             DateTime            @default(now())
+  updatedAt             DateTime            @updatedAt
+}
+
+// ==========================================
+// 5. COMMANDES & LIVRAISONS
 // ==========================================
 
 enum OrderType {
   B2C_PICKUP
   B2C_DELIVERY
-  B2B_DISTRIBUTOR // Commande distributeur vers PLEINGAZ
+  B2B_DISTRIBUTOR
 }
 
 enum OrderStatus {
@@ -358,65 +563,64 @@ enum OrderStatus {
 
 model Order {
   id              String      @id @default(uuid())
-  orderNumber     String      @unique // Généré: ORD-20261006-XXXX
+  orderNumber     String      @unique
   type            OrderType
   status          OrderStatus @default(DRAFT)
-  
+
   customerId      String
   customer        User        @relation("CustomerOrders", fields: [customerId], references: [id])
-  
-  storeId         String?     // Nullable si B2B direct ou avant choix du store
+
+  storeId         String?
   store           Store?      @relation(fields: [storeId], references: [id])
-  
-  totalAmount     Float
-  
+
+  totalAmount     Int         // FCFA entier
+
   // Livraison
   deliveryAddress String?
   deliveryLat     Float?
   deliveryLng     Float?
   deliveryNotes   String?
   deliverySlot    DateTime?
-  
-  // Assistance (Tâche 5.7)
+
   assistedById    String?
   assistedBy      User?       @relation("AssistedOrders", fields: [assistedById], references: [id])
-  
+
   items           OrderItem[]
   reservations    StockReservation[]
   payments        Payment[]
   delivery        Delivery?
   invoice         Invoice?
   review          Review?
-  
+
   createdAt       DateTime    @default(now())
   updatedAt       DateTime    @updatedAt
 }
 
 model OrderItem {
-  id          String   @id @default(uuid())
-  orderId     String
-  order       Order    @relation(fields: [orderId], references: [id], onDelete: Cascade)
-  productId   String
-  product     Product  @relation(fields: [productId], references: [id])
-  quantity    Int
-  unitPrice   Float
-  totalPrice  Float
+  id         String   @id @default(uuid())
+  orderId    String
+  order      Order    @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  productId  String
+  product    Product  @relation(fields: [productId], references: [id])
+  quantity   Int
+  unitPrice  Int      // FCFA entier
+  totalPrice Int      // FCFA entier
 }
 
 model StockReservation {
-  id          String   @id @default(uuid())
-  orderId     String
-  order       Order    @relation(fields: [orderId], references: [id], onDelete: Cascade)
-  storeId     String
-  store       Store    @relation(fields: [storeId], references: [id])
-  productId   String
-  product     Product  @relation(fields: [productId], references: [id])
-  quantity    Int
-  
-  expiresAt   DateTime // Expiration stricte (ex: +15 minutes)
-  isConsumed  Boolean  @default(false)
-  
-  createdAt   DateTime @default(now())
+  id         String   @id @default(uuid())
+  orderId    String
+  order      Order    @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  storeId    String
+  store      Store    @relation(fields: [storeId], references: [id])
+  productId  String
+  product    Product  @relation(fields: [productId], references: [id])
+  quantity   Int
+
+  expiresAt  DateTime
+  isConsumed Boolean  @default(false)
+
+  createdAt  DateTime @default(now())
 }
 
 enum DeliveryStatus {
@@ -430,42 +634,60 @@ enum DeliveryStatus {
 }
 
 model Delivery {
-  id              String         @id @default(uuid())
-  orderId         String         @unique
-  order           Order          @relation(fields: [orderId], references: [id], onDelete: Cascade)
-  
-  driverId        String?
-  driver          User?          @relation("DriverDeliveries", fields: [driverId], references: [id])
-  
-  status          DeliveryStatus @default(PENDING)
-  confirmationOtp String?        // Code OTP à remettre au client (Tâche 5.4)
-  
-  pickedUpAt      DateTime?
-  deliveredAt     DateTime?
-  failedReason    String?
-  
-  createdAt       DateTime       @default(now())
-  updatedAt       DateTime       @updatedAt
+  id                   String               @id @default(uuid())
+  orderId              String               @unique
+  order                Order                @relation(fields: [orderId], references: [id], onDelete: Cascade)
+
+  courierId            String?
+  courier              Courier?             @relation("CourierDeliveries", fields: [courierId], references: [id])
+
+  status               DeliveryStatus       @default(PENDING)
+  confirmationCodeHash String?              // SHA-256 du code client 4-6 chiffres
+
+  pickedUpAt           DateTime?
+  deliveredAt          DateTime?
+  failedReason         String?
+
+  assignments          DeliveryAssignment[]
+  cashCollections      CashCollection[]
+
+  createdAt            DateTime             @default(now())
+  updatedAt            DateTime             @updatedAt
 }
+
+// ==========================================
+// 6. FINANCES, GRAND LIVRE & FACTURATION (D-06)
+// ==========================================
 
 model Invoice {
-  id            String   @id @default(uuid())
-  invoiceNumber String   @unique // Numérotation unique par vendeur
-  orderId       String   @unique
-  order         Order    @relation(fields: [orderId], references: [id])
-  
-  sellerName    String   // "PLEINGAZ - Vente directe" ou "Distributeur agréé : X"
-  totalAmount   Float
-  pdfUrl        String?  // Facture immuable PDF
-  
-  isVoided      Boolean  @default(false) // Pour gestion des avoirs
-  
-  createdAt     DateTime @default(now())
+  id            String       @id @default(uuid())
+  invoiceNumber String       @unique
+  orderId       String       @unique
+  order         Order        @relation(fields: [orderId], references: [id])
+
+  sellerName    String
+  totalAmount   Int          // FCFA entier
+  pdfUrl        String?
+
+  isVoided      Boolean      @default(false)
+  creditNotes   CreditNote[]
+
+  createdAt     DateTime     @default(now())
 }
 
-// ==========================================
-// PHASE 6: PAIEMENTS & WALLETS
-// ==========================================
+model CreditNote {
+  id               String   @id @default(uuid())
+  creditNoteNumber String   @unique
+  invoiceId        String
+  invoice          Invoice  @relation(fields: [invoiceId], references: [id])
+  amount           Int      // FCFA entier
+  reason           String
+
+  createdById      String
+  createdBy        User     @relation("CreditNoteCreatedBy", fields: [createdById], references: [id])
+
+  createdAt        DateTime @default(now())
+}
 
 enum PaymentMethod {
   CASH
@@ -484,37 +706,119 @@ model Payment {
   id              String        @id @default(uuid())
   orderId         String
   order           Order         @relation(fields: [orderId], references: [id])
-  
+
   method          PaymentMethod
   status          PaymentStatus @default(PENDING)
-  
-  amount          Float
-  fee             Float         @default(0) // Frais de transaction
-  
-  // Idempotence & Fournisseur
-  idempotencyKey  String        @unique // Empêcher les doublons
-  providerTxId    String?       @unique // ID de transaction renvoyé par MTN/Orange
-  
-  // Webhooks
+
+  amount          Int           // FCFA entier
+  fee             Int           @default(0) // FCFA entier
+
+  idempotencyKey  String        @unique
+  providerTxId    String?       @unique
+
   lastWebhookData Json?
-  
+
   createdAt       DateTime      @default(now())
   updatedAt       DateTime      @updatedAt
 }
 
-model PlatformSettings {
-  id                   String   @id @default("singleton")
-  adminMomoNumber      String?
-  adminOrangeNumber    String?
-  
-  supportPhone         String   @default("+237 657696567")
-  supportEmail         String   @default("donfackdurel1980@icloud.com")
-  
-  updatedAt            DateTime @updatedAt
+enum AccountType {
+  ASSET
+  LIABILITY
+  EQUITY
+  REVENUE
+  EXPENSE
+}
+
+// Plan de comptes (1010, 1020, 1030, 4010, 4020, 7010, 7020, 6010, 6020)
+model LedgerAccount {
+  id          String        @id @default(uuid())
+  code        String        @unique
+  name        String
+  type        AccountType
+  description String?
+  entries     LedgerEntry[]
+
+  createdAt   DateTime      @default(now())
+}
+
+// Grand livre immuable à écriture double (Insert-Only : JAMAIS d'update ni delete)
+model LedgerEntry {
+  id             String        @id @default(uuid())
+  accountId      String
+  account        LedgerAccount @relation(fields: [accountId], references: [id])
+  transactionRef String        // Rapprochement équilibré débit == crédit
+  debit          Int           @default(0) // FCFA
+  credit         Int           @default(0) // FCFA
+  description    String
+  entityType     String?       // "ORDER", "PAYOUT", "CASH_COLLECTION", "REFUND"
+  entityId       String?
+
+  createdById    String?
+  createdBy      User?         @relation("LedgerEntryCreatedBy", fields: [createdById], references: [id])
+
+  createdAt      DateTime      @default(now())
+}
+
+enum BeneficiaryType {
+  DISTRIBUTOR
+  COURIER
+}
+
+enum BatchStatus {
+  PROPOSED
+  APPROVED
+  EXECUTED
+  CANCELLED
+}
+
+model PayoutBatch {
+  id                  String          @id @default(uuid())
+  batchNumber         String          @unique
+  beneficiaryType     BeneficiaryType
+  totalAmount         Int             // FCFA
+  status              BatchStatus     @default(PROPOSED)
+
+  createdById         String
+  createdBy           User            @relation("PayoutCreatedBy", fields: [createdById], references: [id])
+  approvedById        String?
+  approvedBy          User?           @relation("PayoutApprovedBy", fields: [approvedById], references: [id])
+  secondApprovedById  String?         // Double validation au-delà du seuil paramétré
+  secondApprovedBy    User?           @relation("PayoutSecondApprovedBy", fields: [secondApprovedById], references: [id])
+
+  operatorTxRef       String?
+  proofFileUrl        String?
+  executedAt          DateTime?
+
+  courierPayouts      CourierPayout[]
+
+  createdAt           DateTime        @default(now())
+  updatedAt           DateTime        @updatedAt
 }
 
 // ==========================================
-// PHASE 7: COMMUNICATION & NOTIFICATIONS
+// 7. PARAMÈTRES & SUPPORT
+// ==========================================
+
+model PlatformSettings {
+  id                              String   @id @default("singleton")
+  adminMomoNumber                 String?
+  adminOrangeNumber               String?
+
+  searchDefaultRadiusKm           Int      @default(5)
+  searchGpsTimeoutSeconds         Int      @default(8)
+  maxCashHoldingCourier           Int      @default(50000)   // Défaut appliqué illustratif
+  payoutDoubleApprovalThreshold   Int      @default(500000)  // Défaut appliqué illustratif
+  maxUploadSizeBytes              Int      @default(5242880) // 5 Mo
+
+  supportPhone                    String   @default("+237 657696567")
+  supportEmail                    String   @default("donfackdurel1980@icloud.com")
+
+  updatedAt                       DateTime @updatedAt
+}
+
+// ==========================================
+// 8. NOTIFICATIONS & CHAT
 // ==========================================
 
 enum NotificationType {
@@ -533,14 +837,14 @@ model Notification {
   id        String             @id @default(uuid())
   userId    String
   user      User               @relation(fields: [userId], references: [id], onDelete: Cascade)
-  
+
   type      NotificationType
   status    NotificationStatus @default(PENDING)
-  
+
   title     String
   content   String
-  metadata  Json?              // Données additionnelles pour le template
-  
+  metadata  Json?
+
   createdAt DateTime           @default(now())
   updatedAt DateTime           @updatedAt
 }
@@ -554,30 +858,30 @@ enum ReportReason {
 }
 
 model Report {
-  id        String       @id @default(uuid())
-  userId    String
-  user      User         @relation(fields: [userId], references: [id])
-  storeId   String
-  store     Store        @relation(fields: [storeId], references: [id])
-  
-  reason    ReportReason
-  details   String?
-  
-  isResolved Boolean     @default(false)
-  
-  createdAt DateTime     @default(now())
+  id         String       @id @default(uuid())
+  userId     String
+  user       User         @relation(fields: [userId], references: [id])
+  storeId    String
+  store      Store        @relation(fields: [storeId], references: [id])
+
+  reason     ReportReason
+  details    String?
+
+  isResolved Boolean      @default(false)
+
+  createdAt  DateTime     @default(now())
 }
 
 model ChatConversation {
-  id        String        @id @default(uuid())
+  id             String        @id @default(uuid())
   participant1Id String
   participant2Id String
-  
-  messages  ChatMessage[]
-  
-  createdAt DateTime      @default(now())
-  updatedAt DateTime      @updatedAt
-  
+
+  messages       ChatMessage[]
+
+  createdAt      DateTime      @default(now())
+  updatedAt      DateTime      @updatedAt
+
   @@unique([participant1Id, participant2Id])
 }
 
@@ -585,19 +889,19 @@ model ChatMessage {
   id             String           @id @default(uuid())
   conversationId String
   conversation   ChatConversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
-  
+
   senderId       String
   sender         User             @relation("SentMessages", fields: [senderId], references: [id])
-  
+
   content        String
   attachmentUrl  String?
   isRead         Boolean          @default(false)
-  
+
   createdAt      DateTime         @default(now())
 }
 
 // ==========================================
-// PHASE 8: IA & ASSISTANT INTELLIGENT
+// 9. IA, ANALYTIQUES & REVIEWS
 // ==========================================
 
 model KnowledgeDocument {
@@ -606,9 +910,9 @@ model KnowledgeDocument {
   content   String
   isActive  Boolean  @default(true)
   version   Int      @default(1)
-  
+
   createdBy String?
-  
+
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 }
@@ -617,38 +921,34 @@ model AiChatSession {
   id        String   @id @default(uuid())
   userId    String
   user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-  
-  history   Json     // Historique des messages (Prompt + Réponse + Tools)
-  
+
+  history   Json
+
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 }
 
 model AiUsageMetric {
-  id              String   @id @default(uuid())
-  userId          String
-  user            User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-  
-  promptTokens    Int      @default(0)
-  completionTokens Int     @default(0)
-  totalTokens     Int      @default(0)
-  estimatedCostUsd Float   @default(0)
-  
-  createdAt       DateTime @default(now())
+  id               String   @id @default(uuid())
+  userId           String
+  user             User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  promptTokens     Int      @default(0)
+  completionTokens Int      @default(0)
+  totalTokens      Int      @default(0)
+  estimatedCostUsd Float    @default(0)
+
+  createdAt        DateTime @default(now())
 }
 
-// ==========================================
-// PHASE 9: PILOTAGE & ANALYTIQUES
-// ==========================================
-
 model HeatmapEvent {
-  id          String   @id @default(uuid())
-  type        HeatmapEventType // 'DEMAND', 'NO_RESULT', 'OUT_OF_STOCK'
-  latitude    Float
-  longitude   Float
-  gridId      String   // ID de grille (ex: "lat_lng_hash") pour anonymisation
-  metadata    Json?    // Ex: marque recherchée, poids
-  createdAt   DateTime @default(now())
+  id        String           @id @default(uuid())
+  type      HeatmapEventType
+  latitude  Float
+  longitude Float
+  gridId    String
+  metadata  Json?
+  createdAt DateTime         @default(now())
 }
 
 enum HeatmapEventType {
@@ -661,11 +961,11 @@ model Review {
   id          String   @id @default(uuid())
   orderId     String   @unique
   order       Order    @relation(fields: [orderId], references: [id])
-  
-  rating      Int      // 1-5
+
+  rating      Int
   comment     String?
   isModerated Boolean  @default(false)
-  
+
   createdAt   DateTime @default(now())
 }
 
@@ -673,7 +973,7 @@ model LoyaltyTransaction {
   id          String   @id @default(uuid())
   userId      String
   user        User     @relation(fields: [userId], references: [id])
-  points      Int      // Positif (gagné) ou négatif (dépensé)
+  points      Int
   description String
   createdAt   DateTime @default(now())
 }

@@ -1,13 +1,13 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { RefreshCw, WifiOff, CheckCircle2, Clock } from 'lucide-react';
+import { RefreshCw, WifiOff, CheckCircle2, Clock, CheckCheck, Sparkles } from 'lucide-react';
 
-type StockLevel = 'HIGH' | 'MEDIUM' | 'LOW' | 'OUT_OF_STOCK';
+export type StockLevel = 'BON' | 'MOYEN' | 'FAIBLE' | 'RUPTURE';
 
 interface Product {
   id: string;
-  brand: string;
+  name: string;
   weightKg: number;
 }
 
@@ -21,10 +21,10 @@ interface InventoryItem {
 export default function InventoryList() {
   const [isOffline, setIsOffline] = useState(false);
   const [now, setNow] = useState<number | null>(null);
+  const [quickConfirmSuccess, setQuickConfirmSuccess] = useState(false);
   const [inventory, setInventory] = useState<InventoryItem[]>([
-    // Fausses données pour démo UX
-    { id: '1', product: { id: 'p1', brand: 'SCTM', weightKg: 12.5 }, level: 'HIGH', lastConfirmedAt: '2026-10-07T08:00:00.000Z' },
-    { id: '2', product: { id: 'p2', brand: 'Camgaz', weightKg: 12.5 }, level: 'OUT_OF_STOCK', lastConfirmedAt: '2026-10-07T04:00:00.000Z' }, // 4h
+    { id: '1', product: { id: 'p1', name: 'Bouteille Gaz Domestique', weightKg: 12.5 }, level: 'BON', lastConfirmedAt: '2026-10-19T12:00:00.000Z' },
+    { id: '2', product: { id: 'p2', name: 'Petite Bouteille Camping', weightKg: 6 }, level: 'MOYEN', lastConfirmedAt: '2026-10-19T11:30:00.000Z' },
   ]);
 
   useEffect(() => {
@@ -49,31 +49,35 @@ export default function InventoryList() {
   const getAgeColor = (isoDate: string) => {
     if (!now) return 'bg-gray-100 text-gray-700 border-gray-200';
     const hours = (now - new Date(isoDate).getTime()) / 3600000;
-    if (hours < 1) return 'bg-green-100 text-green-700 border-green-200'; // 🟢 < 1h
-    if (hours < 3) return 'bg-orange-100 text-orange-700 border-orange-200'; // 🟠 < 3h
-    if (hours < 12) return 'bg-red-100 text-red-700 border-red-200'; // 🔴 < 12h
+    if (hours < 1) return 'bg-emerald-100 text-emerald-800 border-emerald-200'; // 🟢 < 1h
+    if (hours < 3) return 'bg-amber-100 text-amber-800 border-amber-200'; // 🟠 < 3h
+    if (hours < 12) return 'bg-rose-100 text-rose-800 border-rose-200'; // 🔴 < 12h
     return 'bg-gray-100 text-gray-700 border-gray-200'; // ⚪ > 12h
   };
 
   const getLevelColor = (level: StockLevel) => {
     switch (level) {
-      case 'HIGH': return 'bg-green-500';
-      case 'MEDIUM': return 'bg-yellow-500';
-      case 'LOW': return 'bg-orange-500';
-      case 'OUT_OF_STOCK': return 'bg-red-500';
+      case 'BON': return 'bg-emerald-600 hover:bg-emerald-700';
+      case 'MOYEN': return 'bg-amber-500 hover:bg-amber-600';
+      case 'FAIBLE': return 'bg-orange-500 hover:bg-orange-600';
+      case 'RUPTURE': return 'bg-rose-600 hover:bg-rose-700';
     }
   };
 
   const confirmStock = (id: string, newLevel: StockLevel) => {
-    // Tâche 4.2: Fonctionnement dégradé hors ligne
     if (isOffline) {
       alert("Mode hors ligne: Mise à jour mise en file d'attente.");
-      // On sauvegarderait dans IndexedDB ici
     }
-
     setInventory(prev => prev.map(item => 
       item.id === id ? { ...item, level: newLevel, lastConfirmedAt: new Date().toISOString() } : item
     ));
+  };
+
+  const handleQuickConfirmAll = () => {
+    const nowIso = new Date().toISOString();
+    setInventory(prev => prev.map(item => ({ ...item, lastConfirmedAt: nowIso })));
+    setQuickConfirmSuccess(true);
+    setTimeout(() => setQuickConfirmSuccess(false), 3000);
   };
 
   return (
@@ -86,37 +90,73 @@ export default function InventoryList() {
         </div>
       )}
 
+      {/* Bouton 1-clic D-03 */}
+      <div className="bg-gradient-to-r from-red-600 to-orange-500 rounded-3xl p-6 text-white shadow-xl flex flex-col sm:flex-row items-center justify-between gap-4">
+        <div>
+          <h2 className="text-xl font-black flex items-center gap-2">
+            <Sparkles size={22} className="text-yellow-300" />
+            Confirmation Rapide (D-03)
+          </h2>
+          <p className="text-red-100 text-sm mt-1">
+            Vos stocks sont-ils conformes à ce qui est affiché ? Cliquez pour réactualiser l'horodatage en 1 seconde.
+          </p>
+        </div>
+        <button
+          onClick={handleQuickConfirmAll}
+          className={`px-6 py-3.5 rounded-2xl font-bold flex items-center gap-2 shadow-lg transition-transform active:scale-95 ${
+            quickConfirmSuccess 
+              ? 'bg-emerald-500 text-white shadow-emerald-500/30' 
+              : 'bg-white text-pleingaz-red hover:bg-gray-50 shadow-black/10'
+          }`}
+        >
+          {quickConfirmSuccess ? (
+            <>
+              <CheckCheck size={20} />
+              Stocks Confirmés !
+            </>
+          ) : (
+            <>
+              <RefreshCw size={20} />
+              Confirmer tout mon stock
+            </>
+          )}
+        </button>
+      </div>
+
       <div className="grid gap-4">
         {inventory.map(item => (
           <div key={item.id} className="bg-white dark:bg-neutral-900 p-6 rounded-2xl shadow-sm border border-gray-100 dark:border-neutral-800 flex flex-col md:flex-row md:items-center justify-between gap-6">
             
             <div className="flex items-center gap-4">
-              <div className="w-12 h-12 bg-gray-50 dark:bg-neutral-950 rounded-xl flex items-center justify-center font-black text-xl text-gray-900 dark:text-white border border-gray-100 dark:border-neutral-800">
-                {item.product.brand.charAt(0)}
+              <div className="w-14 h-14 bg-red-50 dark:bg-red-950/40 text-pleingaz-red rounded-2xl flex items-center justify-center font-black text-lg border border-red-100 dark:border-red-900/40">
+                PG
               </div>
               <div>
-                <h3 className="font-bold text-gray-900 dark:text-white text-lg">{item.product.brand} {item.product.weightKg}kg</h3>
+                <div className="flex items-center gap-2">
+                  <span className="px-2 py-0.5 bg-red-100 text-pleingaz-red text-xs font-black rounded uppercase">PLEINGAZ Officiel</span>
+                  <h3 className="font-bold text-gray-900 dark:text-white text-lg">{item.product.weightKg} kg</h3>
+                </div>
                 <div className={`mt-2 inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md border text-xs font-semibold ${getAgeColor(item.lastConfirmedAt)}`}>
                   <Clock size={12} />
-                  Stock confirmé il y a {now ? Math.floor((now - new Date(item.lastConfirmedAt).getTime()) / 60000) : 0} min
+                  Confirmé il y a {now ? Math.floor((now - new Date(item.lastConfirmedAt).getTime()) / 60000) : 0} min
                 </div>
               </div>
             </div>
 
             <div className="flex flex-wrap items-center gap-2">
-              {(['HIGH', 'MEDIUM', 'LOW', 'OUT_OF_STOCK'] as StockLevel[]).map(level => (
+              {(['BON', 'MOYEN', 'FAIBLE', 'RUPTURE'] as StockLevel[]).map(level => (
                 <button
                   key={level}
                   onClick={() => confirmStock(item.id, level)}
-                  className={`px-4 py-2 rounded-xl text-sm font-semibold transition-all flex items-center gap-2
+                  className={`px-4 py-2.5 rounded-xl text-sm font-bold transition-all flex items-center gap-2
                     ${item.level === level 
                       ? `${getLevelColor(level)} text-white shadow-md` 
-                      : 'bg-gray-50 dark:bg-neutral-950 text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-neutral-800 border border-transparent'
+                      : 'bg-gray-50 dark:bg-neutral-950 text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-neutral-800 border border-gray-200 dark:border-neutral-800'
                     }
                   `}
                 >
                   {item.level === level && <CheckCircle2 size={16} />}
-                  {level === 'HIGH' ? 'BON' : level === 'MEDIUM' ? 'MOYEN' : level === 'LOW' ? 'FAIBLE' : 'RUPTURE'}
+                  {level}
                 </button>
               ))}
             </div>

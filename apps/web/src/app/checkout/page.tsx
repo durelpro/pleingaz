@@ -37,22 +37,35 @@ export default function CheckoutPage() {
               <CheckCircle2 size={40} />
             </div>
             <h2 className="text-2xl font-bold text-green-700 dark:text-green-400">Paiement Réussi !</h2>
-            <p className="text-green-600 dark:text-green-500">Votre commande est confirmée et partira en livraison sous peu.</p>
+            <p className="text-green-600 dark:text-green-500">Votre commande est confirmée et réservée.</p>
             
-            <button className="mt-6 w-full py-4 bg-gray-900 dark:bg-white text-white dark:text-gray-900 font-bold rounded-2xl hover:bg-pleingaz-red transition-colors">
+            {/* Code de remise client D-05 */}
+            <div className="bg-white dark:bg-neutral-900 border border-green-200 dark:border-green-800 rounded-2xl p-4 my-2">
+              <span className="text-xs uppercase font-bold text-gray-400 tracking-wider block mb-1">Code de remise physique (D-05)</span>
+              <span className="text-3xl font-black text-pleingaz-red font-mono tracking-widest">4829</span>
+              <p className="text-xs text-gray-500 mt-1">À communiquer au livreur UNIQUEMENT après réception physique de la bouteille.</p>
+            </div>
+            
+            <button className="mt-4 w-full py-4 bg-gray-900 dark:bg-white text-white dark:text-gray-900 font-bold rounded-2xl hover:bg-pleingaz-red transition-colors">
               Suivre ma livraison
             </button>
           </motion.div>
         ) : (
           <>
+            {/* 15 min Stock Reservation Banner (D-05) */}
+            <div className="bg-amber-50 dark:bg-amber-950/40 border border-amber-200 dark:border-amber-800 rounded-2xl p-4 flex items-center justify-between text-amber-900 dark:text-amber-300 text-sm">
+              <span className="font-medium">⏱️ Réservation de stock garantie :</span>
+              <span className="font-black px-2.5 py-1 bg-amber-200 dark:bg-amber-900/60 rounded-lg font-mono">14:30 min</span>
+            </div>
+
             {/* Amount Summary */}
             <div className="bg-white dark:bg-neutral-900 rounded-3xl p-6 shadow-sm border border-gray-100 dark:border-neutral-800">
               <div className="flex justify-between items-center mb-4">
-                <span className="text-gray-500 font-medium">Bouteille 12.5Kg (SCTM)</span>
+                <span className="text-gray-600 dark:text-gray-300 font-medium">Bouteille PLEINGAZ 12.5 kg (Officielle)</span>
                 <span className="font-bold text-gray-900 dark:text-white">6 500 FCFA</span>
               </div>
               <div className="flex justify-between items-center pb-4 border-b border-gray-100 dark:border-neutral-800">
-                <span className="text-gray-500 font-medium">Frais de livraison</span>
+                <span className="text-gray-500 font-medium">Frais de livraison à domicile</span>
                 <span className="font-bold text-gray-900 dark:text-white">1 000 FCFA</span>
               </div>
               <div className="flex justify-between items-center pt-4">

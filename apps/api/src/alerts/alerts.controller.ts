@@ -10,13 +10,13 @@ export class AlertsController {
   @Post('demand')
   async subscribeAlert(
     @Request() req: any,
-    @Body() body: { productId: string; latitude?: number; longitude?: number; storeId?: string },
-  ) {
+    @Body() body: { productId: string; city?: string; neighborhood?: string; storeId?: string },
+  ): Promise<any> {
     return this.alertsService.subscribeToRestockAlert(
       req.user.userId,
       body.productId,
-      body.latitude,
-      body.longitude,
+      body.city,
+      body.neighborhood,
       body.storeId,
     );
   }

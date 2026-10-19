@@ -4,11 +4,20 @@
   "private": true,
   "main": "./index.ts",
   "types": "./index.ts",
+  "scripts": {
+    "db:generate": "prisma generate",
+    "db:migrate": "prisma migrate deploy",
+    "db:seed": "ts-node prisma/seed.ts"
+  },
+  "prisma": {
+    "seed": "ts-node prisma/seed.ts"
+  },
   "dependencies": {
     "@prisma/client": "^5.12.1"
   },
   "devDependencies": {
     "prisma": "^5.12.1",
+    "ts-node": "^10.9.2",
     "typescript": "^5.4.5"
   }
 }

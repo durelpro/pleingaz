@@ -23,9 +23,10 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
       throw new UnauthorizedException();
     }
 
-    // Extract flat array of permissions for RBAC
+    // Extract flat array of permissions and roles for RBAC
     const permissions = user.roles.flatMap(ur => ur.role.permissions.map(rp => rp.permission.action));
+    const roles = user.roles.map(ur => ur.role.name);
     
-    return { userId: payload.sub, phone: user.phone, permissions };
+    return { id: user.id, userId: payload.sub, phone: user.phone, email: user.email, roles, permissions };
   }
 }

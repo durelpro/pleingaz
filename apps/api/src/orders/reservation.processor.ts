@@ -8,21 +8,28 @@ export class ReservationProcessor extends WorkerHost {
     super();
   }
 
-  async process(job: Job<{ reservationId: string; orderId: string }>) {
-    console.log(\`Traitement de l'expiration de réservation \${job.data.reservationId}\`);
-    
-    const reservation = await this.prisma.stockReservation.findUnique({
-      where: { id: job.data.reservationId },
+  async process(job: Job<{ reservationId?: string; orderId: string }>) {
+    const { orderId } = job.data;
+    if (!orderId) return;
+
+    const order = await this.prisma.order.findUnique({
+      where: { id: orderId },
+      include: { reservations: true },
     });
 
-    // Si la réservation n'a pas été consommée (commande non confirmée)
-    if (reservation && !reservation.isConsumed) {
-      console.log(\`La réservation \${job.data.reservationId} a expiré ! Annulation de la commande...\`);
-      
-      await this.prisma.order.update({
-        where: { id: job.data.orderId },
-        data: { status: 'CANCELLED' },
-      });
+    // Si la commande est encore en attente de paiement / validation et que le délai de 15 minutes est écoulé
+    if (order && (order.status === 'SUBMITTED' || order.status === 'DRAFT')) {
+      await this.prisma.$transaction([
+        this.prisma.order.update({
+          where: { id: orderId },
+          data: { status: 'CANCELLED' },
+        }),
+        this.prisma.stockReservation.updateMany({
+          where: { orderId, isConsumed: false },
+          data: { isConsumed: true },
+        }),
+      ]);
+      console.log(`[RESERVATION EXPIRED] Commande ${order.orderNumber} annulée suite au délai de 15 minutes.`);
     }
   }
 }

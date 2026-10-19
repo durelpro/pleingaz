@@ -1,11 +1,9 @@
 import type { NextConfig } from "next";
 // @ts-ignore
 import withPWA from 'next-pwa';
-import { withSentryConfig } from '@sentry/nextjs';
+import { withSentryConfig } from '@sentry/nextjs/config';
 
 const nextConfig: NextConfig = {
-  cacheComponents: true,
-  partialPrefetching: true,
   turbopack: {
     rules: {
       "*.css": {
@@ -30,7 +28,5 @@ export default withSentryConfig(pwaConfig, {
   widenClientFileUpload: true,
   reactComponentAnnotation: { enabled: true },
   tunnelRoute: "/monitoring",
-  hideSourceMaps: true,
-  disableLogger: true,
-  automaticVercelMonitors: true,
+  sourcemaps: { disable: true },
 });

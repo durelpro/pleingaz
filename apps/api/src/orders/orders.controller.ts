@@ -1,55 +1,60 @@
-import { Controller, Post, Get, Body, Param, UseGuards, Request } from '@nestjs/common';
+import {
+  Controller,
+  Post,
+  Get,
+  Param,
+  Body,
+  UseGuards,
+} from '@nestjs/common';
 import { OrdersService } from './orders.service';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
+import { CurrentUser } from '../auth/decorators/current-user.decorator';
+import { CreateOrderDto } from './dto/create-order.dto';
 
 @Controller('orders')
 @UseGuards(JwtAuthGuard)
 export class OrdersController {
   constructor(private readonly ordersService: OrdersService) {}
 
-  @Post('reserve')
-  async reserve(
-    @Request() req: any,
-    @Body() body: { storeId: string; productId: string; quantity: number }
-  ) {
-    return this.ordersService.createReservation(req.user.userId, body.storeId, body.productId, body.quantity);
+  /**
+   * Création d'une commande B2C avec réservation éphémère de 15 minutes
+   */
+  @Post()
+  async createOrder(
+    @CurrentUser('id') customerId: string,
+    @Body() dto: CreateOrderDto,
+  ): Promise<any> {
+    return this.ordersService.createOrder(customerId, dto);
   }
 
-  @Post(':id/confirm')
-  async confirm(
-    @Request() req: any,
+  /**
+   * Consultation de mes commandes
+   */
+  @Get('my-orders')
+  async getMyOrders(@CurrentUser('id') userId: string): Promise<any> {
+    return this.ordersService.getMyOrders(userId);
+  }
+
+  /**
+   * Détail d'une commande
+   */
+  @Get(':id')
+  async getOrderById(
+    @CurrentUser('id') userId: string,
     @Param('id') orderId: string,
-    @Body() body: { deliveryAddress?: string }
-  ) {
-    return this.ordersService.confirmOrder(req.user.userId, orderId, body.deliveryAddress);
+  ): Promise<any> {
+    return this.ordersService.getOrderById(userId, orderId);
   }
 
-  @Post('assisted')
-  async createAssisted(
-    @Request() req: any,
-    @Body() body: { customerPhone: string; storeId: string; productId: string; quantity: number; deliveryAddress?: string }
-  ) {
-    return this.ordersService.createAssistedOrder(
-      req.user.userId,
-      body.customerPhone,
-      body.storeId,
-      body.productId,
-      body.quantity,
-      body.deliveryAddress,
-    );
-  }
-
-  @Get()
-  async getMyOrders(@Request() req: any) {
-    return this.ordersService.getUserOrders(req.user.userId);
-  }
-
-  @Post(':id/review')
-  async leaveReview(
-    @Request() req: any,
+  /**
+   * Annulation de commande
+   */
+  @Post(':id/cancel')
+  async cancelOrder(
+    @CurrentUser('id') userId: string,
     @Param('id') orderId: string,
-    @Body() body: { rating: number; comment?: string }
-  ) {
-    return this.ordersService.leaveReview(req.user.userId, orderId, body.rating, body.comment);
+    @Body('reason') reason?: string,
+  ): Promise<any> {
+    return this.ordersService.cancelOrder(userId, orderId, reason);
   }
 }

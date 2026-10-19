@@ -5,3 +5,8 @@ node_modules/
 dist/
 .next/
 *.log
+.turbo/
+.vscode/
+uploads/
+apps/api/uploads/
+

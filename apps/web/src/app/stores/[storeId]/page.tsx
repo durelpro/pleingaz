@@ -1,25 +1,24 @@
 "use client";
 
 import { useEffect, useState } from 'react';
-import dynamic from 'next/dynamic';
+import dynamicImport from 'next/dynamic';
 import { motion } from 'framer-motion';
 import { MapPin, Phone, Clock, ShieldCheck, ShoppingCart, MessageCircle, Star } from 'lucide-react';
 import Link from 'next/link';
 
 // Chargement dynamique de la carte pour éviter les erreurs SSR Leaflet
-const StoreMap = dynamic(() => import('@/components/map/StoreMap'), { ssr: false });
+const StoreMap = dynamicImport(() => import('@/components/map/StoreMap'), { ssr: false });
 
-export default function StoreProfilePage({ params }: { params: { storeId: string } }) {
+export default function StoreProfilePage({ params }: { params: any }) {
   const [isMounted, setIsMounted] = useState(false);
 
   useEffect(() => {
     setIsMounted(true);
   }, []);
 
-  // Simulation d'un store (Normalement on fetch avec params.storeId)
   const store = {
-    name: "Dépôt Central SCTM Bonamoussadi",
-    description: "Distributeur officiel agréé. Vente en gros et détail avec livraison à domicile rapide et sécurisée.",
+    name: "Dépôt Central Agréé PLEINGAZ Bonamoussadi",
+    description: "Distributeur officiel agréé PLEINGAZ. Vente au tarif public homologué avec option de livraison express à domicile ou retrait immédiat.",
     address: "Bonamoussadi - Face marché",
     city: "Douala",
     rating: 4.8,
@@ -29,9 +28,8 @@ export default function StoreProfilePage({ params }: { params: { storeId: string
     phone: "+237611111111",
     hours: "Lun - Sam: 08:00 - 18:00",
     inventory: [
-      { id: 1, brand: "SCTM", weight: "12.5Kg", price: 6500, status: "En stock", color: "bg-blue-600" },
-      { id: 2, brand: "Camgaz", weight: "12.5Kg", price: 6500, status: "En stock", color: "bg-yellow-500" },
-      { id: 3, brand: "SCTM", weight: "6Kg", price: 3500, status: "Rupture", color: "bg-blue-600" }
+      { id: 1, brand: "PLEINGAZ", weight: "12.5Kg", price: 6500, status: "En stock (BON)", color: "bg-emerald-600" },
+      { id: 2, brand: "PLEINGAZ", weight: "6Kg", price: 3500, status: "Stock modéré (MOYEN)", color: "bg-amber-500" },
     ]
   };
 

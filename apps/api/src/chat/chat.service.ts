@@ -5,7 +5,7 @@ import { PrismaService } from '../prisma/prisma.service';
 export class ChatService {
   constructor(private readonly prisma: PrismaService) {}
 
-  async saveMessage(senderId: string, recipientId: string, content: string, attachmentUrl?: string) {
+  async saveMessage(senderId: string, recipientId: string, content: string, attachmentUrl?: string): Promise<any> {
     // Ordre des participants pour l'unicité de la conversation
     const [p1, p2] = [senderId, recipientId].sort();
 
@@ -22,7 +22,7 @@ export class ChatService {
     });
 
     // Enregistrer le message
-    return this.prisma.chatMessage.create({
+    const message = (await this.prisma.chatMessage.create({
       data: {
         conversationId: conversation.id,
         senderId,
@@ -31,13 +31,23 @@ export class ChatService {
       },
       include: {
         sender: {
-          select: { id: true, email: true, phone: true } // Ne pas renvoyer le hash du mot de passe
+          select: { id: true, phone: true, email: true }
         }
       }
-    });
+    })) as any;
+
+    // Masquage partiel du numéro de téléphone pour la confidentialité (ex: +237 6*****67)
+    if (message.sender && message.sender.phone) {
+      const p = message.sender.phone;
+      if (p.length > 6) {
+        message.sender.phone = `${p.slice(0, 4)}****${p.slice(-2)}`;
+      }
+    }
+
+    return message;
   }
 
-  async getConversations(userId: string) {
+  async getConversations(userId: string): Promise<any> {
     return this.prisma.chatConversation.findMany({
       where: {
         OR: [
@@ -54,10 +64,21 @@ export class ChatService {
     });
   }
 
-  async getMessages(conversationId: string) {
+  async getMessages(conversationId: string): Promise<any> {
     return this.prisma.chatMessage.findMany({
       where: { conversationId },
       orderBy: { createdAt: 'asc' },
+    });
+  }
+
+  async markMessagesAsRead(conversationId: string, currentUserId: string): Promise<any> {
+    return this.prisma.chatMessage.updateMany({
+      where: {
+        conversationId,
+        senderId: { not: currentUserId },
+        isRead: false,
+      },
+      data: { isRead: true },
     });
   }
 }

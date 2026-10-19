@@ -12,7 +12,7 @@ export class AlertsService {
   /**
    * Tâche 4.7 : S'abonner à une alerte ("Alertez-moi quand le gaz revient")
    */
-  async subscribeToRestockAlert(userId: string, productId: string, latitude?: number, longitude?: number, storeId?: string) {
+  async subscribeToRestockAlert(userId: string, productId: string, city?: string, neighborhood?: string, storeId?: string): Promise<any> {
     // Règle 4.7 : Anti-spam (limiter à 1 alerte non résolue par produit par utilisateur)
     const existing = await this.prisma.demandAlert.findFirst({
       where: {
@@ -30,8 +30,8 @@ export class AlertsService {
       data: {
         userId,
         productId,
-        latitude,
-        longitude,
+        city,
+        neighborhood,
         storeId,
       },
     });

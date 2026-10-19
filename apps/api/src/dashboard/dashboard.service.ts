@@ -14,13 +14,13 @@ export class DashboardService {
     
     // Distributeurs inactifs
     const inactiveStores = await this.prisma.store.count({
-      where: { updatedAt: { lt: fortyEightHoursAgo }, isActive: true }
+      where: { updatedAt: { lt: fortyEightHoursAgo }, isVisible: true }
     });
 
     // Risque de rupture avancé (Tâche 9.3)
-    // On détecte si le stock est < 5 ET s'il y a eu des commandes récentes
+    // On détecte si le niveau de stock est FAIBLE ou RUPTURE
     const riskyInventories = await this.prisma.inventory.findMany({
-      where: { quantity: { lte: 5 } },
+      where: { level: { in: ['FAIBLE', 'RUPTURE'] } },
       include: { store: true, product: true }
     });
 
@@ -28,13 +28,13 @@ export class DashboardService {
       {
         id: '1',
         title: 'Mises à jour Distributeurs',
-        description: \`\${inactiveStores} distributeurs actifs n'ont pas mis à jour leur stock depuis 48 h\`,
+        description: `${inactiveStores} distributeurs actifs n'ont pas mis à jour leur stock depuis 48 h`,
         level: inactiveStores > 10 ? 'HIGH' : 'LOW'
       },
       {
         id: '2',
         title: 'Risque de Rupture Éminent',
-        description: \`\${riskyInventories.length} références sont en seuil d'alerte critique dans le réseau\`,
+        description: `${riskyInventories.length} références sont en seuil d'alerte critique dans le réseau`,
         level: riskyInventories.length > 5 ? 'HIGH' : 'MEDIUM'
       }
     ];
@@ -57,7 +57,7 @@ export class DashboardService {
     // On pourrait ajouter d'autres pénalités (ruptures fréquentes, mauvaises notes, etc.)
     score = Math.max(0, Math.min(100, Math.round(score)));
     
-    let badges = [];
+    let badges: string[] = [];
     if (score >= 90 && totalOrders > 50) badges.push("TOP_SELLER");
     if (score >= 80) badges.push("RELIABLE");
 
@@ -86,20 +86,28 @@ export class DashboardService {
     
     const activeStores = await this.prisma.store.count({ 
       where: { 
-        isActive: true,
+        isVisible: true,
         ...(filters.city ? { city: filters.city } : {})
       } 
+    });
+
+    const avgScoreQuery = await this.prisma.store.aggregate({
+      _avg: { reliabilityScore: true },
+      where: {
+        isVisible: true,
+        ...(filters.city ? { city: filters.city } : {})
+      }
     });
 
     return {
       totalOrders,
       totalRevenue: revenueQuery._sum.totalAmount || 0,
       activeStores,
-      averageReliabilityScore: 92 // Mock
+      averageReliabilityScore: Math.round(avgScoreQuery._avg.reliabilityScore ?? 100)
     };
   }
 
-  async getHeatmapData() {
+  async getHeatmapData(): Promise<any[]> {
     return this.prisma.heatmapEvent.findMany({
       take: 1000,
       orderBy: { createdAt: 'desc' }
@@ -138,6 +146,6 @@ export class DashboardService {
 
     // Generate buffer
     const buffer = await workbook.xlsx.writeBuffer();
-    return buffer as Buffer;
+    return Buffer.from(buffer);
   }
 }

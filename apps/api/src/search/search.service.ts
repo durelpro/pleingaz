@@ -1,100 +1,225 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, BadRequestException } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
+
+export interface NearbySearchParams {
+  productId: string;
+  latitude?: number;
+  longitude?: number;
+  radiusKm?: number;
+  city?: string;
+  neighborhood?: string;
+  textQuery?: string;
+  userId?: string;
+}
 
 @Injectable()
 export class SearchService {
   constructor(private readonly prisma: PrismaService) {}
 
   /**
-   * Tâche 4.5 & 4.6 : Recherche géospatiale et textuelle
+   * D-02: Recherche géolocalisée des distributeurs PLEINGAZ à proximité
+   * - Calcul précis par formule de Haversine (distance sphérique terrestre)
+   * - Rayon paramétrable (défaut 5 km selon platformSettings)
+   * - Confidentialité D-02: AUCUNE coordonnée GPS brute client persistée en base.
    */
-  async searchStores(params: {
-    productId: string;
-    latitude?: number;
-    longitude?: number;
-    radiusKm?: number; // Défaut: 5
-    textQuery?: string;
-    userId?: string;
-  }) {
-    const { productId, latitude, longitude, textQuery, userId } = params;
-    const radiusMeters = (params.radiusKm || 5) * 1000;
-
-    let queryCondition = `WHERE i."productId" = $1 AND s."isVisible" = true AND s."isVerifiedBadge" = true`;
-    const queryParams: any[] = [productId];
-    let paramIndex = 2;
-
-    // Condition textuelle (pg_trgm + unaccent)
-    if (textQuery) {
-      queryCondition += ` AND (
-        unaccent(s.neighborhood) ILIKE unaccent($${paramIndex}) 
-        OR unaccent(s.city) ILIKE unaccent($${paramIndex})
-        OR unaccent(s.landmark) ILIKE unaccent($${paramIndex})
-        OR s.neighborhood % $${paramIndex}
-      )`;
-      queryParams.push(`%${textQuery}%`);
-      paramIndex++;
+  async searchStores(params: NearbySearchParams) {
+    if (!params.productId) {
+      throw new BadRequestException('Le productId est obligatoire pour rechercher les distributeurs disponibles.');
     }
 
-    // Condition géospatiale (PostGIS)
-    let orderBy = `ORDER BY i.level ASC, s."updatedAt" DESC`; // High level d'abord par ex
-    if (latitude !== undefined && longitude !== undefined) {
-      queryCondition += ` AND ST_DWithin(
-        ST_MakePoint(s.longitude, s.latitude)::geography,
-        ST_MakePoint($${paramIndex}, $${paramIndex + 1})::geography,
-        $${paramIndex + 2}
-      )`;
-      
-      orderBy = `ORDER BY distance ASC, i.level ASC`;
-      queryParams.push(longitude, latitude, radiusMeters);
-      paramIndex += 3;
-    }
+    // Récupération du rayon par défaut configuré sur la plateforme
+    const settings = await this.prisma.platformSettings.findUnique({
+      where: { id: 'singleton' },
+      select: { searchDefaultRadiusKm: true },
+    });
+    const effectiveRadiusKm = params.radiusKm || settings?.searchDefaultRadiusKm || 5;
 
-    // Requête principale
-    const sql = `
-      SELECT 
-        s.id, s.name, s.neighborhood, s.city, s.landmark, s."whatsappNumber",
-        s.latitude, s.longitude,
-        i.level as "stockLevel", i."lastConfirmedAt",
-        ${latitude !== undefined && longitude !== undefined 
-          ? `ST_Distance(ST_MakePoint(s.longitude, s.latitude)::geography, ST_MakePoint(${longitude}, ${latitude})::geography) as distance`
-          : `0 as distance`}
-      FROM "Store" s
-      JOIN "Inventory" i ON s.id = i."storeId"
-      ${queryCondition}
-      ${orderBy}
-      LIMIT 20
-    `;
+    const hasCoordinates =
+      params.latitude !== undefined &&
+      params.longitude !== undefined &&
+      !isNaN(params.latitude) &&
+      !isNaN(params.longitude);
 
-    const results = await this.prisma.$queryRawUnsafe<any[]>(sql, ...queryParams);
+    let storesWithInventory: any[] = [];
 
-    // Tâche 4.6 : Journaliser les recherches (surtout si pas de résultat pour analyse métier)
-    if (results.length === 0 || textQuery) {
-      await this.prisma.searchEvent.create({
-        data: {
-          userId,
-          searchQuery: textQuery,
-          latitude,
-          longitude,
-          radiusKm: params.radiusKm,
-          resultsCount: results.length,
+    if (hasCoordinates) {
+      // Recherche géolocalisée par formule Haversine en SQL compatible PostgreSQL standard
+      const lat = params.latitude!;
+      const lng = params.longitude!;
+
+      const sql = `
+        SELECT 
+          s.id,
+          s.name,
+          s.neighborhood,
+          s.city,
+          s.landmark,
+          s."whatsappNumber",
+          s.latitude,
+          s.longitude,
+          s."isVerifiedBadge",
+          s."deliveryAvailable",
+          s."reliabilityScore",
+          i.level as "stockLevel",
+          i."lastConfirmedAt",
+          (
+            6371 * acos(
+              LEAST(1.0, GREATEST(-1.0,
+                cos(radians($1)) * cos(radians(s.latitude)) * cos(radians(s.longitude) - radians($2))
+                + sin(radians($1)) * sin(radians(s.latitude))
+              ))
+            )
+          ) AS "distanceKm"
+        FROM "Store" s
+        JOIN "Inventory" i ON s.id = i."storeId"
+        WHERE i."productId" = $3
+          AND s."isVisible" = true
+          AND s."isVerifiedBadge" = true
+          AND (
+            6371 * acos(
+              LEAST(1.0, GREATEST(-1.0,
+                cos(radians($1)) * cos(radians(s.latitude)) * cos(radians(s.longitude) - radians($2))
+                + sin(radians($1)) * sin(radians(s.latitude))
+              ))
+            )
+          ) <= $4
+        ORDER BY "distanceKm" ASC, i."lastConfirmedAt" DESC
+        LIMIT 25;
+      `;
+
+      storesWithInventory = await this.prisma.$queryRawUnsafe<any[]>(
+        sql,
+        lat,
+        lng,
+        params.productId,
+        effectiveRadiusKm
+      );
+    } else {
+      // Recherche par zone macro (repli en cas de timeout GPS ou refus géoloc)
+      const where: any = {
+        isVisible: true,
+        isVerifiedBadge: true,
+        inventories: {
+          some: { productId: params.productId },
+        },
+      };
+
+      if (params.city) {
+        where.city = { contains: params.city, mode: 'insensitive' };
+      }
+      if (params.neighborhood) {
+        where.neighborhood = { contains: params.neighborhood, mode: 'insensitive' };
+      }
+      if (params.textQuery) {
+        where.OR = [
+          { city: { contains: params.textQuery, mode: 'insensitive' } },
+          { neighborhood: { contains: params.textQuery, mode: 'insensitive' } },
+          { landmark: { contains: params.textQuery, mode: 'insensitive' } },
+          { name: { contains: params.textQuery, mode: 'insensitive' } },
+        ];
+      }
+
+      const rawStores = await this.prisma.store.findMany({
+        where,
+        take: 25,
+        orderBy: { updatedAt: 'desc' },
+        include: {
+          inventories: {
+            where: { productId: params.productId },
+            take: 1,
+          },
         },
       });
+
+      storesWithInventory = rawStores.map((s) => ({
+        id: s.id,
+        name: s.name,
+        neighborhood: s.neighborhood,
+        city: s.city,
+        landmark: s.landmark,
+        whatsappNumber: s.whatsappNumber,
+        latitude: s.latitude,
+        longitude: s.longitude,
+        isVerifiedBadge: s.isVerifiedBadge,
+        deliveryAvailable: s.deliveryAvailable,
+        reliabilityScore: s.reliabilityScore,
+        stockLevel: s.inventories[0]?.level || 'RUPTURE',
+        lastConfirmedAt: s.inventories[0]?.lastConfirmedAt || s.updatedAt,
+        distanceKm: null,
+      }));
     }
 
-    // Enrichissement R6 : Libellé métier ("Stock confirmé il y a X min")
-    return results.map(row => {
-      const minutesAgo = Math.floor((Date.now() - new Date(row.lastConfirmedAt).getTime()) / 60000);
-      let freshness = '🔴 Plus de 12h';
-      if (minutesAgo < 60) freshness = '🟢 Moins de 1h';
-      else if (minutesAgo < 180) freshness = '🟠 Moins de 3h';
-      else if (minutesAgo < 720) freshness = '🔴 Moins de 12h';
+    // D-02 & D-03: Journalisation de l'événement de recherche sans coordonnées brutes
+    const coarseArea =
+      params.city ||
+      params.neighborhood ||
+      params.textQuery ||
+      (hasCoordinates ? 'Zone géolocalisée (clic client)' : 'Zone indéterminée');
+
+    await this.prisma.searchEvent.create({
+      data: {
+        userId: params.userId,
+        coarseArea,
+        productId: params.productId,
+        resultsCount: storesWithInventory.length,
+      },
+    });
+
+    // Formatage des métriques d'affichage et de fraîcheur
+    return storesWithInventory.map((store) => {
+      const lastConfirmedDate = store.lastConfirmedAt ? new Date(store.lastConfirmedAt) : null;
+      const minutesAgo = lastConfirmedDate
+        ? Math.floor((Date.now() - lastConfirmedDate.getTime()) / 60000)
+        : null;
+
+      let freshnessLabel = 'Fraîcheur inconnue';
+      if (minutesAgo !== null) {
+        if (minutesAgo < 60) {
+          freshnessLabel = `Confirmé il y a ${minutesAgo} min (🟢 Moins de 1h)`;
+        } else if (minutesAgo < 180) {
+          freshnessLabel = `Confirmé il y a ${Math.floor(minutesAgo / 60)}h (🟠 Moins de 3h)`;
+        } else if (minutesAgo < 720) {
+          freshnessLabel = `Confirmé il y a ${Math.floor(minutesAgo / 60)}h (🔴 Moins de 12h)`;
+        } else {
+          freshnessLabel = `Stock non confirmé depuis plus de 12h (🔴 Risque de rupture)`;
+        }
+      }
+
+      const dist = store.distanceKm !== null && store.distanceKm !== undefined ? Number(store.distanceKm) : null;
 
       return {
-        ...row,
-        distanceStr: row.distance ? \`\${(row.distance / 1000).toFixed(1)} km\` : null,
-        stockFreshness: \`Confirmé il y a \${minutesAgo} min (\${freshness})\`,
-        recommendationReason: row.distance && row.distance < 2000 ? '📍 Le plus proche' : (row.stockLevel === 'HIGH' ? '🔥 Beaucoup de stock' : ''),
+        id: store.id,
+        name: store.name,
+        neighborhood: store.neighborhood,
+        city: store.city,
+        landmark: store.landmark,
+        whatsappNumber: store.whatsappNumber,
+        deliveryAvailable: store.deliveryAvailable,
+        reliabilityScore: store.reliabilityScore,
+        stockLevel: store.stockLevel,
+        lastConfirmedAt: store.lastConfirmedAt,
+        distanceKm: dist !== null ? Math.round(dist * 10) / 10 : null,
+        distanceStr: dist !== null ? `${(dist).toFixed(1)} km` : null,
+        stockFreshness: freshnessLabel,
+        recommendationBadge:
+          dist !== null && dist <= 2.0
+            ? '📍 Point relais à proximité (< 2 km)'
+            : store.stockLevel === 'BON'
+            ? '🔥 Stock optimal garanti'
+            : null,
       };
+    });
+  }
+
+  /**
+   * D-02: Recherche de repli par ville et quartier (Fallback après timeout de 8 secondes)
+   */
+  async searchByArea(params: { productId: string; city: string; neighborhood?: string; userId?: string }) {
+    return this.searchStores({
+      productId: params.productId,
+      city: params.city,
+      neighborhood: params.neighborhood,
+      userId: params.userId,
     });
   }
 }
