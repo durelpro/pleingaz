@@ -89,7 +89,7 @@ Ce document prouve que chaque exigence atomique des 5 fichiers sources (Vision, 
 | X-06.02 | Grand livre immuable double entrée (LedgerAccount, LedgerEntry), débit = crédit | LedgerAccount, LedgerEntry | Admin Grand Livre | 03c §1, 05a §5 | 6 | MVP | 06c M34 (CR-001 D-06) |
 | X-06.03 | PayoutBatch créé par Finance, approbation à deux au-delà de seuil, exécution manuelle | PayoutBatch, Payout | Admin Reversements | 03b §9, 05a §5 | 6 | MVP | 06c M34 (CR-001 D-06) |
 | X-06.04 | Remboursements gérés par admin (LATE_SUCCESS auto par défaut), avoirs CreditNote | Refund, CreditNote | Admin Remboursements | 05a §3, 03b §10 | 6 | MVP | 06c M34 (CR-001 D-06) |
-| X-06.05 | Recouvrement créances espèces distributeurs et livreurs, alertes et suspension | Settlement, CashCollection | Admin Trésorerie | 05a §4, 03c §2 | 6 | MVP | 06c M34 (CR-001 D-06) |
+| X-06.05 | Recouvrement créances espèces distributeurs et livreurs, alertes et suspension | PayoutBatch, CashCollection | Admin Trésorerie | 05a §4, 03c §2 | 6 | MVP | 06c M34 (CR-001 D-06) |
 | X-06.06 | Factures immuables émises uniquement par le système, numérotation séquentielle | Invoice, InvoiceSequence | Factures | 03c §1.5, 05a §6 | 6 | MVP | 06c M34 (CR-001 D-06) |
 | X-06.07 | Matrice de séparation des tâches : tableau permission x rôle financier strict | Role, Permission | Admin RBAC | 02 §3.3, 02 §3.1 | 2 | MVP | 06c M34 (CR-001 D-06) |
 | X-06.08 | Tableau de bord financier sur données réelles avec alertes sur écarts et créances | LedgerAccount | Admin Tableau de bord | 05a §5, 02 §1.4 | 6 | MVP | 06c M34 (CR-001 D-06) |

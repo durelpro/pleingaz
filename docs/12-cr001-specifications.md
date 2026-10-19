@@ -5,6 +5,7 @@ Ce document formalise les spécifications exhaustives issues des 6 décisions so
 ---
 
 ## 1. D-01 : Catalogue exclusif PLEINGAZ
+*(Phase de mise en œuvre : Phase 3 — MVP)*
 
 ### 1.1 Règle Métier & Périmètre
 Seuls les produits de marque PLEINGAZ (bouteilles de gaz et accessoires officiels) sont vendus, gérés, recherchés, commandés, facturés et affichés sur l'ensemble des profils applicatifs (visiteur, acheteur, distributeur, livreur, administrateur) et dans l'assistant IA. Toute notion de "marketplace" ou de vente de produits tiers est formellement écartée du périmètre.
@@ -62,6 +63,7 @@ Seuls les produits de marque PLEINGAZ (bouteilles de gaz et accessoires officiel
 ---
 
 ## 2. D-02 : Recherche : Localisation au clic + lieu choisi librement
+*(Phase de mise en œuvre : Phase 4 — MVP)*
 
 ### 2.1 Règle Métier & Confidentialité
 La localisation automatique au chargement de la page est formellement proscrite. L'application ne déclenche la demande de géolocalisation native du navigateur (HTTPS obligatoire) qu'au clic explicite de l'utilisateur sur "Rechercher" ou "J'ai besoin de gaz", précédé d'une mention de transparence : *"PLEINGAZ utilise votre position pour trouver les points de vente proches ; elle n'est pas conservée"*.
@@ -74,12 +76,21 @@ L'utilisateur conserve en permanence la liberté de choisir son lieu manuellemen
     (a) Sélecteur en deux temps : Ville -> Quartier.
     (b) Champ texte d'adresse ou repère ("face pharmacie...") + bouton explicite "Rechercher".
     (c) Carte interactive avec marqueur déplaçable au doigt.
+  - **Mémorisation locale & Droit à l'oubli** : Le navigateur mémorise dans le `localStorage` local du terminal le dernier quartier ou repère choisi pour éviter une re-saisie. Un bouton visible *"Effacer ma position enregistrée"* purge instantanément cette donnée sans trace résiduelle (exigence X-02.06).
 - **Écran de résultats (`/search`)** :
   - Mention explicite d'origine : *"Distance depuis : Ma position"* ou *"Distance depuis : [Lieu choisi]"*.
   - Carte interactive (tuiles Leaflet avec Lazy Loading) ou liste textuelle de secours (20 Ko).
   - Fiche distributeur : distance, statut de stock (`BON`/`MOYEN`/`FAIBLE`/`RUPTURE`), fraîcheur (*"Confirmé il y a X minutes"*), horaires, livraison, boutons d'action (Appel, WhatsApp, Commander).
 
-### 2.3 Spécification des 8 États IHM
+### 2.3 Algorithme de Classement Multi-Critères
+Les résultats de recherche de distributeurs sont triés par un score calculé selon 5 critères ordonnés :
+1. **Distance géographique** : Proximité immédiate calculée depuis le point de référence (GPS au clic ou centroïde du quartier sélectionné).
+2. **Disponibilité qualitative du stock** : Ordre préférentiel strict `BON` > `MOYEN` > `FAIBLE`. Les points de vente en `RUPTURE` sur la référence demandée sont exclus par défaut (ou relégués en fin de liste avec mention explicite si le filtre "afficher tous" est actif).
+3. **Fraîcheur de la déclaration** : Bonus pour les boutiques ayant mis à jour leur stock récemment (`last_updated_at` < 4 heures).
+4. **Ouverture opérationnelle** : Priorisation des points de vente actuellement ouverts selon leurs plages horaires hebdomadaires déclarées (`open_now = true`).
+5. **Capacité de livraison** : Si le client filtre ou active une commande livrée, priorisation des boutiques disposant du service de livraison activé (`delivery_available = true`).
+
+### 2.4 Spécification des 8 États IHM
 1. **Autorisation accordée** : Récupération des coordonnées GPS, affichage des distributeurs avec *"Distance depuis : Ma position"*.
 2. **Localisation en cours** : Indicateur de chargement visuel avec bouton d'annulation et timeout configurable (défaut : 8 secondes).
 3. **Autorisation refusée** : Fermeture propre de la demande native, affichage immédiat et bienveillant du volet de saisie manuelle sans insister ni bloquer l'écran.
@@ -89,8 +100,8 @@ L'utilisateur conserve en permanence la liberté de choisir son lieu manuellemen
 7. **Aucun distributeur dans le rayon** : Message bienveillant *"Aucun point de vente dans ce rayon"*, boutons pour élargir (ex: 10 km, toute la ville), alerte de réapprovisionnement.
 8. **Connexion faible / Hors ligne** : Détection réseau dégradé ou échec de chargement des tuiles cartographiques, bascule automatique sur la **liste de secours textuelle** (20 Ko).
 
-### 2.4 Entités, Paramètres & Endpoints API
-- **`SearchEvent`** : `id`, `session_hash`, `coarse_area` (Ville/Quartier ou maille 1 km), `product_id`, `results_count`, `created_at`. *(Interdiction de persister la latitude/longitude exacte).*
+### 2.5 Entités, Paramètres & Endpoints API
+- **`SearchEvent`** : `id`, `session_hash`, `coarse_area` (Ville/Quartier ou maille 1 km), `product_id`, `results_count`, `created_at`. *(Interdiction absolue de persister la latitude/longitude exacte).*
 - **`Setting`** : `search_default_radius_km` (défaut : 5 km, options : 2, 5, 10, "ville"), `search_gps_timeout_seconds` (défaut : 8 s).
 - `GET /api/v1/stores/search` :
   - Paramètres : `lat` ([-90, 90]), `lng` ([-180, 180]), `radius` (max 50 km), `product_id`, `open_now`, `delivery`, `area_id`, `page`, `limit`.
@@ -98,20 +109,35 @@ L'utilisateur conserve en permanence la liberté de choisir son lieu manuellemen
 - `POST /api/v1/geo/geocode` :
   - Géocodage d'adresse/repère backend via Nominatim bridé (1 req/sec max par IP/session, cache local PostGIS, pas d'autocomplétion à la frappe).
 
-### 2.5 Critères d'Acceptation Testables
+### 2.6 Permissions RBAC & Événements d'Audit
+- Permissions : Accès public sans authentification pour la recherche ; journalisation anonymisée.
+- AuditLog : `SEARCH_PERFORMED` (enregistre uniquement `coarse_area`, `product_id`, `results_count` ; zéro coordonnée GPS brute).
+
+### 2.7 Critères d'Acceptation Testables
 1. Le chargement initial de la page d'accueil ne déclenche aucun appel à l'API `navigator.geolocation`.
 2. Le refus d'autorisation par l'utilisateur bascule directement sur le formulaire manuel sans alerte intrusive répétée.
 3. Les requêtes `GET /api/v1/stores/search` avec coordonnées hors bornes ou hors Cameroun renvoient une erreur 400 documentée.
 4. En simulation de connexion 3G bridée avec tuiles bloquées, l'IHM affiche la liste texte en moins de 2,5 s (LCP conforme).
+5. L'activation du bouton "Effacer ma position enregistrée" purge immédiatement la clé `localStorage` correspondante.
 
 ---
 
 ## 3. D-03 : Tous les comptes rendus dans l'administration, zéro donnée fictive
+*(Phase de mise en œuvre : Phase 2 [Socle & Garde-fous] & Phase 6 [Reporting & Contrôle Financier] — MVP)*
 
 ### 3.1 Règle Métier & Cloisonnement
-Tous les rapports, tableaux de bord de pilotage, statistiques consolidées et métriques de réseau sont strictement réservés au **Control Center Administrateur**. Tout chiffre affiché provient directement d'une requête SQL sur la base de données réelle. Aucune donnée fictive (valeur en dur, graphique d'exemple, placeholder inventé) n'est tolérée en production. Les graines (`seeds`) `is_demo` sont confinées au développement. Les clients, distributeurs et livreurs n'accèdent qu'à leurs données opérationnelles propres (le distributeur consulte un relevé personnel en lecture seule).
+Tous les rapports, tableaux de bord de pilotage, statistiques consolidées et métriques de réseau sont strictement réservés au **Control Center Administrateur**. Tout chiffre affiché provient directement d'une requête SQL sur la base de données réelle. Aucune donnée fictive (valeur en dur, graphique d'exemple, placeholder inventé) n'est tolérée en production. Les graines (`seeds`) `is_demo` sont confinées au développement. Les clients et livreurs n'accèdent qu'à leurs données opérationnelles propres.
 
-### 3.2 Liste Exhaustive des 15 Rapports du Control Center
+### 3.2 Relevé Personnel du Distributeur (`/distributor/statement`)
+Le distributeur dispose d'une consultation en **lecture seule** strictement circonscrite à son point de vente :
+- Nombre total de commandes reçues, validées et livrées.
+- Montant brut total des ventes réalisées (FCFA).
+- Montant cumulé des commissions prélevées par PLEINGAZ (FCFA).
+- Historique des lots de reversements perçus avec références de transaction réelles.
+- Solde net en attente de reversement (créance envers PLEINGAZ).
+- **Cloisonnement hermétique** : Zéro accès aux indicateurs consolidés du réseau, zéro comparaison sectorielle, zéro visibilité sur les volumes ou marges d'autres distributeurs.
+
+### 3.3 Liste Exhaustive des 15 Rapports du Control Center
 | Réf | Rapport | Définition & Métrique Source | Entités Sources | Filtres Disponibles | Permission Requise | Exports Disponibles |
 |---|---|---|---|---|---|:---:|
 | **R01** | **Ventes & CA** | Somme des ventes nettes, panier moyen, volume par produit | `Order`, `OrderItem`, `Payment` | Jour, semaine, mois, année, ville, distributeur, produit | `report:view_finance` | PDF, CSV, Excel |
@@ -130,20 +156,41 @@ Tous les rapports, tableaux de bord de pilotage, statistiques consolidées et m�
 | **R14** | **Pistes d'Audit Trail** | Journal immuable de l'ensemble des actions sensibles du staff | `AuditLog` | Rôle, utilisateur, type d'action, période | `audit:view` | CSV, Excel |
 | **R15** | **Santé de la Plateforme** | Taux de disponibilité API, état des files BullMQ, erreurs webhook | Métriques système, jobs | Période, composant | `system:monitor` | N/A (Vue direct) |
 
-### 3.3 Traitement des États Vides & Fraîcheur
+### 3.4 Confinement des Données Démo & Préproduction
+- Variable d'environnement `ALLOW_DEMO_SEED=true` : strictement restreinte aux environnements de test unitaire/E2E et développement local.
+- En environnement de préproduction / staging :
+  - Présence permanente d'un **bandeau d'avertissement visuel** en haut de chaque page : *"ENVIRONNEMENT DE TEST — DONNÉES SIMULÉES"*.
+  - Filigrane diagonal indélébile sur tout export de document (PDF, relevé).
+- En environnement de production :
+  - Vérification binaire au démarrage du serveur : si `ALLOW_DEMO_SEED=true` ou si une graine de démo est détectée, le serveur interrompt immédiatement son amorçage avec une erreur fatale (`FATAL: Demo data forbidden in production`).
+  - Requêtes de reporting systématiquement filtrées avec clause `WHERE is_demo = false` ou équivalent architectural.
+
+### 3.5 Traitement des États Vides & Fraîcheur
 - Tout écran affiche un message explicite adapté à la vue : *"Aucune commande pour le moment"*, *"Aucun point de vente en attente"*, avec des compteurs à `0` réel.
 - Distinction stricte dans l'interface entre un résultat à `0` et une indisponibilité technique de chargement.
 - Chaque rapport affiche son horodatage de génération : *"Calculé le DD/MM/YYYY à HH:mm (données en direct)"*.
 - Tout export de fichier (PDF, CSV, Excel) consigne une trace dans `AuditLog` avec l'identifiant de l'administrateur et les filtres appliqués.
 
-### 3.4 Critères d'Acceptation Testables
+### 3.6 Endpoints API (`/api/v1`)
+- `GET /api/v1/admin/reports/:reportId` : Données du rapport R01 à R15 selon permissions (Admin / Finance / Logistics).
+- `POST /api/v1/admin/reports/:reportId/export` : Export PDF, CSV ou Excel du rapport (Action auditée).
+- `GET /api/v1/distributor/statement` : Consultation du relevé personnel en lecture seule (Distributeur authentifié).
+
+### 3.7 Permissions RBAC & Événements d'Audit
+- Permissions : `report:view_finance`, `report:view_analytics`, `distributor:statement_view`, `audit:view`.
+- AuditLog : `REPORT_VIEWED`, `REPORT_EXPORTED`, `DISTRIBUTOR_STATEMENT_VIEWED`.
+
+### 3.8 Critères d'Acceptation Testables
 1. **Test Base Vide (06b)** : Sur une base de données entièrement purgée de données métier, chaque écran et endpoint de reporting retourne HTTP 200 avec des compteurs à 0 et des messages d'état vide conformes, sans aucune erreur 500 ni valeur fictive.
 2. Toute tentative d'accès à un rapport d'administration par un utilisateur détenant un rôle `CUSTOMER`, `DISTRIBUTOR` ou `COURIER` est rejetée avec HTTP 403.
-3. Les données associées au marqueur `is_demo = true` sont formellement exclues de toutes les requêtes en environnement de production (`NODE_ENV=production`).
+3. Un distributeur tentant d'accéder au relevé d'un autre distributeur via l'API se voit retourner HTTP 403 / 404 (contrôle d'isolation strict).
+4. Le démarrage de l'application en environnement `NODE_ENV=production` avec la variable `ALLOW_DEMO_SEED=true` échoue immédiatement avec code d'erreur non nul.
+5. Tout export de rapport produit une ligne d'audit infalsifiable avec horodatage, ID utilisateur et paramètres de filtre.
 
 ---
 
 ## 4. D-04 : Documents du distributeur : trois seulement
+*(Phase de mise en œuvre : Phase 3 — MVP)*
 
 ### 4.1 Règle Métier & Réduction KYC
 À la création du compte distributeur, le dossier de candidature exige strictement et exclusivement :
@@ -151,6 +198,7 @@ Tous les rapports, tableaux de bord de pilotage, statistiques consolidées et m�
 2. **La photo d'identité de la personne** : Portrait récent (`PORTRAIT_PHOTO`).
 3. **La photo du lieu de vente** : Vue extérieure de la boutique physique (`SHOP_PHOTO`).
 Toute exigence de registre du commerce, NIU, patente ou "documents administratifs" est intégralement supprimée.
+*Transposition aux livreurs* : Le dossier d'enrôlement des livreurs applique le même principe souverain de minimisation documentaire (pièce d'identité officielle, portrait photo récent et pièce de conformité du véhicule si motorisé, à l'exclusion de tout certificat ou extrait fiscal superflu).
 
 ### 4.2 Spécifications Techniques & Sécurité Upload
 - **Formats acceptés** : JPEG, PNG, WebP uniquement (vérification des magic bytes côté serveur, pas uniquement de l'extension).
@@ -180,41 +228,88 @@ Toute exigence de registre du commerce, NIU, patente ou "documents administratif
 - `GET /api/v1/admin/distributors/:id/documents` : Récupération des URL signées sécurisées (Action auditée).
 - `POST /api/v1/admin/distributors/:id/review` : Décision d'approbation ou rejet avec motif.
 
+### 4.5 Permissions RBAC & Événements d'Audit
+- Permissions : `document:upload` (`DISTRIBUTOR`, `COURIER`), `document:view_identity` (`ADMIN`, `SUPER_ADMIN`), `distributor:approve` (`ADMIN`, `SUPER_ADMIN`).
+- AuditLog : `KYC_DOCUMENT_UPLOADED`, `KYC_DOCUMENT_VIEWED` (avec ID administrateur, ID document, TTL URL signée 15 min), `KYC_APPLICATION_APPROVED`, `KYC_APPLICATION_REJECTED` (avec motif obligatoire).
+
+### 4.6 Critères d'Acceptation Testables
+1. Tout fichier téléversé dont l'entête binaire (magic bytes) ne correspond pas à un type image JPEG, PNG ou WebP valide est rejeté côté serveur avec HTTP 400.
+2. Tout fichier téléversé contenant des métadonnées EXIF (coordonnées GPS d'origine, horodatage appareil, marque) voit ces données entièrement purgées avant enregistrement permanent dans le stockage S3.
+3. Les URLs de consultation d'identité générées expirent obligatoirement après 15 minutes (tout accès ultérieur retourne HTTP 403 Expired).
+4. Toute tentative d'envoi d'un 4ème document administratif (RCCM, patente, extrait fiscal) est rejetée ou ignorée par le serveur.
+5. Toute consultation de document d'identité par un membre du personnel produit immédiatement une entrée dans `AuditLog`.
+
 ---
 
 ## 5. D-05 : Livreurs sur la plateforme
+*(Phase de mise en œuvre : Phase 5 — MVP)*
 
 ### 5.1 Règle Métier & Modèle d'Exploitation
 Les livreurs sont des utilisateurs à part entière de la plateforme, rattachés au rôle dédié **LIVREUR** (`COURIER`). Ils sont créés, validés et supervisés sous le contrôle direct de l'administration PLEINGAZ (invitation ou candidature validée par l'admin, non rattachés en direct à la boutique d'un distributeur). Un même numéro de téléphone peut détenir le profil acheteur et le profil livreur.
 
-### 5.2 Interface Mobile Livreur (`/courier`)
-Interface ultra-légère conçue pour les smartphones Android d'entrée de gamme et connexions instables :
-- **Onglet "Missions"** : Liste des livraisons assignées avec priorité, distance et état.
-- **Fiche Mission active** :
-  - Adresse avec repère textuel descriptif et bouton de localisation sur carte.
-  - Références PLEINGAZ exactes à livrer et indication d'échange de consigne vide.
-  - Bouton d'appel téléphonique et bouton d'ouverture de message WhatsApp pré-rempli.
-  - Boutons d'avancement d'état : *"Récupéré chez le distributeur"* (`PICKED_UP`), *"En route"* (`IN_TRANSIT`), *"Livré"* (`DELIVERED`) avec **saisie obligatoire du code de confirmation** remis par le client, ou *"Échec de livraison"* (`FAILED`) avec motif obligatoire.
-- **Onglet "Mes Gains & Caisse"** : Historique des rémunérations acquises et cumul des espèces collectées détenues en caisse.
-- **Mode hors ligne partiel** : Mémorisation locale de la mission active et synchronisation dès retour du réseau.
+### 5.2 Écrans Livreur & Administration
+1. **Interface Mobile Livreur (`/courier`)** :
+   - Interface ultra-légère conçue pour les smartphones Android d'entrée de gamme et connexions instables.
+   - **Onglet "Missions"** : Liste des livraisons assignées avec priorité, distance et état.
+   - **Fiche Mission active** :
+     - Adresse avec repère textuel descriptif et bouton de localisation sur carte.
+     - Références PLEINGAZ exactes à livrer et indication d'échange de consigne vide.
+     - Bouton d'appel téléphonique et bouton d'ouverture de message WhatsApp pré-rempli.
+     - Boutons d'avancement d'état : *"Récupéré chez le distributeur"* (`PICKED_UP`), *"En route"* (`IN_TRANSIT`), *"Livré"* (`DELIVERED`) avec **saisie obligatoire du code de confirmation** remis par le client, ou *"Échec de livraison"* (`FAILED`) avec motif obligatoire.
+   - **Onglet "Mes Gains & Caisse"** : Historique des rémunérations acquises et cumul des espèces collectées détenues en caisse.
+   - **Mode hors ligne partiel** : Mémorisation locale de la mission active et synchronisation dès retour du réseau.
+2. **Admin — Gestion des Livreurs (`/admin/couriers`)** :
+   - Annuaire complet, vérification des dossiers d'identité, validation (`APPROVED`), suspension (`SUSPENDED`), affectation de zones.
+3. **Admin — Régulation des Livraisons (`/admin/dispatch`)** :
+   - Tableau de bord de dispatch en direct : affectation manuelle assistée, détection des courses en souffrance, réattribution sur timeout.
+4. **Admin — Suivi Caisse Espèces Livreurs (`/admin/courier-cash`)** :
+   - Suivi consolidé des dettes d'espèces par livreur, alertes de dépassement de seuil d'encaissement, enregistrement des remises physiques de fonds.
 
 ### 5.3 Cycle de Vie & Attribution des Livraisons
 - **Attribution** : Manuelle par l'administrateur ou le `LOGISTICS_MANAGER` au MVP, assistée par suggestion algorithmique (zone géographique, statut de disponibilité, nombre de courses actives). Délai d'acceptation par le livreur configurable dans `Setting` (défaut : 10 minutes) ; en cas de non-réponse, la mission est réattribuée.
 - **Suivi logistique** : Statuts événementiels stricts au MVP ; le suivi GPS continu en temps réel est classé hors MVP (`H16`).
-- **Gestion des espèces à la remise** : En cas de paiement à la livraison, le livreur encaisse les fonds. Le système enregistre une ligne `CashCollection`. Les espèces constituent une créance du livreur envers PLEINGAZ. Un plafond d'encaissement est paramétré dans `Setting` (exemple illustratif : 50 000 FCFA). Dès dépassement, de nouvelles attributions sont bloquées jusqu'à remise des fonds.
+- **Gestion des espèces à la remise** : En cas de paiement à la livraison, le livreur encaisse les fonds. Le système enregistre une ligne `CashCollection`. Les espèces constituent une créance du livreur envers PLEINGAZ. Un plafond d'encaissement est paramétré dans `Setting` *(défaut appliqué, à confirmer : exemple 50 000 FCFA)*. Dès dépassement, de nouvelles attributions sont bloquées jusqu'à remise des fonds.
 
 ### 5.4 Entités, Permissions & Machines d'États
-- **`Courier`** : `id` (PK), `user_id` (FK -> `User`), `vehicle_type` (`MOTO`, `VELO`, `VOITURE`, `PIED`), `status` (`PENDING`, `APPROVED`, `SUSPENDED`, `INACTIVE`), `cash_balance` (Integer FCFA), `created_at`.
+- **`Courier`** : `id` (PK), `user_id` (FK -> `User`), `vehicle_type` (`MOTO`, `VELO`, `VOITURE`, `PIED`), `status` (`PENDING`, `APPROVED`, `SUSPENDED`, `INACTIVE` ; état `REJECTED` par défaut appliqué, à confirmer), `cash_balance` (Integer FCFA), `created_at`.
 - **`CourierAvailability`** : `courier_id` (FK), `is_online` (Boolean), `last_seen_at`.
 - **`CourierZone`** : `courier_id` (FK), `area_name`, `city`.
 - **`DeliveryAssignment`** : `id`, `delivery_id`, `courier_id`, `status` (`PROPOSED`, `ACCEPTED`, `REJECTED`, `EXPIRED`), `timeout_at`.
-- **`CashCollection`** : `id`, `delivery_id`, `courier_id`, `amount`, `status` (`COLLECTED`, `REMITTED_TO_PLEINGAZ`, `DISPUTED`).
+- **`CashCollection`** : `id`, `delivery_id`, `courier_id`, `amount` (Integer FCFA), `status` (`COLLECTED`, `REMITTED_TO_PLEINGAZ`, `DISPUTED`).
 - **`Delivery`** (enrichie) : `id`, `order_id`, `courier_id`, `status` (`PENDING`, `ASSIGNED`, `PICKED_UP`, `IN_TRANSIT`, `DELIVERED`, `FAILED`, `CANCELLED`), `confirmation_code` (Hash du code à 4-6 chiffres), `failure_reason`.
-- **RBAC (9 rôles)** : Rôle `COURIER` doté des permissions `courier:view_assigned`, `courier:update_delivery_status`, `courier:set_availability`. Permissions de supervision `courier:manage` et `delivery:assign` confiées à `LOGISTICS_MANAGER` et `ADMIN`.
+- **`FeeSchedule`** : `id`, `area_id` nullable, `delivery_fee_customer` (Integer FCFA), `courier_payout` (Integer FCFA), `pleingaz_margin` (Integer FCFA), `effective_from`, `effective_to` nullable, `status` (`PROPOSED`, `APPROVED`, `EXPIRED`), `created_by`, `approved_by`.
+- **`CourierPayout`** : `id`, `courier_id`, `payout_batch_id`, `gross_deliveries_amount`, `cash_deduction_amount`, `net_payout_amount`, `status` (`PENDING`, `APPROVED`, `PAID`, `CANCELLED`).
+- **RBAC (9 rôles)** : Rôle `COURIER` doté des permissions `courier:view_assigned`, `courier:update_delivery_status`, `courier:set_availability`. Permissions de supervision `courier:manage`, `delivery:assign` et `courier_cash:reconcile` confiées à `LOGISTICS_MANAGER`, `ADMIN` et `SUPER_ADMIN`.
+
+### 5.5 Endpoints API (`/api/v1`)
+- `GET /api/v1/courier/deliveries/assigned` : Liste des livraisons assignées au livreur connecté.
+- `POST /api/v1/courier/deliveries/:id/accept` : Acceptation de la course par le livreur.
+- `POST /api/v1/courier/deliveries/:id/pickup` : Confirmation de prise en charge boutique (`PICKED_UP`).
+- `POST /api/v1/courier/deliveries/:id/start-transit` : Départ vers le client (`IN_TRANSIT`).
+- `POST /api/v1/courier/deliveries/:id/complete` : Validation de livraison (`DELIVERED`) avec saisie du code secret client (4-6 chiffres) et enregistrement du paiement en espèces.
+- `POST /api/v1/courier/deliveries/:id/fail` : Déclaration d'échec de livraison avec motif obligatoire.
+- `PUT /api/v1/courier/availability` : Déclaration en ligne / hors ligne.
+- `GET /api/v1/courier/cash-balance` : Consultation du solde d'espèces détenu et des gains acquis.
+- `GET /api/v1/admin/couriers` : Annuaire et supervision des livreurs (Admin / Logistics).
+- `POST /api/v1/admin/couriers/:id/approve` : Approbation du dossier livreur.
+- `POST /api/v1/admin/dispatch/assign` : Assignation ou réassignation d'une livraison.
+- `POST /api/v1/admin/couriers/:id/cash-remit` : Validation d'une remise d'espèces au siège.
+
+### 5.6 Permissions RBAC & Événements d'Audit
+- Permissions : `courier:view_assigned`, `courier:update_delivery_status`, `courier:set_availability`, `courier:manage`, `delivery:assign`, `courier_cash:reconcile`.
+- AuditLog : `COURIER_INVITED`, `COURIER_APPROVED`, `DELIVERY_ASSIGNED`, `DELIVERY_ACCEPTED`, `DELIVERY_PICKED_UP`, `DELIVERY_IN_TRANSIT`, `DELIVERY_DELIVERED`, `DELIVERY_FAILED`, `CASH_COLLECTED`, `CASH_REMITTED`.
+
+### 5.7 Critères d'Acceptation Testables
+1. L'état `DELIVERED` ne peut en aucun cas être validé par le livreur sans soumission du code secret exact à 4-6 chiffres (rejet HTTP 400 en cas de code absent ou erroné).
+2. Dès que le solde cumulé d'espèces `cash_balance` d'un livreur atteint le seuil paramétré *(défaut appliqué, à confirmer : exemple 50 000 FCFA)*, le système refuse toute nouvelle affectation de course avec encaissement à la livraison.
+3. À l'expiration du temps d'attente d'acceptation (`timeout_at`), la mission est automatiquement libérée (`EXPIRED`) pour réattribution sans blocage de la commande.
+4. Un livreur tentant d'accéder aux données d'une course assignée à un confrère se voit refuser l'accès avec HTTP 403 / 404 (isolation stricte IDOR).
+5. Les coordonnées de contact du client (nom, téléphone, repère précis) sont purgées ou masquées dans l'application livreur 24 heures après la livraison réussie.
 
 ---
 
 ## 6. D-06 : Finances contrôlées par l'administrateur
+*(Phase de mise en œuvre : Phase 6 — MVP)*
 
 ### 6.1 Règle Métier & Séparation des Tâches (Maker-Checker)
 L'ensemble des paramètres, barèmes, créances, factures, remboursements et reversements est exclusivement administré par le **Control Center**. Aucun distributeur ni livreur ne peut fixer un prix, créer une facture ou exécuter un virement.
@@ -237,14 +332,16 @@ Pour toute transaction financière (paiement, commission, dette d'espèces, reve
   - `6010` : Charges de Frais Opérateurs Mobile Money (Charge)
   - `6020` : Charges de Rémunération des Livraisons (Charge)
 
-### 6.3 Processus de Reversement & Remboursement
+### 6.3 Processus de Reversement, Remboursement & Clôture
 - **Reversements Distributeurs & Livreurs (`PayoutBatch`)** :
   - Regroupement périodique (ex: hebdomadaire) créé par le `FINANCE_MANAGER`.
-  - Double validation obligatoire (`ADMIN` ou `SUPER_ADMIN`) dès que le montant dépasse le seuil configuré dans `Setting` *(défaut appliqué, à confirmer)*.
+  - Double validation obligatoire (`ADMIN` ou `SUPER_ADMIN`) dès que le montant dépasse le seuil configuré dans `Setting` *(défaut appliqué, à confirmer : exemple 500 000 FCFA)*.
   - Exécution manuelle au MVP : saisie du numéro de transaction réel MTN/Orange et upload de la preuve de transfert ; passage à l'état `EXECUTED` avec génération des écritures de débit des dettes et crédit de trésorerie.
 - **Remboursements (`Refund`) & Avoirs (`CreditNote`)** :
   - Tout incident de paiement `LATE_SUCCESS` (succès reçu après expiration de réservation) déclenche par défaut un remboursement.
   - Tout remboursement engendre automatiquement un avoir immuable (`CreditNote`) rattaché à la facture d'origine.
+- **Clôture Comptable Journalière (`Daily Accounting Close`)** :
+  - Job planifié de fin de journée vérifiant l'équilibre parfait `SUM(debit) == SUM(credit)` sur l'ensemble de la journée et gelant la balance journalière.
 - **Sécurité financière renforcée** :
   - Authentification forte **TOTP obligatoire** pour toute validation de barème ou de lot financier.
   - Durée de session raccourcie (15 minutes d'inactivité) pour les rôles financiers.
@@ -265,6 +362,30 @@ Pour toute transaction financière (paiement, commission, dette d'espèces, reve
 | `ledger:view` (Consulter le grand livre complet) | ✅ | ✅ | ✅ | ❌ | ❌ |
 | `cash:reconcile` (Rapprocher caisse espèces / dettes) | ✅ | ❌ | ✅ | ❌ | ❌ |
 | `report:view_finance` (Consulter les rapports financiers) | ✅ | ✅ | ✅ | ❌ | ❌ |
+
+### 6.5 Endpoints API (`/api/v1/admin/finance/*`)
+- `POST /api/v1/admin/finance/prices/propose` : Proposition d'un barème prix catalogue (Maker).
+- `POST /api/v1/admin/finance/prices/:id/approve` : Validation barème prix catalogue (Checker).
+- `POST /api/v1/admin/finance/fees/propose` : Proposition barème commissions et frais livraison (Maker).
+- `POST /api/v1/admin/finance/fees/:id/approve` : Validation barème commissions et frais livraison (Checker).
+- `POST /api/v1/admin/finance/payouts/batches` : Création d'un lot de reversement (Maker).
+- `POST /api/v1/admin/finance/payouts/batches/:id/approve` : Approbation du lot de reversement (Checker).
+- `POST /api/v1/admin/finance/payouts/batches/:id/execute` : Enregistrement de l'exécution avec identifiant opérateur réel et justificatif.
+- `POST /api/v1/admin/finance/refunds/:id/approve` : Validation d'un remboursement et génération de l'avoir associé.
+- `GET /api/v1/admin/finance/ledger/entries` : Consultation filtrée des écritures du grand livre.
+- `POST /api/v1/admin/finance/reconciliation/operator` : Rapprochement d'un relevé de compte opérateur MTN / Orange.
+- `POST /api/v1/admin/finance/close-daily` : Déclenchement de la clôture comptable journalière.
+
+### 6.6 Permissions RBAC & Événements d'Audit
+- Permissions : `price:propose`, `price:approve`, `fee:propose`, `fee:approve`, `payout:create`, `payout:approve`, `payout:execute`, `refund:approve`, `ledger:view`, `cash:reconcile`, `report:view_finance`.
+- AuditLog : `PRICE_PROPOSED`, `PRICE_APPROVED`, `FEE_SCHEDULE_PROPOSED`, `FEE_SCHEDULE_APPROVED`, `PAYOUT_BATCH_CREATED`, `PAYOUT_BATCH_APPROVED`, `PAYOUT_BATCH_EXECUTED`, `REFUND_APPROVED`, `LEDGER_ENTRY_RECORDED`, `DAILY_CLOSE_COMPLETED`.
+
+### 6.7 Critères d'Acceptation Testables
+1. Le créateur d'un barème de prix, barème de frais ou lot de reversement (`created_by`) ne peut en aucun cas approuver sa propre proposition (`approved_by != created_by`), rejet HTTP 403 / 422 avec mention d'incompatibilité Maker-Checker.
+2. Toute transaction enregistrant une écriture comptable dans `LedgerEntry` dont la somme des débits ne correspond pas exactement à la somme des crédits échoue avec rollback immédiat (invariant comptable inviolable).
+3. Aucune opération SQL `UPDATE` ou `DELETE` n'est permise sur `LedgerEntry` (verrouillage technique au niveau permissions base de données / triggers).
+4. Toute validation financière sensible (`price:approve`, `fee:approve`, `payout:approve`, `payout:execute`) requiert la validation préalable d'un second facteur TOTP actif.
+5. Un lot de reversement dépassant le seuil configuré exige la validation conjointe d'un second administrateur distinct.
 
 ---
 

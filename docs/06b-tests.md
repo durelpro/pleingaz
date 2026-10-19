@@ -40,6 +40,15 @@ Chaque cas d'abus correspond à une menace identifiée dans `06a-securite.md`.
 | M19 | Persistance des coordonnées GPS de recherche dans la BDD. | Analytics | API | Vérification : `SearchEvent` ne contient que `coarse_area` (zéro GPS exact). |
 | M12 | Téléversement d'image KYC contenant des métadonnées EXIF GPS. | Fichiers | API | Stripping complet : métadonnées EXIF purgées avant stockage S3. |
 | D01 | Commande d'un produit hors catalogue officiel PLEINGAZ. | Catalogue | API | Rejet HTTP 400, prix injecté côté client écrasé par `ProductPrice`. |
+| M14 | Course attribuée à un livreur non approuvé (`PENDING`/`SUSPENDED`). | Logistique | API | Rejet HTTP 403 Forbidden, seuls les livreurs `APPROVED` reçoivent des courses. |
+| M14 | Livreur tentant d'interagir avec la mission d'un autre livreur (IDOR). | Logistique | API | Rejet HTTP 403 Forbidden. |
+| M14 | Double tentative de clôture de livraison (`DELIVERED` déjà validé). | Logistique | API | Rejet HTTP 409 Conflict. |
+| M14 | Livreur avec espèces non remisées tentant de masquer son solde caisse. | Logistique | BDD | Invariant : cumul `CashCollection` scellé, rejet de mise à zéro arbitraire. |
+| M14 | Réattribution automatique de mission après timeout sans réponse du livreur. | Logistique | Worker | Mission repasse en `PROPOSED` vers le prochain coursier ou alerte dispatcheur. |
+| M21 | Modification de barème de prix sans droit (`price:propose` ou `price:approve`). | Finance | API | Rejet HTTP 403 Forbidden. |
+| M18 | Écriture grand livre déséquilibrée (`SUM(debit) != SUM(credit)`). | Finance | BDD | Rejet SQL transactionnel immédiat (Violation contrainte invariant). |
+| M20 | Exécution d'un lot de reversement `PayoutBatch` sans double approbation. | Finance | API | Rejet HTTP 403 / 400 (Statut non `APPROVED`). |
+| M20 | Double exécution d'un même lot de reversement (`PayoutBatch`). | Finance | API | Rejet HTTP 409 Conflict via verrou d'idempotence et statut `EXECUTED`. |
 
 ## 4. Tests de Résilience et Conformité Métier (Conditions Réelles)
 L'environnement cible (Cameroun) exige de tester la résilience face aux défaillances réseau et la rigueur des données :

@@ -196,7 +196,7 @@ stateDiagram-v2
 ```
 - **Autorisées** :
   - `PENDING` -> `APPROVED` (Validation du livreur par l'administrateur après vérification d'identité et véhicule).
-  - `PENDING` -> `REJECTED` (Rejet de la candidature avec motif obligatoire).
+  - `PENDING` -> `REJECTED` (Rejet motivé de la candidature — défaut de conception appliqué, à confirmer par le propriétaire).
   - `APPROVED` -> `SUSPENDED` (Suspension manuelle par le staff ou automatique si plafond de caisse espèces dépassé, AuditLog OUI).
   - `SUSPENDED` -> `APPROVED` (Réactivation après régularisation de la caisse ou levée de sanction).
   - `APPROVED` -> `INACTIVE` (Désactivation à la demande du livreur ou inactivité prolongée).

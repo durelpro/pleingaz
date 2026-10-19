@@ -381,6 +381,22 @@ erDiagram
         int credit
         timestamp created_at
     }
+    FEE_SCHEDULE {
+        int id PK
+        string fee_type
+        int amount
+        string fee_bearer
+        timestamp effective_from
+        int created_by FK
+        int approved_by FK
+    }
+    COURIER_PAYOUT {
+        int id PK
+        int payout_id FK
+        int courier_id FK
+        int amount
+        string status
+    }
     PAYMENT ||--|{ PAYMENT_TRANSACTION : "attempts"
     PAYMENT ||--o| IDEMPOTENCY_KEY : "secured_by"
     PAYMENT ||--o| REFUND : "reimbursed_by"
@@ -388,6 +404,7 @@ erDiagram
     INVOICE ||--|{ INVOICE_ITEM : "bills"
     INVOICE ||--o| CREDIT_NOTE : "cancelled_by"
     PAYOUT_BATCH ||--o{ PAYOUT : "contains"
+    PAYOUT ||--o{ COURIER_PAYOUT : "disburses"
     LEDGER_ACCOUNT ||--o{ LEDGER_ENTRY : "accumulates"
 ```
 
