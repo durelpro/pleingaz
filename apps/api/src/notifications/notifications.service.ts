@@ -14,7 +14,7 @@ export class NotificationsService {
   /**
    * Tâche 7.1 : Centre de notifications via BullMQ
    */
-  async queueNotification(userId: string, type: NotificationType, title: string, content: string, metadata?: any) {
+  async queueNotification(userId: string, type: NotificationType, title: string, content: string, metadata?: any): Promise<any> {
     // 1. Enregistrement en base de données avec le statut PENDING
     const notification = await this.prisma.notification.create({
       data: {

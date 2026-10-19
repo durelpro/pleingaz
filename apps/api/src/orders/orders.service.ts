@@ -22,27 +22,36 @@ export class OrdersService {
         where: { storeId_productId: { storeId, productId } },
       });
 
-      if (!inventory || inventory.level === 'OUT_OF_STOCK') {
+      if (!inventory || inventory.level === 'RUPTURE') {
         throw new BadRequestException('Produit en rupture de stock dans cette boutique.');
       }
       
-      // En vrai on gère la quantité exacte, ici on se fie au "Level" mais si Level == LOW on limite
-      if (inventory.level === 'LOW' && quantity > 1) {
+      // En vrai on gère la quantité exacte, ici on se fie au "Level" mais si Level == FAIBLE on limite
+      if (inventory.level === 'FAIBLE' && quantity > 1) {
         throw new BadRequestException('Stock faible, maximum 1 article par commande.');
       }
 
-      // 2. Créer la commande en brouillon
-      const product = await tx.product.findUnique({ where: { id: productId } });
+      // 2. Créer la commande en brouillon avec prix officiel actif (D-01)
+      const product = await tx.product.findUnique({
+        where: { id: productId },
+        include: { prices: { where: { status: 'APPROVED' }, orderBy: { effectiveFrom: 'desc' }, take: 1 } },
+      });
+      if (!product || product.prices.length === 0) {
+        throw new BadRequestException('Produit ou barème de prix introuvable.');
+      }
+      const unitPrice = product.prices[0].publicPrice;
+      const totalAmount = unitPrice * quantity;
+
       const order = await tx.order.create({
         data: {
-          orderNumber: \`ORD-\${Date.now()}\`,
+          orderNumber: `ORD-${Date.now()}`,
           type: 'B2C_PICKUP',
           status: 'DRAFT',
           customerId: userId,
           storeId,
-          totalAmount: product!.publicPrice * quantity,
+          totalAmount,
           items: {
-            create: [{ productId, quantity, unitPrice: product!.publicPrice, totalPrice: product!.publicPrice * quantity }]
+            create: [{ productId, quantity, unitPrice, totalPrice: totalAmount }]
           }
         }
       });
@@ -127,33 +136,42 @@ export class OrdersService {
    */
   async createAssistedOrder(agentId: string, customerPhone: string, storeId: string, productId: string, quantity: number, deliveryAddress?: string) {
     // 1. Trouver ou créer le client
-    let customer = await this.prisma.user.findUnique({ where: { phoneNumber: customerPhone } });
+    let customer = await this.prisma.user.findUnique({ where: { phone: customerPhone } });
     if (!customer) {
+      const customerRole = await this.prisma.role.findUnique({ where: { name: 'CUSTOMER' } });
       customer = await this.prisma.user.create({
         data: {
-          phoneNumber: customerPhone,
-          role: 'CLIENT',
-          passwordHash: 'GENERATED_NO_LOGIN', // Mot de passe bidon
+          phone: customerPhone,
+          passwordHash: 'GENERATED_NO_LOGIN',
+          roles: customerRole ? { create: [{ roleId: customerRole.id }] } : undefined,
         }
       });
     }
 
-    // 2. Créer la commande directement sans réservation (car assistée par l'agent)
-    const product = await this.prisma.product.findUnique({ where: { id: productId } });
+    // 2. Créer la commande directement avec prix officiel actif (D-01)
+    const product = await this.prisma.product.findUnique({
+      where: { id: productId },
+      include: { prices: { where: { status: 'APPROVED' }, orderBy: { effectiveFrom: 'desc' }, take: 1 } },
+    });
+    if (!product || product.prices.length === 0) {
+      throw new BadRequestException('Produit ou barème de prix introuvable.');
+    }
+    const unitPrice = product.prices[0].publicPrice;
+    const totalAmount = unitPrice * quantity;
     const type = deliveryAddress ? 'B2C_DELIVERY' : 'B2C_PICKUP';
 
     const order = await this.prisma.order.create({
       data: {
-        orderNumber: \`ORD-\${Date.now()}\`,
+        orderNumber: `ORD-${Date.now()}`,
         type,
-        status: 'SUBMITTED', // Directement soumis
+        status: 'SUBMITTED',
         customerId: customer.id,
         storeId,
-        totalAmount: product!.publicPrice * quantity,
+        totalAmount,
         deliveryAddress,
         assistedById: agentId,
         items: {
-          create: [{ productId, quantity, unitPrice: product!.publicPrice, totalPrice: product!.publicPrice * quantity }]
+          create: [{ productId, quantity, unitPrice, totalPrice: totalAmount }]
         }
       }
     });
@@ -210,7 +228,7 @@ export class OrdersService {
       data: {
         userId,
         points: 10,
-        description: \`Récompense pour l'avis sur la commande \${order.orderNumber}\`
+        description: `Récompense pour l'avis sur la commande ${order.orderNumber}`
       }
     });
 

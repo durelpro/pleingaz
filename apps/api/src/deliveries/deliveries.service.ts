@@ -12,48 +12,59 @@ export class DeliveriesService {
   ) {}
 
   /**
-   * Tâche 5.4 : Assigner un livreur
+   * D-05 : Assigner un livreur officiel PLEINGAZ
    */
-  async assignDriver(orderId: string, driverId: string) {
+  async assignDriver(orderId: string, courierId: string) {
     const delivery = await this.prisma.delivery.findUnique({ where: { orderId } });
     if (!delivery || delivery.status !== 'PENDING') {
       throw new BadRequestException('Livraison non disponible pour assignation.');
     }
 
-    // Générer le code OTP remis au client
-    const otp = crypto.randomInt(1000, 9999).toString();
+    // Vérifier que le livreur est APPROVED
+    const courier = await this.prisma.courier.findUnique({ where: { id: courierId } });
+    if (!courier || courier.status !== 'APPROVED') {
+      throw new BadRequestException('Livreur non habilité ou suspendu.');
+    }
+
+    // Générer le code secret remis au client (4-6 chiffres) et stocker son hash
+    const rawCode = crypto.randomInt(100000, 999999).toString();
+    const confirmationCodeHash = crypto.createHash('sha256').update(rawCode).digest('hex');
 
     const updated = await this.prisma.delivery.update({
       where: { orderId },
       data: {
-        driverId,
+        courierId,
         status: 'ASSIGNED',
-        confirmationOtp: otp, // A envoyer au client par SMS/WhatsApp
+        confirmationCodeHash,
       },
     });
 
     await this.prisma.order.update({ where: { id: orderId }, data: { status: 'PREPARING' } });
 
     await this.audit.log({
-      userId: driverId,
-      action: 'ASSIGN_DRIVER',
+      userId: courier.userId,
+      action: 'ASSIGN_COURIER',
       entity: 'Delivery',
       entityId: delivery.id,
+      details: { courierId },
     });
 
-    return updated;
+    return { ...updated, clientCode: rawCode };
   }
 
   /**
-   * Changer le statut (PICKED_UP, IN_TRANSIT)
+   * D-05 : Mettre à jour l'état de la course (PICKED_UP, IN_TRANSIT)
    */
-  async updateStatus(driverId: string, deliveryId: string, status: DeliveryStatus) {
+  async updateStatus(courierId: string, deliveryId: string, status: DeliveryStatus) {
     const delivery = await this.prisma.delivery.findUnique({ where: { id: deliveryId } });
-    if (delivery?.driverId !== driverId) throw new ForbiddenException('Non autorisé.');
+    if (delivery?.courierId !== courierId) throw new ForbiddenException('Non autorisé.');
 
     const updated = await this.prisma.delivery.update({
       where: { id: deliveryId },
-      data: { status },
+      data: {
+        status,
+        pickedUpAt: status === 'PICKED_UP' ? new Date() : undefined,
+      },
     });
 
     if (status === 'IN_TRANSIT') {
@@ -61,7 +72,7 @@ export class DeliveriesService {
     }
 
     await this.audit.log({
-      userId: driverId,
+      userId: courierId,
       action: 'UPDATE_DELIVERY_STATUS',
       entity: 'Delivery',
       entityId: deliveryId,
@@ -72,25 +83,26 @@ export class DeliveriesService {
   }
 
   /**
-   * Finaliser la livraison (Exige l'OTP)
+   * D-05 : Finaliser la livraison avec code client obligatoire
    */
-  async completeDelivery(driverId: string, deliveryId: string, otp: string) {
+  async completeDelivery(courierId: string, deliveryId: string, code: string) {
     const delivery = await this.prisma.delivery.findUnique({ where: { id: deliveryId } });
-    if (delivery?.driverId !== driverId) throw new ForbiddenException('Non autorisé.');
+    if (delivery?.courierId !== courierId) throw new ForbiddenException('Non autorisé.');
 
-    if (delivery.confirmationOtp !== otp) {
+    const inputHash = crypto.createHash('sha256').update(code).digest('hex');
+    if (delivery.confirmationCodeHash !== inputHash) {
       throw new BadRequestException('Code de confirmation invalide.');
     }
 
     const updated = await this.prisma.delivery.update({
       where: { id: deliveryId },
-      data: { status: 'DELIVERED', deliveredAt: new Date(), confirmationOtp: null },
+      data: { status: 'DELIVERED', deliveredAt: new Date(), confirmationCodeHash: null },
     });
 
     await this.prisma.order.update({ where: { id: delivery.orderId }, data: { status: 'DELIVERED' } });
 
     await this.audit.log({
-      userId: driverId,
+      userId: courierId,
       action: 'COMPLETE_DELIVERY',
       entity: 'Delivery',
       entityId: deliveryId,

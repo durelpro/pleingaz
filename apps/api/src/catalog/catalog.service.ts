@@ -11,31 +11,45 @@ export class CatalogService {
 
   async getProducts() {
     return this.prisma.product.findMany({
-      include: { category: true },
+      include: {
+        category: true,
+        prices: { where: { status: 'APPROVED' }, orderBy: { effectiveFrom: 'desc' }, take: 1 },
+      },
     });
   }
 
-  async updateProductPrice(adminId: string, productId: string, newPublicPrice: number, newDistributorPrice: number) {
-    const product = await this.prisma.product.findUnique({ where: { id: productId } });
+  async updateProductPrice(adminId: string, productId: string, newPublicPrice: number, newDistributorPrice: number, reason?: string) {
+    const product = await this.prisma.product.findUnique({
+      where: { id: productId },
+      include: { prices: { where: { status: 'APPROVED' }, orderBy: { effectiveFrom: 'desc' }, take: 1 } },
+    });
     if (!product) throw new NotFoundException('Produit introuvable');
 
-    // Mettre à jour le produit
-    const updated = await this.prisma.product.update({
-      where: { id: productId },
+    const oldPrice = product.prices[0];
+    const oldPublicPrice = oldPrice?.publicPrice ?? 0;
+    const oldDistributorPrice = oldPrice?.distributorPrice ?? 0;
+
+    // Créer le nouveau prix actif
+    const newPrice = await this.prisma.productPrice.create({
       data: {
+        productId,
         publicPrice: newPublicPrice,
         distributorPrice: newDistributorPrice,
+        status: 'APPROVED',
+        createdById: adminId,
+        approvedById: adminId,
       },
     });
 
-    // Enregistrer l'historique (Règle 4.1: historique des changements de prix audité)
+    // Enregistrer l'historique
     await this.prisma.priceHistory.create({
       data: {
         productId,
-        oldPublicPrice: product.publicPrice,
+        oldPublicPrice,
         newPublicPrice,
-        oldDistributorPrice: product.distributorPrice,
+        oldDistributorPrice,
         newDistributorPrice,
+        changeReason: reason || 'Mise à jour tarifaire administrateur',
         changedByUserId: adminId,
       },
     });
@@ -43,14 +57,14 @@ export class CatalogService {
     await this.audit.log({
       userId: adminId,
       action: 'UPDATE_PRICE',
-      entity: 'Product',
-      entityId: productId,
+      entity: 'ProductPrice',
+      entityId: newPrice.id,
       details: {
-        oldPublicPrice: product.publicPrice,
+        oldPublicPrice,
         newPublicPrice,
       },
     });
 
-    return updated;
+    return newPrice;
   }
 }

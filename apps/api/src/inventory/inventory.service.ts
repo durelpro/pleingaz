@@ -35,7 +35,7 @@ export class InventoryService {
     });
 
     // Si on repasse de RUPTURE à BON/MOYEN, on déclenche les alertes (Tâche 4.7)
-    if (level === 'HIGH' || level === 'MEDIUM') {
+    if (level === 'BON' || level === 'MOYEN') {
       await this.triggerDemandAlerts(storeId, productId);
     }
 

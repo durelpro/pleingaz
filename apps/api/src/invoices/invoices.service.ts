@@ -29,14 +29,14 @@ export class InvoicesService {
     // Nom du vendeur selon le type
     let sellerName = 'PLEINGAZ - Vente directe';
     if (order.store) {
-      sellerName = \`Distributeur agréé : \${order.store.name}\`;
+      sellerName = `Distributeur agréé : ${order.store.name}`;
     }
 
     // Génération du numéro de facture (Règle métier)
-    const invoiceNumber = \`INV-\${Date.now()}-\${order.orderNumber.substring(order.orderNumber.length - 4)}\`;
+    const invoiceNumber = `INV-${Date.now()}-${order.orderNumber.substring(order.orderNumber.length - 4)}`;
 
     // TODO: Générer le PDF ici avec une librairie (ex: pdfkit) et uploader sur GCS/S3
-    const pdfUrl = \`private://invoices/\${invoiceNumber}.pdf\`;
+    const pdfUrl = `private://invoices/${invoiceNumber}.pdf`;
 
     const invoice = await this.prisma.invoice.create({
       data: {

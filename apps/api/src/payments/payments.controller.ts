@@ -12,7 +12,7 @@ export class PaymentsController {
   async initiate(
     @Request() req: any,
     @Body() body: { orderId: string; method: PaymentMethod; phone: string }
-  ) {
+  ): Promise<any> {
     return this.paymentsService.initiatePayment(req.user.userId, body.orderId, body.method, body.phone);
   }
 
