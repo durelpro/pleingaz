@@ -8,6 +8,7 @@ import { JwtStrategy } from './strategies/jwt.strategy';
 import { RolesGuard } from './guards/roles.guard';
 import { PermissionsGuard } from './guards/permissions.guard';
 import { JwtAuthGuard } from './guards/jwt-auth.guard';
+import { OptionalJwtAuthGuard } from './guards/optional-jwt-auth.guard';
 
 @Module({
   imports: [
@@ -17,8 +18,8 @@ import { JwtAuthGuard } from './guards/jwt-auth.guard';
       signOptions: { expiresIn: '15m' },
     }),
   ],
-  providers: [AuthService, JwtStrategy, RolesGuard, PermissionsGuard, JwtAuthGuard],
+  providers: [AuthService, JwtStrategy, RolesGuard, PermissionsGuard, JwtAuthGuard, OptionalJwtAuthGuard],
   controllers: [AuthController],
-  exports: [AuthService, RolesGuard, PermissionsGuard, JwtAuthGuard],
+  exports: [AuthService, RolesGuard, PermissionsGuard, JwtAuthGuard, OptionalJwtAuthGuard],
 })
 export class AuthModule {}
