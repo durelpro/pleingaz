@@ -1,4 +1,4 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 
@@ -12,11 +12,14 @@ const geistMono = Geist_Mono({
   subsets: ["latin"],
 });
 
+export const viewport: Viewport = {
+  themeColor: "#f97316",
+};
+
 export const metadata: Metadata = {
   title: "Pleingaz - Votre gaz domestique en un clic",
   description: "Achetez votre bouteille de gaz domestique au prix officiel au Cameroun. Livraison rapide, paiement sécurisé (Mobile Money).",
   manifest: "/manifest.json",
-  themeColor: "#f97316",
   openGraph: {
     title: "Pleingaz - Votre gaz domestique",
     description: "Le gaz domestique au juste prix, livré chez vous.",
