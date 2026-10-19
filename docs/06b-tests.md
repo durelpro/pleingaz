@@ -49,22 +49,24 @@ L'environnement cible (Cameroun) exige de tester la résilience face aux défail
   - *Attendu* : HTTP 200 sur tous les endpoints, compteurs à 0 réel, affichage des messages d'états vides explicites (*"Aucune commande pour le moment"*), zéro plantage 500 et zéro donnée fictive ou placeholder en dur.
 - **Suite de Tests des 8 États IHM de Recherche (CR-001 D-02)** :
   1. *Autorisation accordée* : Coordonnées GPS récupérées, affichage *"Distance depuis : Ma position"*.
-  2. *Localisation en cours* : Spinner affiché, bouton d'annulation actif, expiration après 8s.
+  2. *Localisation en cours* : Spinner affiché, bouton d'annulation actif, expiration après délai configurable (défaut : exemple illustratif 8s).
   3. *Autorisation refusée* : Fermeture propre de la demande native, affichage direct du volet manuel (Ville/Quartier) sans alerte intrusive.
   4. *GPS indisponible* : Message bienveillant *"Position inaccessible"*, focus sur sélecteur de quartier.
   5. *Précision faible* : Badge *"Position approximative"*, lien d'ajustement sur carte.
   6. *Hors Cameroun* : Message *"PLEINGAZ assure actuellement la distribution au Cameroun"*, proposition des villes desservies.
-  7. *Aucun distributeur dans le rayon* : Message explicite, boutons pour élargir le rayon (10 km, ville entière).
+  7. *Aucun distributeur dans le rayon* : Message explicite, boutons pour élargir le rayon (ex: 10 km, ville entière).
   8. *Réseau dégradé / Tuiles bloquées* : Bascule automatique en moins de 2,5s sur la **liste de secours textuelle** (~20 Ko JSON).
 - **Petit Android & 3G bridée** : Validation du LCP (< 2,5 s) et des requêtes limitées.
 - **Coupure réseau PENDANT un paiement** :
   - *Action* : Le client clique "Payer", le réseau coupe instantanément.
   - *Système* : L'API crée la commande en `PENDING`. MTN traite le paiement et envoie le webhook succès.
   - *Vue Utilisateur* : Le client voit un écran d'erreur de connexion. À la reconnexion, la PWA requête l'API, voit le statut à jour et affiche "Commande validée avec succès". Si le webhook manque, le backend fait un polling auprès de MTN.
+- **Reprise d'une commande interrompue** : L'utilisateur abandonne au checkout. À la reconnexion, la commande DRAFT locale est resynchronisée.
+- **Mise à jour de stock hors ligne** : Le distributeur (hors réseau) met à jour son stock. La PWA l'enregistre en IndexedDB. À la reconnexion, la synchronisation s'effectue avec l'horodatage initial. Test validant l'absence d'écrasement erroné.
+- **Expiration d'une réservation pendant un paiement** : Le client ouvre l'interface de paiement à `T+14m59s`. Le paiement aboutit à `T+15m05s`. Le cron d'expiration a pu marquer `EXPIRED`. Le système traite cela comme un `LATE_SUCCESS` (Remboursement).
 - **Mémorisation et Mode Hors Ligne Livreur (CR-001 D-05)** :
   - Le livreur en course perd la connexion réseau. La mission active reste accessible sur son mobile.
   - Saisie du code client en local : synchronisation différée avec horodatage dès reconnexion.
-
 
 ## 5. Tests de Charge
 Des scénarios de stress sont exécutés avant le pilote pour valider les limites de l'infrastructure (ex: limites VPS / PostgreSQL). **Volumes proposés À CONFIRMER** par les cibles business de PLEINGAZ :

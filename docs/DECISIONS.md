@@ -86,7 +86,7 @@
   2. Interface mobile dédiée (`/courier`) ultra-légère, tolérante aux déconnexions (mode hors-ligne partiel).
   3. Attribution manuelle assistée par l'administrateur ou le dispatcheur logistique ; timeout d'acceptation paramétrable dans `Setting` (défaut 10 min) avec réattribution automatique. Suivi GPS continu différé hors MVP (`H16`).
   4. Sécurisation de la remise : passage à l'état `DELIVERED` subordonné à la **saisie obligatoire par le livreur du code de confirmation** confidentiel remis par le client.
-  5. Suivi des espèces (Cash on Delivery) : enregistrement dans `CashCollection`. Les fonds constituent une dette envers PLEINGAZ. Seuil de caisse configurable dans `Setting` (défaut 50 000 FCFA) bloquant automatiquement toute nouvelle course dès dépassement.
+  5. Suivi des espèces (Cash on Delivery) : enregistrement dans `CashCollection`. Les fonds constituent une dette envers PLEINGAZ. Seuil de caisse configurable dans `Setting` (défaut appliqué, à confirmer : exemple illustratif 50 000 FCFA) bloquant automatiquement toute nouvelle course dès dépassement.
 - **Référence** : [05-amendements-proprietaire.md §X-05](file:///home/durel/pleingaz/docs/00-sources/05-amendements-proprietaire.md) ; [12-cr001-specifications.md §5](file:///home/durel/pleingaz/docs/12-cr001-specifications.md#L185-L215).
 
 ## ADR D10 : Gouvernance Financière Centralisée, Maker-Checker et Grand Livre Immuable (CR-001 D-06)

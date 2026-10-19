@@ -19,14 +19,14 @@ Le projet "PLEINGAZ Digital Distribution Network" a été transformé avec succ�
 | **Phase 6** | Paiements & Finance | ✅ Terminé | Grand Livre immuable en partie double, Maker-Checker sur prix et lots PayoutBatch (D-06). |
 | **Phase 7** | Notifications | ✅ Terminé | Factures immuables PDF, notifications logistiques livreurs/clients, alertes Maker-Checker. |
 | **Phase 8** | IA & RAG | ✅ Terminé | Assistant IA borné au catalogue PLEINGAZ, refus des marques tierces, sans géoloc autonome. |
-| **Phase 9** | Pilotage & BI | ✅ Terminé | 15 rapports exhaustifs Control Center sur données 100% réelles, zéro valeur fictive (D-03). |
+| **Phase 9** | Pilotage & BI | 📋 Cadré & Spécifié (CR-001) | Spécification des 15 rapports exhaustifs Control Center sur données 100% réelles, zéro valeur fictive en production (D-03). |
 | **Phase 10** | Production | ✅ Terminé | PWA (`next-pwa`), SEO, Sécurité (TOTP Maker-Checker, sessions 15m, stripping EXIF). |
 
 ## 3. RESPECT DES RÈGLES ABSOLUES ET DÉCISIONS DU PROPRIÉTAIRE (CR-001)
 - **R1 à R3 (Pas d'invention, conservation)** : Le design rouge/orange et la logique vitrine ont été respectés (via les styles Tailwind), et la logique backend a été ajoutée sans détruire l'existant.
 - **D-01 (Catalogue Exclusif)** : Bouteilles et accessoires officiels PLEINGAZ uniquement ; prix centralisés `ProductPrice` ; `StoreProductOffer` neutralisé ; marketplace écartée.
 - **D-02 (Recherche au Clic)** : Géolocalisation au clic avec consentement bref ; 8 états UI ; repli textuel 20 Ko ; primauté du choix manuel.
-- **D-03 (Vérité Terrain)** : 15 rapports du Control Center basés à 100% sur des chiffres réels en BDD ; zéro donnée fictive.
+- **D-03 (Vérité Terrain)** : Spécification stricte des 15 rapports du Control Center basés à 100% sur des chiffres réels en BDD ; zéro donnée fictive.
 - **D-04 (KYC 3 Pièces)** : CNI recto/verso, portrait, boutique extérieure ; S3 privé, URLs signées 15 min, stripping EXIF systématique.
 - **D-05 (Livreurs Plateforme)** : Rôle dédié `COURIER` (9e rôle) ; attribution assistée ; validation remise par code client ; plafonnement caisse espèces.
 - **D-06 (Finances Centralisées)** : Principe Maker-Checker strict ; Grand Livre immuable en partie double (`LedgerEntry` Insert-Only) ; exécution manuelle des reversements avec preuve.

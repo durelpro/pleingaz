@@ -228,7 +228,7 @@ sequenceDiagram
         API->>PG: Delivery passe DELIVERED
         opt Paiement Espèces à la livraison
             API->>PG: Crée CashCollection (COLLECTED)
-            API->>PG: Incrémente solde caisse livreur (contrôle seuil 50 000 FCFA)
+            API->>PG: Incrémente solde caisse livreur (contrôle seuil Setting : ex. illustratif 50 000 FCFA)
         end
         API-->>Courier: Course clôturée avec succès
         API-->>Client: Notification "Livraison effectuée, facture disponible"

@@ -58,7 +58,7 @@ Ces questions sont fondamentales et bloquent les choix d'architecture des Phases
 ## 9. Décisions Urgentes à Confirmer (Tâche 4)
 23. **Légalité Frais** : Est-il légal de faire payer ou d'imputer les frais des opérateurs (MoMo) au client en affichant une ligne distincte sur la facture ?
 24. **Propriété de la Consigne** : Lors d'un premier achat, qui est propriétaire de la bouteille consignée (le distributeur ou la plateforme PLEINGAZ) ?
-25. **Plafond Dette Distributeur / Livreur** : **[RÉSOLU PAR CR-001 D-05, D-06]** Géré par paramètre dynamique dans `Setting` (seuil par défaut appliqué : 50 000 FCFA avec blocage automatique au dépassement).
+25. **Plafond Dette Distributeur / Livreur** : **[MÉCANISME RÉSOLU PAR CR-001 D-05, D-06 / VALEUR NUMÉRIQUE À CONFIRMER]** Géré par paramètre dynamique dans `Setting` (défaut appliqué : exemple illustratif 50 000 FCFA avec suspension automatique au dépassement ; montant officiel initial à confirmer par PLEINGAZ).
 26. **Remboursements** : Quelle est la politique officielle de Pleingaz pour un remboursement total ou partiel, et quels sont les délais légaux au Cameroun ?
 27. **Mentions Fiscales** : Quelles mentions légales (TVA, numéro d'immatriculation) doivent obligatoirement figurer sur les factures et reçus PDF générés ?
 28. **Rétention des données et IA** : Quelle est la durée légale de conservation des logs de conversations (LLM) et des données de paiement, compte tenu du contexte légal (À valider par un juriste) ?

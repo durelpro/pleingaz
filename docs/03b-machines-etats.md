@@ -253,5 +253,5 @@ stateDiagram-v2
   - `COLLECTED` -> `REMITTED_TO_PLEINGAZ` (Reversement des espèces à PLEINGAZ validé par le responsable financier).
   - `COLLECTED` -> `DISPUTED` (Divergence de montant constatée lors du versement).
 - **Règle de blocage automatique** :
-  - Si le solde total `COLLECTED` non encore reversé d'un livreur dépasse le plafond configuré dans `Setting` (défaut : 50 000 FCFA), le livreur est automatiquement bloqué pour de nouvelles affectations jusqu'à régularisation.
+  - Si le solde total `COLLECTED` non encore reversé d'un livreur dépasse le plafond configuré dans `Setting` (défaut appliqué, à confirmer : exemple illustratif 50 000 FCFA), le livreur est automatiquement bloqué pour de nouvelles affectations jusqu'à régularisation.
 

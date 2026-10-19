@@ -10,7 +10,7 @@
 | **CHECK** | `CHECK (amount > 0 AND currency = 'XAF')` (Entier). |
 | **Index** | Index sur `status` et `created_at`. |
 | **Immutabilité** | Immuable dès le passage à `SUCCESS` ou `FAILED`. |
-| **Rétention** | 10 ans légal. Pas de suppression. |
+| **Rétention** | 10 ans légal (**À CONFIRMER** avec obligations comptables). Pas de suppression. |
 
 ### 1.2 `PaymentTransaction`
 | Propriété | Règle / Instruction SQL |
@@ -20,7 +20,7 @@
 | **CHECK** | `CHECK (fee >= 0 AND operator_fee >= 0)` (Stocke les frais réels exacts). |
 | **Index** | Index sur `gateway_ref` pour les réconciliations. |
 | **Immutabilité** | Strictement immuable à la création. Insert-only. |
-| **Rétention** | 10 ans légal. |
+| **Rétention** | 10 ans légal (**À CONFIRMER** avec obligations comptables). |
 
 ### 1.3 `IdempotencyKey`
 | Propriété | Règle / Instruction SQL |
@@ -50,7 +50,7 @@
 | **CHECK** | - |
 | **Index** | Index sur `created_at`. |
 | **Immutabilité** | Immuable dès le statut `ISSUED`. Avoir (CreditNote) exigé pour toute modification de dette. |
-| **Rétention** | 10 ans légal. |
+| **Rétention** | 10 ans légal (**À CONFIRMER** avec obligations fiscales/comptables). |
 
 ### 1.6 `InvoiceSequence`
 | Propriété | Règle / Instruction SQL |
@@ -110,7 +110,7 @@
 | **CHECK** | `CHECK (type IN ('ID_CARD_FRONT', 'ID_CARD_BACK', 'PORTRAIT_PHOTO', 'SHOP_PHOTO'))` (3 pièces exclusives : CNI recto/verso, portrait, boutique). |
 | **Logique** | Fichiers chiffrés au repos sur bucket S3 privé (pièces d'identité) ou public après approbation (boutique). Purge systématique des métadonnées EXIF (GPS). Accès via URL signées 15 min. |
 | **Immutabilité** | Mutable en cas de rejet motivé pour soumission d'une nouvelle version. |
-| **Rétention** | 5 ans légal après clôture de compte. Droit à l'effacement si rejet définitif. |
+| **Rétention** | Actif + 1 an (**À CONFIRMER** avec juriste local). Purgé après 30 jours en cas de rejet définitif du dossier KYC. |
 
 ### 1.12 `AuditLog`
 | Propriété | Règle / Instruction SQL |
@@ -120,7 +120,7 @@
 | **CHECK** | - |
 | **Index** | `user_id`, `action`, `created_at`. |
 | **Immutabilité** | Strictement immuable. Ne doit JAMAIS faire l'objet d'un `UPDATE` ou `DELETE`. |
-| **Rétention** | Permanente (ou archivage à froid après N années). |
+| **Rétention** | 10 ans légal (**À CONFIRMER** avec obligations comptables/fiscales camerounaises). |
 
 ### 1.13 `LedgerEntry` — Grand Livre Immuable (CR-001 D-06)
 | Propriété | Règle / Instruction SQL |
@@ -130,7 +130,7 @@
 | **CHECK** | `CHECK (debit >= 0 AND credit >= 0 AND (debit > 0 OR credit > 0))`. |
 | **Invariant Comptable**| `SUM(debit) == SUM(credit)` obligatoire par `entry_group_id` (vérifié par trigger ou transaction atomique). |
 | **Immutabilité** | Strictement Insert-Only. Interdiction absolue de `UPDATE` ou `DELETE`. Rectification uniquement par écriture inverse (contre-passation). |
-| **Rétention** | 10 ans légal. |
+| **Rétention** | 10 ans légal (**À CONFIRMER** avec obligations comptables). |
 
 ### 1.14 `PayoutBatch` — Lots de Reversement (CR-001 D-06)
 | Propriété | Règle / Instruction SQL |
@@ -141,7 +141,7 @@
 | **Maker-Checker** | `CHECK (approved_by IS NULL OR approved_by != created_by)` (Interdiction formelle d'auto-approbation). |
 | **Exécution** | Le passage à `EXECUTED` exige obligatoirement `payment_proof_url IS NOT NULL` et `external_transaction_id IS NOT NULL`. |
 | **Immutabilité** | Montants et lignes scellés dès le passage à `SUBMITTED`. |
-| **Rétention** | 10 ans légal. |
+| **Rétention** | 10 ans légal (**À CONFIRMER** avec obligations comptables). |
 
 ### 1.15 `CashCollection` — Suivi Espèces Livreur (CR-001 D-05, D-06)
 | Propriété | Règle / Instruction SQL |
@@ -149,9 +149,9 @@
 | **Clés & Unicités** | `id` (PK). `UNIQUE (delivery_id)`. |
 | **Clés Étrangères**| `delivery_id` (Ref: Delivery), `courier_id` (Ref: Courier). |
 | **CHECK** | `CHECK (amount > 0 AND currency = 'XAF')`. |
-| **Plafond & Alerte**| Comparé au seuil configuré dans `Setting` (défaut : 50 000 FCFA). Si `SUM(amount)` des lignes `COLLECTED` dépasse le plafond, blocage immédiat de nouvelles courses pour le livreur. |
+| **Plafond & Alerte**| Comparé au seuil configuré dans `Setting` (défaut appliqué, à confirmer : exemple illustratif 50 000 FCFA). Si `SUM(amount)` des lignes `COLLECTED` dépasse le plafond, blocage immédiat de nouvelles courses pour le livreur. |
 | **Immutabilité** | Mutable uniquement via la machine d'état (`PENDING` -> `COLLECTED` -> `REMITTED_TO_PLEINGAZ` / `DISPUTED`). |
-| **Rétention** | 10 ans légal. |
+| **Rétention** | 10 ans légal (**À CONFIRMER** avec obligations comptables). |
 
 ### 1.16 `Product` — Catalogue Exclusif PLEINGAZ (CR-001 D-01)
 | Propriété | Règle / Instruction SQL |
@@ -171,7 +171,7 @@
 | **Maker-Checker** | `CHECK (approved_by IS NULL OR approved_by != created_by)`. L'approbateur doit obligatoirement être distinct du proposant. |
 | **Règle Serveur** | Le serveur recalcule obligatoirement le prix à la commande selon le tarif actif (`status = 'APPROVED'` et `NOW() BETWEEN effective_from AND COALESCE(effective_to, NOW())`). Tout montant envoyé par le client est écrasé. |
 | **Immutabilité** | Une fois `APPROVED`, le barème est immuable dans le temps. Toute modification génère une nouvelle ligne et une trace dans `PriceHistory`. |
-| **Rétention** | 10 ans légal. |
+| **Rétention** | 10 ans légal (**À CONFIRMER** avec obligations fiscales/comptables). |
 
 ---
 
@@ -199,7 +199,7 @@ L'architecture est "Configuration-Driven" via la table `Setting`. Les décisions
 3. La saisie de ce code valide la commande (`DELIVERED`) et crée l'enregistrement `CashCollection`.
 4. L'espèce en main constitue une créance envers PLEINGAZ enregistrée au débit du compte de caisse livreur (`1030`) ou distributeur (`1020`) et au passif envers le réseau.
 5. PLEINGAZ régularise la créance lors de la remise physique des fonds ou par compensation automatique sur les futurs lots de reversement `PayoutBatch`.
-6. Si le plafond d'espèces en circulation (défaut : 50 000 FCFA dans `Setting`) est franchi, le compte livreur est automatiquement suspendu d'attribution jusqu'à régularisation.
+6. Si le plafond d'espèces en circulation (défaut appliqué, à confirmer : exemple illustratif 50 000 FCFA dans `Setting`) est franchi, le compte livreur est automatiquement suspendu d'attribution jusqu'à régularisation.
 
 ---
 

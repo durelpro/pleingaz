@@ -8,7 +8,7 @@ Le système gère un **Centre de notifications** in-app permettant de retrouver 
   - `COURIER_ASSIGNED` : Notification au livreur d'une nouvelle course proposée avec délai d'acceptation (défaut 10 min).
   - `COURIER_TIMEOUT` : Notification de réattribution de course si non-réponse du livreur.
   - `DELIVERY_CODE_ISSUED` : Envoi au client de son **Code de Confirmation confidentiel** (4-6 chiffres) lors de la prise en charge par le livreur.
-  - `COURIER_CASH_LIMIT_ALERT` : Alerte au livreur et au responsable logistique lorsque le solde d'espèces collectées approche ou dépasse le plafond `Setting` (défaut 50 000 FCFA), avec notification de suspension automatique de nouvelles courses.
+  - `COURIER_CASH_LIMIT_ALERT` : Alerte au livreur et au responsable logistique lorsque le solde d'espèces collectées approche ou dépasse le plafond `Setting` (défaut appliqué, à confirmer : exemple illustratif 50 000 FCFA), avec notification de suspension automatique de nouvelles courses.
 - **Événements KYC Distributeur (CR-001 D-04)** :
   - `KYC_DECISION` : Notification immédiate par SMS/WhatsApp de la décision administrative : approbation `APPROVED` ou rejet `REJECTED` avec **motif obligatoire** formulé en français simple.
 - **Événements Financiers et Maker-Checker (CR-001 D-06)** :
