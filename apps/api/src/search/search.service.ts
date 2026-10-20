@@ -23,7 +23,23 @@ export class SearchService {
    * - Confidentialité D-02: AUCUNE coordonnée GPS brute client persistée en base.
    */
   async searchStores(params: NearbySearchParams) {
-    if (!params.productId) {
+    let effectiveProductId = params.productId;
+    if (!effectiveProductId) {
+      if (this.prisma.product?.findFirst) {
+        const defaultProduct =
+          (await this.prisma.product.findFirst({
+            where: { sku: 'PG-BOT-125' },
+            select: { id: true },
+          })) ||
+          (await this.prisma.product.findFirst({
+            where: { isActive: true },
+            select: { id: true },
+          }));
+        effectiveProductId = defaultProduct?.id || '';
+      }
+    }
+
+    if (!effectiveProductId) {
       throw new BadRequestException('Le productId est obligatoire pour rechercher les distributeurs disponibles.');
     }
 
@@ -75,14 +91,8 @@ export class SearchService {
         WHERE i."productId" = $3
           AND s."isVisible" = true
           AND s."isVerifiedBadge" = true
-          AND (
-            6371 * acos(
-              LEAST(1.0, GREATEST(-1.0,
-                cos(radians($1)) * cos(radians(s.latitude)) * cos(radians(s.longitude) - radians($2))
-                + sin(radians($1)) * sin(radians(s.latitude))
-              ))
-            )
-          ) <= $4
+          AND s.latitude IS NOT NULL
+          AND s.longitude IS NOT NULL
         ORDER BY "distanceKm" ASC, i."lastConfirmedAt" DESC
         LIMIT 25;
       `;
@@ -91,8 +101,7 @@ export class SearchService {
         sql,
         lat,
         lng,
-        params.productId,
-        effectiveRadiusKm
+        effectiveProductId
       );
     } else {
       // Recherche par zone macro (repli en cas de timeout GPS ou refus géoloc)
@@ -100,7 +109,7 @@ export class SearchService {
         isVisible: true,
         isVerifiedBadge: true,
         inventories: {
-          some: { productId: params.productId },
+          some: { productId: effectiveProductId },
         },
       };
 
@@ -125,7 +134,7 @@ export class SearchService {
         orderBy: { updatedAt: 'desc' },
         include: {
           inventories: {
-            where: { productId: params.productId },
+            where: { productId: effectiveProductId },
             take: 1,
           },
         },
@@ -160,7 +169,7 @@ export class SearchService {
       data: {
         userId: params.userId,
         coarseArea,
-        productId: params.productId,
+        productId: effectiveProductId,
         resultsCount: storesWithInventory.length,
       },
     });
@@ -186,6 +195,12 @@ export class SearchService {
       }
 
       const dist = store.distanceKm !== null && store.distanceKm !== undefined ? Number(store.distanceKm) : null;
+      const formattedDistance =
+        dist !== null
+          ? dist < 1.0
+            ? `${Math.max(50, Math.round(dist * 1000))} m`
+            : `${dist.toFixed(1)} km`
+          : null;
 
       const isOfficial = store.id === 'store-pleingaz-siege-officiel';
 
@@ -201,7 +216,7 @@ export class SearchService {
         stockLevel: store.stockLevel,
         lastConfirmedAt: store.lastConfirmedAt,
         distanceKm: dist !== null ? Math.round(dist * 10) / 10 : null,
-        distanceStr: dist !== null ? `${(dist).toFixed(1)} km` : null,
+        distanceStr: formattedDistance,
         stockFreshness: isOfficial ? 'Stock certifié en direct par la plateforme PLEINGAZ (🟢 Garanti)' : freshnessLabel,
         isOfficialCompanyStore: isOfficial,
         recommendationBadge: isOfficial

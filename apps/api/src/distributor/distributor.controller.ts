@@ -92,6 +92,32 @@ export class DistributorController {
   }
 
   /**
+   * Upload ultérieur ou complémentaire des pièces justificatives KYC depuis l'espace distributeur
+   */
+  @Post('documents/batch-upload')
+  @UseGuards(JwtAuthGuard)
+  @UseInterceptors(
+    FileFieldsInterceptor([
+      { name: 'idCardFront', maxCount: 1 },
+      { name: 'idCardBack', maxCount: 1 },
+      { name: 'portraitPhoto', maxCount: 1 },
+      { name: 'shopPhoto', maxCount: 1 },
+    ]),
+  )
+  async uploadLater(
+    @CurrentUser('id') userId: string,
+    @UploadedFiles()
+    files: {
+      idCardFront?: Express.Multer.File[];
+      idCardBack?: Express.Multer.File[];
+      portraitPhoto?: Express.Multer.File[];
+      shopPhoto?: Express.Multer.File[];
+    },
+  ) {
+    return this.distributorService.uploadLaterDocuments(userId, files || {});
+  }
+
+  /**
    * D-04: Soumission finale pour examen par les administrateurs
    */
   @Post('application/submit')

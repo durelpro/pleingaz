@@ -226,4 +226,27 @@ export class DistributorAdminService {
       return rejectedApp;
     }
   }
+
+  /**
+   * Activation ou désactivation de la visibilité publique d'un point de vente par l'administrateur
+   */
+  async toggleStoreVisibility(adminId: string, storeId: string, isVisible: boolean): Promise<any> {
+    const store = await this.prisma.store.update({
+      where: { id: storeId },
+      data: {
+        isVisible,
+        isVerifiedBadge: isVisible,
+      },
+    });
+
+    await this.audit.log({
+      userId: adminId,
+      action: isVisible ? 'ENABLE_STORE_PUBLIC_VISIBILITY' : 'DISABLE_STORE_PUBLIC_VISIBILITY',
+      entity: 'Store',
+      entityId: storeId,
+      details: { isVisible },
+    });
+
+    return store;
+  }
 }

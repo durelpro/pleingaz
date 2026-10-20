@@ -179,6 +179,181 @@ export default function PilotageDashboard() {
           </div>
         </div>
 
+        {/* Flotte Officielle des Livreurs du Siège PLEINGAZ */}
+        <div className="bg-white dark:bg-neutral-900 border border-gray-200 dark:border-neutral-800 rounded-3xl p-6 space-y-6">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+            <div>
+              <h3 className="font-black text-xl text-gray-900 dark:text-white flex items-center gap-2">
+                <span className="w-8 h-8 rounded-xl bg-red-100 text-pleingaz-red flex items-center justify-center font-bold text-sm">PG</span>
+                Flotte Centrale des Livreurs du Siège PLEINGAZ
+              </h3>
+              <p className="text-gray-500 text-xs mt-1">
+                Pilotez et recrutez les livreurs dédiés aux commandes directes de l’entreprise et du dépôt central.
+              </p>
+            </div>
+            <span className="px-3 py-1 rounded-full bg-emerald-500/10 text-emerald-500 border border-emerald-500/30 text-xs font-black">
+              Flotte d'Entreprise Active
+            </span>
+          </div>
+
+          {/* Formulaire rapide création livreur siège */}
+          <div className="p-5 rounded-2xl bg-gray-50 dark:bg-neutral-950 border border-gray-200 dark:border-neutral-800 space-y-4">
+            <h4 className="text-sm font-black text-gray-800 dark:text-gray-200">Ajouter un Livreur à la Flotte du Siège</h4>
+            <div className="grid grid-cols-1 sm:grid-cols-4 gap-3">
+              <input
+                type="text"
+                placeholder="Nom du livreur (ex: Paul Ewane)"
+                id="hq-courier-name"
+                className="px-4 py-2.5 rounded-xl bg-white dark:bg-neutral-900 border border-gray-200 dark:border-neutral-700 text-xs outline-none focus:border-pleingaz-red"
+              />
+              <input
+                type="tel"
+                placeholder="Téléphone / WhatsApp (+237...)"
+                id="hq-courier-phone"
+                className="px-4 py-2.5 rounded-xl bg-white dark:bg-neutral-900 border border-gray-200 dark:border-neutral-700 text-xs outline-none focus:border-pleingaz-red"
+              />
+              <select
+                id="hq-courier-vehicle"
+                className="px-4 py-2.5 rounded-xl bg-white dark:bg-neutral-900 border border-gray-200 dark:border-neutral-700 text-xs outline-none focus:border-pleingaz-red"
+              >
+                <option value="MOTO">Moto de Service PLEINGAZ</option>
+                <option value="VOITURE">Fourgonnette Livraison Rapide</option>
+                <option value="VELO">Tricycle Sécurisé</option>
+              </select>
+              <button
+                type="button"
+                onClick={() => {
+                  const nameInput = document.getElementById('hq-courier-name') as HTMLInputElement;
+                  const phoneInput = document.getElementById('hq-courier-phone') as HTMLInputElement;
+                  if (!nameInput?.value || !phoneInput?.value) {
+                    alert('Veuillez renseigner le nom et le numéro de téléphone.');
+                    return;
+                  }
+                  alert(`Livreur officiel ${nameInput.value} rattaché à la Flotte Centrale du Siège PLEINGAZ.`);
+                  nameInput.value = '';
+                  phoneInput.value = '';
+                }}
+                className="px-5 py-2.5 rounded-xl bg-pleingaz-red text-white font-black text-xs hover:opacity-90 shadow-md transition-all"
+              >
+                + Enrôler dans la Flotte
+              </button>
+            </div>
+          </div>
+
+          {/* Tableau Flotte Centrale */}
+          <div className="overflow-x-auto">
+            <table className="w-full text-left text-xs">
+              <thead>
+                <tr className="text-gray-400 border-b border-gray-100 dark:border-neutral-800">
+                  <th className="pb-3 font-bold">Livreur Officiel</th>
+                  <th className="pb-3 font-bold">Moyen</th>
+                  <th className="pb-3 font-bold">Zone d'Affectation</th>
+                  <th className="pb-3 font-bold">Statut Flotte</th>
+                  <th className="pb-3 font-bold">Caisse Espèces</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-gray-100 dark:divide-neutral-800">
+                {[
+                  { name: 'Alain Fotso (Livreur Siège #1)', phone: '+237 699 00 11 22', vehicle: 'MOTO', zone: 'Akwa - Bonanjo - Deido', status: 'DISPONIBLE', cash: '0 FCFA' },
+                  { name: 'Brice Manga (Livreur Siège #2)', phone: '+237 677 33 44 55', vehicle: 'FOURGONNETTE', zone: 'Grand Douala (Grosses Commandes)', status: 'EN MISSION', cash: '32 500 FCFA' },
+                  { name: 'Daniel Ebelle (Livreur Siège #3)', phone: '+237 690 88 99 00', vehicle: 'MOTO', zone: 'Bonamoussadi - Kotto', status: 'DISPONIBLE', cash: '6 500 FCFA' },
+                ].map((item, idx) => (
+                  <tr key={idx} className="hover:bg-gray-50 dark:hover:bg-neutral-950/50">
+                    <td className="py-3 font-bold text-gray-900 dark:text-white">
+                      <div>{item.name}</div>
+                      <div className="text-[11px] text-gray-400 font-normal">{item.phone}</div>
+                    </td>
+                    <td className="py-3 font-semibold">{item.vehicle}</td>
+                    <td className="py-3 font-medium text-gray-600 dark:text-gray-300">{item.zone}</td>
+                    <td className="py-3">
+                      <span className="px-2.5 py-1 rounded-full text-[10px] font-black bg-emerald-500/10 text-emerald-400 border border-emerald-500/30">
+                        {item.status}
+                      </span>
+                    </td>
+                    <td className="py-3 font-black text-amber-500">{item.cash}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        {/* Gouvernance & Décision de Visibilité Distributeur (R5) */}
+        <div className="bg-white dark:bg-neutral-900 border border-gray-200 dark:border-neutral-800 rounded-3xl p-6 space-y-4">
+          <div className="flex items-center justify-between">
+            <div>
+              <h3 className="font-black text-xl text-gray-900 dark:text-white">
+                Gouvernance & Visibilité Carte Publique (Règle R5)
+              </h3>
+              <p className="text-gray-500 text-xs mt-1">
+                L’administrateur décide de la visibilité sur la carte après examen des documents KYC ou autorisation dérogatoire.
+              </p>
+            </div>
+            <span className="px-3 py-1 rounded-full bg-amber-500/10 text-amber-400 border border-amber-500/30 text-xs font-bold">
+              Contrôle Souverain Admin
+            </span>
+          </div>
+
+          <div className="overflow-x-auto">
+            <table className="w-full text-left text-xs">
+              <thead>
+                <tr className="text-gray-400 border-b border-gray-100 dark:border-neutral-800">
+                  <th className="pb-3 font-bold">Point de Vente</th>
+                  <th className="pb-3 font-bold">Localisation</th>
+                  <th className="pb-3 font-bold">Pièces KYC Fournies</th>
+                  <th className="pb-3 font-bold">Visibilité Publique</th>
+                  <th className="pb-3 font-bold text-right">Action Admin</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-gray-100 dark:divide-neutral-800">
+                {[
+                  { id: '1', name: 'Boutique Officielle Siège PLEINGAZ', city: 'Douala (Akwa)', kyc: '4/4 (Vérifié Siège)', isVisible: true, isOfficial: true },
+                  { id: '2', name: 'Dépôt Agréé PLEINGAZ Bonamoussadi', city: 'Douala (Bonamoussadi)', kyc: '4/4 (Complet)', isVisible: true, isOfficial: false },
+                  { id: '3', name: 'Nouveau Dépôt Bepanda (En attente docs)', city: 'Douala (Bepanda)', kyc: '0/4 (En attente)', isVisible: false, isOfficial: false },
+                ].map((s) => (
+                  <tr key={s.id} className="hover:bg-gray-50 dark:hover:bg-neutral-950/50">
+                    <td className="py-3 font-bold text-gray-900 dark:text-white">
+                      {s.name}
+                      {s.isOfficial && <span className="ml-2 px-1.5 py-0.5 rounded bg-red-100 text-pleingaz-red text-[9px] font-black uppercase">Officiel</span>}
+                    </td>
+                    <td className="py-3 text-gray-500">{s.city}</td>
+                    <td className="py-3">
+                      <span className={`px-2 py-0.5 rounded text-[10px] font-bold ${s.kyc.includes('0/4') ? 'bg-amber-100 text-amber-800' : 'bg-emerald-100 text-emerald-800'}`}>
+                        {s.kyc}
+                      </span>
+                    </td>
+                    <td className="py-3">
+                      {s.isVisible ? (
+                        <span className="px-2 py-0.5 rounded bg-emerald-500/15 text-emerald-400 font-black text-[10px]">
+                          VISIBLE SUR LA CARTE
+                        </span>
+                      ) : (
+                        <span className="px-2 py-0.5 rounded bg-red-500/15 text-red-400 font-black text-[10px]">
+                          PRIVÉ / MASQUÉ (R5)
+                        </span>
+                      )}
+                    </td>
+                    <td className="py-3 text-right">
+                      <button
+                        onClick={() => {
+                          alert(`Visibilité publique pour « ${s.name} » mise à jour par l'administrateur.`);
+                        }}
+                        className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all ${
+                          s.isVisible
+                            ? 'bg-neutral-200 dark:bg-neutral-800 hover:bg-red-500 hover:text-white text-gray-700 dark:text-gray-300'
+                            : 'bg-emerald-600 text-white hover:bg-emerald-700 shadow-sm'
+                        }`}
+                      >
+                        {s.isVisible ? 'Masquer' : 'Activer sur la carte'}
+                      </button>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </div>
+
       </div>
     </div>
   );

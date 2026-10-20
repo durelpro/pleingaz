@@ -54,4 +54,16 @@ export class DistributorAdminController {
   ): Promise<any> {
     return this.adminService.reviewApplication(adminId, applicationId, dto);
   }
+
+  /**
+   * Activation ou masquage de la visibilité publique d'une boutique par l'administrateur
+   */
+  @Post('stores/:id/toggle-visibility')
+  async toggleVisibility(
+    @CurrentUser('id') adminId: string,
+    @Param('id') storeId: string,
+    @Body('isVisible') isVisible: boolean,
+  ): Promise<any> {
+    return this.adminService.toggleStoreVisibility(adminId, storeId, Boolean(isVisible));
+  }
 }

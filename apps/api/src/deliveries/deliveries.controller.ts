@@ -112,4 +112,50 @@ export class DeliveriesController {
   ): Promise<any> {
     return this.deliveriesService.remitCash(adminOrDistributorId, courierId, dto);
   }
+
+  /**
+   * Enregistrement d'un livreur rattaché par le distributeur
+   */
+  @Post('distributor/couriers')
+  @UseGuards(RolesGuard)
+  @Roles(RoleName.DISTRIBUTOR, RoleName.SUPER_ADMIN)
+  async createDistributorCourier(
+    @CurrentUser('id') distributorUserId: string,
+    @Body() dto: { name: string; phone: string; vehicleType?: any; areaName?: string },
+  ) {
+    return this.deliveriesService.createDistributorCourier(distributorUserId, dto);
+  }
+
+  /**
+   * Consultation des livreurs de la zone d'un distributeur
+   */
+  @Get('distributor/couriers')
+  @UseGuards(RolesGuard)
+  @Roles(RoleName.DISTRIBUTOR, RoleName.SUPER_ADMIN)
+  async getDistributorCouriers(@CurrentUser('id') distributorUserId: string) {
+    return this.deliveriesService.getDistributorCouriers(distributorUserId);
+  }
+
+  /**
+   * Création d'un livreur pour la flotte officielle du Siège (Admin / Control Center)
+   */
+  @Post('central-fleet/couriers')
+  @UseGuards(RolesGuard)
+  @Roles(RoleName.ADMIN_STOCK, RoleName.SUPER_ADMIN)
+  async createCentralFleetCourier(
+    @CurrentUser('id') adminId: string,
+    @Body() dto: { name: string; phone: string; vehicleType?: any; city?: string; areaName?: string },
+  ) {
+    return this.deliveriesService.createCentralFleetCourier(adminId, dto);
+  }
+
+  /**
+   * Consultation de la flotte complète des livreurs de l'entreprise
+   */
+  @Get('central-fleet/couriers')
+  @UseGuards(RolesGuard)
+  @Roles(RoleName.ADMIN_STOCK, RoleName.ADMIN_SUPPORT, RoleName.SUPER_ADMIN)
+  async getCentralFleetCouriers() {
+    return this.deliveriesService.getCentralFleetCouriers();
+  }
 }

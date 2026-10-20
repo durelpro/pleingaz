@@ -8,6 +8,8 @@ import { AuditService } from '../audit/audit.service';
 import { DocumentType } from '@pleingaz/database';
 import { ApplyDistributorDto } from './dto/distributor.dto';
 
+import { JwtService } from '@nestjs/jwt';
+
 const VALID_DOCUMENT_TYPES: DocumentType[] = [
   'ID_CARD_FRONT',
   'ID_CARD_BACK',
@@ -20,6 +22,7 @@ export class DistributorService {
   constructor(
     private readonly prisma: PrismaService,
     private readonly audit: AuditService,
+    private readonly jwtService: JwtService,
   ) {}
 
   /**
@@ -326,7 +329,129 @@ export class DistributorService {
       });
     }
 
-    // 3. Traitement et sauvegarde des 4 documents obligatoires D-04
+    // 3. Traitement et sauvegarde des éventuels documents KYC fournis
+    const docMap: Array<{ key: keyof typeof files; type: DocumentType; label: string }> = [
+      { key: 'idCardFront', type: 'ID_CARD_FRONT', label: 'CNI Recto' },
+      { key: 'idCardBack', type: 'ID_CARD_BACK', label: 'CNI Verso' },
+      { key: 'portraitPhoto', type: 'PORTRAIT_PHOTO', label: 'Photo Portrait' },
+      { key: 'shopPhoto', type: 'SHOP_PHOTO', label: 'Photo Façade Boutique' },
+    ];
+
+    const savedDocs = [];
+    for (const item of docMap) {
+      const fileList = files[item.key];
+      if (fileList && fileList.length > 0) {
+        const file = fileList[0];
+        const fileUrl = `uploads/kyc/${application.id}_${item.type}_${Date.now()}_${file.originalname || 'doc.jpg'}`;
+
+        const doc = await this.prisma.storeDocument.create({
+          data: {
+            applicationId: application.id,
+            type: item.type,
+            fileUrl,
+          },
+        });
+        savedDocs.push(doc);
+      }
+    }
+
+    // 4. Création immédiate de la boutique (Store) pour donner un accès direct à l'espace distributeur
+    // RÈGLE R5 : isVisible = false par défaut. L'administrateur conserve la décision souveraine d'activation publique.
+    let store = await this.prisma.store.findFirst({
+      where: { applicationId: application.id },
+    });
+
+    if (!store) {
+      store = await this.prisma.store.create({
+        data: {
+          applicationId: application.id,
+          ownerId: user.id,
+          name: dto.businessName,
+          city: dto.city,
+          neighborhood: dto.neighborhood,
+          landmark: dto.landmark,
+          whatsappNumber: cleanPhone,
+          latitude: dto.latitude ? Number(dto.latitude) : undefined,
+          longitude: dto.longitude ? Number(dto.longitude) : undefined,
+          isVisible: false, // Non visible publiquement tant que l'admin ne l'a pas validé
+          isVerifiedBadge: false,
+          deliveryAvailable: false,
+        },
+      });
+
+      // Initialisation immédiate du stock qualitatif des produits officiels
+      const products = await this.prisma.product.findMany({ where: { isActive: true }, select: { id: true } });
+      for (const prod of products) {
+        await this.prisma.inventory.upsert({
+          where: { storeId_productId: { storeId: store.id, productId: prod.id } },
+          create: { storeId: store.id, productId: prod.id, level: 'BON', lastConfirmedAt: new Date() },
+          update: {},
+        });
+      }
+    }
+
+    // 5. Génération du token JWT pour connexion automatique directe
+    const accessToken = this.jwtService.sign(
+      { sub: user.id, role: 'DISTRIBUTOR', storeId: store.id },
+      { expiresIn: '7d' },
+    );
+
+    await this.audit.log({
+      userId: user.id,
+      action: 'PUBLIC_DISTRIBUTOR_APPLICATION_SUBMITTED',
+      entity: 'DistributorApplication',
+      entityId: application.id,
+      details: {
+        businessName: dto.businessName,
+        phone: cleanPhone,
+        documentsUploaded: savedDocs.length,
+        storeId: store.id,
+      },
+    });
+
+    return {
+      message: 'Compte distributeur créé avec succès ! Vous avez maintenant accès à votre espace pour gérer votre inventaire et vos livreurs. Votre visibilité publique sera activée par l\'administrateur.',
+      applicationId: application.id,
+      status: application.status,
+      businessName: application.businessName,
+      documentsCount: savedDocs.length,
+      store: {
+        id: store.id,
+        name: store.name,
+        city: store.city,
+        neighborhood: store.neighborhood,
+        isVisible: store.isVisible,
+        isVerifiedBadge: store.isVerifiedBadge,
+      },
+      user: {
+        id: user.id,
+        phone: user.phone,
+        role: 'DISTRIBUTOR',
+      },
+      accessToken,
+    };
+  }
+
+  /**
+   * Upload ultérieur des documents KYC depuis l'espace distributeur (à la demande de l'administrateur ou à son rythme)
+   */
+  async uploadLaterDocuments(
+    userId: string,
+    files: {
+      idCardFront?: Express.Multer.File[];
+      idCardBack?: Express.Multer.File[];
+      portraitPhoto?: Express.Multer.File[];
+      shopPhoto?: Express.Multer.File[];
+    },
+  ) {
+    const application = await this.prisma.distributorApplication.findUnique({
+      where: { userId },
+    });
+
+    if (!application) {
+      throw new NotFoundException('Dossier distributeur introuvable pour ce compte.');
+    }
+
     const docMap: Array<{ key: keyof typeof files; type: DocumentType; label: string }> = [
       { key: 'idCardFront', type: 'ID_CARD_FRONT', label: 'CNI Recto' },
       { key: 'idCardBack', type: 'ID_CARD_BACK', label: 'CNI Verso' },
@@ -353,23 +478,16 @@ export class DistributorService {
     }
 
     await this.audit.log({
-      userId: user.id,
-      action: 'PUBLIC_DISTRIBUTOR_APPLICATION_SUBMITTED',
+      userId,
+      action: 'KYC_DOCUMENTS_ADDED_POST_REGISTRATION',
       entity: 'DistributorApplication',
       entityId: application.id,
-      details: {
-        businessName: dto.businessName,
-        phone: cleanPhone,
-        documentsUploaded: savedDocs.length,
-      },
+      details: { addedCount: savedDocs.length },
     });
 
     return {
-      message: 'Votre dossier de candidature distributeur PLEINGAZ a été soumis avec succès ! Notre équipe administrative l\'instruira dans les plus brefs délais.',
-      applicationId: application.id,
-      status: 'PENDING',
-      businessName: application.businessName,
-      documentsCount: savedDocs.length,
+      message: `${savedDocs.length} pièce(s) justificative(s) téléversée(s) avec succès. Vos documents sont transmis à l'administrateur pour revue.`,
+      addedCount: savedDocs.length,
     };
   }
 }

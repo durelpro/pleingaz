@@ -4,12 +4,19 @@ import { PrismaService } from '../prisma/prisma.service';
 import { AuditService } from '../audit/audit.service';
 import { BadRequestException } from '@nestjs/common';
 
+import { JwtService } from '@nestjs/jwt';
+
 describe('DistributorService (D-04: KYC Distributeur Stricte 3 Documents)', () => {
   let service: DistributorService;
   let prisma: any;
   let audit: any;
+  let jwtService: any;
 
   beforeEach(async () => {
+    jwtService = {
+      sign: jest.fn().mockReturnValue('mock-jwt-token'),
+    };
+
     prisma = {
       distributorApplication: {
         findUnique: jest.fn(),
@@ -36,6 +43,7 @@ describe('DistributorService (D-04: KYC Distributeur Stricte 3 Documents)', () =
         DistributorService,
         { provide: PrismaService, useValue: prisma },
         { provide: AuditService, useValue: audit },
+        { provide: JwtService, useValue: jwtService },
       ],
     }).compile();
 

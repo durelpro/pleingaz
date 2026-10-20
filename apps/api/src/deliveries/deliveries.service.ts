@@ -444,4 +444,217 @@ export class DeliveriesService {
       };
     });
   }
+
+  /**
+   * Enregistrement d'un livreur rattaché à un distributeur local
+   */
+  async createDistributorCourier(
+    distributorUserId: string,
+    dto: { name: string; phone: string; vehicleType?: any; areaName?: string },
+  ) {
+    if (!dto.phone || !dto.name) {
+      throw new BadRequestException('Le nom et le numéro de téléphone du livreur sont obligatoires.');
+    }
+
+    const cleanPhone = dto.phone.startsWith('+') ? dto.phone.trim() : `+237${dto.phone.replace(/^0+/, '').trim()}`;
+
+    // Trouver le point de vente du distributeur
+    const store = await this.prisma.store.findFirst({
+      where: { ownerId: distributorUserId },
+    });
+
+    const courierRole = await this.prisma.role.findUnique({
+      where: { name: 'COURIER' },
+    });
+
+    let courierUser = await this.prisma.user.findUnique({
+      where: { phone: cleanPhone },
+    });
+
+    if (!courierUser) {
+      courierUser = await this.prisma.user.create({
+        data: {
+          phone: cleanPhone,
+          isPhoneVerified: true,
+          roles: courierRole ? { create: [{ roleId: courierRole.id }] } : undefined,
+        },
+      });
+    }
+
+    const existingCourier = await this.prisma.courier.findUnique({
+      where: { userId: courierUser.id },
+    });
+
+    if (existingCourier) {
+      return {
+        message: 'Ce livreur est déjà enregistré sur la plateforme.',
+        courier: existingCourier,
+      };
+    }
+
+    const courier = await this.prisma.courier.create({
+      data: {
+        userId: courierUser.id,
+        vehicleType: dto.vehicleType || 'MOTO',
+        status: 'APPROVED',
+        cashBalance: 0,
+        availability: {
+          create: {
+            isOnline: true,
+            lastSeenAt: new Date(),
+          },
+        },
+        zones: {
+          create: [
+            {
+              city: store?.city || 'Douala',
+              areaName: dto.areaName || store?.neighborhood || 'Secteur Local',
+            },
+          ],
+        },
+      },
+      include: { user: true, zones: true, availability: true },
+    });
+
+    await this.audit.log({
+      userId: distributorUserId,
+      action: 'DISTRIBUTOR_REGISTERED_COURIER',
+      entity: 'Courier',
+      entityId: courier.id,
+      details: {
+        courierName: dto.name,
+        phone: cleanPhone,
+        storeId: store?.id,
+      },
+    });
+
+    return {
+      message: `Le livreur ${dto.name} a été enregistré avec succès pour votre point de vente.`,
+      courier,
+    };
+  }
+
+  /**
+   * Consultation des livreurs rattachés au secteur d'un distributeur
+   */
+  async getDistributorCouriers(distributorUserId: string) {
+    const store = await this.prisma.store.findFirst({
+      where: { ownerId: distributorUserId },
+    });
+
+    const city = store?.city || 'Douala';
+
+    return this.prisma.courier.findMany({
+      where: {
+        zones: {
+          some: { city },
+        },
+      },
+      include: {
+        user: { select: { id: true, phone: true } },
+        zones: true,
+        availability: true,
+      },
+      orderBy: { createdAt: 'desc' },
+      take: 20,
+    });
+  }
+
+  /**
+   * Création d'un livreur pour la flotte officielle du Siège Central PLEINGAZ (Admin Control Center)
+   */
+  async createCentralFleetCourier(
+    adminId: string,
+    dto: { name: string; phone: string; vehicleType?: any; city?: string; areaName?: string },
+  ) {
+    if (!dto.phone || !dto.name) {
+      throw new BadRequestException('Le nom et le numéro de téléphone sont obligatoires pour la flotte du siège.');
+    }
+
+    const cleanPhone = dto.phone.startsWith('+') ? dto.phone.trim() : `+237${dto.phone.replace(/^0+/, '').trim()}`;
+
+    const courierRole = await this.prisma.role.findUnique({
+      where: { name: 'COURIER' },
+    });
+
+    let courierUser = await this.prisma.user.findUnique({
+      where: { phone: cleanPhone },
+    });
+
+    if (!courierUser) {
+      courierUser = await this.prisma.user.create({
+        data: {
+          phone: cleanPhone,
+          isPhoneVerified: true,
+          roles: courierRole ? { create: [{ roleId: courierRole.id }] } : undefined,
+        },
+      });
+    }
+
+    const existingCourier = await this.prisma.courier.findUnique({
+      where: { userId: courierUser.id },
+    });
+
+    if (existingCourier) {
+      return {
+        message: 'Ce livreur appartient déjà à la flotte active.',
+        courier: existingCourier,
+      };
+    }
+
+    const courier = await this.prisma.courier.create({
+      data: {
+        userId: courierUser.id,
+        vehicleType: dto.vehicleType || 'MOTO',
+        status: 'APPROVED',
+        cashBalance: 0,
+        availability: {
+          create: {
+            isOnline: true,
+            lastSeenAt: new Date(),
+          },
+        },
+        zones: {
+          create: [
+            {
+              city: dto.city || 'Douala',
+              areaName: dto.areaName || 'Flotte Centrale Siège PLEINGAZ',
+            },
+          ],
+        },
+      },
+      include: { user: true, zones: true, availability: true },
+    });
+
+    await this.audit.log({
+      userId: adminId,
+      action: 'ADMIN_CREATED_CENTRAL_FLEET_COURIER',
+      entity: 'Courier',
+      entityId: courier.id,
+      details: {
+        name: dto.name,
+        phone: cleanPhone,
+        city: dto.city || 'Douala',
+      },
+    });
+
+    return {
+      message: `Livreur officiel ${dto.name} ajouté à la flotte centrale du Siège PLEINGAZ.`,
+      courier,
+    };
+  }
+
+  /**
+   * Consultation de la flotte complète des livreurs (Siège & Réseau National)
+   */
+  async getCentralFleetCouriers() {
+    return this.prisma.courier.findMany({
+      include: {
+        user: { select: { id: true, phone: true } },
+        zones: true,
+        availability: true,
+      },
+      orderBy: { createdAt: 'desc' },
+    });
+  }
 }

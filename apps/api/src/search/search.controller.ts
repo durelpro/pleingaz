@@ -41,6 +41,33 @@ export class SearchController {
   }
 
   /**
+   * D-02: Recherche géolocalisée par requête GET directe (/search/nearby)
+   */
+  @Get('nearby')
+  @UseGuards(OptionalJwtAuthGuard)
+  async searchNearbyGet(
+    @Query('latitude') latitude?: string,
+    @Query('longitude') longitude?: string,
+    @Query('lat') lat?: string,
+    @Query('lng') lng?: string,
+    @Query('productId') productId?: string,
+    @Query('radiusKm') radiusKm?: string,
+    @CurrentUser('id') userId?: string,
+  ) {
+    const effectiveLat = latitude ? parseFloat(latitude) : lat ? parseFloat(lat) : undefined;
+    const effectiveLng = longitude ? parseFloat(longitude) : lng ? parseFloat(lng) : undefined;
+    const effectiveRadius = radiusKm ? parseFloat(radiusKm) : undefined;
+
+    return this.searchService.searchStores({
+      productId: productId || '',
+      latitude: effectiveLat,
+      longitude: effectiveLng,
+      radiusKm: effectiveRadius,
+      userId,
+    });
+  }
+
+  /**
    * D-02: Recherche de repli par zone géographique macroscopique
    * Utilisé lors d'un refus de géolocalisation ou d'un timeout de 8 secondes
    */

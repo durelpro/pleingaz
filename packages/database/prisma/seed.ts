@@ -163,12 +163,12 @@ async function main() {
     },
     {
       sku: 'PG-ACC-DET',
-      name: 'Détendeur de Sécurité PLEINGAZ',
-      weightKg: 0.5,
+      name: 'Détendeur de Sécurité PLEINGAZ avec Manomètre',
+      weightKg: 0.6,
       categoryId: catAccessoires.id,
-      description: 'Détendeur certifié avec limiteur de débit et sécurité intégrée.',
-      publicPrice: 5000,
-      distributorPrice: 4200,
+      description: 'Détendeur haute sécurité avec cadran manométrique gradué et clapet anti-fuite.',
+      publicPrice: 6000,
+      distributorPrice: 5000,
     },
     {
       sku: 'PG-ACC-TUY',
@@ -178,6 +178,24 @@ async function main() {
       description: 'Tuyau de raccordement renforcé avec colliers de serrage.',
       publicPrice: 3000,
       distributorPrice: 2500,
+    },
+    {
+      sku: 'PG-REC-001',
+      name: 'Réchaud à Gaz 2 Feux Émaillé Noir PLEINGAZ',
+      weightKg: 3.2,
+      categoryId: catAccessoires.id,
+      description: 'Table de cuisson 2 brûleurs en fonte émaillée haute résistance, allumage sécurisé et flammes bleues optimisées.',
+      publicPrice: 16500,
+      distributorPrice: 14500,
+    },
+    {
+      sku: 'PG-REC-002',
+      name: 'Table de Cuisson Gaz 2 Feux Verre Trempé Prestige PLEINGAZ',
+      weightKg: 4.8,
+      categoryId: catAccessoires.id,
+      description: 'Plaque de cuisson de luxe en verre trempé renforcé avec sérigraphie florale, double brûleur turbo et pieds antidérapants.',
+      publicPrice: 24500,
+      distributorPrice: 21500,
     },
   ];
 

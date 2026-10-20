@@ -114,13 +114,6 @@ export default function DistributorWizard() {
 
   const handleSubmit = async () => {
     setError(null);
-
-    // Validation stricte des 3 documents D-04 (4 fichiers)
-    if (!files.idCardFront || !files.idCardBack || !files.portraitPhoto || !files.shopPhoto) {
-      setError('Les 4 fichiers du dossier KYC D-04 sont obligatoires (CNI recto/verso, portrait, boutique).');
-      return;
-    }
-
     setLoading(true);
 
     try {
@@ -133,10 +126,11 @@ export default function DistributorWizard() {
       payload.append('latitude', String(formData.latitude));
       payload.append('longitude', String(formData.longitude));
 
-      payload.append('idCardFront', files.idCardFront);
-      payload.append('idCardBack', files.idCardBack);
-      payload.append('portraitPhoto', files.portraitPhoto);
-      payload.append('shopPhoto', files.shopPhoto);
+      // Les documents sont optionnels à l'inscription initiale (téléversement possible ultérieurement)
+      if (files.idCardFront) payload.append('idCardFront', files.idCardFront);
+      if (files.idCardBack) payload.append('idCardBack', files.idCardBack);
+      if (files.portraitPhoto) payload.append('portraitPhoto', files.portraitPhoto);
+      if (files.shopPhoto) payload.append('shopPhoto', files.shopPhoto);
 
       const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001';
       const res = await fetch(`${apiUrl}/distributor/public-apply`, {
@@ -147,6 +141,16 @@ export default function DistributorWizard() {
       const data = await res.json();
       if (!res.ok) {
         throw new Error(data.message || 'Erreur lors de la transmission du dossier.');
+      }
+
+      // Sauvegarde du token pour accès direct et fluide
+      if (data.accessToken) {
+        localStorage.setItem('auth_token', data.accessToken);
+        localStorage.setItem('user_role', 'DISTRIBUTOR');
+        localStorage.setItem('distributor_phone', formData.whatsappNumber);
+        if (data.store) {
+          localStorage.setItem('distributor_store', JSON.stringify(data.store));
+        }
       }
 
       setSuccessData(data);
@@ -162,37 +166,52 @@ export default function DistributorWizard() {
       <motion.div
         initial={{ opacity: 0, scale: 0.95 }}
         animate={{ opacity: 1, scale: 1 }}
-        className="w-full max-w-2xl mx-auto p-8 bg-white dark:bg-neutral-900 rounded-3xl shadow-xl border border-emerald-100 dark:border-emerald-950/40 text-center space-y-6"
+        className="w-full max-w-2xl mx-auto p-8 bg-neutral-900 rounded-3xl shadow-2xl border-2 border-[#E51A24]/40 text-center space-y-6 text-white"
       >
-        <div className="w-20 h-20 bg-emerald-100 dark:bg-emerald-950/60 text-emerald-600 mx-auto rounded-full flex items-center justify-center shadow-lg shadow-emerald-500/20">
+        <div className="w-20 h-20 bg-[#E51A24]/20 text-[#E51A24] mx-auto rounded-full flex items-center justify-center shadow-lg shadow-[#E51A24]/30 border border-[#E51A24]/30">
           <CheckCircle size={44} />
         </div>
         <div className="space-y-2">
-          <h2 className="text-3xl font-extrabold text-gray-900 dark:text-white">Dossier Transmis avec Succès !</h2>
-          <p className="text-gray-600 dark:text-gray-300 max-w-lg mx-auto">
-            Félicitations pour votre candidature pour <strong className="text-pleingaz-red">{successData.businessName}</strong>.
+          <h2 className="text-3xl font-black text-white">Boutique Créée avec Succès !</h2>
+          <p className="text-neutral-300 max-w-lg mx-auto">
+            Félicitations ! Votre point de vente <strong className="text-[#E51A24]">{successData.businessName}</strong> est enregistré dans le réseau PLEINGAZ.
           </p>
         </div>
-        <div className="p-4 bg-emerald-50 dark:bg-emerald-950/30 rounded-2xl border border-emerald-200 dark:border-emerald-800 text-sm text-emerald-800 dark:text-emerald-200 space-y-1">
-          <p className="font-semibold">Statut actuel : En cours d'instruction administrative (D-04)</p>
-          <p className="text-xs opacity-90">Référence dossier : #{successData.applicationId?.slice(0, 8)}</p>
-          <p className="text-xs">Vous recevrez une notification WhatsApp dès validation officielle de votre boutique.</p>
+
+        <div className="p-5 bg-neutral-950/80 rounded-2xl border border-white/10 text-sm space-y-2 text-left">
+          <div className="flex items-center gap-2 text-amber-400 font-bold">
+            <AlertCircle size={18} />
+            <span>Mode Privé Actif (Règle de Sécurité R5)</span>
+          </div>
+          <p className="text-xs text-neutral-300 leading-relaxed">
+            Votre espace distributeur est immédiatement accessible pour gérer votre stock et vos livreurs. Pour activer votre visibilité sur la carte publique auprès des clients, l'administrateur validera vos pièces justificatives.
+          </p>
+          {successData.documentsCount > 0 ? (
+            <p className="text-xs text-emerald-400 font-semibold">
+              ✓ {successData.documentsCount} document(s) KYC transmis pour révision.
+            </p>
+          ) : (
+            <p className="text-xs text-amber-300/90 font-medium">
+              ℹ️ Aucun document téléversé pour l'instant. Vous pourrez les ajouter depuis votre espace à tout moment.
+            </p>
+          )}
         </div>
-        <button
-          onClick={() => {
-            setSuccessData(null);
-            setCurrentStep(1);
-          }}
-          className="px-8 py-3 rounded-xl bg-gray-900 dark:bg-white text-white dark:text-gray-900 font-semibold hover:bg-gray-800 transition-all shadow-md"
-        >
-          Retour à l'accueil
-        </button>
+
+        <div className="flex flex-col sm:flex-row items-center justify-center gap-4 pt-2">
+          <a
+            href="/distributor/inventory"
+            className="w-full sm:w-auto px-8 py-3.5 rounded-2xl bg-gradient-to-r from-[#E51A24] to-[#b30d15] text-white font-black hover:scale-105 active:scale-95 transition-all shadow-xl shadow-[#E51A24]/40 flex items-center justify-center gap-2"
+          >
+            <Store size={18} />
+            <span>Accéder à mon Espace Distributeur</span>
+          </a>
+        </div>
       </motion.div>
     );
   }
 
   return (
-    <div className="w-full max-w-2xl mx-auto p-6 sm:p-8 bg-white dark:bg-neutral-900 rounded-3xl shadow-2xl border border-gray-100 dark:border-neutral-800">
+    <div className="w-full max-w-2xl mx-auto p-6 sm:p-8 bg-neutral-900 rounded-3xl shadow-2xl border border-white/10 text-white">
       
       {/* Stepper Header */}
       <div className="flex justify-between items-center mb-8 relative">
@@ -436,31 +455,40 @@ export default function DistributorWizard() {
         {currentStep < steps.length ? (
           <button
             onClick={nextStep}
-            className="flex items-center gap-2 px-8 py-3.5 font-bold rounded-xl bg-gradient-to-r from-pleingaz-red to-[#ff6a00] text-white shadow-lg shadow-orange-500/30 hover:shadow-orange-500/50 hover:-translate-y-0.5 active:translate-y-0 transition-all"
+            className="flex items-center gap-2 px-8 py-3.5 font-bold rounded-xl bg-gradient-to-r from-[#E51A24] to-[#b30d15] text-white shadow-lg shadow-[#E51A24]/30 hover:shadow-[#E51A24]/50 hover:-translate-y-0.5 active:translate-y-0 transition-all"
           >
             Continuer
             <ArrowRight size={18} />
           </button>
         ) : (
-          <button
-            onClick={handleSubmit}
-            disabled={loading}
-            className={`flex items-center gap-2 px-8 py-3.5 font-bold rounded-xl bg-gradient-to-r from-emerald-600 to-teal-500 text-white shadow-lg shadow-emerald-500/30 hover:shadow-emerald-500/50 hover:-translate-y-0.5 transition-all ${
-              loading ? 'opacity-70 cursor-wait' : ''
-            }`}
-          >
-            {loading ? (
-              <>
-                <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin" />
-                Transmission du dossier...
-              </>
-            ) : (
-              <>
-                <CheckCircle size={18} />
-                Soumettre le dossier KYC
-              </>
-            )}
-          </button>
+          <div className="flex flex-col sm:flex-row items-center gap-3">
+            <button
+              onClick={handleSubmit}
+              disabled={loading}
+              className="px-5 py-3 rounded-xl border border-white/20 hover:bg-white/10 text-neutral-300 font-semibold text-xs transition-colors"
+            >
+              Créer ma boutique sans documents (à fournir plus tard)
+            </button>
+            <button
+              onClick={handleSubmit}
+              disabled={loading}
+              className={`flex items-center gap-2 px-7 py-3.5 font-black text-sm rounded-xl bg-gradient-to-r from-[#E51A24] to-[#b30d15] text-white shadow-lg shadow-[#E51A24]/35 hover:shadow-[#E51A24]/60 hover:-translate-y-0.5 transition-all ${
+                loading ? 'opacity-70 cursor-wait' : ''
+              }`}
+            >
+              {loading ? (
+                <>
+                  <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                  Création du compte...
+                </>
+              ) : (
+                <>
+                  <CheckCircle size={18} />
+                  Valider & Accéder à mon Espace
+                </>
+              )}
+            </button>
+          </div>
         )}
       </div>
     </div>
