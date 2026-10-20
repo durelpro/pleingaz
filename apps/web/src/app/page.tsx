@@ -1,5 +1,6 @@
 'use client';
 
+import { useState } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import {
@@ -18,8 +19,12 @@ import {
   Clock,
   Gauge,
   CookingPot,
+  X,
+  ShoppingCart,
+  MessageCircle,
+  Check,
 } from 'lucide-react';
-import { motion } from 'framer-motion';
+import { motion, AnimatePresence } from 'framer-motion';
 
 const officialCatalog = [
   {
@@ -97,6 +102,18 @@ const officialCatalog = [
 ];
 
 export default function Home() {
+  const [activeCategory, setActiveCategory] = useState<'TOUS' | 'BOUTEILLES' | 'CUISSON' | 'SECURITE'>('TOUS');
+  const [selectedProduct, setSelectedProduct] = useState<any | null>(null);
+  const [bottleChoice, setBottleChoice] = useState<'RECHARGE' | 'PACK'>('RECHARGE');
+  const [orderMode, setOrderMode] = useState<'DEPOT' | 'LIVRAISON'>('DEPOT');
+
+  const filteredCatalog = officialCatalog.filter((item) => {
+    if (activeCategory === 'BOUTEILLES') return item.category === 'Bouteilles & Recharges';
+    if (activeCategory === 'CUISSON') return item.category === 'Tables de Cuisson';
+    if (activeCategory === 'SECURITE') return item.category === 'Sécurité & Accessoires';
+    return true;
+  });
+
   return (
     <div className="min-h-screen bg-[#0d0707] text-white selection:bg-[#E51A24] selection:text-white relative overflow-x-hidden">
       
@@ -267,74 +284,107 @@ export default function Home() {
           </p>
         </div>
 
-        {/* Grille des 4 Produits avec Photos Réelles */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-          {officialCatalog.map((prod, idx) => (
-            <motion.div
-              key={prod.id}
-              initial={{ opacity: 0, y: 30 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }}
-              transition={{ delay: idx * 0.1 }}
-              whileHover={{ y: -8 }}
-              className="bg-gradient-to-b from-white/[0.07] to-white/[0.02] border border-white/10 hover:border-[#E51A24]/50 rounded-3xl p-5 flex flex-col justify-between transition-all duration-300 shadow-xl group relative overflow-hidden"
-            >
-              {/* Top Badge */}
-              <div className="flex items-center justify-between gap-2 mb-3 z-10">
-                <span className="text-[11px] font-black px-2.5 py-1 rounded-full bg-[#E51A24]/20 border border-[#E51A24]/40 text-red-300">
-                  {prod.badge}
-                </span>
-                <span className="text-[11px] font-bold text-neutral-400">
-                  {prod.category}
-                </span>
-              </div>
+        {/* Onglets Filtres par Catégorie */}
+        <div className="flex flex-wrap items-center justify-center gap-2.5 pt-2">
+          {[
+            { id: 'TOUS', label: 'Toute la Gamme (6)', icon: Sparkles },
+            { id: 'BOUTEILLES', label: 'Bouteilles & Recharges', icon: Flame },
+            { id: 'CUISSON', label: 'Tables de Cuisson', icon: CookingPot },
+            { id: 'SECURITE', label: 'Sécurité & Accessoires', icon: ShieldCheck },
+          ].map((tab) => {
+            const Icon = tab.icon;
+            const isActive = activeCategory === tab.id;
+            return (
+              <button
+                key={tab.id}
+                onClick={() => setActiveCategory(tab.id as any)}
+                className={`px-4 py-2.5 rounded-2xl text-xs sm:text-sm font-black transition-all flex items-center gap-2 border ${
+                  isActive
+                    ? 'bg-[#E51A24] text-white border-red-500 shadow-lg shadow-[#E51A24]/30 scale-105'
+                    : 'bg-white/5 hover:bg-white/10 text-neutral-300 border-white/10 hover:border-white/20'
+                }`}
+              >
+                <Icon size={16} />
+                <span>{tab.label}</span>
+              </button>
+            );
+          })}
+        </div>
 
-              {/* Product Real Image with Smooth Hover Effect */}
-              <div className="relative w-full h-56 rounded-2xl overflow-hidden bg-neutral-900/60 border border-white/5 flex items-center justify-center p-3 mb-4 group-hover:bg-neutral-900/80 transition-colors">
-                <div className="relative w-full h-full">
-                  <Image
-                    src={prod.image}
-                    alt={prod.name}
-                    fill
-                    sizes="(max-w-768px) 100vw, 25vw"
-                    className="object-contain group-hover:scale-108 transition-transform duration-500"
-                  />
-                </div>
-              </div>
-
-              {/* Product Info */}
-              <div className="space-y-2 mb-4">
-                <h3 className="font-black text-lg text-white group-hover:text-red-400 transition-colors">
-                  {prod.name}
-                </h3>
-                <p className="text-xs text-amber-300/90 font-medium">
-                  {prod.subtitle}
-                </p>
-                <p className="text-xs text-neutral-400 line-clamp-2 leading-relaxed">
-                  {prod.desc}
-                </p>
-              </div>
-
-              {/* Price & Action */}
-              <div className="pt-3 border-t border-white/10 flex items-center justify-between">
-                <div>
-                  <span className="text-[10px] text-neutral-400 block font-bold uppercase">Prix Officiel</span>
-                  <span className="text-xl font-black text-white">
-                    {prod.price.toLocaleString('fr-FR')} <span className="text-xs text-[#E51A24]">FCFA</span>
+        {/* Grille Dynamique des Produits Officiels */}
+        <motion.div layout className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+          <AnimatePresence>
+            {filteredCatalog.map((prod, idx) => (
+              <motion.div
+                key={prod.id}
+                layout
+                initial={{ opacity: 0, scale: 0.95 }}
+                animate={{ opacity: 1, scale: 1 }}
+                exit={{ opacity: 0, scale: 0.95 }}
+                transition={{ duration: 0.25 }}
+                whileHover={{ y: -8 }}
+                className="bg-gradient-to-b from-white/[0.07] to-white/[0.02] border border-white/10 hover:border-[#E51A24]/50 rounded-3xl p-5 flex flex-col justify-between transition-all duration-300 shadow-xl group relative overflow-hidden"
+              >
+                {/* Top Badge */}
+                <div className="flex items-center justify-between gap-2 mb-3 z-10">
+                  <span className="text-[11px] font-black px-2.5 py-1 rounded-full bg-[#E51A24]/20 border border-[#E51A24]/40 text-red-300">
+                    {prod.badge}
+                  </span>
+                  <span className="text-[11px] font-bold text-neutral-400">
+                    {prod.category}
                   </span>
                 </div>
 
-                <Link
-                  href="/search?auto=true"
-                  className="px-4 py-2.5 rounded-xl bg-gradient-to-r from-[#E51A24] to-[#b30d15] text-white text-xs font-black shadow-md hover:shadow-lg hover:shadow-[#E51A24]/30 hover:scale-105 active:scale-95 transition-all flex items-center gap-1.5"
-                >
-                  <span>Commander</span>
-                  <ArrowRight size={14} />
-                </Link>
-              </div>
-            </motion.div>
-          ))}
-        </div>
+                {/* Product Real Image with Smooth Hover Effect */}
+                <div className="relative w-full h-56 rounded-2xl overflow-hidden bg-neutral-900/60 border border-white/5 flex items-center justify-center p-3 mb-4 group-hover:bg-neutral-900/80 transition-colors">
+                  <div className="relative w-full h-full">
+                    <Image
+                      src={prod.image}
+                      alt={prod.name}
+                      fill
+                      sizes="(max-w-768px) 100vw, 33vw"
+                      className="object-contain group-hover:scale-108 transition-transform duration-500"
+                    />
+                  </div>
+                </div>
+
+                {/* Product Info */}
+                <div className="space-y-2 mb-4">
+                  <h3 className="font-black text-lg text-white group-hover:text-red-400 transition-colors">
+                    {prod.name}
+                  </h3>
+                  <p className="text-xs text-amber-300/90 font-medium">
+                    {prod.subtitle}
+                  </p>
+                  <p className="text-xs text-neutral-400 line-clamp-2 leading-relaxed">
+                    {prod.desc}
+                  </p>
+                </div>
+
+                {/* Price & Action */}
+                <div className="pt-3 border-t border-white/10 flex items-center justify-between">
+                  <div>
+                    <span className="text-[10px] text-neutral-400 block font-bold uppercase">Prix Officiel</span>
+                    <span className="text-xl font-black text-white">
+                      {prod.price.toLocaleString('fr-FR')} <span className="text-xs text-[#E51A24]">FCFA</span>
+                    </span>
+                  </div>
+
+                  <button
+                    onClick={() => {
+                      setSelectedProduct(prod);
+                      setBottleChoice(prod.sku.includes('PACK') ? 'PACK' : 'RECHARGE');
+                    }}
+                    className="px-4 py-2.5 rounded-xl bg-gradient-to-r from-[#E51A24] to-[#b30d15] text-white text-xs font-black shadow-md hover:shadow-lg hover:shadow-[#E51A24]/30 hover:scale-105 active:scale-95 transition-all flex items-center gap-1.5"
+                  >
+                    <span>Commander</span>
+                    <ArrowRight size={14} />
+                  </button>
+                </div>
+              </motion.div>
+            ))}
+          </AnimatePresence>
+        </motion.div>
 
         {/* Tableau Récapitulatif : Barème Officiel Homologué PLEINGAZ Cameroun */}
         <motion.div
@@ -553,6 +603,195 @@ export default function Home() {
           Distribution exclusive de gaz domestique au Cameroun sous barèmes officiels homologués par le Ministère du Commerce. Aucune majoration non autorisée.
         </p>
       </footer>
+
+      {/* Modal Interactif de Commande Rapide */}
+      <AnimatePresence>
+        {selectedProduct && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+            {/* Backdrop */}
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              onClick={() => setSelectedProduct(null)}
+              className="absolute inset-0 bg-black/80 backdrop-blur-md"
+            />
+
+            {/* Modal Dialog */}
+            <motion.div
+              initial={{ opacity: 0, scale: 0.9, y: 20 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.9, y: 20 }}
+              transition={{ type: 'spring', damping: 25, stiffness: 300 }}
+              className="relative w-full max-w-lg bg-[#140a0b] border-2 border-[#E51A24]/40 rounded-3xl p-6 sm:p-8 shadow-2xl shadow-[#E51A24]/20 z-10 space-y-6 overflow-hidden"
+            >
+              {/* Close Button */}
+              <button
+                onClick={() => setSelectedProduct(null)}
+                className="absolute top-5 right-5 w-9 h-9 rounded-full bg-white/10 hover:bg-white/20 text-neutral-300 hover:text-white flex items-center justify-center transition-all"
+              >
+                <X size={18} />
+              </button>
+
+              {/* Product Header */}
+              <div className="flex items-center gap-4 pr-8">
+                <div className="relative w-20 h-20 rounded-2xl bg-black/50 border border-white/10 overflow-hidden shrink-0 p-2">
+                  <Image
+                    src={selectedProduct.image}
+                    alt={selectedProduct.name}
+                    fill
+                    className="object-contain"
+                  />
+                </div>
+                <div>
+                  <span className="text-[10px] font-black px-2.5 py-0.5 rounded-full bg-[#E51A24]/20 border border-[#E51A24]/40 text-red-300 uppercase tracking-wider inline-block mb-1">
+                    {selectedProduct.category}
+                  </span>
+                  <h3 className="text-lg font-black text-white leading-tight">
+                    {selectedProduct.name}
+                  </h3>
+                  <p className="text-xs text-neutral-400 mt-0.5">
+                    {selectedProduct.subtitle}
+                  </p>
+                </div>
+              </div>
+
+              {/* Option Bouteille : Consigne vs Recharge (si bouteille de gaz) */}
+              {selectedProduct.category === 'Bouteilles & Recharges' && (
+                <div className="space-y-2">
+                  <label className="text-xs font-bold text-neutral-300 uppercase tracking-wider block">
+                    Type d'achat :
+                  </label>
+                  <div className="grid grid-cols-2 gap-2.5">
+                    <button
+                      type="button"
+                      onClick={() => setBottleChoice('RECHARGE')}
+                      className={`p-3 rounded-2xl border text-left transition-all ${
+                        bottleChoice === 'RECHARGE'
+                          ? 'border-[#E51A24] bg-[#E51A24]/15 text-white shadow-md'
+                          : 'border-white/10 bg-white/5 text-neutral-400 hover:bg-white/10'
+                      }`}
+                    >
+                      <div className="flex items-center justify-between mb-1">
+                        <span className="text-xs font-black">Recharge Seule</span>
+                        {bottleChoice === 'RECHARGE' && <Check size={14} className="text-[#E51A24]" />}
+                      </div>
+                      <p className="text-[11px] text-neutral-300 leading-snug">
+                        Échange standard (vous avez déjà une bouteille vide)
+                      </p>
+                    </button>
+
+                    <button
+                      type="button"
+                      onClick={() => setBottleChoice('PACK')}
+                      className={`p-3 rounded-2xl border text-left transition-all ${
+                        bottleChoice === 'PACK'
+                          ? 'border-[#E51A24] bg-[#E51A24]/15 text-white shadow-md'
+                          : 'border-white/10 bg-white/5 text-neutral-400 hover:bg-white/10'
+                      }`}
+                    >
+                      <div className="flex items-center justify-between mb-1">
+                        <span className="text-xs font-black">Pack Consigne + Gaz</span>
+                        {bottleChoice === 'PACK' && <Check size={14} className="text-[#E51A24]" />}
+                      </div>
+                      <p className="text-[11px] text-neutral-300 leading-snug">
+                        Premier équipement (bouteille neuve scellée)
+                      </p>
+                    </button>
+                  </div>
+                </div>
+              )}
+
+              {/* Mode de récupération */}
+              <div className="space-y-2">
+                <label className="text-xs font-bold text-neutral-300 uppercase tracking-wider block">
+                  Mode de récupération :
+                </label>
+                <div className="grid grid-cols-2 gap-2.5">
+                  <button
+                    type="button"
+                    onClick={() => setOrderMode('DEPOT')}
+                    className={`p-3 rounded-2xl border text-left transition-all ${
+                      orderMode === 'DEPOT'
+                        ? 'border-[#E51A24] bg-[#E51A24]/15 text-white shadow-md'
+                        : 'border-white/10 bg-white/5 text-neutral-400 hover:bg-white/10'
+                    }`}
+                  >
+                    <div className="flex items-center gap-1.5 mb-1 font-black text-xs">
+                      <Store size={14} className="text-[#E51A24]" />
+                      <span>Retrait en Dépôt</span>
+                    </div>
+                    <p className="text-[11px] text-neutral-300">
+                      Gratuit, immédiat au point agréé
+                    </p>
+                  </button>
+
+                  <button
+                    type="button"
+                    onClick={() => setOrderMode('LIVRAISON')}
+                    className={`p-3 rounded-2xl border text-left transition-all ${
+                      orderMode === 'LIVRAISON'
+                        ? 'border-[#E51A24] bg-[#E51A24]/15 text-white shadow-md'
+                        : 'border-white/10 bg-white/5 text-neutral-400 hover:bg-white/10'
+                    }`}
+                  >
+                    <div className="flex items-center gap-1.5 mb-1 font-black text-xs">
+                      <Truck size={14} className="text-[#E51A24]" />
+                      <span>Livraison Express</span>
+                    </div>
+                    <p className="text-[11px] text-neutral-300">
+                      À domicile avec code secret SHA-256
+                    </p>
+                  </button>
+                </div>
+              </div>
+
+              {/* Total & Call to Action */}
+              <div className="pt-4 border-t border-white/10 flex items-center justify-between">
+                <div>
+                  <span className="text-[11px] text-neutral-400 block font-bold uppercase">Prix Homologué</span>
+                  <span className="text-2xl font-black text-white">
+                    {(
+                      selectedProduct.category === 'Bouteilles & Recharges'
+                        ? bottleChoice === 'PACK'
+                          ? selectedProduct.sku.includes('060') ? 16120 : 26500
+                          : selectedProduct.sku.includes('060') ? 3120 : 6500
+                        : selectedProduct.price
+                    ).toLocaleString('fr-FR')}{' '}
+                    <span className="text-xs text-[#E51A24]">FCFA</span>
+                  </span>
+                </div>
+
+                <Link
+                  href={`/search?auto=true&product=${encodeURIComponent(selectedProduct.name)}`}
+                  className="px-6 py-3.5 rounded-2xl bg-gradient-to-r from-[#E51A24] via-[#f02934] to-[#c7101a] text-white font-black text-xs sm:text-sm shadow-xl shadow-[#E51A24]/40 hover:scale-105 active:scale-95 transition-all flex items-center gap-2"
+                >
+                  <MapPin size={16} />
+                  <span>Trouver un Dépôt</span>
+                </Link>
+              </div>
+
+              {/* Direct WhatsApp Option */}
+              <div className="text-center pt-1">
+                <Link
+                  href={`https://wa.me/237680000075?text=${encodeURIComponent(
+                    `Bonjour PLEINGAZ, je souhaite commander : ${selectedProduct.name} (${
+                      selectedProduct.category === 'Bouteilles & Recharges' && bottleChoice === 'PACK'
+                        ? 'Pack Bouteille Complète'
+                        : 'Recharge'
+                    }) avec option ${orderMode === 'LIVRAISON' ? 'Livraison à domicile' : 'Retrait en Dépôt'}.`
+                  )}`}
+                  target="_blank"
+                  className="text-xs text-neutral-400 hover:text-emerald-400 transition-colors inline-flex items-center gap-1.5"
+                >
+                  <MessageCircle size={14} className="text-emerald-400" />
+                  <span>Assistance directe via WhatsApp officiel (+237 680 00 00 75)</span>
+                </Link>
+              </div>
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
     </div>
   );
 }
