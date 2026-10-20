@@ -9,7 +9,7 @@ import {
 import { OrdersService } from './orders.service';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { CurrentUser } from '../auth/decorators/current-user.decorator';
-import { CreateOrderDto } from './dto/create-order.dto';
+import { CreateOrderDto, NotifyPaymentDto } from './dto/create-order.dto';
 
 @Controller('orders')
 @UseGuards(JwtAuthGuard)
@@ -28,11 +28,19 @@ export class OrdersController {
   }
 
   /**
-   * Consultation de mes commandes
+   * Consultation de mes commandes (Client)
    */
   @Get('my-orders')
   async getMyOrders(@CurrentUser('id') userId: string): Promise<any> {
     return this.ordersService.getMyOrders(userId);
+  }
+
+  /**
+   * Consultation des commandes reçues par la boutique du distributeur
+   */
+  @Get('store/orders')
+  async getStoreOrders(@CurrentUser('id') userId: string): Promise<any> {
+    return this.ordersService.getStoreOrders(userId);
   }
 
   /**
@@ -47,6 +55,29 @@ export class OrdersController {
   }
 
   /**
+   * Signalement du paiement direct par le client (MoMo / Orange Money / Cash)
+   */
+  @Post(':id/notify-paid')
+  async notifyPaid(
+    @CurrentUser('id') userId: string,
+    @Param('id') orderId: string,
+    @Body() dto: NotifyPaymentDto,
+  ): Promise<any> {
+    return this.ordersService.notifyPaid(userId, orderId, dto);
+  }
+
+  /**
+   * Confirmation souveraine de la réception des fonds par le titulaire du compte (Gérant distributeur)
+   */
+  @Post(':id/confirm-payment')
+  async confirmPayment(
+    @CurrentUser('id') userId: string,
+    @Param('id') orderId: string,
+  ): Promise<any> {
+    return this.ordersService.confirmPayment(userId, orderId);
+  }
+
+  /**
    * Annulation de commande
    */
   @Post(':id/cancel')
@@ -58,3 +89,4 @@ export class OrdersController {
     return this.ordersService.cancelOrder(userId, orderId, reason);
   }
 }
+

@@ -490,4 +490,83 @@ export class DistributorService {
       addedCount: savedDocs.length,
     };
   }
+
+  /**
+   * Consultation des coordonnées de paiement configurées par le distributeur
+   */
+  async getPaymentSettings(userId: string): Promise<any> {
+    const store = await this.prisma.store.findFirst({
+      where: { ownerId: userId },
+    });
+
+    if (!store) {
+      throw new NotFoundException('Aucun point de vente associé à cet utilisateur.');
+    }
+
+    return {
+      storeId: store.id,
+      storeName: store.name,
+      momoReceiverNumber: store.momoReceiverNumber || '',
+      momoAccountName: store.momoAccountName || '',
+      orangeReceiverNumber: store.orangeReceiverNumber || '',
+      orangeAccountName: store.orangeAccountName || '',
+      acceptCash: store.acceptCash,
+    };
+  }
+
+  /**
+   * Mise à jour des numéros réels MTN MoMo et Orange Money pour recevoir les paiements directs
+   */
+  async updatePaymentSettings(
+    userId: string,
+    dto: {
+      momoReceiverNumber?: string;
+      momoAccountName?: string;
+      orangeReceiverNumber?: string;
+      orangeAccountName?: string;
+      acceptCash?: boolean;
+    },
+  ): Promise<any> {
+    const store = await this.prisma.store.findFirst({
+      where: { ownerId: userId },
+    });
+
+    if (!store) {
+      throw new NotFoundException('Aucun point de vente associé à cet utilisateur.');
+    }
+
+    const updated = await this.prisma.store.update({
+      where: { id: store.id },
+      data: {
+        ...(dto.momoReceiverNumber !== undefined && { momoReceiverNumber: dto.momoReceiverNumber }),
+        ...(dto.momoAccountName !== undefined && { momoAccountName: dto.momoAccountName }),
+        ...(dto.orangeReceiverNumber !== undefined && { orangeReceiverNumber: dto.orangeReceiverNumber }),
+        ...(dto.orangeAccountName !== undefined && { orangeAccountName: dto.orangeAccountName }),
+        ...(dto.acceptCash !== undefined && { acceptCash: dto.acceptCash }),
+      },
+    });
+
+    await this.audit.log({
+      userId,
+      action: 'UPDATE_PAYMENT_RECEIVER_SETTINGS',
+      entity: 'Store',
+      entityId: store.id,
+      details: {
+        momoReceiverNumber: updated.momoReceiverNumber,
+        orangeReceiverNumber: updated.orangeReceiverNumber,
+        acceptCash: updated.acceptCash,
+      },
+    });
+
+    return {
+      message: 'Coordonnées de paiement enregistrées avec succès.',
+      paymentSettings: {
+        momoReceiverNumber: updated.momoReceiverNumber,
+        momoAccountName: updated.momoAccountName,
+        orangeReceiverNumber: updated.orangeReceiverNumber,
+        orangeAccountName: updated.orangeAccountName,
+        acceptCash: updated.acceptCash,
+      },
+    };
+  }
 }

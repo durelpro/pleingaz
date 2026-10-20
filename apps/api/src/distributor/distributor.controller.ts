@@ -2,6 +2,7 @@ import {
   Controller,
   Get,
   Post,
+  Put,
   Body,
   UseGuards,
   UseInterceptors,
@@ -13,7 +14,7 @@ import { FileInterceptor, FileFieldsInterceptor } from '@nestjs/platform-express
 import { DistributorService } from './distributor.service';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { CurrentUser } from '../auth/decorators/current-user.decorator';
-import { ApplyDistributorDto } from './dto/distributor.dto';
+import { ApplyDistributorDto, UpdatePaymentSettingsDto } from './dto/distributor.dto';
 
 @Controller('distributor')
 export class DistributorController {
@@ -124,4 +125,26 @@ export class DistributorController {
   async submit(@CurrentUser('id') userId: string) {
     return this.distributorService.submitApplication(userId);
   }
+
+  /**
+   * Consultation des coordonnées de réception des paiements (MoMo, Orange Money, Cash)
+   */
+  @Get('store/payment-settings')
+  @UseGuards(JwtAuthGuard)
+  async getPaymentSettings(@CurrentUser('id') userId: string) {
+    return this.distributorService.getPaymentSettings(userId);
+  }
+
+  /**
+   * Configuration souveraine des numéros et comptes de réception de paiements
+   */
+  @Put('store/payment-settings')
+  @UseGuards(JwtAuthGuard)
+  async updatePaymentSettings(
+    @CurrentUser('id') userId: string,
+    @Body() dto: UpdatePaymentSettingsDto,
+  ) {
+    return this.distributorService.updatePaymentSettings(userId, dto);
+  }
 }
+

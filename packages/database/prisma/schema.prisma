@@ -250,7 +250,10 @@ model Store {
 
   // Numéros réels de réception des règlements MoMo
   momoReceiverNumber   String?
+  momoAccountName      String?
   orangeReceiverNumber String?
+  orangeAccountName    String?
+  acceptCash           Boolean                @default(true)
 
   inventories     Inventory[]
   orders          Order[]
@@ -716,6 +719,10 @@ model Payment {
 
   idempotencyKey  String        @unique
   providerTxId    String?       @unique
+
+  customerTxRef   String?       // Référence SMS/transfert renseignée par le client
+  confirmedByUserId String?     // ID du gérant/distributeur ayant vérifié et confirmé les fonds
+  confirmedAt     DateTime?     // Date/heure exacte de confirmation par le titulaire du compte
 
   lastWebhookData Json?
 

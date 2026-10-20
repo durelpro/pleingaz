@@ -9,7 +9,7 @@ import { AuditService } from '../audit/audit.service';
 import { InjectQueue } from '@nestjs/bullmq';
 import { Queue } from 'bullmq';
 import * as crypto from 'crypto';
-import { CreateOrderDto } from './dto/create-order.dto';
+import { CreateOrderDto, NotifyPaymentDto } from './dto/create-order.dto';
 
 @Injectable()
 export class OrdersService {
@@ -291,4 +291,223 @@ export class OrdersService {
       return updatedOrder;
     });
   }
+
+  /**
+   * Consultation des commandes de la boutique par le distributeur connecté
+   */
+  async getStoreOrders(userId: string): Promise<any> {
+    const store = await this.prisma.store.findFirst({
+      where: { ownerId: userId },
+    });
+
+    if (!store) {
+      throw new NotFoundException('Aucun point de vente associé à cet utilisateur.');
+    }
+
+    return this.prisma.order.findMany({
+      where: { storeId: store.id },
+      orderBy: { createdAt: 'desc' },
+      include: {
+        customer: {
+          select: {
+            id: true,
+            phone: true,
+            customerProfile: { select: { firstName: true, lastName: true } },
+          },
+        },
+        items: {
+          include: { product: true },
+        },
+        payments: {
+          orderBy: { createdAt: 'desc' },
+        },
+        delivery: {
+          include: {
+            courier: {
+              select: {
+                id: true,
+                vehicleType: true,
+                user: { select: { phone: true } },
+              },
+            },
+          },
+        },
+      },
+    });
+  }
+
+  /**
+   * Le client signale avoir envoyé son paiement direct (MoMo, OM ou Espèces)
+   */
+  async notifyPaid(
+    userId: string,
+    orderId: string,
+    dto: NotifyPaymentDto,
+  ): Promise<any> {
+    const order = await this.prisma.order.findUnique({
+      where: { id: orderId },
+      include: { store: true, payments: true },
+    });
+
+    if (!order) {
+      throw new NotFoundException('Commande introuvable.');
+    }
+
+    if (order.customerId !== userId) {
+      throw new ForbiddenException('Seul le titulaire de la commande peut signaler le paiement.');
+    }
+
+    if (order.status === 'CONFIRMED' || order.status === 'DELIVERED') {
+      throw new BadRequestException('Cette commande a déjà été confirmée ou livrée.');
+    }
+
+    const paymentAmount = dto.amount || order.totalAmount;
+    const idempotencyKey = `direct-pay-${order.id}-${Date.now()}`;
+
+    // Création de l'enregistrement de paiement en attente de vérification par le titulaire du compte
+    const payment = await this.prisma.payment.create({
+      data: {
+        orderId: order.id,
+        method: dto.method,
+        status: 'PENDING',
+        amount: paymentAmount,
+        idempotencyKey,
+        customerTxRef: dto.customerTxRef || 'Transfert Direct Effectué',
+      },
+    });
+
+    await this.audit.log({
+      userId,
+      action: 'PAYMENT_SUBMITTED_BY_CUSTOMER',
+      entity: 'Payment',
+      entityId: payment.id,
+      details: {
+        orderId: order.id,
+        method: dto.method,
+        customerTxRef: dto.customerTxRef,
+        amount: paymentAmount,
+      },
+    });
+
+    return {
+      message: 'Règlement soumis avec succès. En attente de validation par le titulaire du compte.',
+      payment,
+      orderStatus: order.status,
+    };
+  }
+
+  /**
+   * Confirmation souveraine de la réception des fonds par le titulaire du compte (Gérant distributeur)
+   */
+  async confirmPayment(userId: string, orderId: string): Promise<any> {
+    const order = await this.prisma.order.findUnique({
+      where: { id: orderId },
+      include: {
+        store: true,
+        items: true,
+        payments: { orderBy: { createdAt: 'desc' } },
+        reservations: true,
+      },
+    });
+
+    if (!order) {
+      throw new NotFoundException('Commande introuvable.');
+    }
+
+    // Vérifier que l'utilisateur est bien le propriétaire de la boutique réceptrice ou un admin
+    const user = await this.prisma.user.findUnique({
+      where: { id: userId },
+      include: { roles: { include: { role: true } } },
+    });
+    const isOwner = order.store && order.store.ownerId === userId;
+    const isAdmin =
+      user &&
+      user.roles.some(
+        (r) => r.role?.name === 'ADMIN' || r.role?.name === 'SUPER_ADMIN',
+      );
+
+    if (!isOwner && !isAdmin) {
+      throw new ForbiddenException(
+        'Seul le propriétaire du point de vente récepteur ou un administrateur peut confirmer la réception des fonds.',
+      );
+    }
+
+    return this.prisma.$transaction(async (tx) => {
+      const now = new Date();
+
+      // 1. Mise à jour ou création du paiement validé
+      let payment = order.payments[0];
+      if (payment) {
+        payment = await tx.payment.update({
+          where: { id: payment.id },
+          data: {
+            status: 'SUCCESS',
+            confirmedByUserId: userId,
+            confirmedAt: now,
+          },
+        });
+      } else {
+        payment = await tx.payment.create({
+          data: {
+            orderId: order.id,
+            method: 'CASH',
+            status: 'SUCCESS',
+            amount: order.totalAmount,
+            idempotencyKey: `confirmed-${order.id}-${now.getTime()}`,
+            customerTxRef: 'Paiement direct vérifié par le gérant',
+            confirmedByUserId: userId,
+            confirmedAt: now,
+          },
+        });
+      }
+
+      // 2. Mise à jour du statut de la commande vers CONFIRMED
+      const updatedOrder = await tx.order.update({
+        where: { id: order.id },
+        data: { status: 'CONFIRMED' },
+        include: {
+          items: { include: { product: true } },
+          store: true,
+          payments: true,
+        },
+      });
+
+      // 3. Consommation des réservations éphémères de 15 min
+      await tx.stockReservation.updateMany({
+        where: { orderId: order.id, isConsumed: false },
+        data: { isConsumed: true },
+      });
+
+      // 4. Si livraison prévue, mise à jour
+      if (order.type === 'B2C_DELIVERY') {
+        const delivery = await tx.delivery.findUnique({ where: { orderId: order.id } });
+        if (delivery && delivery.status === 'PENDING') {
+          await tx.delivery.update({
+            where: { id: delivery.id },
+            data: { status: 'ASSIGNED' },
+          });
+        }
+      }
+
+      await this.audit.log({
+        userId,
+        action: 'PAYMENT_CONFIRMED_BY_RECEIVER',
+        entity: 'Order',
+        entityId: order.id,
+        details: {
+          orderNumber: order.orderNumber,
+          amount: payment.amount,
+          confirmedByUserId: userId,
+          confirmedAt: now,
+        },
+      });
+
+      return {
+        message: 'Paiement confirmé avec succès par le titulaire du compte.',
+        order: updatedOrder,
+        payment,
+      };
+    });
+  }
 }
+

@@ -334,6 +334,11 @@ async function main() {
       isVisible: true,
       deliveryAvailable: true,
       reliabilityScore: 100,
+      momoReceiverNumber: '670000000',
+      momoAccountName: 'PLEINGAZ S.A. (Siège Central)',
+      orangeReceiverNumber: '699000000',
+      orangeAccountName: 'INFOTECH S.A. / PLEINGAZ',
+      acceptCash: true,
     },
     create: {
       id: 'store-pleingaz-siege-officiel',
@@ -349,6 +354,11 @@ async function main() {
       isVisible: true,
       deliveryAvailable: true,
       reliabilityScore: 100,
+      momoReceiverNumber: '670000000',
+      momoAccountName: 'PLEINGAZ S.A. (Siège Central)',
+      orangeReceiverNumber: '699000000',
+      orangeAccountName: 'INFOTECH S.A. / PLEINGAZ',
+      acceptCash: true,
     },
   });
 
@@ -436,6 +446,10 @@ async function main() {
         openingHours: { monday: '07:30-18:30', saturday: '08:00-14:00' },
         deliveryAvailable: true,
         momoReceiverNumber: '670000001',
+        momoAccountName: 'Dépôt Agréé Bonamoussadi',
+        orangeReceiverNumber: '690112233',
+        orangeAccountName: 'Point de Vente Bonamoussadi',
+        acceptCash: true,
       },
     });
 
