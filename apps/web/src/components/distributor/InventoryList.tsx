@@ -23,8 +23,13 @@ export default function InventoryList() {
   const [now, setNow] = useState<number | null>(null);
   const [quickConfirmSuccess, setQuickConfirmSuccess] = useState(false);
   const [inventory, setInventory] = useState<InventoryItem[]>([
-    { id: '1', product: { id: 'p1', name: 'Bouteille Gaz Domestique', weightKg: 12.5 }, level: 'BON', lastConfirmedAt: '2026-10-19T12:00:00.000Z' },
-    { id: '2', product: { id: 'p2', name: 'Petite Bouteille Camping', weightKg: 6 }, level: 'MOYEN', lastConfirmedAt: '2026-10-19T11:30:00.000Z' },
+    { id: '1', product: { id: 'p1', name: 'Recharge Gaz Butane 12.5 kg', weightKg: 12.5 }, level: 'BON', lastConfirmedAt: '2026-10-20T12:00:00.000Z' },
+    { id: '2', product: { id: 'p2', name: 'Pack Bouteille Complète 12.5 kg (Consigne + Gaz)', weightKg: 12.5 }, level: 'BON', lastConfirmedAt: '2026-10-20T12:00:00.000Z' },
+    { id: '3', product: { id: 'p3', name: 'Recharge Gaz Butane 6 kg', weightKg: 6 }, level: 'MOYEN', lastConfirmedAt: '2026-10-20T11:30:00.000Z' },
+    { id: '4', product: { id: 'p4', name: 'Table de Cuisson 2 Feux Verre Trempé Prestige', weightKg: 4.8 }, level: 'BON', lastConfirmedAt: '2026-10-20T10:00:00.000Z' },
+    { id: '5', product: { id: 'p5', name: 'Réchaud 2 Feux Métal Émaillé Noir', weightKg: 3.2 }, level: 'BON', lastConfirmedAt: '2026-10-20T10:00:00.000Z' },
+    { id: '6', product: { id: 'p6', name: 'Détendeur de Sécurité avec Manomètre (30 mbar)', weightKg: 0.6 }, level: 'BON', lastConfirmedAt: '2026-10-20T09:30:00.000Z' },
+    { id: '7', product: { id: 'p7', name: 'Tuyau à Gaz Butane Renforcé 1.5 m + Colliers', weightKg: 0.3 }, level: 'BON', lastConfirmedAt: '2026-10-20T09:30:00.000Z' },
   ]);
 
   useEffect(() => {
@@ -132,9 +137,9 @@ export default function InventoryList() {
                 PG
               </div>
               <div>
-                <div className="flex items-center gap-2">
+                <div className="flex flex-wrap items-center gap-2">
                   <span className="px-2 py-0.5 bg-red-100 text-pleingaz-red text-xs font-black rounded uppercase">PLEINGAZ Officiel</span>
-                  <h3 className="font-bold text-gray-900 dark:text-white text-lg">{item.product.weightKg} kg</h3>
+                  <h3 className="font-bold text-gray-900 dark:text-white text-base sm:text-lg">{item.product.name}</h3>
                 </div>
                 <div className={`mt-2 inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md border text-xs font-semibold ${getAgeColor(item.lastConfirmedAt)}`}>
                   <Clock size={12} />

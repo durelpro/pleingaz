@@ -25,49 +25,73 @@ const officialCatalog = [
   {
     id: 'prod-pg-125',
     sku: 'PG-BOT-125',
-    name: 'Bouteille PLEINGAZ 12.5 kg',
-    subtitle: 'Signature "Always Full" • Recharge Officielle',
+    name: 'Recharge Gaz Butane PLEINGAZ 12.5 kg',
+    subtitle: 'Signature "Always Full" • Échange Standard Homologué',
     image: '/products/bouteille-pleingaz-12-5kg.jpg',
-    category: 'Gaz Domestique',
+    category: 'Bouteilles & Recharges',
     price: 6500,
-    badge: '🔥 Produit Phare Homologué',
-    desc: 'Bouteille officielle rouge et blanche scellée d’usine avec gaz butane purifié haute combustion.',
+    badge: '🔥 Bouteille Phare Homologuée',
+    desc: 'Échange standard de bouteille 12.5 kg vide contre une bouteille pleine scellée en usine. Gaz butane purifié haute performance.',
     inStock: true,
   },
   {
-    id: 'prod-pg-det',
-    sku: 'PG-ACC-DET',
-    name: 'Détendeur Sécurité avec Manomètre',
-    subtitle: 'Contrôle de Pression & Niveau de Gaz Réel',
-    image: '/products/detendeur-securite-manometre.jpg',
-    category: 'Sécurité Gaz',
-    price: 6000,
-    badge: '🛡️ Sécurité Vitale Fuite',
-    desc: 'Cadran de mesure de pression intégré, valve de blocage immédiate en cas d’anomalie ou de fuite.',
-    inStock: true,
-  },
-  {
-    id: 'prod-pg-rec-noir',
-    sku: 'PG-REC-001',
-    name: 'Réchaud 2 Feux Fonte Émaillée',
-    subtitle: 'Double Brûleur Haute Température • Flamme Bleue',
-    image: '/products/rechaud-gaz-2-feux-noir.jpg',
-    category: 'Équipements Cuisson',
-    price: 16500,
-    badge: '⚡ Économie de Gaz Maximale',
-    desc: 'Robuste structure en métal émaillé anti-rouille, flammes concentrées pour une cuisson rapide.',
+    id: 'prod-pg-125-pack',
+    sku: 'PG-BOT-125-PACK',
+    name: 'Pack Bouteille Complète 12.5 kg (Consigne + Gaz)',
+    subtitle: 'Premier Achat • Bouteille Neuve Garantie',
+    image: '/products/bouteille-pleingaz-12-5kg.jpg',
+    category: 'Bouteilles & Recharges',
+    price: 26500,
+    badge: '📦 Pack Premier Équipement',
+    desc: 'Comprend la bouteille de gaz neuve PLEINGAZ 12.5 kg rouge et blanche scellée d’usine avec sa charge complète de gaz.',
     inStock: true,
   },
   {
     id: 'prod-pg-rec-verre',
     sku: 'PG-REC-002',
-    name: 'Table de Cuisson Verre Trempé Luxe',
-    subtitle: 'Finition Prestige Sérigraphiée • Double Brûleur',
+    name: 'Table de Cuisson Verre Trempé Prestige PLEINGAZ',
+    subtitle: 'Double Brûleur Turbo • Motifs Floraux Sérigraphiés',
     image: '/products/rechaud-gaz-2-feux-verre-luxe.jpg',
-    category: 'Gamme Prestige',
+    category: 'Tables de Cuisson',
     price: 24500,
     badge: '✨ Design Cuisine Moderne',
-    desc: 'Surface en verre trempé résistant aux chocs et rayures, allumage piezo intégré et pieds stables.',
+    desc: 'Surface en verre trempé haute résistance aux chocs thermiques et rayures, allumage automatique piezo et flammes bleues concentrées.',
+    inStock: true,
+  },
+  {
+    id: 'prod-pg-rec-noir',
+    sku: 'PG-REC-001',
+    name: 'Réchaud à Gaz 2 Feux Métal Émaillé Noir PLEINGAZ',
+    subtitle: 'Double Brûleur Fonte Haute Température',
+    image: '/products/rechaud-gaz-2-feux-noir.jpg',
+    category: 'Tables de Cuisson',
+    price: 16500,
+    badge: '⚡ Robuste & Économique',
+    desc: 'Structure ultra-robuste en acier émaillé noir anti-rouille, brûleurs en fonte démontables et molettes de réglage progressif.',
+    inStock: true,
+  },
+  {
+    id: 'prod-pg-det',
+    sku: 'PG-ACC-DET',
+    name: 'Détendeur de Sécurité Basse Pression avec Manomètre',
+    subtitle: 'Indicateur de Pression & Niveau de Gaz Réel (30 mbar)',
+    image: '/products/detendeur-securite-manometre.jpg',
+    category: 'Sécurité & Accessoires',
+    price: 6000,
+    badge: '🛡️ Sécurité Vitale Anti-Fuite',
+    desc: 'Cadran gradué avec aiguille de contrôle du stock de gaz restant, clapet de coupure automatique instantané en cas de fuite.',
+    inStock: true,
+  },
+  {
+    id: 'prod-pg-060',
+    sku: 'PG-BOT-060',
+    name: 'Recharge Gaz Butane PLEINGAZ 6 kg',
+    subtitle: 'Format Compact Léger • Idéal Petits Espaces',
+    image: '/products/bouteille-pleingaz-12-5kg.jpg',
+    category: 'Bouteilles & Recharges',
+    price: 3120,
+    badge: '🏷️ Tarif Homologué 3 120 F',
+    desc: 'Recharge pour bouteille 6 kg PLEINGAZ. Légère, facilement transportable, idéale pour petits ménages ou cuissons rapides.',
     inStock: true,
   },
 ];
@@ -311,6 +335,114 @@ export default function Home() {
             </motion.div>
           ))}
         </div>
+
+        {/* Tableau Récapitulatif : Barème Officiel Homologué PLEINGAZ Cameroun */}
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true }}
+          className="mt-12 p-6 sm:p-8 rounded-3xl bg-neutral-900/70 border border-white/10 shadow-2xl relative overflow-hidden"
+        >
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
+            <div>
+              <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-[#E51A24]/15 border border-[#E51A24]/30 text-red-300 text-xs font-bold uppercase tracking-wider mb-2">
+                <ShieldCheck size={14} className="text-[#E51A24]" />
+                Transparence & Prix Publics Homologués
+              </div>
+              <h3 className="text-xl sm:text-2xl font-black text-white">
+                Barème Officiel National PLEINGAZ (Cameroun)
+              </h3>
+              <p className="text-neutral-400 text-xs sm:text-sm">
+                Conformément à la réglementation camerounaise, les prix du gaz sont strictement encadrés et identiques dans tous les dépôts agréés.
+              </p>
+            </div>
+            <Link
+              href="/search?auto=true"
+              className="px-5 py-3 rounded-xl bg-white text-neutral-950 font-black text-xs hover:bg-neutral-100 transition-all flex items-center gap-2 shrink-0 self-start sm:self-auto"
+            >
+              <span>Vérifier la disponibilité locale</span>
+              <ArrowRight size={14} className="text-[#E51A24]" />
+            </Link>
+          </div>
+
+          <div className="overflow-x-auto">
+            <table className="w-full text-left text-xs sm:text-sm">
+              <thead>
+                <tr className="border-b border-white/10 text-neutral-400 font-bold uppercase text-[11px] tracking-wider">
+                  <th className="pb-3 pr-4">Format / Désignation</th>
+                  <th className="pb-3 px-4">Usage Recommandé</th>
+                  <th className="pb-3 px-4 text-emerald-400 font-black">Recharge Gaz (Échange)</th>
+                  <th className="pb-3 pl-4 text-white font-black">Pack Bouteille (Consigne + Gaz)</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-white/5 text-neutral-200">
+                <tr className="hover:bg-white/[0.02] transition-colors">
+                  <td className="py-3.5 pr-4 font-black text-white flex items-center gap-2">
+                    <span className="w-2 h-2 rounded-full bg-[#E51A24]"></span>
+                    Bouteille PLEINGAZ 6 kg
+                  </td>
+                  <td className="py-3.5 px-4 text-neutral-400">Étudiants, petits foyers, camping</td>
+                  <td className="py-3.5 px-4 font-black text-emerald-400">3 120 FCFA</td>
+                  <td className="py-3.5 pl-4 font-black text-white">16 120 FCFA</td>
+                </tr>
+                <tr className="hover:bg-white/[0.02] transition-colors bg-white/[0.02]">
+                  <td className="py-3.5 pr-4 font-black text-white flex items-center gap-2">
+                    <span className="w-2 h-2 rounded-full bg-[#E51A24]"></span>
+                    Bouteille PLEINGAZ 12.5 kg (Phare)
+                  </td>
+                  <td className="py-3.5 px-4 text-neutral-400">Familles, usage domestique quotidien</td>
+                  <td className="py-3.5 px-4 font-black text-emerald-400">6 500 FCFA <span className="text-[10px] text-red-300 font-bold ml-1 bg-[#E51A24]/20 px-1.5 py-0.5 rounded">Tarif Homologué</span></td>
+                  <td className="py-3.5 pl-4 font-black text-white">26 500 FCFA</td>
+                </tr>
+                <tr className="hover:bg-white/[0.02] transition-colors">
+                  <td className="py-3.5 pr-4 font-black text-white flex items-center gap-2">
+                    <span className="w-2 h-2 rounded-full bg-[#E51A24]"></span>
+                    Bouteille PLEINGAZ 50 kg
+                  </td>
+                  <td className="py-3.5 px-4 text-neutral-400">Restaurants, boulangeries, hôtels</td>
+                  <td className="py-3.5 px-4 font-black text-emerald-400">26 000 FCFA</td>
+                  <td className="py-3.5 pl-4 font-black text-white">76 000 FCFA</td>
+                </tr>
+                <tr className="hover:bg-white/[0.02] transition-colors">
+                  <td className="py-3.5 pr-4 font-black text-white flex items-center gap-2">
+                    <span className="w-2 h-2 rounded-full bg-[#E51A24]"></span>
+                    Table Verre Trempé 2 Feux Prestige
+                  </td>
+                  <td className="py-3.5 px-4 text-neutral-400">Cuisine moderne, allumage auto</td>
+                  <td className="py-3.5 px-4 text-neutral-400">—</td>
+                  <td className="py-3.5 pl-4 font-black text-white">24 500 FCFA</td>
+                </tr>
+                <tr className="hover:bg-white/[0.02] transition-colors">
+                  <td className="py-3.5 pr-4 font-black text-white flex items-center gap-2">
+                    <span className="w-2 h-2 rounded-full bg-[#E51A24]"></span>
+                    Réchaud 2 Feux Métal Émaillé Noir
+                  </td>
+                  <td className="py-3.5 px-4 text-neutral-400">Robuste, anti-corrosion, double brûleur</td>
+                  <td className="py-3.5 px-4 text-neutral-400">—</td>
+                  <td className="py-3.5 pl-4 font-black text-white">16 500 FCFA</td>
+                </tr>
+                <tr className="hover:bg-white/[0.02] transition-colors">
+                  <td className="py-3.5 pr-4 font-black text-white flex items-center gap-2">
+                    <span className="w-2 h-2 rounded-full bg-[#E51A24]"></span>
+                    Détendeur Sécurité avec Manomètre (30 mbar)
+                  </td>
+                  <td className="py-3.5 px-4 text-neutral-400">Contrôle niveau de gaz & clapet anti-fuite</td>
+                  <td className="py-3.5 px-4 text-neutral-400">—</td>
+                  <td className="py-3.5 pl-4 font-black text-white">6 000 FCFA</td>
+                </tr>
+                <tr className="hover:bg-white/[0.02] transition-colors">
+                  <td className="py-3.5 pr-4 font-black text-white flex items-center gap-2">
+                    <span className="w-2 h-2 rounded-full bg-[#E51A24]"></span>
+                    Tuyau à Gaz Renforcé 1.5 m + Colliers
+                  </td>
+                  <td className="py-3.5 px-4 text-neutral-400">Flexible blindé norme de sécurité</td>
+                  <td className="py-3.5 px-4 text-neutral-400">—</td>
+                  <td className="py-3.5 pl-4 font-black text-white">3 000 FCFA</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </motion.div>
       </section>
 
       {/* RÈGLES CR-001 & ENGAGEMENTS DE MARQUE */}

@@ -109,93 +109,158 @@ async function main() {
   console.log(`✅ Compte Administrateur initialisé (${adminPhone}).`);
 
   // ==========================================
-  // 5. CATALOGUE EXCLUSIF PLEINGAZ (D-01)
+  // 5. CATALOGUE EXCLUSIF PLEINGAZ (D-01) - DONNÉES RÉELLES AUDITÉES
   // ==========================================
   const catBouteilles = await prisma.productCategory.upsert({
     where: { slug: 'bouteilles' },
-    update: { name: 'Bouteilles de Gaz', displayOrder: 1 },
+    update: { 
+      name: 'Bouteilles & Recharges de Gaz', 
+      description: 'Gamme officielle des bouteilles et recharges de gaz PLEINGAZ (Infotech S.A.)',
+      displayOrder: 1 
+    },
     create: {
-      name: 'Bouteilles de Gaz',
+      name: 'Bouteilles & Recharges de Gaz',
       slug: 'bouteilles',
-      description: 'Gamme officielle des bouteilles de gaz PLEINGAZ (Infotech S.A.)',
+      description: 'Gamme officielle des bouteilles et recharges de gaz PLEINGAZ (Infotech S.A.)',
       displayOrder: 1,
+    },
+  });
+
+  const catCuisson = await prisma.productCategory.upsert({
+    where: { slug: 'cuisson' },
+    update: { 
+      name: 'Tables de Cuisson & Réchauds', 
+      description: 'Tables de cuisson haute sécurité et réchauds officiels PLEINGAZ',
+      displayOrder: 2 
+    },
+    create: {
+      name: 'Tables de Cuisson & Réchauds',
+      slug: 'cuisson',
+      description: 'Tables de cuisson haute sécurité et réchauds officiels PLEINGAZ',
+      displayOrder: 2,
     },
   });
 
   const catAccessoires = await prisma.productCategory.upsert({
     where: { slug: 'accessoires' },
-    update: { name: 'Accessoires Officiels', displayOrder: 2 },
+    update: { 
+      name: 'Accessoires & Sécurité Gaz', 
+      description: 'Régulateurs de pression manométriques et tuyaux renforcés certifiés',
+      displayOrder: 3 
+    },
     create: {
-      name: 'Accessoires Officiels',
+      name: 'Accessoires & Sécurité Gaz',
       slug: 'accessoires',
-      description: 'Accessoires certifiés PLEINGAZ pour une utilisation sécurisée',
-      displayOrder: 2,
+      description: 'Régulateurs de pression manométriques et tuyaux renforcés certifiés',
+      displayOrder: 3,
     },
   });
 
   const officialProducts = [
+    // --- 1. BOUTEILLES & RECHARGES DE GAZ BUTANE/PROPANE ---
     {
       sku: 'PG-BOT-125',
-      name: 'Bouteille PLEINGAZ 12.5 kg',
+      name: 'Recharge Gaz Butane PLEINGAZ 12.5 kg',
       weightKg: 12.5,
       categoryId: catBouteilles.id,
-      description: 'Bouteille standard de gaz butane domestique PLEINGAZ 12.5 kg.',
+      imageUrl: '/products/bouteille-pleingaz-12-5kg.jpg',
+      description: 'Échange standard de bouteille 12.5 kg vide contre une bouteille pleine scellée en usine. Tarif officiel national homologué.',
       publicPrice: 6500,
       distributorPrice: 6000,
     },
     {
+      sku: 'PG-BOT-125-PACK',
+      name: 'Pack Bouteille Complète 12.5 kg (Consigne + Gaz)',
+      weightKg: 12.5,
+      categoryId: catBouteilles.id,
+      imageUrl: '/products/bouteille-pleingaz-12-5kg.jpg',
+      description: 'Premier achat comprenant la bouteille de gaz neuve PLEINGAZ 12.5 kg (consigne) et sa charge complète de gaz butane purifié.',
+      publicPrice: 26500,
+      distributorPrice: 24500,
+    },
+    {
       sku: 'PG-BOT-060',
-      name: 'Bouteille PLEINGAZ 6 kg',
+      name: 'Recharge Gaz Butane PLEINGAZ 6 kg',
       weightKg: 6.0,
       categoryId: catBouteilles.id,
-      description: 'Bouteille compacte de gaz butane PLEINGAZ 6 kg.',
-      publicPrice: 3500,
-      distributorPrice: 3200,
+      imageUrl: '/products/bouteille-pleingaz-12-5kg.jpg',
+      description: 'Recharge de gaz butane pour bouteille compacte 6 kg PLEINGAZ. Idéale pour petits ménages ou usage d’appoint.',
+      publicPrice: 3120,
+      distributorPrice: 2800,
+    },
+    {
+      sku: 'PG-BOT-060-PACK',
+      name: 'Pack Bouteille Complète 6 kg (Consigne + Gaz)',
+      weightKg: 6.0,
+      categoryId: catBouteilles.id,
+      imageUrl: '/products/bouteille-pleingaz-12-5kg.jpg',
+      description: 'Premier achat complet comprenant la bouteille compacte neuve 6 kg PLEINGAZ et sa charge de gaz butane.',
+      publicPrice: 16120,
+      distributorPrice: 15000,
     },
     {
       sku: 'PG-BOT-500',
-      name: 'Bouteille PLEINGAZ 50 kg',
+      name: 'Recharge Gaz Industriel PLEINGAZ 50 kg',
       weightKg: 50.0,
       categoryId: catBouteilles.id,
-      description: 'Bouteille industrielle de gaz propane/butane PLEINGAZ 50 kg.',
+      imageUrl: '/products/bouteille-pleingaz-12-5kg.jpg',
+      description: 'Recharge de gaz grand format 50 kg pour restaurants, hôtels, boulangeries et utilisations professionnelles.',
       publicPrice: 26000,
       distributorPrice: 24000,
     },
     {
+      sku: 'PG-BOT-500-PACK',
+      name: 'Pack Bouteille Industrielle 50 kg (Consigne + Gaz)',
+      weightKg: 50.0,
+      categoryId: catBouteilles.id,
+      imageUrl: '/products/bouteille-pleingaz-12-5kg.jpg',
+      description: 'Bouteille grand format industrielle neuve 50 kg avec charge complète de gaz propane/butane.',
+      publicPrice: 76000,
+      distributorPrice: 70000,
+    },
+
+    // --- 2. TABLES DE CUISSON & RÉCHAUDS OFFICIELS (PHOTOS RÉELLES) ---
+    {
+      sku: 'PG-REC-002',
+      name: 'Table de Cuisson Gaz 2 Feux en Verre Trempé Prestige PLEINGAZ',
+      weightKg: 4.8,
+      categoryId: catCuisson.id,
+      imageUrl: '/products/rechaud-gaz-2-feux-verre-luxe.jpg',
+      description: 'Plaque de cuisson de luxe en verre trempé haute résistance avec motifs floraux sérigraphiés, double brûleur turbo flammes bleues, allumage piezo automatique et pieds antidérapants.',
+      publicPrice: 24500,
+      distributorPrice: 21500,
+    },
+    {
+      sku: 'PG-REC-001',
+      name: 'Réchaud à Gaz 2 Feux en Métal Émaillé Noir PLEINGAZ',
+      weightKg: 3.2,
+      categoryId: catCuisson.id,
+      imageUrl: '/products/rechaud-gaz-2-feux-noir.jpg',
+      description: 'Table de cuisson robuste 2 feux en acier émaillé noir anti-corrosion, double brûleur en fonte, réglage fin de flamme et entretien facile.',
+      publicPrice: 16500,
+      distributorPrice: 14500,
+    },
+
+    // --- 3. ACCESSOIRES & SÉCURITÉ DU GAZ (PHOTOS RÉELLES) ---
+    {
       sku: 'PG-ACC-DET',
-      name: 'Détendeur de Sécurité PLEINGAZ avec Manomètre',
+      name: 'Régulateur / Détendeur de Sécurité Basse Pression avec Manomètre (30 mbar)',
       weightKg: 0.6,
       categoryId: catAccessoires.id,
-      description: 'Détendeur haute sécurité avec cadran manométrique gradué et clapet anti-fuite.',
+      imageUrl: '/products/detendeur-securite-manometre.jpg',
+      description: 'Détendeur de sécurité certifié 30 mbar avec cadran manométrique gradué (affichage de pression et niveau de gaz restant) et clapet de coupure automatique anti-fuite.',
       publicPrice: 6000,
       distributorPrice: 5000,
     },
     {
       sku: 'PG-ACC-TUY',
-      name: 'Tuyau à Gaz Renforcé PLEINGAZ (1.5 m)',
+      name: 'Tuyau à Gaz Butane Renforcé avec Colliers de Serrage (1.5 m)',
       weightKg: 0.3,
       categoryId: catAccessoires.id,
-      description: 'Tuyau de raccordement renforcé avec colliers de serrage.',
+      imageUrl: '/products/detendeur-securite-manometre.jpg',
+      description: 'Flexible armé haute résistance conforme aux normes de sécurité camerounaises, livré avec ses deux colliers de serrage inoxydables.',
       publicPrice: 3000,
       distributorPrice: 2500,
-    },
-    {
-      sku: 'PG-REC-001',
-      name: 'Réchaud à Gaz 2 Feux Émaillé Noir PLEINGAZ',
-      weightKg: 3.2,
-      categoryId: catAccessoires.id,
-      description: 'Table de cuisson 2 brûleurs en fonte émaillée haute résistance, allumage sécurisé et flammes bleues optimisées.',
-      publicPrice: 16500,
-      distributorPrice: 14500,
-    },
-    {
-      sku: 'PG-REC-002',
-      name: 'Table de Cuisson Gaz 2 Feux Verre Trempé Prestige PLEINGAZ',
-      weightKg: 4.8,
-      categoryId: catAccessoires.id,
-      description: 'Plaque de cuisson de luxe en verre trempé renforcé avec sérigraphie florale, double brûleur turbo et pieds antidérapants.',
-      publicPrice: 24500,
-      distributorPrice: 21500,
     },
   ];
 
@@ -207,6 +272,7 @@ async function main() {
         weightKg: prod.weightKg,
         description: prod.description,
         categoryId: prod.categoryId,
+        imageUrl: prod.imageUrl,
         isActive: true,
       },
       create: {
@@ -215,6 +281,7 @@ async function main() {
         weightKg: prod.weightKg,
         description: prod.description,
         categoryId: prod.categoryId,
+        imageUrl: prod.imageUrl,
         isActive: true,
       },
     });
@@ -235,9 +302,20 @@ async function main() {
           approvedById: adminUser.id,
         },
       });
+    } else if (
+      activePrice.publicPrice !== prod.publicPrice ||
+      activePrice.distributorPrice !== prod.distributorPrice
+    ) {
+      await prisma.productPrice.update({
+        where: { id: activePrice.id },
+        data: {
+          publicPrice: prod.publicPrice,
+          distributorPrice: prod.distributorPrice,
+        },
+      });
     }
   }
-  console.log('✅ Catalogue exclusif et barèmes de prix officiels PLEINGAZ (D-01) créés.');
+  console.log('✅ Catalogue exclusif et barèmes de prix officiels PLEINGAZ (D-01) créés et synchronisés.');
 
   // ==========================================
   // 5b. BOUTIQUE OFFICIELLE CENTRALE PLEINGAZ (CONCEPTEUR & SIÈGE OFFICIEL INFOTECH S.A.)

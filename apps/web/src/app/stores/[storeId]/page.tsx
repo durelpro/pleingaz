@@ -16,22 +16,48 @@ export default function StoreProfilePage({ params }: { params: any }) {
     setIsMounted(true);
   }, []);
 
-  const store = {
-    name: "Dépôt Central Agréé PLEINGAZ Bonamoussadi",
-    description: "Distributeur officiel agréé PLEINGAZ. Vente au tarif public homologué avec option de livraison express à domicile ou retrait immédiat.",
-    address: "Bonamoussadi - Face marché",
-    city: "Douala",
-    rating: 4.8,
-    reviews: 124,
-    latitude: 4.0833,
-    longitude: 9.7500,
-    phone: "+237611111111",
-    hours: "Lun - Sam: 08:00 - 18:00",
-    inventory: [
-      { id: 1, brand: "PLEINGAZ", weight: "12.5Kg", price: 6500, status: "En stock (BON)", color: "bg-emerald-600" },
-      { id: 2, brand: "PLEINGAZ", weight: "6Kg", price: 3500, status: "Stock modéré (MOYEN)", color: "bg-amber-500" },
-    ]
-  };
+  const isSiegeOfficiel = params?.storeId === 'store-pleingaz-siege-officiel';
+
+  const store = isSiegeOfficiel
+    ? {
+        name: "Boutique Officielle PLEINGAZ (Siège Central & Vente Directe)",
+        description: "Siège Officiel et Dépôt Central Concepteur Infotech S.A. Disponibilité garantie 24/7 sur toute la gamme officielle PLEINGAZ avec livraison sécurisée à Douala.",
+        address: "Boulevard de la Liberté, Immeuble Infotech S.A., Akwa",
+        city: "Douala",
+        rating: 5.0,
+        reviews: 342,
+        latitude: 4.0511,
+        longitude: 9.7085,
+        phone: "+237699000000",
+        hours: "Lun - Sam: 07:30 - 19:30 • Dim: 08:00 - 15:00",
+        inventory: [
+          { id: 1, brand: "Recharge Gaz Butane 12.5 kg", weight: "12.5 kg (Échange)", price: 6500, status: "En stock (BON)", color: "bg-emerald-600" },
+          { id: 2, brand: "Pack Bouteille Complète 12.5 kg", weight: "12.5 kg (Consigne + Gaz)", price: 26500, status: "En stock (BON)", color: "bg-emerald-600" },
+          { id: 3, brand: "Recharge Gaz Butane 6 kg", weight: "6.0 kg (Échange)", price: 3120, status: "En stock (BON)", color: "bg-emerald-600" },
+          { id: 4, brand: "Table Verre Trempé 2 Feux Prestige", weight: "Plaque Sérigraphiée Luxe", price: 24500, status: "En stock (BON)", color: "bg-emerald-600" },
+          { id: 5, brand: "Réchaud 2 Feux Métal Émaillé Noir", weight: "Acier Robuste Anti-Corrosion", price: 16500, status: "En stock (BON)", color: "bg-emerald-600" },
+          { id: 6, brand: "Détendeur Sécurité avec Manomètre", weight: "30 mbar • Clapet Anti-Fuite", price: 6000, status: "En stock (BON)", color: "bg-emerald-600" },
+          { id: 7, brand: "Tuyau Gaz Renforcé 1.5 m + Colliers", weight: "Flexible Armé Norme Sécurité", price: 3000, status: "En stock (BON)", color: "bg-emerald-600" },
+        ]
+      }
+    : {
+        name: "Dépôt Central Agréé PLEINGAZ Bonamoussadi",
+        description: "Distributeur officiel agréé PLEINGAZ. Vente au tarif public national homologué avec option de livraison express ou retrait immédiat.",
+        address: "Bonamoussadi - Face École Publique",
+        city: "Douala",
+        rating: 4.8,
+        reviews: 124,
+        latitude: 4.0833,
+        longitude: 9.7500,
+        phone: "+237670000001",
+        hours: "Lun - Sam: 08:00 - 18:30",
+        inventory: [
+          { id: 1, brand: "Recharge Gaz Butane 12.5 kg", weight: "12.5 kg (Échange)", price: 6500, status: "En stock (BON)", color: "bg-emerald-600" },
+          { id: 2, brand: "Pack Bouteille Complète 12.5 kg", weight: "12.5 kg (Consigne + Gaz)", price: 26500, status: "En stock (BON)", color: "bg-emerald-600" },
+          { id: 3, brand: "Recharge Gaz Butane 6 kg", weight: "6.0 kg (Échange)", price: 3120, status: "Stock modéré (MOYEN)", color: "bg-amber-500" },
+          { id: 4, brand: "Détendeur Sécurité avec Manomètre", weight: "30 mbar Clapet Anti-Fuite", price: 6000, status: "En stock (BON)", color: "bg-emerald-600" },
+        ]
+      };
 
   if (!isMounted) return null;
 
