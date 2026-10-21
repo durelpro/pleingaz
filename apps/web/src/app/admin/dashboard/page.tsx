@@ -159,7 +159,7 @@ export default function PilotageDashboard() {
                       {store.name}
                     </td>
                     <td className="py-4">
-                      <span className={`font-black \${store.score > 80 ? 'text-green-500' : store.score > 50 ? 'text-orange-500' : 'text-red-500'}`}>
+                      <span className={`font-black ${store.score > 80 ? 'text-green-500' : store.score > 50 ? 'text-orange-500' : 'text-red-500'}`}>
                         {store.score}/100
                       </span>
                     </td>
@@ -367,7 +367,7 @@ function InsightCard({ title, value, desc, icon, alert }: { title: string, value
   };
 
   return (
-    <div className={`p-6 rounded-3xl border \${colors[alert]} flex flex-col justify-between`}>
+    <div className={`p-6 rounded-3xl border ${colors[alert]} flex flex-col justify-between`}>
       <div className="flex justify-between items-start mb-4">
         <div className="p-2 bg-white dark:bg-neutral-900 rounded-xl shadow-sm">
           {icon}
