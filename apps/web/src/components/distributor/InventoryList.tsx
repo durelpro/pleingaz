@@ -23,8 +23,9 @@ export default function InventoryList() {
   const [now, setNow] = useState<number | null>(null);
   const [quickConfirmSuccess, setQuickConfirmSuccess] = useState(false);
   const [inventory, setInventory] = useState<InventoryItem[]>([
-    { id: '1', product: { id: 'p1', name: 'Bouteille Gaz Domestique', weightKg: 12.5 }, level: 'BON', lastConfirmedAt: '2026-10-19T12:00:00.000Z' },
-    { id: '2', product: { id: 'p2', name: 'Petite Bouteille Camping', weightKg: 6 }, level: 'MOYEN', lastConfirmedAt: '2026-10-19T11:30:00.000Z' },
+    { id: '1', product: { id: 'p1', name: 'Bouteille de gaz 12,5 kg', weightKg: 12.5 }, level: 'BON', lastConfirmedAt: '2026-10-19T12:00:00.000Z' },
+    { id: '2', product: { id: 'p2', name: 'Bouteille de gaz 6 kg', weightKg: 6 }, level: 'MOYEN', lastConfirmedAt: '2026-10-19T11:30:00.000Z' },
+    { id: '3', product: { id: 'p3', name: 'Bouteille de gaz 50 kg', weightKg: 50 }, level: 'BON', lastConfirmedAt: '2026-10-19T10:00:00.000Z' },
   ]);
 
   useEffect(() => {

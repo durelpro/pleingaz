@@ -25,49 +25,121 @@ const officialCatalog = [
   {
     id: 'prod-pg-125',
     sku: 'PG-BOT-125',
-    name: 'Bouteille PLEINGAZ 12.5 kg',
-    subtitle: 'Signature "Always Full" • Recharge Officielle',
+    name: 'Bouteille de gaz 12,5 kg',
+    subtitle: 'Signature "Bouteilles Toujours Pleines" • Format Standard',
     image: '/products/bouteille-pleingaz-12-5kg.jpg',
     category: 'Gaz Domestique',
     price: 6500,
+    fullPrice: 26500,
+    isGasBottle: true,
     badge: '🔥 Produit Phare Homologué',
-    desc: 'Bouteille officielle rouge et blanche scellée d’usine avec gaz butane purifié haute combustion.',
+    desc: 'Bouteille robuste contenant 12,5 kg de GPL. Adaptée aux besoins domestiques réguliers.',
     inStock: true,
   },
   {
-    id: 'prod-pg-det',
-    sku: 'PG-ACC-DET',
-    name: 'Détendeur Sécurité avec Manomètre',
-    subtitle: 'Contrôle de Pression & Niveau de Gaz Réel',
-    image: '/products/detendeur-securite-manometre.jpg',
-    category: 'Sécurité Gaz',
-    price: 6000,
-    badge: '🛡️ Sécurité Vitale Fuite',
-    desc: 'Cadran de mesure de pression intégré, valve de blocage immédiate en cas d’anomalie ou de fuite.',
+    id: 'prod-pg-060',
+    sku: 'PG-BOT-060',
+    name: 'Bouteille de gaz 6 kg',
+    subtitle: 'Format Compact • Idéal Petits Ménages & Mobilité',
+    image: '/products/bouteille-pleingaz-12-5kg.jpg',
+    category: 'Gaz Domestique',
+    price: 3120,
+    fullPrice: 16120,
+    isGasBottle: true,
+    badge: '⚡ Économique & Pratique',
+    desc: 'Bouteille en acier robuste, livrée pleine de 6 kg de GPL. Idéale pour petites familles et usages occasionnels.',
     inStock: true,
   },
   {
-    id: 'prod-pg-rec-noir',
-    sku: 'PG-REC-001',
-    name: 'Réchaud 2 Feux Fonte Émaillée',
-    subtitle: 'Double Brûleur Haute Température • Flamme Bleue',
+    id: 'prod-pg-500',
+    sku: 'PG-BOT-500',
+    name: 'Bouteille de gaz 50 kg',
+    subtitle: 'Haute Capacité • Usage Professionnel & Industriel',
+    image: '/products/bouteille-pleingaz-12-5kg.jpg',
+    category: 'Gaz Professionnel',
+    price: 26000,
+    fullPrice: 76000,
+    isGasBottle: true,
+    badge: '🏭 Gros Volumes / CHR',
+    desc: 'Bouteille de 50 kg pour usages intensifs. Idéale pour restaurants, hôtels et industries.',
+    inStock: true,
+  },
+  {
+    id: 'prod-pg-pla-ver',
+    sku: 'PG-PLA-VER',
+    name: 'Plaque à gaz en verre',
+    subtitle: 'Finition Verre Trempé Moderne • 2 Brûleurs',
+    image: '/products/rechaud-gaz-2-feux-verre-luxe.jpg',
+    category: 'Équipements Cuisson',
+    price: 18000,
+    isGasBottle: false,
+    badge: '✨ Design Cuisine Moderne',
+    desc: 'Table de cuisson PLEINGAZ moderne en verre trempé. Élégante, résistante à la chaleur, facile à nettoyer.',
+    inStock: true,
+  },
+  {
+    id: 'prod-pg-pla-aci',
+    sku: 'PG-PLA-ACI',
+    name: 'Plaque à gaz en acier',
+    subtitle: 'Table de Cuisson Robuste & Économique',
     image: '/products/rechaud-gaz-2-feux-noir.jpg',
     category: 'Équipements Cuisson',
-    price: 16500,
-    badge: '⚡ Économie de Gaz Maximale',
-    desc: 'Robuste structure en métal émaillé anti-rouille, flammes concentrées pour une cuisson rapide.',
+    price: 16000,
+    isGasBottle: false,
+    badge: '💪 Haute Durabilité Acier',
+    desc: 'Table de cuisson robuste et économique. Adaptée aux usages domestiques quotidiens.',
     inStock: true,
   },
   {
-    id: 'prod-pg-rec-verre',
-    sku: 'PG-REC-002',
-    name: 'Table de Cuisson Verre Trempé Luxe',
-    subtitle: 'Finition Prestige Sérigraphiée • Double Brûleur',
-    image: '/products/rechaud-gaz-2-feux-verre-luxe.jpg',
-    category: 'Gamme Prestige',
-    price: 24500,
-    badge: '✨ Design Cuisine Moderne',
-    desc: 'Surface en verre trempé résistant aux chocs et rayures, allumage piezo intégré et pieds stables.',
+    id: 'prod-pg-det-125',
+    sku: 'PG-DET-125',
+    name: 'Détendeur pour bouteille 12,5 kg',
+    subtitle: 'Régulateur de Pression pour Robinet Standard',
+    image: '/products/detendeur-securite-manometre.jpg',
+    category: 'Sécurité Gaz',
+    price: 3000,
+    isGasBottle: false,
+    badge: '🛡️ Sécurité Optimale 12.5 kg',
+    desc: 'Régulateur de pression pour bouteilles 12,5 kg à robinet. Sécurité et régulation optimale pour usage domestique.',
+    inStock: true,
+  },
+  {
+    id: 'prod-pg-det-060',
+    sku: 'PG-DET-060',
+    name: 'Détendeur pour bouteille 6 kg',
+    subtitle: 'Détendeur à Valve Rapide 6 kg',
+    image: '/products/detendeur-securite-manometre.jpg',
+    category: 'Sécurité Gaz',
+    price: 3000,
+    isGasBottle: false,
+    badge: '🔒 Valve Rapide 6 kg',
+    desc: 'Détendeur PLEINGAZ conçu pour bouteilles 6 kg à valve. Simple à visser, sûr et pratique.',
+    inStock: true,
+  },
+  {
+    id: 'prod-pg-tuy',
+    sku: 'PG-ACC-TUY',
+    name: 'Tuyau de gaz',
+    subtitle: 'Longueur 1.5 m • Raccordement Garanti Sécurisé',
+    image: '/products/detendeur-securite-manometre.jpg',
+    category: 'Sécurité Gaz',
+    price: 2000,
+    isGasBottle: false,
+    badge: '🔗 Raccordement Certifié',
+    desc: 'Tuyau de 1.5 m pour relier bouteille et appareil. Garantit une alimentation en gaz sûre et durable.',
+    inStock: true,
+  },
+  {
+    id: 'prod-pg-bru',
+    sku: 'PG-ACC-BRU',
+    name: 'Brûleur vissable pour bouteille 6 kg',
+    subtitle: 'Cuisson Directe sur Bouteille 6 kg',
+    image: '/products/rechaud-gaz-2-feux-noir.jpg',
+    category: 'Équipements Cuisson',
+    price: 1500,
+    isGasBottle: false,
+    badge: '🍳 Cuisson Directe Mobile',
+    desc: 'Brûleur à fixer directement sur la valve. Solution simple et mobile pour cuisson rapide.',
     inStock: true,
   },
 ];
@@ -294,10 +366,26 @@ export default function Home() {
               {/* Price & Action */}
               <div className="pt-3 border-t border-white/10 flex items-center justify-between">
                 <div>
-                  <span className="text-[10px] text-neutral-400 block font-bold uppercase">Prix Officiel</span>
-                  <span className="text-xl font-black text-white">
-                    {prod.price.toLocaleString('fr-FR')} <span className="text-xs text-[#E51A24]">FCFA</span>
-                  </span>
+                  {prod.isGasBottle ? (
+                    <div>
+                      <span className="text-[10px] text-neutral-400 block font-bold uppercase">Recharge gaz</span>
+                      <span className="text-xl font-black text-white">
+                        {prod.price.toLocaleString('fr-FR')} <span className="text-xs text-[#E51A24]">FCFA</span>
+                      </span>
+                      {prod.fullPrice && (
+                        <span className="text-[10px] text-amber-300 block font-medium">
+                          Bouteille + gaz : {prod.fullPrice.toLocaleString('fr-FR')} FCFA
+                        </span>
+                      )}
+                    </div>
+                  ) : (
+                    <div>
+                      <span className="text-[10px] text-neutral-400 block font-bold uppercase">Prix Officiel</span>
+                      <span className="text-xl font-black text-white">
+                        {prod.price.toLocaleString('fr-FR')} <span className="text-xs text-[#E51A24]">FCFA</span>
+                      </span>
+                    </div>
+                  )}
                 </div>
 
                 <Link
