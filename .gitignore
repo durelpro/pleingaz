@@ -10,3 +10,8 @@ dist/
 uploads/
 apps/api/uploads/
 
+
+# CR-002 : fichiers d import et derives contenant noms/numeros (jamais commites)
+data/private/
+*.kml
+*.kmz
