@@ -74,9 +74,12 @@ export class SearchService {
           s.latitude,
           s.longitude,
           s."isVerifiedBadge",
+          s."verificationLevel",
+          s."claimStatus",
+          s."onlineOrderingEnabled",
           s."deliveryAvailable",
           s."reliabilityScore",
-          i.level as "stockLevel",
+          COALESCE(i.level::text, 'NON_ACTUALISE') as "stockLevel",
           i."lastConfirmedAt",
           (
             6371 * acos(
@@ -87,14 +90,12 @@ export class SearchService {
             )
           ) AS "distanceKm"
         FROM "Store" s
-        JOIN "Inventory" i ON s.id = i."storeId"
-        WHERE i."productId" = $3
-          AND s."isVisible" = true
-          AND s."isVerifiedBadge" = true
+        LEFT JOIN "Inventory" i ON s.id = i."storeId" AND i."productId" = $3
+        WHERE s."isVisible" = true
           AND s.latitude IS NOT NULL
           AND s.longitude IS NOT NULL
-        ORDER BY "distanceKm" ASC, i."lastConfirmedAt" DESC
-        LIMIT 25;
+        ORDER BY "distanceKm" ASC
+        LIMIT 50;
       `;
 
       storesWithInventory = await this.prisma.$queryRawUnsafe<any[]>(
@@ -107,10 +108,6 @@ export class SearchService {
       // Recherche par zone macro (repli en cas de timeout GPS ou refus géoloc)
       const where: any = {
         isVisible: true,
-        isVerifiedBadge: true,
-        inventories: {
-          some: { productId: effectiveProductId },
-        },
       };
 
       if (params.city) {
@@ -130,7 +127,7 @@ export class SearchService {
 
       const rawStores = await this.prisma.store.findMany({
         where,
-        take: 25,
+        take: 50,
         orderBy: { updatedAt: 'desc' },
         include: {
           inventories: {
@@ -150,10 +147,13 @@ export class SearchService {
         latitude: s.latitude,
         longitude: s.longitude,
         isVerifiedBadge: s.isVerifiedBadge,
+        verificationLevel: s.verificationLevel,
+        claimStatus: s.claimStatus,
+        onlineOrderingEnabled: s.onlineOrderingEnabled,
         deliveryAvailable: s.deliveryAvailable,
         reliabilityScore: s.reliabilityScore,
-        stockLevel: s.inventories[0]?.level || 'RUPTURE',
-        lastConfirmedAt: s.inventories[0]?.lastConfirmedAt || s.updatedAt,
+        stockLevel: s.inventories[0]?.level || 'NON_ACTUALISE',
+        lastConfirmedAt: s.inventories[0]?.lastConfirmedAt || null,
         distanceKm: null,
       }));
     }
@@ -176,6 +176,9 @@ export class SearchService {
 
     // Formatage des métriques d'affichage et de fraîcheur
     return storesWithInventory.map((store) => {
+      const isListed = store.verificationLevel === 'LISTED';
+      const isOfficial = store.id === 'store-pleingaz-siege-officiel';
+
       const lastConfirmedDate = store.lastConfirmedAt ? new Date(store.lastConfirmedAt) : null;
       const minutesAgo = lastConfirmedDate
         ? Math.floor((Date.now() - lastConfirmedDate.getTime()) / 60000)
@@ -194,6 +197,13 @@ export class SearchService {
         }
       }
 
+      let stockFreshness = freshnessLabel;
+      if (isOfficial) {
+        stockFreshness = 'Stock certifié en direct par la plateforme PLEINGAZ (🟢 Garanti)';
+      } else if (isListed || !store.lastConfirmedAt || store.stockLevel === 'NON_ACTUALISE') {
+        stockFreshness = '⚪ Information non actualisée. Contactez le point de vente.';
+      }
+
       const dist = store.distanceKm !== null && store.distanceKm !== undefined ? Number(store.distanceKm) : null;
       const formattedDistance =
         dist !== null
@@ -202,7 +212,16 @@ export class SearchService {
             : `${dist.toFixed(1)} km`
           : null;
 
-      const isOfficial = store.id === 'store-pleingaz-siege-officiel';
+      let recommendationBadge: string | null = null;
+      if (isOfficial) {
+        recommendationBadge = '🏆 Boutique Officielle Siège PLEINGAZ (Stock Garanti Direct Concepteur)';
+      } else if (isListed) {
+        recommendationBadge = 'ℹ️ Point de vente PLEINGAZ — Informations en cours de vérification';
+      } else if (dist !== null && dist <= 2.0) {
+        recommendationBadge = '📍 Point relais à proximité (< 2 km)';
+      } else if (store.stockLevel === 'BON') {
+        recommendationBadge = '🔥 Stock optimal garanti';
+      }
 
       return {
         id: store.id,
@@ -212,20 +231,20 @@ export class SearchService {
         landmark: store.landmark,
         whatsappNumber: store.whatsappNumber,
         deliveryAvailable: store.deliveryAvailable,
-        reliabilityScore: isOfficial ? 100 : store.reliabilityScore,
+        verificationLevel: store.verificationLevel || 'FULLY_VERIFIED',
+        claimStatus: store.claimStatus || 'CLAIMED',
+        onlineOrderingEnabled: store.onlineOrderingEnabled !== false,
+        isVerifiedBadge: store.verificationLevel === 'FULLY_VERIFIED' && store.isVerifiedBadge,
+        reliabilityScore: isOfficial ? 100 : isListed ? null : store.reliabilityScore,
         stockLevel: store.stockLevel,
         lastConfirmedAt: store.lastConfirmedAt,
         distanceKm: dist !== null ? Math.round(dist * 10) / 10 : null,
         distanceStr: formattedDistance,
-        stockFreshness: isOfficial ? 'Stock certifié en direct par la plateforme PLEINGAZ (🟢 Garanti)' : freshnessLabel,
+        stockFreshness,
         isOfficialCompanyStore: isOfficial,
-        recommendationBadge: isOfficial
-          ? '🏆 Boutique Officielle Siège PLEINGAZ (Stock Garanti Direct Concepteur)'
-          : dist !== null && dist <= 2.0
-          ? '📍 Point relais à proximité (< 2 km)'
-          : store.stockLevel === 'BON'
-          ? '🔥 Stock optimal garanti'
-          : null,
+        isListedUnclaimed: isListed,
+        verificationNotice: isListed ? 'Point de vente PLEINGAZ — Informations en cours de vérification' : null,
+        recommendationBadge,
       };
     });
   }

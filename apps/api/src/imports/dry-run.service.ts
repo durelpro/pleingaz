@@ -178,6 +178,7 @@ export class ImportDryRunService {
         longitude: lon,
         isWithinCameroon,
         classification,
+        folderName: pm.folderName,
         isQuarantined,
         quarantineReason,
         isDuplicate,

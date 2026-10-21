@@ -29,6 +29,7 @@ export interface ProcessedPlacemark {
   longitude: number;
   isWithinCameroon: boolean;
   classification: StoreClassification;
+  folderName?: string;
   isQuarantined: boolean;
   quarantineReason?: string;
   isDuplicate: boolean;

@@ -32,6 +32,13 @@ model User {
   auditLogs       AuditLog[]       @relation("UserAuditLogs")
   demandAlerts    DemandAlert[]
 
+  // CR-002: Imports et Revendications Réseau
+  storeClaimsSubmitted  StoreClaim[]     @relation("ClaimSubmittedBy")
+  storeClaimsReviewed   StoreClaim[]     @relation("ClaimReviewedBy")
+  importBatchesCreated  ImportBatch[]    @relation("ImportBatchCreatedBy")
+  importBatchesApproved ImportBatch[]    @relation("ImportBatchApprovedBy")
+
+
   // Commandes & Livraisons
   customerOrders  Order[]          @relation("CustomerOrders")
   assistedOrders  Order[]          @relation("AssistedOrders")
@@ -224,12 +231,26 @@ model StoreDocument {
   updatedAt      DateTime               @updatedAt
 }
 
+enum VerificationLevel {
+  LISTED
+  CLAIMED_PENDING
+  BASIC_VERIFIED
+  FULLY_VERIFIED
+}
+
+enum ClaimStatus {
+  UNCLAIMED
+  PENDING_VERIFICATION
+  CLAIMED
+  REJECTED
+}
+
 model Store {
   id              String                  @id @default(uuid())
   applicationId   String?                 @unique
   application     DistributorApplication? @relation(fields: [applicationId], references: [id])
-  ownerId         String
-  owner           User                    @relation(fields: [ownerId], references: [id])
+  ownerId         String?
+  owner           User?                   @relation(fields: [ownerId], references: [id])
 
   name            String
   city            String
@@ -241,9 +262,20 @@ model Store {
   whatsappNumber  String?
   openingHours    Json?
 
-  isVerifiedBadge Boolean                @default(true)
+  isVerifiedBadge Boolean                @default(false)
   isVisible       Boolean                @default(true)
   deliveryAvailable Boolean              @default(false)
+
+  // CR-002: Réseau & Cycle de vie
+  verificationLevel   VerificationLevel   @default(FULLY_VERIFIED)
+  claimStatus         ClaimStatus         @default(CLAIMED)
+  source              String?             // e.g. "MY_MAPS_IMPORT", "MANUAL", "KYC_ONBOARDING"
+  sourceRef           String?             // e.g. "kml_pm_1_..."
+  fieldLocks          Json?               // liste des champs protégés contre écrasement réimport
+  onlineOrderingEnabled Boolean           @default(true) // false pour points LISTED non revendiqués
+
+  importBatchId       String?
+  importBatch         ImportBatch?        @relation(fields: [importBatchId], references: [id])
 
   reliabilityScore Float                 @default(100)
   badges          Json?
@@ -256,10 +288,86 @@ model Store {
   orders          Order[]
   stockReservations StockReservation[]
   reports         Report[]
+  claims          StoreClaim[]
+  importRecords   ImportRecord[]
 
   createdAt       DateTime               @default(now())
   updatedAt       DateTime               @updatedAt
+
+  @@unique([source, sourceRef])
 }
+
+model ImportBatch {
+  id                   String         @id @default(uuid())
+  fileName             String
+  fileHashSha256       String
+  status               String         @default("STAGED") // STAGED, DRY_RUN_COMPLETED, PENDING_APPROVAL, APPROVED, APPLIED, REJECTED, ROLLED_BACK
+  totalPlacemarks      Int            @default(0)
+  importedCount        Int            @default(0)
+  quarantinedCount     Int            @default(0)
+  rawSummary           Json?
+  pleingazAgreementRef String?
+  createdById          String?
+  createdBy            User?          @relation("ImportBatchCreatedBy", fields: [createdById], references: [id])
+  approvedById         String?
+  approvedBy           User?          @relation("ImportBatchApprovedBy", fields: [approvedById], references: [id])
+  approvedAt           DateTime?
+  appliedAt            DateTime?
+  rolledBackAt         DateTime?
+
+  stores               Store[]
+  records              ImportRecord[]
+
+  createdAt            DateTime       @default(now())
+  updatedAt            DateTime       @updatedAt
+}
+
+model ImportRecord {
+  id               String       @id @default(uuid())
+  batchId          String
+  batch            ImportBatch  @relation(fields: [batchId], references: [id], onDelete: Cascade)
+  storeId          String?
+  store            Store?       @relation(fields: [storeId], references: [id], onDelete: SetNull)
+
+  sourceRef        String
+  rawName          String
+  rawDescription   String?
+  rawCoordinates   String
+  classifiedType   String
+  status           String       @default("STAGED") // STAGED, VALIDATED, QUARANTINE_INDIVIDUAL, QUARANTINE_DUPLICATE, QUARANTINE_INVALID_GEO, IMPORTED, IGNORED
+  quarantineReason String?
+  rawPayload       Json?
+
+  createdAt        DateTime     @default(now())
+  updatedAt        DateTime     @updatedAt
+
+  @@index([batchId, status])
+}
+
+model StoreClaim {
+  id              String       @id @default(uuid())
+  storeId         String
+  store           Store        @relation(fields: [storeId], references: [id], onDelete: Cascade)
+  userId          String
+  user            User         @relation("ClaimSubmittedBy", fields: [userId], references: [id], onDelete: Cascade)
+
+  status          String       @default("SUBMITTED") // SUBMITTED, PHONE_OTP_PENDING, PHONE_OTP_VERIFIED, UNDER_ADMIN_REVIEW, APPROVED, REJECTED, CANCELLED
+  applicantPhone  String
+  otpHash         String?
+  otpExpiresAt    DateTime?
+  otpVerifiedAt   DateTime?
+
+  reviewedById    String?
+  reviewedBy      User?        @relation("ClaimReviewedBy", fields: [reviewedById], references: [id])
+  reviewedAt      DateTime?
+  reviewNotes     String?
+
+  createdAt       DateTime     @default(now())
+  updatedAt       DateTime     @updatedAt
+
+  @@index([storeId, status])
+}
+
 
 // ==========================================
 // 3. CATALOGUE EXCLUSIF PLEINGAZ (D-01)
