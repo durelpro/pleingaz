@@ -173,6 +173,46 @@
 | **Immutabilité** | Une fois `APPROVED`, le barème est immuable dans le temps. Toute modification génère une nouvelle ligne et une trace dans `PriceHistory`. |
 | **Rétention** | 10 ans légal (**À CONFIRMER** avec obligations fiscales/comptables). |
 
+### 1.18 `Store` — Modèle de Réseau et Importation (CR-002 D-07, D-08, D-09, D-10)
+| Propriété | Règle / Instruction SQL |
+|---|---|
+| **Clés & Unicités** | `id` (PK). `UNIQUE (source, source_ref)` pour assurer l'idempotence des réimports. Index sur `(verification_level, claim_status)`. |
+| **Clés Étrangères**| `distributor_id` (Ref: DistributorProfile, Nullable si non revendiqué), `import_batch_id` (Ref: ImportBatch, Nullable). |
+| **CHECK** | `CHECK (verification_level IN ('LISTED', 'CLAIMED_PENDING', 'BASIC_VERIFIED', 'FULLY_VERIFIED'))`. `CHECK (claim_status IN ('UNCLAIMED', 'PENDING_VERIFICATION', 'CLAIMED', 'REJECTED'))`. |
+| **Règles Métier** | - Si `verification_level = 'LISTED'`, badge "Distributeur vérifié" formellement interdit, mention obligatoire "Point de vente PLEINGAZ — Informations en cours de vérification".<br>- Si `claim_status = 'UNCLAIMED'`, `distributor_id` est `NULL`. Zéro compte `User` créé à l'import.<br>- Stock initial affiché comme "Information non actualisée. Contactez le point de vente." Commandes en ligne désactivées (`online_ordering_enabled = false`). |
+| **Protection des Champs** | Colonne `field_locks` (JSONB) enregistrant les attributs modifiés par un utilisateur ou un administrateur. Lors d'un ré-import du réseau, les champs verrouillés ne sont JAMAIS écrasés. |
+| **Rétention** | Soft delete uniquement (`is_active = false`). |
+
+### 1.19 `ImportBatch` — Lots d'Importation Réseau (CR-002 D-10)
+| Propriété | Règle / Instruction SQL |
+|---|---|
+| **Clés & Unicités** | `id` (PK). `file_hash_sha256` (Unique par fichier). |
+| **Clés Étrangères**| `created_by` (Ref: User), `approved_by` (Ref: User, Nullable). |
+| **CHECK** | `CHECK (status IN ('STAGED', 'DRY_RUN_COMPLETED', 'PENDING_APPROVAL', 'APPROVED', 'APPLIED', 'REJECTED', 'ROLLED_BACK'))`. |
+| **Contrôle & Sécurité**| L'approbation (`APPROVED`) exige impérativement : (1) rôle `ADMIN` ou `SUPER_ADMIN`, (2) saisie réussie du code TOTP, (3) confirmation de l'attestation écrite de PLEINGAZ (`pleingaz_agreement_ref IS NOT NULL`). |
+| **Immutabilité** | Une fois `APPLIED`, le lot scelle l'état importé. Un `ROLLBACK` audité permet la révocation groupée si nécessaire. |
+| **Rétention** | 10 ans pour la traçabilité des opérations administratives. |
+
+### 1.20 `ImportRecord` — Staging et Quarantaine (CR-002 D-08, D-10)
+| Propriété | Règle / Instruction SQL |
+|---|---|
+| **Clés & Unicités** | `id` (PK). Index sur `(batch_id, status)`. |
+| **Clés Étrangères**| `batch_id` (Ref: ImportBatch), `store_id` (Ref: Store, Nullable). |
+| **CHECK** | `CHECK (status IN ('STAGED', 'VALIDATED', 'QUARANTINE_INDIVIDUAL', 'QUARANTINE_DUPLICATE', 'QUARANTINE_INVALID_GEO', 'IMPORTED', 'IGNORED'))`. |
+| **Zéro Particulier (D-08)**| Détection automatique : tout enregistrement classifié `PARTICULIER_OU_MENAGE` est immédiatement isolé en `QUARANTINE_INDIVIDUAL`. Aucune création dans `Store` ni `User`. |
+| **Rétention** | Purge automatique des données brutes en staging/quarantaine 90 jours après l'exécution du lot. |
+
+### 1.21 `StoreClaim` — Revendications de Boutique (CR-002 D-09)
+| Propriété | Règle / Instruction SQL |
+|---|---|
+| **Clés & Unicités** | `id` (PK). Index sur `(store_id, status)`. Un seul claim actif par boutique. |
+| **Clés Étrangères**| `store_id` (Ref: Store), `user_id` (Ref: User), `reviewed_by` (Ref: User, Nullable). |
+| **CHECK** | `CHECK (status IN ('SUBMITTED', 'PHONE_OTP_PENDING', 'PHONE_OTP_VERIFIED', 'UNDER_ADMIN_REVIEW', 'APPROVED', 'REJECTED', 'CANCELLED'))`. |
+| **Anti-SIM Swap**| Validation OTP sur numéro officiel requise, complétée obligatoirement par une vérification administrative humaine (appel téléphonique ou contrôle terrain) avant passage à `APPROVED`. |
+| **Effet d'Approbation**| À l'état `APPROVED` : `Store.distributor_id = user_id`, `Store.claim_status = 'CLAIMED'`, `Store.verification_level = 'BASIC_VERIFIED'`, enregistrement des verrous dans `field_locks`. |
+| **Rétention** | Permanente (acte de rattachement juridique). |
+
+
 ---
 
 ## 2. Modèle Économique : Règles Validées et Impacts (CR-001)

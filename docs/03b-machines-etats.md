@@ -255,3 +255,55 @@ stateDiagram-v2
 - **Règle de blocage automatique** :
   - Si le solde total `COLLECTED` non encore reversé d'un livreur dépasse le plafond configuré dans `Setting` (défaut appliqué, à confirmer : exemple illustratif 50 000 FCFA), le livreur est automatiquement bloqué pour de nouvelles affectations jusqu'à régularisation.
 
+## 15. VerificationLevel (Échelonnement de vérification — CR-002 D-07)
+```mermaid
+stateDiagram-v2
+    [*] --> LISTED: Import Google My Maps approuvé
+    LISTED --> DOCUMENTS_VERIFIED: 3 pièces KYC validées
+    DOCUMENTS_VERIFIED --> LOCATION_CONFIRMED: Marqueur GPS confirmé in-situ
+    LOCATION_CONFIRMED --> FULLY_VERIFIED: Attribution officielle badge vérifié
+```
+- **Autorisées** :
+  - `LISTED` -> `DOCUMENTS_VERIFIED` (Validation des 3 pièces KYC par l'administrateur).
+  - `DOCUMENTS_VERIFIED` -> `LOCATION_CONFIRMED` (Confirmation géodésique sur le terrain).
+  - `LOCATION_CONFIRMED` -> `FULLY_VERIFIED` (Approbation souveraine par Super-Admin).
+- **Interdites** :
+  - Saut direct de `LISTED` à `FULLY_VERIFIED` sans validation des étapes intermédiaires.
+  - Attribution du badge "Distributeur PLEINGAZ vérifié" avant le niveau `FULLY_VERIFIED`.
+
+## 16. ClaimStatus (Réclamation de boutique — CR-002 D-09)
+```mermaid
+stateDiagram-v2
+    [*] --> UNCLAIMED: Point importé sans compte
+    UNCLAIMED --> INVITED: Lien WhatsApp click-to-chat préparé
+    UNCLAIMED --> CLAIM_PENDING_REVIEW: Authentification OTP distributeur
+    INVITED --> CLAIM_PENDING_REVIEW: Authentification OTP distributeur
+    CLAIM_PENDING_REVIEW --> CLAIMED: Approbation administrateur anti-SIM swap
+    CLAIM_PENDING_REVIEW --> CLAIM_REJECTED: Rejet administrateur avec motif
+```
+- **Autorisées** :
+  - `UNCLAIMED` / `INVITED` -> `CLAIM_PENDING_REVIEW` (Distributeur vérifie son numéro par OTP).
+  - `CLAIM_PENDING_REVIEW` -> `CLAIMED` (Rattachement effectif validé par l'admin, rôle `DISTRIBUTOR` accordé).
+  - `CLAIM_PENDING_REVIEW` -> `CLAIM_REJECTED` (Rejet motivé dans `AuditLog`).
+- **Interdites** :
+  - Rattachement automatique sans validation administrative humaine préalable.
+
+## 17. ImportBatch (Lots d'importation réseau — CR-002 D-10)
+```mermaid
+stateDiagram-v2
+    [*] --> DRY_RUN: Simulation & contrôle doublons
+    DRY_RUN --> APPROVED: Approbation admin (TOTP + case accord)
+    APPROVED --> APPLIED: Écriture transactionnelle Store
+    APPROVED --> ROLLED_BACK: Annulation avant application
+    APPLIED --> ROLLED_BACK: Dépublication transactionnelle
+    DRY_RUN --> FAILED: Erreur structurelle fichier
+```
+- **Autorisées** :
+  - `DRY_RUN` -> `APPROVED` (Approbation formelle avec code TOTP et référence d'accord PLEINGAZ).
+  - `APPROVED` -> `APPLIED` (Injection des boutiques et mise en ligne contrôlée).
+  - `APPLIED` -> `ROLLED_BACK` (Dépublication intégrale du lot).
+- **Interdites** :
+  - Passage à `APPLIED` sans statut `APPROVED`.
+  - Application d'un lot dont la case formelle d'attestation d'accord écrit PLEINGAZ est manquante.
+
+

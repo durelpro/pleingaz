@@ -25,8 +25,10 @@ Toutes les durées de conservation proposées et les bases légales proposées s
 | SearchEvent | Analytics| Mots-clés / Zone (D-02)| Faible | 1 an (**À CONFIRMER**) | Intérêt lég. (**À CONFIRMER**) | Analyste | PostgreSQL (Zone grossière)|
 | Alertes (Stock) | Préfs | Notifications push | Moyenne | Jusqu'à désinscription (**À CONFIRMER**)| Consentement (**À CONFIRMER**)| Utilisateur, Système | PostgreSQL |
 | Consentements | Preuve | Conformité légale | Faible | 3 ans après opt-out (**À CONFIRMER**) | Obligation légale (**À CONFIRMER**)| Admin | PostgreSQL |
-| Appareils & Sessions| Tech | Sécurité (JWT) | Faible | 30 jours après fin (**À CONFIRMER**) | Sécurité (**À CONFIRMER**) | Système | Redis / PG |
 | Données Livreurs | Contact | Acheminement Logistique| Moyenne | Actif + 1 an (**À CONFIRMER**) | Contrat (**À CONFIRMER**) | Admin, Dispatch | PostgreSQL |
+| Données Brutes Import (Staging)| Réseau | Détection doublons & filtrage (D-08)| Élevée | 90 jours max (purge auto)| Intérêt lég. (**À CONFIRMER**) | Admin | PostgreSQL (`ImportRecord`)|
+| Revendication Boutique (Claim) | Réseau | Attribution légitime point (D-09)  | Élevée | Actif + 5 ans (**À CONFIRMER**) | Contrat (**À CONFIRMER**) | Admin, Distributeur | PostgreSQL (`StoreClaim`)|
+
 
 ## 2. Flux et Prestataires (Transferts de Données)
 La légalité de ces transferts, souvent hors du Cameroun, est **À CONFIRMER** par un juriste.
@@ -47,6 +49,13 @@ La légalité de ces transferts, souvent hors du Cameroun, est **À CONFIRMER** 
 - **Minimisation stricte pour les Livreurs (`COURIER` - D-05)** : Le livreur a accès aux détails de contact du client (numéro d'appel, repère textuel) **exclusivement pendant la durée active de la livraison** (`ASSIGNED`, `PICKED_UP`, `IN_TRANSIT`). Dès la finalisation par validation du code de livraison client (`DELIVERED`) ou en cas d'annulation/échec (`FAILED`), ces données sont masquées de l'interface mobile du livreur. Aucun carnet d'adresses client ni historique d'itinéraires clients n'est accessible localement au livreur.
 - **Minimisation des données de recherche (`SearchEvent` - D-02)** : Les coordonnées GPS précises issues du navigateur lors d'une recherche ne sont JAMAIS persistées en base. Seule la zone géographique grossière (ville / quartier résolu ou arrondi à 1-2 km) est conservée dans `SearchEvent` à des fins d'analyse de la demande non servie. Le dernier lieu choisi manuellement par l'utilisateur peut être mémorisé localement sur l'appareil (via `localStorage`), avec la présence obligatoire d'un bouton explicite pour l'effacer à tout moment.
 - **Sous-comptes Boutique (StoreStaff)** : Les vendeurs et employés (`StoreStaff`) ne voient que les commandes en cours qu'ils gèrent à un instant T. Ils n'ont aucun droit d'accès à l'extraction de clientèle, aux données globales de la boutique, ni aux historiques financiers complexes. Ces données sont réservées au rôle supérieur `Distributor Manager`.
+- **Réseau Importé Google My Maps et Quarantaine Particuliers (CR-002 D-07, D-08, D-09)** :
+  - **Règle Zéro Particulier (D-08)** : Filtrage algorithmique strict avant toute insertion dans `Store`. Toute entrée identifiée comme un particulier, un ménage ou un domicile (`Ménage`, `Domicile`, nom de personne sans enseigne commerciale) est isolée en `QUARANTINE_INDIVIDUAL`. Aucune entité `Store` ni compte `User` n'est créé pour les particuliers.
+  - **Zéro Création de Compte Automatique** : Les points de vente importés conservent `distributor_id = NULL` et `claim_status = UNCLAIMED`. Aucun compte utilisateur ni mot de passe n'est généré à l'insu des commerçants.
+  - **Rétention Quarantaine & Staging** : Les données brutes de staging et les lignes en quarantaine sont conservées 90 jours maximum à des fins d'audit d'exclusion, puis purgées automatiquement.
+  - **Droit d'opposition et déréférencement immédiat** : Tout commerçant figurant sur la carte importée peut demander la rectification de ses coordonnées ou son déréférencement complet sur simple signalement ou demande au support. L'administrateur applique le déréférencement sous 48 heures.
+  - **Protection Anti-SIM Swap sur les Revendications (D-09)** : Pour éviter le détournement d'un point de vente par interception ou duplication frauduleuse de carte SIM, la validation par SMS OTP est complétée obligatoirement par un contrôle humain administratif (appel vocal ou contrôle de concordance) avant transfert de propriété (`CLAIMED`).
+
 
 ## 4. Sécurité Spécifique des Pièces d'Identité et Documents KYC (D-04)
 - **Liste limitative des documents** : Conformément à la décision D-04, la collecte documentaire des distributeurs est strictement bornée à 3 pièces : CNI recto/verso (`ID_CARD_FRONT`, `ID_CARD_BACK`), photo portrait du gérant (`PORTRAIT_PHOTO`), et photo de façade de la boutique (`SHOP_PHOTO`). Aucun registre du commerce, NIU ou document fiscal n'est requis ni stocké.

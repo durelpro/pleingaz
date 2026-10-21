@@ -107,4 +107,47 @@
 - **Référence** : [05-amendements-proprietaire.md §X-06](file:///home/durel/pleingaz/docs/00-sources/05-amendements-proprietaire.md) ; [12-cr001-specifications.md §6](file:///home/durel/pleingaz/docs/12-cr001-specifications.md#L217-L269).
 - **Validation** : `apps/api/src/payments/ledger.service.spec.ts`, `apps/api/src/payments/payout.service.spec.ts` & `apps/api/test/cr001-lifecycle.e2e-spec.ts` (Étape 6 & 8).
 
+---
+
+# Décisions Souveraines du Propriétaire (CR-002)
+
+## ADR D11 : Publication Immédiate sans Mentir sur la Vérification (CR-002 D-07)
+- **Statut** : VALIDÉ PAR LE PROPRIÉTAIRE (En cours d'implémentation Lot 2)
+- **Décision** :
+  1. Les points de vente issus de la carte Google My Maps sont publiés dès l'approbation de l'import par l'administrateur sans dépôt préalable de dossier.
+  2. Création du champ `verification_level` : `LISTED` -> `DOCUMENTS_VERIFIED` -> `LOCATION_CONFIRMED` -> `FULLY_VERIFIED`. Les points importés démarrent à `LISTED`.
+  3. Mention publique obligatoire : *"Point de vente PLEINGAZ — Informations en cours de vérification"*. Le badge *"Distributeur PLEINGAZ vérifié"* est strictement interdit avant le niveau `FULLY_VERIFIED`.
+  4. Stock affiché en *"⚪ Information non actualisée. Contactez le point de vente."* Aucun stock inventé.
+  5. Commande en ligne désactivée (`online_ordering_enabled = false`) tant que le point n'est pas réclamé et sans stock déclaré. Seuls les boutons *Appeler* et *Itinéraire* sont actifs.
+- **Référence** : [05-amendements-proprietaire.md §X-07](file:///home/durel/pleingaz/docs/00-sources/05-amendements-proprietaire.md) ; [13-import-reseau.md §2](file:///home/durel/pleingaz/docs/13-import-reseau.md).
+
+## ADR D12 : Herméticité des Personnes et Acheteurs : Aucune Publication (CR-002 D-08)
+- **Statut** : VALIDÉ PAR LE PROPRIÉTAIRE (En cours d'implémentation Lot 2)
+- **Décision** :
+  1. Classification stricte pré-import : seuls les points de vente professionnels avérés sont importés comme boutiques `LISTED`.
+  2. Les particuliers, ménages et cas ambigus sont dirigés vers une table de quarantaine hermétique (`ImportRecord` statut `QUARANTINE_INDIVIDUAL` / `QUARANTINE_AMBIGUOUS`). Jamais publiés, aucun compte créé, aucune notification.
+  3. Aucun compte utilisateur n'est créé automatiquement : `Store.owner_id = NULL` et `claim_status = UNCLAIMED`.
+  4. L'administrateur coche obligatoirement une case d'attestation d'accord écrit de PLEINGAZ lors de l'application de l'import (consignée dans `AuditLog`).
+- **Référence** : [05-amendements-proprietaire.md §X-08](file:///home/durel/pleingaz/docs/00-sources/05-amendements-proprietaire.md) ; [13-import-reseau.md §2](file:///home/durel/pleingaz/docs/13-import-reseau.md).
+
+## ADR D13 : Réclamation et Complétion Ultérieure par les Distributeurs (CR-002 D-09)
+- **Statut** : VALIDÉ PAR LE PROPRIÉTAIRE (En cours d'implémentation Lot 2)
+- **Décision** :
+  1. Cycle de réclamation (`claim_status`) : `UNCLAIMED` -> `INVITED` -> `CLAIM_PENDING_REVIEW` -> `CLAIMED` (ou `CLAIM_REJECTED`).
+  2. Authentification par OTP sur le numéro du dossier et validation obligatoire par l'administrateur pour se prémunir du détournement de carte SIM (SIM Swap).
+  3. Les invitations sont préparées pour WhatsApp (click-to-chat avec message prérempli), sans aucun envoi automatique non consenti (Règle R10).
+  4. Checklist de complétion progressive avec déblocage incrémental des fonctionnalités (GPS, KYC 3 pièces, catalogue, stock initial).
+  5. Verrouillage des modifications distributeur (`field_locks`) : protection absolue contre l'écrasement par des ré-importations ultérieures.
+- **Référence** : [05-amendements-proprietaire.md §X-09](file:///home/durel/pleingaz/docs/00-sources/05-amendements-proprietaire.md) ; [13-import-reseau.md §2](file:///home/durel/pleingaz/docs/13-import-reseau.md).
+
+## ADR D14 : Contrôle Administrateur, Idempotence et Rollback (CR-002 D-10)
+- **Statut** : VALIDÉ PAR LE PROPRIÉTAIRE (En cours d'implémentation Lot 2)
+- **Décision** :
+  1. Flux transactionnel en 4 étapes : Fichier -> Staging -> Dry-run (simulation) -> Revue -> Approbation formelle (TOTP + accord écrit) -> Application.
+  2. Idempotence garantie par la contrainte d'unicité `UNIQUE(source, source_ref)`. Deux exécutions sur le même fichier génèrent un état identique.
+  3. Annulation complète (`ROLLBACK`) : dépublication instantanée du lot en cas d'anomalie.
+  4. Permissions d'administration granulaires (`distributor:bulk_import`, `distributor:bulk_approve`, `import:rollback`) et traçabilité exhaustive dans `AuditLog`.
+- **Référence** : [05-amendements-proprietaire.md §X-10](file:///home/durel/pleingaz/docs/00-sources/05-amendements-proprietaire.md) ; [13-import-reseau.md §2](file:///home/durel/pleingaz/docs/13-import-reseau.md).
+
+
 

@@ -283,6 +283,31 @@ Les ADR D1 à D4 sont proposés ; les ADR D5 à D10 résultent des **décisions 
 | **D8** | KYC Distributeur 3 pièces exclusives (CR-001 D-04) | **VALIDÉ** | S3 privé chiffré, URL signées 15 min, stripping EXIF systématique, checklist admin. |
 | **D9** | Rôle Livreur & Code confirmation (CR-001 D-05) | **VALIDÉ** | 9e rôle RBAC `COURIER`, PWA livreur légère, attribution manuelle, suivi caisse espèces. |
 | **D10**| Maker-Checker & Grand Livre immuable (CR-001 D-06) | **VALIDÉ** | Insert-Only `LedgerEntry`, débit=crédit, double signature reversements, TOTP obligatoire. |
+| **D11**| Publication immédiate contrôlée (CR-002 D-07) | **VALIDÉ** | Statut `LISTED`, mention de transparence, stock non actualisé, commandes désactivées. |
+| **D12**| Zéro compte Particulier / Utilisateur créé (CR-002 D-08)| **VALIDÉ** | Quarantaine algorithmique `ImportRecord`, `owner_user_id = NULL`, `claim_status = UNCLAIMED`. |
+| **D13**| Revendication progressive & Anti-SIM Swap (CR-002 D-09) | **VALIDÉ** | Vérification OTP + revue humaine admin, cycle de vie `VerificationLevel`, protection `field_locks`. |
+| **D14**| Pipeline Staging, Dry-run & Idempotence (CR-002 D-10)   | **VALIDÉ** | `UNIQUE(source, source_ref)`, validation TOTP + accord PLEINGAZ, rollback audité. |
+
+## 13. Pipeline d'Importation Réseau et Endpoints (CR-002)
+
+### 13.1 Architecture du Pipeline
+1. **Extraction / Décompression sécurisée** : Dézippage des archives `.kmz` en mémoire avec quotas stricts (taille max décompressée 25 Mo, anti-zip-bomb), extraction du document `doc.kml`.
+2. **Parser XML / SAX robuste** : Extraction des balises `<Placemark>`, `<name>`, `<description>`, `<coordinates>`, `<ExtendedData>`. Nettoyage anti-XSS et neutralisation des délimiteurs de prompt injection.
+3. **Normalisation téléphonique et géocodage** : Normalisation E.164 (+237 pour le Cameroun), validation des coordonnées dans l'enveloppe géographique nationale.
+4. **Classification heuristique et quarantaine (D-08)** : Détection des particuliers/ménages (`Ménage`, `Domicile`, noms propres sans enseigne) placés en `QUARANTINE_INDIVIDUAL`.
+5. **Détection des doublons** : Rapprochement géodésique (< 50 mètres) et par numéro de téléphone normalisé.
+6. **Application transactionnelle idempotente** : Insertion/mise à jour via `source = 'MY_MAPS_IMPORT'` et `source_ref = <kml_id>`, préservation absolue des champs verrouillés dans `field_locks`.
+
+### 13.2 Spécification des Endpoints Dédiés
+- `POST /api/v1/admin/imports/upload` : Téléversement KML/KMZ, calcul hash SHA-256, initialisation du lot `ImportBatch`.
+- `POST /api/v1/admin/imports/:id/dry-run` : Exécution de simulation, calcul des compteurs (validés, quarantaines, doublons).
+- `POST /api/v1/admin/imports/:id/approve` : Approbation par `ADMIN`/`SUPER_ADMIN` (contrôle TOTP + saisie de la référence d'accord écrit PLEINGAZ).
+- `POST /api/v1/admin/imports/:id/apply` : Application définitive en base, création des points `Store` en statut `LISTED`.
+- `POST /api/v1/admin/imports/:id/rollback` : Révocation du lot, archivage logique des boutiques créées sans commande liée.
+- `POST /api/v1/stores/:id/claim/request-otp` : Envoi d'un OTP au numéro officiel d'un point de vente `UNCLAIMED`.
+- `POST /api/v1/stores/:id/claim/verify-otp` : Soumission de la revendication après validation OTP.
+- `POST /api/v1/admin/stores/claims/:id/review` : Examen administratif (approbation avec transition vers `BASIC_VERIFIED` ou rejet motivé).
+
 
 
 ## 14. Stack technique retenue

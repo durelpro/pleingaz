@@ -79,3 +79,52 @@ Ce document constitue la source formelle de rang supérieur (Source X) intégran
 * **X-06.08** : Tableau de bord financier sur données réelles : encaissements, commissions, créances, reversements dus, remboursements, espèces en circulation, écarts de conciliation ; alertes automatiques.
 * **X-06.09** : Sécurité financière : TOTP obligatoire, sessions courtes, traçabilité `AuditLog`, alertes actions sensibles, break-glass `SUPER_ADMIN` audité ; analyse des menaces de fraude interne, collusion et détournement dans 06a.
 * **X-06.10** : Cohérence transversale de la conception : mise à jour des machines à états (`PayoutBatch`, `Payout`, `Refund`, `CashCollection`), immutabilité 03c, tests finance 06b, matrice RBAC 02.
+
+---
+
+## D-07 : Publication immédiate sans mentir sur la vérification (CR-002)
+
+* **X-07.01** : Publication immédiate dès approbation de l'import : les points de vente issus de la carte Google My Maps sont intégrés et publiés sans dépôt préalable de dossier physique.
+* **X-07.02** : Échelonnement strict de la vérification (`verification_level`) : `LISTED` -> `DOCUMENTS_VERIFIED` -> `LOCATION_CONFIRMED` -> `FULLY_VERIFIED`. Un point importé démarre au niveau `LISTED`.
+* **X-07.03** : Mention de transparence obligatoire pour les points `LISTED` : "Point de vente PLEINGAZ - Informations en cours de vérification". Le badge "Distributeur PLEINGAZ vérifié" est strictement réservé au statut `FULLY_VERIFIED`.
+* **X-07.04** : État de stock non déclaré : affichage systématique de "⚪ Information non actualisée. Contactez le point de vente." Aucun produit ni prix inventé.
+* **X-07.05** : Coordonnées GPS issues du fichier : `location_source = PLEINGAZ_MAP`, `location_confirmed_at = NULL`. Aucune coordonnée déduite d'un texte d'adresse.
+* **X-07.06** : Commande en ligne verrouillée : `online_ordering_enabled = false` tant que la boutique n'est pas réclamée et sans stock déclaré. Actions limitées aux boutons "Appeler" et "Itinéraire". WhatsApp conditionné à la présence explicite dans le fichier.
+* **X-07.07** : Classement de recherche multi-critères : les points `LISTED` apparaissent après les points au stock confirmé récent, avec une icône visuelle distincte sur la carte.
+* **X-07.08** : Typologie de réseau : `network_tier` (`WHOLESALER`, `SEMI_WHOLESALER`, `RESELLER`, `UNKNOWN`) lu dans le fichier, réservé à la supervision administrateur. Libellé neutre pour le public.
+
+---
+
+## D-08 : Personnes et acheteurs : aucune publication (CR-002)
+
+* **X-08.01** : Classification stricte pré-import : distinction points de vente professionnels (candidats) / particuliers ou acheteurs finaux / cas ambigus. Seuls les professionnels sont éligibles à la création de `Store`.
+* **X-08.02** : Quarantaine hermétique des particuliers et cas non classés : staging administratif uniquement, jamais publiés, zéro compte créé, zéro notification.
+* **X-08.03** : Zéro création de compte utilisateur automatique : `Store.owner_id = NULL` et `claim_status = UNCLAIMED`.
+* **X-08.04** : Déclaration formelle préalable de l'administrateur : case à cocher obligatoire attestant de l'accord écrit de PLEINGAZ pour la publication, horodatée et archivée dans `AuditLog`.
+* **X-08.05** : Protection absolue de la vie privée : le fichier source et tout fichier dérivé contenant des noms ou numéros restent dans `data/private/` (strictement ignoré par Git).
+* **X-08.06** : Rapports publics sans données personnelles : comptages techniques et identifiants hachés uniquement.
+
+---
+
+## D-09 : Complétion ultérieure par les distributeurs (CR-002)
+
+* **X-09.01** : Machine à états de réclamation (`claim_status`) : `UNCLAIMED` -> `INVITED` -> `CLAIM_PENDING_REVIEW` -> `CLAIMED` (ou `CLAIM_REJECTED`).
+* **X-09.02** : Authentification OTP sur le numéro du dossier et validation administrative obligatoire contre le détournement de carte SIM (SIM swap). Rattachement du compte au rôle `DISTRIBUTOR` après validation.
+* **X-09.03** : Invitations préparées : lien WhatsApp click-to-chat avec message prérempli, sans aucun envoi automatique non sollicité (Règle R10).
+* **X-09.04** : Checklist de complétion progressive débloquant les fonctionnalités (ajustement GPS, 3 pièces KYC D-04, horaires, références PLEINGAZ du catalogue exclusif D-01, premier stock).
+* **X-09.05** : Redirection anti-doublon : un distributeur s'inscrivant avec un numéro déjà importé est orienté vers la réclamation de son point.
+* **X-09.06** : Droit d'accès, de rectification et de retrait : procédure explicite pour corriger ou retirer un point importé à sa demande.
+* **X-09.07** : Verrouillage des modifications distributeur (`field_locks`) : protection absolue contre l'écrasement lors d'une ré-importation ultérieure.
+
+---
+
+## D-10 : Contrôle administrateur de l'import (CR-002)
+
+* **X-10.01** : Flux d'importation étanche : fichier -> staging -> DRY-RUN (rapport) -> revue doublons/quarantaine -> approbation formelle (TOTP + case accord) -> application transactionnelle.
+* **X-10.02** : Modèles d'audit de l'import : `ImportBatch` (SHA-256, métriques, statuts) et `ImportRecord` (payload brut, payload normalisé, motifs de rejet).
+* **X-10.03** : Idempotence absolue par clé unique `UNIQUE(source, source_ref)`. Un rejeu du même fichier produit un état strictement identique.
+* **X-10.04** : Mécanisme de ROLLBACK complet : dépublication immédiate de l'ensemble du lot, suppression physique des données non associées à des commandes.
+* **X-10.05** : Permissions d'administration dédiées : `distributor:bulk_import`, `distributor:bulk_approve`, `distributor:unpublish`, `import:rollback`.
+* **X-10.06** : Traçabilité exhaustive : toute action relative à un lot ou une réclamation est journalisée dans `AuditLog`.
+* **X-10.07** : Sécurité des descriptions : suppression ou échappement HTML strict, neutralisation de tout code ou instruction d'injection pour l'IA.
+* **X-10.08** : Ségrégation des données : les points importés portent `is_demo = false` et sont distingués des fixtures de test de démonstration.

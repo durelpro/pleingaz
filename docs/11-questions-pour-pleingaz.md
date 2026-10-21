@@ -71,3 +71,10 @@ Ces questions sont fondamentales et bloquent les choix d'architecture des Phases
 33. **Cookies et Traqueurs** : PLEINGAZ compte-t-elle utiliser des outils externes d'audience (Google Analytics, Meta Pixel) ? Si oui, le bandeau de consentement devra être complexe.
 34. **Gouvernance des données** : Nom et fonction du futur "Responsable des Données Personnelles" chez PLEINGAZ en charge du registre des traitements.
 35. **Objectifs RPO / RTO** : Validation des budgets nécessaires pour garantir une perte de données maximale de 1 heure (RPO) et un temps de redémarrage de 4 heures (RTO).
+
+## 11. Questions Ouvertes CR-002 (Import Réseau Google My Maps)
+36. **Accord Écrit PLEINGAZ (CR-002 D-08)** : Référence formelle de l'acte d'autorisation écrite de PLEINGAZ autorisant l'import et la publication des points de vente grossistes/semi-grossistes.
+37. **Traitement des Particuliers en Quarantaine (CR-002 D-08)** : Confirmation de la politique définitive pour les particuliers détectés (purge automatique sous 90 jours ou conservation chiffrée hors ligne pour prospection future avec base légale à valider).
+38. **Délai de Réclamation (SLA) (CR-002 D-09)** : Quel délai maximal pour que l'administrateur instruise une demande de réclamation (`StoreClaim`) d'un distributeur avant notification ? (Défaut appliqué : 48h).
+39. **Procédure de Déréférencement / Droit de Retrait (CR-002 D-09)** : Modalités de notification et délai légal garanti pour supprimer un point importé qui demande son retrait (Défaut appliqué : 72h ouvrées).
+40. **Base Légale Informatique et Libertés Cameroun (CR-002 D-08)** : Validation formelle de la base légale retenue (intérêt légitime commercial du réseau officiel vs consentement ultérieur au claim) pour la publication initiale des coordonnées professionnelles.
