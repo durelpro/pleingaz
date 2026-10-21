@@ -183,6 +183,8 @@ export default function SearchPage() {
         return 'bg-orange-500/15 text-orange-400 border-orange-500/30';
       case 'RUPTURE':
         return 'bg-rose-500/15 text-rose-400 border-rose-500/30';
+      case 'NON_ACTUALISE':
+        return 'bg-neutral-800 text-neutral-400 border-neutral-700';
       default:
         return 'bg-neutral-800 text-neutral-300 border-neutral-700';
     }
@@ -204,7 +206,7 @@ export default function SearchPage() {
             className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-gradient-to-r from-orange-500/20 to-red-500/20 border border-orange-500/30 text-orange-400 text-xs font-bold uppercase tracking-wider"
           >
             <Flame size={14} className="text-orange-500 animate-pulse" />
-            Réseau Officiel PLEINGAZ Cameroun (D-02)
+            Réseau Officiel PLEINGAZ Cameroun (D-02, D-07)
           </motion.div>
 
           <motion.h1
@@ -217,7 +219,7 @@ export default function SearchPage() {
           </motion.h1>
 
           <p className="text-neutral-400 text-sm sm:text-base max-w-xl mx-auto">
-            Disponibilité certifiée en temps réel chez les distributeurs agréés et dans la <strong>Boutique Officielle PLEINGAZ</strong>.
+            Disponibilité certifiée en temps réel chez les distributeurs agréés, le réseau officiel de proximité et dans la <strong>Boutique Officielle PLEINGAZ</strong>.
           </p>
         </div>
 
@@ -294,6 +296,7 @@ export default function SearchPage() {
           <AnimatePresence>
             {stores.map((store, idx) => {
               const isOfficial = store.id === 'store-pleingaz-siege-officiel' || store.isOfficialCompanyStore;
+              const isListed = store.verificationLevel === 'LISTED' || store.isListedUnclaimed;
 
               return (
                 <motion.div
@@ -304,6 +307,8 @@ export default function SearchPage() {
                   className={`p-5 sm:p-6 rounded-3xl border transition-all ${
                     isOfficial
                       ? 'bg-gradient-to-r from-orange-950/40 via-neutral-900 to-neutral-900 border-orange-500/40 shadow-xl shadow-orange-500/10'
+                      : isListed
+                      ? 'bg-neutral-900/60 border-neutral-800 hover:border-neutral-700'
                       : 'bg-white/5 backdrop-blur-md border-white/10 hover:border-white/20'
                   }`}
                 >
@@ -314,6 +319,11 @@ export default function SearchPage() {
                           <span className="px-3 py-1 rounded-full bg-gradient-to-r from-orange-500 to-red-500 text-white text-[11px] font-black uppercase tracking-wider flex items-center gap-1 shadow-md">
                             <Sparkles size={12} />
                             Siège & Boutique Officielle PLEINGAZ
+                          </span>
+                        )}
+                        {isListed && (
+                          <span className="px-2.5 py-0.5 rounded-full bg-blue-500/15 border border-blue-500/30 text-blue-300 text-[11px] font-semibold flex items-center gap-1">
+                            ℹ️ Informations en cours de vérification
                           </span>
                         )}
                         <h3 className="text-lg font-extrabold text-white">{store.name}</h3>
@@ -332,12 +342,12 @@ export default function SearchPage() {
                       </div>
 
                       <div className="flex flex-wrap items-center gap-2 pt-1">
-                        <span className={`px-2.5 py-0.5 rounded-full text-xs font-bold border ${getBadgeStyle(store.stockLevel || 'BON')}`}>
-                          Stock : {store.stockLevel || 'BON'}
+                        <span className={`px-2.5 py-0.5 rounded-full text-xs font-bold border ${getBadgeStyle(store.stockLevel || (isListed ? 'NON_ACTUALISE' : 'BON'))}`}>
+                          Stock : {isListed ? 'Non actualisé' : (store.stockLevel || 'BON')}
                         </span>
                         <span className="text-[11px] text-neutral-400 flex items-center gap-1">
                           <Clock size={12} />
-                          {store.stockFreshness || 'Stock vérifié aujourd\'hui'}
+                          {store.stockFreshness || (isListed ? '⚪ Information non actualisée. Contactez le point de vente.' : 'Stock vérifié aujourd\'hui')}
                         </span>
                       </div>
                     </div>
@@ -345,20 +355,42 @@ export default function SearchPage() {
                     <div className="flex sm:flex-col items-center sm:items-end justify-between gap-2 border-t sm:border-t-0 border-white/5 pt-3 sm:pt-0">
                       <div className="text-left sm:text-right">
                         <div className="text-lg font-black text-white">6 500 FCFA</div>
-                        <div className="text-[11px] text-neutral-400">Prix officiel homologué (12.5kg)</div>
+                        <div className="text-[11px] text-neutral-400">Prix officiel recharge (12.5kg)</div>
                       </div>
 
-                      <Link
-                        href={`/stores/${store.id}`}
-                        className={`px-5 py-2.5 rounded-xl font-bold text-xs flex items-center gap-1.5 transition-all shadow-md ${
-                          isOfficial
-                            ? 'bg-gradient-to-r from-orange-500 to-red-600 text-white hover:scale-105'
-                            : 'bg-white/10 hover:bg-white/20 text-white'
-                        }`}
-                      >
-                        Commander ici
-                        <ArrowRight size={14} />
-                      </Link>
+                      {isListed ? (
+                        <div className="flex flex-col items-end gap-1.5">
+                          {store.whatsappNumber ? (
+                            <a
+                              href={`tel:${store.whatsappNumber}`}
+                              className="px-4 py-2 rounded-xl bg-orange-600/90 hover:bg-orange-500 text-white font-bold text-xs flex items-center gap-1.5 transition-all shadow-md"
+                            >
+                              <Phone size={14} />
+                              Appeler le point de vente
+                            </a>
+                          ) : (
+                            <span className="text-[11px] text-neutral-400 italic">Contact non renseigné</span>
+                          )}
+                          <Link
+                            href={`/stores/${store.id}/claim`}
+                            className="text-[11px] text-orange-400 hover:text-orange-300 underline font-medium"
+                          >
+                            Vous êtes le gérant ? Revendiquer
+                          </Link>
+                        </div>
+                      ) : (
+                        <Link
+                          href={`/stores/${store.id}`}
+                          className={`px-5 py-2.5 rounded-xl font-bold text-xs flex items-center gap-1.5 transition-all shadow-md ${
+                            isOfficial
+                              ? 'bg-gradient-to-r from-orange-500 to-red-600 text-white hover:scale-105'
+                              : 'bg-white/10 hover:bg-white/20 text-white'
+                          }`}
+                        >
+                          Commander ici
+                          <ArrowRight size={14} />
+                        </Link>
+                      )}
                     </div>
                   </div>
                 </motion.div>

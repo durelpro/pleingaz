@@ -19,7 +19,10 @@ Ce document dresse l'inventaire complet des entités du domaine et présente le 
 | **Accès** | `RecoveryCode` | Code de secours MFA | FK: `user_id` | Oui |
 | **Réseau** | `DistributorApplication` | Dossier de candidature | FK: `distributor_id` | Oui |
 | **Réseau** | `DistributorDocument` | Pièce justificative KYC restreinte aux 3 types : `ID_CARD_FRONT`, `ID_CARD_BACK`, `PORTRAIT_PHOTO`, `SHOP_PHOTO` (CR-001 D-04) | FK: `distributor_id` | Oui (CNI, etc.) |
-| **Réseau** | `Store` | Boutique physique (un distributeur peut en avoir 0..N) | FK: `distributor_id` | Non |
+| **Réseau** | `Store` | Boutique physique (distributeur optionnel si importé, niveau de vérification et statut de revendication - CR-002 D-07, D-08, D-09) | FK: `distributor_id` (nullable), `import_batch_id` (nullable) | Non |
+| **Réseau** | `ImportBatch` | Lot d'importation réseau Google My Maps (CR-002 D-10) | Clé: `id`, hash SHA-256 | Non |
+| **Réseau** | `ImportRecord` | Ligne brute d'importation (staging, classification, quarantaine) | FK: `batch_id`, `store_id` | Oui (Données brutes) |
+| **Réseau** | `StoreClaim` | Demande de revendication d'un point de vente importé (CR-002 D-09) | FK: `store_id`, `user_id` | Oui |
 | **Réseau** | `StoreLocation` | Coordonnées géographiques de la boutique | FK: `store_id` | Non |
 | **Réseau** | `StoreHours` | Horaires d'ouverture | FK: `store_id` | Non |
 | **Réseau** | `StoreStaff` | Sous-compte pour le personnel de la boutique | FK: `store_id`, `user_id` | Oui |
@@ -140,7 +143,7 @@ erDiagram
     USER ||--o{ RECOVERY_CODE : "has"
 ```
 
-### 2.3 ERD 2 : Réseau et Distributeurs
+### 2.3 ERD 2 : Réseau, Distributeurs et Importation (CR-002 D-07..D-10)
 ```mermaid
 erDiagram
     DISTRIBUTOR_PROFILE {
@@ -149,7 +152,14 @@ erDiagram
     }
     STORE {
         int id PK
-        int distributor_id FK
+        int distributor_id FK_nullable
+        int import_batch_id FK_nullable
+        string name
+        string verification_level
+        string claim_status
+        string source
+        string source_ref
+        jsonb field_locks
     }
     STORE_LOCATION {
         int id PK
@@ -173,6 +183,39 @@ erDiagram
         int distributor_id FK
         string document_type
     }
+    IMPORT_BATCH {
+        int id PK
+        string file_name
+        string file_hash_sha256
+        string status
+        int total_placemarks
+        int imported_count
+        int quarantined_count
+        int created_by FK
+        int approved_by FK
+        timestamp approved_at
+    }
+    IMPORT_RECORD {
+        int id PK
+        int batch_id FK
+        int store_id FK_nullable
+        string raw_name
+        string raw_description
+        string raw_coordinates
+        string classified_type
+        string status
+        string quarantine_reason
+    }
+    STORE_CLAIM {
+        int id PK
+        int store_id FK
+        int user_id FK
+        string status
+        string applicant_phone
+        timestamp otp_verified_at
+        int reviewed_by FK
+        timestamp reviewed_at
+    }
     COURIER {
         int id PK
         int user_id FK
@@ -190,12 +233,16 @@ erDiagram
         boolean is_online
         timestamp last_seen_at
     }
-    DISTRIBUTOR_PROFILE ||--o{ STORE : "owns"
+    DISTRIBUTOR_PROFILE ||--o{ STORE : "owns_optional"
     STORE ||--o| STORE_LOCATION : "has"
     STORE ||--o{ STORE_HOURS : "opens_during"
     STORE ||--o{ STORE_STAFF : "employs"
     DISTRIBUTOR_PROFILE ||--o| DISTRIBUTOR_APPLICATION : "submits"
     DISTRIBUTOR_PROFILE ||--o{ DISTRIBUTOR_DOCUMENT : "provides_3_docs_only"
+    IMPORT_BATCH ||--o{ IMPORT_RECORD : "contains"
+    IMPORT_BATCH ||--o{ STORE : "creates_or_updates"
+    STORE ||--o{ STORE_CLAIM : "subject_of"
+    USER ||--o{ STORE_CLAIM : "claims"
     USER ||--o| COURIER : "operates_as"
     COURIER ||--o{ COURIER_ZONE : "covers"
     COURIER ||--o| COURIER_AVAILABILITY : "tracks"
@@ -467,4 +514,8 @@ erDiagram
 - LedgerEntry (écritures à double entrée équilibrées Insert-Only — CR-001 D-06)
 - PayoutBatch (lots de reversement groupés Maker-Checker — CR-001 D-06)
 - DeliveryFeeSchedule (barème versionné des frais de livraison — CR-001 D-05, D-06)
+- ImportBatch (lot d'importation réseau Google My Maps — CR-002 D-10)
+- ImportRecord (ligne brute staging, classification D-08, quarantaine — CR-002 D-08, D-10)
+- StoreClaim (revendication d'un point de vente importé avec OTP et validation admin — CR-002 D-09)
+- Store (enrichissement CR-002 : distributor_id optionnel, verification_level, claim_status, source, source_ref, field_locks, import_batch_id)
 

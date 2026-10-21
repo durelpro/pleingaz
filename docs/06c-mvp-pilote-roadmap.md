@@ -114,6 +114,10 @@ Le pilote est le premier test grandeur nature sur une cible restreinte pour ajus
 - M33 Livreurs sur la plateforme et attribution manuelle
 - M34 Grand livre immuable et reversements avec approbation à deux
 - M35 Administration à données réelles et comptes rendus Control Center
+- M36 Import du réseau existant Google My Maps et publication immédiate contrôlée (D-07)
+- M37 Classification stricte pré-import et quarantaine des particuliers (D-08)
+- M38 Réclamation (claim) et complétion progressive par les distributeurs (D-09)
+- M39 Contrôle administrateur de l'import, dry-run, approbation et rollback (D-10)
 - H01 Fonctionnalité hors MVP 1
 - H02 Fonctionnalité hors MVP 2
 - H03 Fonctionnalité hors MVP 3
@@ -133,6 +137,8 @@ Le pilote est le premier test grandeur nature sur une cible restreinte pour ajus
 - H17 Analyses avancées, prévisions IA et cartes de chaleur
 - H18 Automatisation des reversements via API Payout
 - H19 Marketplace et vente de produits tiers (Hors périmètre)
+- H20 Fusion assistée des doublons géographiques complexes
+- H21 Import périodique et synchronisation automatique de fichiers réseau
 
 ## Phase 2B
 - Pages existantes (About, Products, Services, FAQ, Blog, Contact, points de vente)
