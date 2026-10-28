@@ -107,4 +107,49 @@
 - **Référence** : [05-amendements-proprietaire.md §X-06](file:///home/durel/pleingaz/docs/00-sources/05-amendements-proprietaire.md) ; [12-cr001-specifications.md §6](file:///home/durel/pleingaz/docs/12-cr001-specifications.md#L217-L269).
 - **Validation** : `apps/api/src/payments/ledger.service.spec.ts`, `apps/api/src/payments/payout.service.spec.ts` & `apps/api/test/cr001-lifecycle.e2e-spec.ts` (Étape 6 & 8).
 
+---
+
+# Décisions Souveraines du Propriétaire (CR-003)
+
+## ADR D11 : Accès Authentifié Obligatoire et Espaces Étanches par Profil
+- **Statut** : VALIDÉ (Spécifié & Prototypé CR-003)
+- **Décision** : Traçabilité totale sans exception : aucune action métier n'est permise sans session authentifiée. Les espaces `/acheteur`, `/distributeur`, `/livreur` et staff sont strictement étanches. Tout accès inter-espaces renvoie un code HTTP 404. Les tokens portent une audience `aud` stricte. L'accès staff est masqué sous URL secrète et double facteur TOTP.
+- **Référence** : [14b-espaces-et-isolation.md](file:///home/durel/pleingaz/docs/14b-espaces-et-isolation.md) ; [05-amendements-proprietaire.md §X-11](file:///home/durel/pleingaz/docs/00-sources/05-amendements-proprietaire.md).
+
+## ADR D12 : Inscription et Connexion Gratuites par WhatsApp (Preuve Entrante)
+- **Statut** : VALIDÉ (Spécifié & Prototypé CR-003)
+- **Décision** : Authentification et inscription 100% gratuites sans mot de passe basées sur WhatsApp. Architecture Option A : preuve entrante via message contenant un défi aléatoire chiffré vers le numéro officiel PLEINGAZ. Saisie obligatoire de deux numéros E.164 (`whatsappPhone` et `callPhone`). Hash Argon2id, TTL 10 min, purge 24h.
+- **Référence** : [14a-auth-whatsapp.md](file:///home/durel/pleingaz/docs/14a-auth-whatsapp.md) ; [05-amendements-proprietaire.md §X-12](file:///home/durel/pleingaz/docs/00-sources/05-amendements-proprietaire.md).
+
+## ADR D13 : Refonte Ergonomique et Préservation Intégrale de la Charte Graphique
+- **Statut** : VALIDÉ (Spécifié & Prototypé CR-003)
+- **Décision** : La charte graphique historique extraite de `monpleingaz.com` est scrupuleusement conservée (Rouge `#FF0000`/`#DC2626`, Jaune `#FFB000`, Montserrat). Refonte complète de l'expérience utilisateur ultra mobile-first, conforme WCAG 2.1 AA, avec des prototypes autonomes légers (< 50 Ko).
+- **Référence** : [docs/design/charte-graphique.md](file:///home/durel/pleingaz/docs/design/charte-graphique.md) ; [docs/design/design-system.md](file:///home/durel/pleingaz/docs/design/design-system.md).
+
+## ADR D14 : Espace Acheteur avec Jauge de Quota 5 Bouteilles / 30 Jours
+- **Statut** : VALIDÉ (Spécifié & Prototypé CR-003)
+- **Décision** : Espace acheteur épuré et minimaliste. Jauge visuelle obligatoire matérialisant la consommation sur une fenêtre glissante de 30 jours (seuil légal 5 bouteilles max pour les particuliers). Réassort 1-clic de la bouteille habituelle et historique distributeur favori (C-01). Blocage strict au-delà du quota. Bouton d'urgence fuite de gaz.
+- **Référence** : [14c-espace-acheteur.md](file:///home/durel/pleingaz/docs/14c-espace-acheteur.md) ; [05-amendements-proprietaire.md §X-14](file:///home/durel/pleingaz/docs/00-sources/05-amendements-proprietaire.md).
+
+## ADR D15 : Encadrement Strict du Rôle Gestionnaire de Compte
+- **Statut** : VALIDÉ (Spécifié & Prototypé CR-003)
+- **Décision** : Rôle `ACCOUNT_MANAGER` (10e rôle du modèle). Interdiction absolue d'usurpation d'identité (*impersonation*). Zéro mutation directe : toute action d'assistance exige l'ouverture préalable d'un dossier formel `AccountCase` motivé avec pièces justificatives. Double validation Maker-Checker obligatoire par un `ADMIN` pour toute action sensible.
+- **Référence** : [14e-gestionnaire-de-compte.md](file:///home/durel/pleingaz/docs/14e-gestionnaire-de-compte.md) ; [05-amendements-proprietaire.md §X-15](file:///home/durel/pleingaz/docs/00-sources/05-amendements-proprietaire.md).
+
+## ADR D16 : Visibilité Totale des Transactions et Mode Vente au Comptoir
+- **Statut** : VALIDÉ (Spécifié & Prototypé CR-003)
+- **Décision** : Visibilité centralisée de 100% des flux physiques et financiers dans le Control Center Admin. Module nativement intégré de vente directe au comptoir (`CounterSale`) : saisie du téléphone acheteur obligatoire, contrôle préalable du quota 5 bouteilles, émission d'un reçu fiscal dématérialisé et écritures obligatoires dans le Grand Livre.
+- **Référence** : [14f-transactions-et-comptoir.md](file:///home/durel/pleingaz/docs/14f-transactions-et-comptoir.md) ; [05-amendements-proprietaire.md §X-16](file:///home/durel/pleingaz/docs/00-sources/05-amendements-proprietaire.md).
+
+## ADR D17 : Livraison avec Double Confirmation Contradictoire et Tarif Fixe
+- **Statut** : VALIDÉ (Spécifié & Prototypé CR-003)
+- **Décision** : La clôture de la livraison exige obligatoirement une double validation contradictoire : le livreur clique "J'ai livré" ET le client clique "J'ai reçu" sur son interface. Tarif fixe de 1 000 FCFA pour la flotte PLEINGAZ dans la zone urbaine. PWA livreur tactile et réactive. Masquage automatique des coordonnées client après livraison.
+- **Référence** : [14d-livraison-livreurs.md](file:///home/durel/pleingaz/docs/14d-livraison-livreurs.md) ; [05-amendements-proprietaire.md §X-17](file:///home/durel/pleingaz/docs/00-sources/05-amendements-proprietaire.md).
+
+## ADR D18 : Rubrique "Infos" Ciblée avec Accusé de Lecture Maker-Checker
+- **Statut** : VALIDÉ (Spécifié & Prototypé CR-003)
+- **Décision** : Composant d'annonces ciblées par profil et zone géographique (`InfoNotice`). Accusé de lecture explicite "J'ai compris" obligatoire pour libérer l'affichage. Enregistrement horodaté dans `InfoNoticeRead`. Publication réseau soumise à validation Maker-Checker.
+- **Référence** : [14g-infos-annonces.md](file:///home/durel/pleingaz/docs/14g-infos-annonces.md) ; [05-amendements-proprietaire.md §X-18](file:///home/durel/pleingaz/docs/00-sources/05-amendements-proprietaire.md).
+
+
 

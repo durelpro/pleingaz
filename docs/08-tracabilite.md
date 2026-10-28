@@ -38,12 +38,20 @@ Ce document prouve que chaque exigence atomique des 5 fichiers sources (Vision, 
 - **D-04 : Documents du distributeur : trois seulement** : Validée. CNI, photo portrait, photo boutique uniquement. Suppression totale de registre de commerce, NIU ou documents administratifs. *Défaut appliqué, à confirmer : recto et verso obligatoires pour la CNI.*
 - **D-05 : Livreurs sur la plateforme** : Validée. Rôle LIVREUR (COURIER) à part entière, 9 rôles au total, interface mobile dédiée, rémunération et gestion sous contrôle admin. *Défaut appliqué, à confirmer : livreurs créés et validés par l'admin, cumul possible avec acheteur, pièces CNI + portrait.*
 - **D-06 : Finances contrôlées par l'administrateur** : Validée. Encaissement centralisé en ligne par PLEINGAZ, espèces = créances, grand livre immuable à double entrée, séparation des tâches maker-checker. *Défaut appliqué, à confirmer : exécution manuelle des reversements au MVP avec preuve, seuil de double signature.*
+- **D-11 : Accès authentifié obligatoire et espaces étanches par profil (CR-003)** : Validée. Aucune action métier sans compte, espaces `/acheteur`, `/distributeur`, `/livreur` et staff étanches avec retour HTTP 404 inter-espaces, token d'audience `aud` strict, accès staff masqué.
+- **D-12 : Inscription et connexion gratuites par WhatsApp (CR-003)** : Validée. Preuve entrante WhatsApp (Option A), 2 numéros E.164 obligatoires (`whatsappPhone` et `callPhone`), hash Argon2id, TTL 10 min, purge sous 24h, zéro mot de passe.
+- **D-13 : Refonte créative de l'expérience, charte graphique inchangée (CR-003)** : Validée. Respect strict des couleurs officielles (`#FF0000`/`#DC2626`, `#FFB000`, Montserrat), design system ultra mobile-first, accessibilité WCAG AA, prototypes légers < 50 Ko.
+- **D-14 : Espace acheteur très simple avec jauge et tableau de bord (CR-003)** : Validée. Dashboard minimaliste, jauge visuelle 5 bouteilles / 30 jours, réassort 1-clic, distributeur favori (C-01), bouton fuite d'urgence.
+- **D-15 : Rôle Gestionnaire de Compte encadré sous AccountCase (CR-003)** : Validée. 10ème rôle (`ACCOUNT_MANAGER`), zéro mutation directe, interdiction totale d'usurpation d'identité, dossier `AccountCase` obligatoire, validation Maker-Checker `ADMIN`.
+- **D-16 : Visibilité totale transactions Control Center & vente comptoir (CR-003)** : Validée. Visibilité intégrale admin, mode Vente au comptoir (`CounterSale`), contrôle quota pré-vente, écritures Grand Livre obligatoires.
+- **D-17 : Livraison avec double confirmation obligatoire (CR-003)** : Validée. Clôture livraison par validation livreur ET validation acheteur, tarif fixe 1 000 FCFA zone urbaine, PWA livreur tactile.
+- **D-18 : Rubrique Infos ciblée avec accusé de lecture (CR-003)** : Validée. Composant d'annonces ciblées par rôle/zone avec accusé explicite "J'ai compris", Maker-Checker publication.
 - **Mobile Money** : Sandbox en phase 6, le pilote démarre avec le paiement en présentiel confirmé par code.
 - **Exigences écartées** : La marketplace et la vente de produits tiers sont officiellement écartées du périmètre sur décision souveraine du propriétaire (CR-001 D-01).
 
 ---
 
-## BLOC X : Amendements du Propriétaire (CR-001) (`05-amendements-proprietaire.md`)
+## BLOC X : Amendements du Propriétaire (CR-001 & CR-003) (`05-amendements-proprietaire.md`)
 
 | ID | Exigence | Entité(s) | Écran(s) | Document(s) | Phase | Statut | Justification |
 |---|---|---|---|---|---|---|---|
@@ -82,7 +90,7 @@ Ce document prouve que chaque exigence atomique des 5 fichiers sources (Vision, 
 | X-05.05 | Barème versionné frais de livraison et rémunération livreur (FeeSchedule) | FeeSchedule | Admin Tarifs | 03c §2, 05a §1 | 5 | MVP | 06c M33 (CR-001 D-05) |
 | X-05.06 | Espèces collectées à la livraison, plafond Setting, suspension automatique | CashCollection | Espace Livreur | 03c §2, 05a §4 | 5 | MVP | 06c M33 (CR-001 D-05) |
 | X-05.07 | Modèle logistique : Courier, CourierZone, Assignment, FeeSchedule, CashCollection | Courier, Delivery | N/A | 03 §1, 03b §7 | 5 | MVP | 06c M33 (CR-001 D-05) |
-| X-05.08 | Rôle LIVREUR (COURIER) dans RBAC (9 rôles), permissions courier:* | Role, Permission | N/A | 02 §3.2, 02 §3.1 | 2 | MVP | 06c M33 (CR-001 D-05) |
+| X-05.08 | Rôle LIVREUR (COURIER) dans RBAC (9 rôles), permissions courier:* | Role, Permission | N/A | 02 §3.2, 02 §3.1 | 2 | MVP | 06c M33 (CR-05) |
 | X-05.09 | Écrans admin logistique : gestion livreurs, performance, espèces en circulation | Delivery, Courier | Admin Logistique | 02 §1.4, 05a §4 | 5 | MVP | 06c M33 (CR-001 D-05) |
 | X-05.10 | Tests logistique : livreur non approuvé, mission d'autrui, code client erroné | N/A | N/A | 06b §3, 03b §7 | 5 | MVP | 06c M33 (CR-001 D-05) |
 | X-06.01 | Barèmes versionnés (ProductPrice, FeeSchedule) avec principe maker-checker | ProductPrice, FeeSchedule | Admin Finances | 03c §1, 05a §1 | 6 | MVP | 06c M34 (CR-001 D-06) |
@@ -95,6 +103,15 @@ Ce document prouve que chaque exigence atomique des 5 fichiers sources (Vision, 
 | X-06.08 | Tableau de bord financier sur données réelles avec alertes sur écarts et créances | LedgerAccount | Admin Tableau de bord | 05a §5, 02 §1.4 | 6 | MVP | 06c M34 (CR-001 D-06) |
 | X-06.09 | Sécurité financière : TOTP obligatoire, sessions courtes, audit, contre-mesures menaces | AuditLog | Sécurité Admin | 06a §1, 04 §4 | 2 | MVP | 06c M34 (CR-001 D-06) |
 | X-06.10 | Cohérence transversale : machines à états Payout/Refund, immutabilité 03c, tests 06b | N/A | N/A | 03b §5, 06b §3 | 6 | MVP | 06c M34 (CR-001 D-06) |
+| X-11.01 | Zéro action sans compte et espaces étanches avec isolation 404 inter-espaces | User, Session | Tous Espaces | 14b §1, 02 §1 | 2 | MVP | 06c M37 (CR-003 D-11) |
+| X-12.01 | Auth WhatsApp entrante gratuite (Option A), 2 numéros E.164, Argon2id, TTL 10m | VerificationChallenge, User | Portails Auth | 14a §1, 04 §4 | 2 | MVP | 06c M36 (CR-003 D-12) |
+| X-13.01 | Charte officielle préservée (#FF0000, #FFB000), WCAG AA, prototypes < 50 Ko | N/A | Web & PWA | 14c §1, 04 §6 | 2 | MVP | 06c M43 (CR-003 D-13) |
+| X-14.01 | Dashboard acheteur, jauge 5 btl/30j, réassort 1-clic, distributeur favori C-01 | Order, QuotaLog | Espace Acheteur | 14c §1, 03 §1 | 5 | MVP | 06c M38 (CR-003 D-14) |
+| X-15.01 | Rôle ACCOUNT_MANAGER (10 rôles), dossier AccountCase obligatoire, Maker-Checker | AccountCase, Role | Espace Staff | 14e §1, 02 §3 | 2 | MVP | 06c M40 (CR-003 D-15) |
+| X-16.01 | Visibilité totale transactions admin, vente comptoir CounterSale, contrôle quota | CounterSale, LedgerEntry | Control Center | 14f §1, 05a §1 | 6 | MVP | 06c M41 (CR-003 D-16) |
+| X-17.01 | Double confirmation contradictoire livraison, tarif 1 000 F PLEINGAZ, PWA livreur | Delivery, Courier | Espace Livreur | 14d §1, 05a §1 | 5 | MVP | 06c M39 (CR-003 D-17) |
+| X-18.01 | Rubrique Infos ciblée par rôle/zone avec accusé 'J'ai compris', Maker-Checker | InfoNotice, InfoNoticeRead | Tous Espaces | 14g §1, 05b §1 | 2 | MVP | 06c M42 (CR-003 D-18) |
+
 
 ---
 

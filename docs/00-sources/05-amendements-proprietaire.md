@@ -79,3 +79,104 @@ Ce document constitue la source formelle de rang supérieur (Source X) intégran
 * **X-06.08** : Tableau de bord financier sur données réelles : encaissements, commissions, créances, reversements dus, remboursements, espèces en circulation, écarts de conciliation ; alertes automatiques.
 * **X-06.09** : Sécurité financière : TOTP obligatoire, sessions courtes, traçabilité `AuditLog`, alertes actions sensibles, break-glass `SUPER_ADMIN` audité ; analyse des menaces de fraude interne, collusion et détournement dans 06a.
 * **X-06.10** : Cohérence transversale de la conception : mise à jour des machines à états (`PayoutBatch`, `Payout`, `Refund`, `CashCollection`), immutabilité 03c, tests finance 06b, matrice RBAC 02.
+
+---
+
+## D-11 : Accès authentifié obligatoire et espaces étanches par profil (CR-003)
+
+* **X-11.01** : Zéro action métier sans compte authentifié : consultation des stocks, commande, mise à jour de boutique, mission de livraison et assistance exigent une session active valide.
+* **X-11.02** : Espaces de travail totalement étanches par profil avec URL dédiées : `/acheteur`, `/distributeur`, `/livreur`, `/staff/cases`, `/staff/control-center`.
+* **X-11.03** : Principe d'isolation 404 : toute tentative d'accès inter-espaces ou vers des données non autorisées retourne strictement un code HTTP 404 (ressource inexistante) sans révéler l'existence de l'entité.
+* **X-11.04** : Isolation cryptographique des tokens d'accès : claim d'audience `aud` strict par espace (`aud: "pleingaz:buyer"`, `aud: "pleingaz:distributor"`, etc.) avec rejet immédiat en cas d'incohérence.
+* **X-11.05** : Accès personnel staff masqué : aucune mention de l'administration sur la landing page publique, URL d'infrastructure masquée sous double facteur TOTP obligatoire.
+* **X-11.06** : Rôle unique actif par session utilisateur : le cumul de rôles sur un même numéro WhatsApp exige une sélection explicite de l'espace à la connexion.
+* **X-11.07** : Matrice de cloisonnement des profils et des données documentée dans la spécification `14b-espaces-et-isolation.md`.
+* **X-11.08** : Tests d'étanchéité automatisés : vérification de l'absence de fuite de données inter-profils et du statut 404 sur toutes les routes croisées.
+
+---
+
+## D-12 : Inscription et connexion gratuites par WhatsApp (CR-003)
+
+* **X-12.01** : Authentification et inscription 100% gratuites pour l'usager, sans mot de passe à mémoriser, basées sur l'application WhatsApp.
+* **X-12.02** : Architecture de preuve entrante (Option A) : l'usager clique sur un lien `wa.me` préparé et envoie un défi aléatoire chiffré au numéro officiel de PLEINGAZ pour prouver la détention de la ligne.
+* **X-12.03** : Saisie obligatoire de deux numéros de téléphone au format E.164 : un numéro WhatsApp (`whatsappPhone`) et un numéro d'appel vocal (`callPhone`) pour la joignabilité logistique.
+* **X-12.04** : Hashage des codes et défis temporaires sous Argon2id avant stockage en base avec durée de validité TTL de 10 minutes.
+* **X-12.05** : Purge automatique des défis expirés ou consommés sous 24 heures et journalisation de sécurité anti-rejeu.
+* **X-12.06** : Fournisseur SMS de secours optionnel en cas d'indisponibilité temporaire du réseau WhatsApp avec pavé de saisie 6 chiffres.
+* **X-12.07** : Analyse des menaces spécifiques (SIM swap, usurpation de numéro, rejeu de webhooks) et contre-mesures intégrées.
+* **X-12.08** : Environnement de test local : implémentation d'un canal simulé (`SimulatedChannel`) permettant d'exécuter les tests unitaires et E2E sans dépendance externe.
+
+---
+
+## D-13 : Refonte créative de l'expérience, charte graphique inchangée (CR-003)
+
+* **X-13.01** : Respect strict et intègre de l'identité visuelle historique extraite de `monpleingaz.com` : Rouge `#FF0000` / `#DC2626`, Jaune-orangé `#FFB000`, Blanc et Montserrat.
+* **X-13.02** : Refonte ergonomique complète axée sur la modernité, l'ultra mobile-first et la lisibilité sur smartphones en conditions de faible connectivité au Cameroun.
+* **X-13.03** : Conformité WCAG 2.1 Niveau AA calculée et vérifiée sur toutes les combinaisons de couleurs texte/surface.
+* **X-13.04** : Bibliothèque de composants atomiques légers et expressifs : boutons tactiles >= 48px, cartes de bouteilles, badges de statut unifiés.
+* **X-13.05** : Prototypes autonomes statiques HTML/CSS pur exécutables sans dépendances complexes, avec poids inférieur à 50 Ko par page.
+* **X-13.06** : Formulations d'au moins 12 propositions d'innovation R11 documentées au format PROBLÈME / SOLUTION / VALEUR / COMPLEXITÉ / PRIORITÉ.
+
+---
+
+## D-14 : Espace acheteur très simple avec jauge et tableau de bord (CR-003)
+
+* **X-14.01** : Tableau de bord acheteur minimaliste, épuré et compréhensible en un coup d'œil, centré sur la recharge rapide de gaz.
+* **X-14.02** : Jauge visuelle de quota obligatoire affichant la consommation sur une fenêtre glissante de 30 jours (seuil : 5 bouteilles maximum pour les particuliers).
+* **X-14.03** : Bouton de réassort express "1-Clic" mémorisant la bouteille habituelle, l'adresse par défaut et le distributeur favori (C-01).
+* **X-14.04** : Affichage transparent du distributeur habituel avec statut de stock en temps réel et horaires d'ouverture.
+* **X-14.05** : Tunnel de commande express en 4 étapes fluides (bouteille, repère de quartier, livraison, confirmation).
+* **X-14.06** : Blocage automatique et explicite de toute commande dépassant le plafond légal de 5 bouteilles avec indication de la date de déblocage.
+* **X-14.07** : Bouton d'alerte sécurité d'urgence "Odeur suspecte / Fuite de gaz" affichant les consignes vitales immédiates.
+* **X-14.08** : Reçus et factures numériques téléchargeables et expédiés par notification WhatsApp.
+
+---
+
+## D-15 : Rôle et profil Gestionnaire de Compte encadré (CR-003)
+
+* **X-15.01** : Création du rôle distinct `ACCOUNT_MANAGER` dédié à l'assistance opérationnelle de premier niveau pour les acheteurs et distributeurs.
+* **X-15.02** : Interdiction absolue et techniquement verrouillée de toute usurpation d'identité (*impersonation*) : le gestionnaire ne peut jamais agir sous le profil d'un usager.
+* **X-15.03** : Zéro mutation directe sur les données utilisateurs : toute intervention d'assistance exige la création préalable d'un dossier formel `AccountCase`.
+* **X-15.04** : Motif obligatoire et pièces justificatives consignés pour chaque dossier ouvert sous peine de rejet automatique par le backend.
+* **X-15.05** : Principe Maker-Checker strict : les actions sensibles (extension de quota, déblocage de solde, modification de coordonnées) requièrent l'approbation d'un `ADMIN`.
+* **X-15.06** : Inaccessibilité totale aux identifiants d'authentification : le gestionnaire n'a aucun accès aux mots de passe, tokens ou défis de connexion.
+* **X-15.07** : Journalisation intégrale et immuable de chaque consultation et action d'assistance dans le journal d'audit `AuditLog`.
+* **X-15.08** : Machine à états stricte pour les dossiers d'assistance : `OPEN` -> `PROPOSED` -> `ADMIN_APPROVED` -> `APPLIED` -> `CLOSED`.
+
+---
+
+## D-16 : Visibilité de TOUTES les transactions pour l'administrateur et vente comptoir (CR-003)
+
+* **X-16.01** : Visibilité exhaustive et centralisée dans le Control Center de l'administrateur de l'intégralité des flux financiers et physiques du réseau.
+* **X-16.02** : Intégration native du mode "Vente au comptoir" (`CounterSale`) : encaissement physique direct en boutique par le distributeur.
+* **X-16.03** : Numéro de téléphone acheteur obligatoire lors de la vente au comptoir pour rattachement au compte et vérification du quota légal.
+* **X-16.04** : Contrôle pré-vente du quota 5 bouteilles au comptoir : rejet immédiat avec code d'erreur `QUOTA_EXCEEDED` en cas de dépassement.
+* **X-16.05** : Génération instantanée d'un reçu fiscal dématérialisé pour les ventes directes au comptoir avec envoi automatique sur WhatsApp.
+* **X-16.06** : Enregistrement obligatoire et immuable de chaque vente au comptoir dans le Grand Livre comptable (`LedgerEntry`).
+* **X-16.07** : Rapprochement journalier automatique entre le stock physique déclaré et les flux de vente (comptoir vs livraison).
+* **X-16.08** : Clôture de caisse quotidienne pour les distributeurs et consolidation dans les rapports de gestion administrateur.
+
+---
+
+## D-17 : Livraison avec double confirmation obligatoire (CR-003)
+
+* **X-17.01** : Clôture de mission de livraison par double confirmation contradictoire obligatoire : validation par le livreur ET validation par l'acheteur.
+* **X-17.02** : Horodatage certifié des deux actions : enregistrement de `livreurConfirmedAt` puis de `clientConfirmedAt`.
+* **X-17.03** : Déclenchement de la facturation et du crédit de rémunération livreur (1 000 FCFA) uniquement après double validation effective.
+* **X-17.04** : Procédure de clôture unilatérale de secours en cas d'absence de réponse de l'acheteur : délai de carence minimum de 30 minutes, géolocalisation livreur conforme à l'adresse et validation par un administrateur.
+* **X-17.05** : Tarif standard de livraison fixe de 1 000 FCFA pour la flotte PLEINGAZ dans la zone urbaine couverte.
+* **X-17.06** : Liberté tarifaire bornée pour les livreurs tiers et courses hors zone sous plafond fixé dans `Setting`.
+* **X-17.07** : PWA livreur légère, tactile et fluide, utilisable en conditions extérieures sur deux-roues motorisé.
+* **X-17.08** : Masquage automatique et instantané des données de contact client (`callPhone`) sur le terminal livreur dès validation de la course.
+
+---
+
+## D-18 : Rubrique "Infos" ciblée par profil avec accusé de lecture (CR-003)
+
+* **X-18.01** : Composant "Infos / Annonces" intégré sur chaque espace utilisateur (`/acheteur`, `/distributeur`, `/livreur`, staff).
+* **X-18.02** : Ciblage fin des annonces par rôle utilisateur, zone géographique (ville/quartier) et niveau de criticité (`INFO`, `WARNING`, `CRITICAL`).
+* **X-18.03** : Bouton d'accusé de lecture explicite "J'ai compris" obligatoire pour les annonces importantes afin de libérer l'espace visuel.
+* **X-18.04** : Enregistrement de chaque accusé de lecture dans l'entité `InfoNoticeRead` avec horodatage et identifiant usager.
+* **X-18.05** : Principe Maker-Checker pour la publication d'annonces à l'échelle du réseau (création par un gestionnaire, validation par un administrateur).
+* **X-18.06** : Tableau de bord de suivi du taux de lecture et de prise de connaissance des consignes opérationnelles et de sécurité.
+

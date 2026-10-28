@@ -71,3 +71,14 @@ Ces questions sont fondamentales et bloquent les choix d'architecture des Phases
 33. **Cookies et Traqueurs** : PLEINGAZ compte-t-elle utiliser des outils externes d'audience (Google Analytics, Meta Pixel) ? Si oui, le bandeau de consentement devra être complexe.
 34. **Gouvernance des données** : Nom et fonction du futur "Responsable des Données Personnelles" chez PLEINGAZ en charge du registre des traitements.
 35. **Objectifs RPO / RTO** : Validation des budgets nécessaires pour garantir une perte de données maximale de 1 heure (RPO) et un temps de redémarrage de 4 heures (RTO).
+
+## 11. Décisions Souveraines Résolues par CR-003 (D-11 à D-18)
+36. **Accès et Traçabilité (D-11)** : **[RÉSOLU PAR CR-003 / ADR D11]** Zéro action sans compte authentifié ; espaces strictement étanches avec retour HTTP 404 inter-espaces ; staff masqué.
+37. **Authentification (D-12)** : **[RÉSOLU PAR CR-003 / ADR D12]** Inscription et connexion 100% gratuites par WhatsApp ; preuve entrante (Option A) ; 2 numéros obligatoires (`whatsappPhone` et `callPhone`).
+38. **Expérience et Charte (D-13)** : **[RÉSOLU PAR CR-003 / ADR D13]** Charte historique inchangée (Rouge `#FF0000`, Jaune `#FFB000`, Montserrat) ; design system léger et accessible WCAG AA.
+39. **Espace Acheteur & Quota (D-14)** : **[RÉSOLU PAR CR-003 / ADR D14]** Dashboard épuré, jauge visuelle 5 bouteilles / 30 jours, réassort express 1-clic, distributeur favori (C-01).
+40. **Gestionnaire de Compte (D-15)** : **[RÉSOLU PAR CR-003 / ADR D15]** 10e rôle RBAC ; zéro mutation directe ; impersonation interdite ; dossiers `AccountCase` obligatoires avec Maker-Checker `ADMIN`.
+41. **Visibilité & Comptoir (D-16)** : **[RÉSOLU PAR CR-003 / ADR D16]** Visibilité totale des transactions pour l'administrateur ; module Vente au comptoir (`CounterSale`) avec contrôle quota préalable.
+42. **Livraison (D-17)** : **[RÉSOLU PAR CR-003 / ADR D17]** Clôture par double confirmation contradictoire obligatoire ; tarif fixe 1 000 FCFA pour la flotte PLEINGAZ en zone urbaine.
+43. **Rubrique Infos (D-18)** : **[RÉSOLU PAR CR-003 / ADR D18]** Annonces ciblées par profil et zone avec accusé de lecture "J'ai compris" obligatoire et Maker-Checker publication.
+
