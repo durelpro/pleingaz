@@ -311,7 +311,28 @@
       }
     }
 
-    function finalizeOrder() {
+    const API_URL = 'http://localhost:3001/api/v1/cr003';
+    const BUYER_PHONE = '+237699123456';
+
+    async function checkQuotaBeforeOrder() {
+      try {
+        const res = await fetch(`${API_URL}/buyer/quota?phone=${encodeURIComponent(BUYER_PHONE)}`);
+        if (res.ok) {
+          const quota = await res.json();
+          if (quota.remaining <= 0) {
+            alert(`🚨 COMMANDE IMPOSSIBLE (Souveraineté Quota D-14) :\nVotre quota mensuel de 5 bouteilles est atteint (${quota.consumed}/5 consommées sur les 30 derniers jours).`);
+            return false;
+          }
+        }
+      } catch (e) {
+        console.warn('API locale non joignable pour vérif quota', e);
+      }
+      return true;
+    }
+
+    async function finalizeOrder() {
+      const allowed = await checkQuotaBeforeOrder();
+      if (!allowed) return;
       alert('🎉 Félicitations ! Votre commande a été transmise au distributeur le plus proche.\nUn livreur a été pré-assigné.\nRedirection vers votre tableau de bord de suivi...');
       window.location.href = 'home-acheteur.html';
     }

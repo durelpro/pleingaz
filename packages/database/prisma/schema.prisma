@@ -6,7 +6,7 @@ generator client {
 datasource db {
   provider   = "postgresql"
   url        = env("DATABASE_URL")
-  extensions = [postgis, pg_trgm, unaccent]
+  extensions = [pg_trgm, unaccent]
 }
 
 // ==========================================
@@ -16,6 +16,8 @@ datasource db {
 model User {
   id              String           @id @default(uuid())
   phone           String           @unique
+  whatsappPhone   String?          @unique
+  callPhone       String?
   email           String?          @unique
   passwordHash    String?          // Argon2id hash
   isPhoneVerified Boolean          @default(false)
@@ -31,6 +33,13 @@ model User {
   sessions        Session[]
   auditLogs       AuditLog[]       @relation("UserAuditLogs")
   demandAlerts    DemandAlert[]
+
+  // CR-003 : Nouveaux flux authentifiés et assistés
+  verificationChallenges VerificationChallenge[]
+  managedCases           AccountCase[]           @relation("ManagedAccountCases")
+  subjectCases           AccountCase[]           @relation("SubjectAccountCases")
+  counterSalesAsCustomer CounterSale[]           @relation("CounterSaleCustomer")
+  infoNoticeReads        InfoNoticeRead[]
 
   // Commandes & Livraisons
   customerOrders  Order[]          @relation("CustomerOrders")
@@ -256,6 +265,7 @@ model Store {
   orders          Order[]
   stockReservations StockReservation[]
   reports         Report[]
+  counterSales    CounterSale[]
 
   createdAt       DateTime               @default(now())
   updatedAt       DateTime               @updatedAt
@@ -978,3 +988,108 @@ model LoyaltyTransaction {
   description String
   createdAt   DateTime @default(now())
 }
+
+// ==========================================
+// 10. MODÈLES CR-003 (D-11 à D-18)
+// ==========================================
+
+model VerificationChallenge {
+  id              String           @id @default(uuid())
+  phone           String           // E.164
+  codeHash        String           // Argon2id
+  purpose         String           @default("LOGIN") // LOGIN, REGISTER, PHONE_CHANGE
+  channel         String           @default("WHATSAPP") // WHATSAPP, SMS_BACKUP
+  ipAddress       String?
+  attempts        Int              @default(0)
+  expiresAt       DateTime
+  consumedAt      DateTime?
+  createdAt       DateTime         @default(now())
+
+  userId          String?
+  user            User?            @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([phone, expiresAt])
+}
+
+model AccountCase {
+  id              String           @id @default(uuid())
+  caseNumber      String           @unique
+  status          String           @default("OPEN") // OPEN, PROPOSED, ADMIN_APPROVED, APPLIED, REJECTED, CLOSED
+  reason          String           // Motif formel obligatoire D-15
+  proposedAction  String           // JSON ou description structurée
+  evidenceUrls    String[]         // Pièces justificatives
+  
+  agentId         String           // Gestionnaire de compte (ACCOUNT_MANAGER)
+  agent           User             @relation("ManagedAccountCases", fields: [agentId], references: [id])
+  
+  targetUserId    String           // Usager concerné
+  targetUser      User             @relation("SubjectAccountCases", fields: [targetUserId], references: [id])
+  
+  approvedById    String?          // Rôle ADMIN
+  adminNotes      String?
+  appliedAt       DateTime?
+  closedAt        DateTime?
+  createdAt       DateTime         @default(now())
+  updatedAt       DateTime         @updatedAt
+
+  @@index([status, agentId])
+  @@index([targetUserId])
+}
+
+model CounterSale {
+  id              String           @id @default(uuid())
+  receiptNumber   String           @unique
+  storeId         String
+  store           Store            @relation(fields: [storeId], references: [id])
+  
+  sellerId        String           // DISTRIBUTOR_MANAGER ou STAFF
+  
+  customerPhone   String           // E.164
+  customerUserId  String?
+  customerUser    User?            @relation("CounterSaleCustomer", fields: [customerUserId], references: [id])
+  
+  bottleType      String           // ex: Tradex 12.5 kg
+  quantity        Int              @default(1)
+  amountTotal     Int              // FCFA
+  paymentMethod   String           @default("CASH") // CASH, MOMO
+  
+  quotaValidated  Boolean          @default(true)
+  ledgerEntryId   String?
+  
+  createdAt       DateTime         @default(now())
+
+  @@index([storeId, createdAt])
+  @@index([customerPhone])
+}
+
+model InfoNotice {
+  id              String           @id @default(uuid())
+  title           String
+  content         String
+  category        String           @default("INFO") // INFO, WARNING, CRITICAL
+  targetRole      String?          // CUSTOMER, DISTRIBUTOR, COURIER, ALL
+  targetCity      String?          // Douala, Yaoundé, ALL
+  isActive        Boolean          @default(true)
+  requiresAck     Boolean          @default(true)
+  startsAt        DateTime         @default(now())
+  expiresAt       DateTime?
+  
+  createdById     String
+  approvedById    String?
+  createdAt       DateTime         @default(now())
+  updatedAt       DateTime         @updatedAt
+
+  reads           InfoNoticeRead[]
+}
+
+model InfoNoticeRead {
+  id              String           @id @default(uuid())
+  noticeId        String
+  notice          InfoNotice       @relation(fields: [noticeId], references: [id], onDelete: Cascade)
+  userId          String
+  user            User             @relation(fields: [userId], references: [id], onDelete: Cascade)
+  readAt          DateTime         @default(now())
+
+  @@unique([noticeId, userId])
+}
+

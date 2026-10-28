@@ -25,12 +25,12 @@
     <div style="padding:16px; flex:1; overflow-y:auto;">
 
       <!-- Bannière InfoNotice Ciblée (D-18) -->
-      <div class="info-notice" id="notice-1">
+      <div class="info-notice" id="notice-1" style="display:none;">
         <div>
-          <strong style="display:block; font-size:0.85rem; color:var(--color-status-info);">ℹ️ Approvisionnement Douala Akwa</strong>
-          <span style="font-size:0.78rem; color:var(--color-text-muted);">Tous les dépôts sont réapprovisionnés ce matin en bouteilles 12.5 kg.</span>
+          <strong id="notice-title" style="display:block; font-size:0.85rem; color:var(--color-status-info);">ℹ️ Info Officielle PLEINGAZ</strong>
+          <span id="notice-content" style="font-size:0.78rem; color:var(--color-text-muted);">Chargement...</span>
         </div>
-        <button class="info-notice-btn" onclick="document.getElementById('notice-1').style.display='none'">
+        <button class="info-notice-btn" id="notice-btn" onclick="ackNotice()">
           J'ai compris
         </button>
       </div>
@@ -39,7 +39,7 @@
       <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:16px;">
         <div>
           <h1 style="font-size:1.25rem; font-weight:800;">Bonjour Marie 👋</h1>
-          <span style="font-size:0.8rem; color:var(--color-text-muted);">Douala • Quartier Akwa Nord</span>
+          <span style="font-size:0.8rem; color:var(--color-text-muted);">Douala • Akwa • <span style="color:var(--color-status-success); font-weight:600;">● BDD Connectée</span></span>
         </div>
         <button class="btn btn-danger" style="min-height:36px; padding:6px 10px; font-size:0.75rem;" onclick="alert('🚨 PROTOCOLE FUITE : Aérez immédiatement, fermez le robinet détendeur, n’allumez aucun feu ni interrupteur. Ligne d’urgence appelée : +237 600 000 000')">
           ⚠️ Fuite de gaz ?
@@ -50,18 +50,14 @@
       <div class="quota-box">
         <div class="quota-header">
           <span class="quota-title">Mon Quota Mensuel (D-14)</span>
-          <span class="quota-counter">2 / 5 <span style="font-size:0.8rem; font-weight:500; color:var(--color-text-muted);">bouteilles</span></span>
+          <span class="quota-counter" id="quota-counter-text">Chargement...</span>
         </div>
-        <div class="quota-track">
-          <div class="quota-step filled" title="Bouteille 1 consommée"></div>
-          <div class="quota-step filled" title="Bouteille 2 consommée"></div>
-          <div class="quota-step" title="Bouteille 3 disponible"></div>
-          <div class="quota-step" title="Bouteille 4 disponible"></div>
-          <div class="quota-step" title="Bouteille 5 disponible"></div>
+        <div class="quota-track" id="quota-track-bars">
+          <!-- Rempli dynamiquement depuis PostgreSQL -->
         </div>
         <div class="quota-legend">
-          <span>🟢 3 recharges disponibles ce mois-ci</span>
-          <span>Plafond : 5 max</span>
+          <span id="quota-legend-status">🟢 Synchronisation PostgreSQL...</span>
+          <span>Plafond : 5 max / 30j</span>
         </div>
       </div>
 
@@ -153,6 +149,76 @@
   </div>
 
   <script>
+    const API_URL = 'http://localhost:3001/api/v1/cr003';
+    const BUYER_PHONE = '+237699123456';
+    let currentNoticeId = null;
+
+    async function loadBuyerData() {
+      try {
+        // 1. Quota en direct
+        const res = await fetch(`${API_URL}/buyer/quota?phone=${encodeURIComponent(BUYER_PHONE)}`);
+        if (res.ok) {
+          const quota = await res.json();
+          renderQuota(quota);
+        }
+      } catch (e) {
+        console.warn('API locale non disponible, mode fallback.', e);
+        renderQuota({ consumed: 2, limit: 5, remaining: 3 });
+      }
+
+      try {
+        // 2. Annonces ciblées en direct
+        const res = await fetch(`${API_URL}/notices`);
+        if (res.ok) {
+          const notices = await res.json();
+          if (notices.length > 0) {
+            const notice = notices[0];
+            currentNoticeId = notice.id;
+            document.getElementById('notice-title').innerText = 'ℹ️ ' + notice.title;
+            document.getElementById('notice-content').innerText = notice.content;
+            document.getElementById('notice-1').style.display = 'flex';
+          }
+        }
+      } catch (e) {
+        console.warn('Erreur chargement notice', e);
+      }
+    }
+
+    function renderQuota(quota) {
+      document.getElementById('quota-counter-text').innerHTML = `${quota.consumed} / ${quota.limit} <span style="font-size:0.8rem; font-weight:500; color:var(--color-text-muted);">bouteilles</span>`;
+      
+      const track = document.getElementById('quota-track-bars');
+      track.innerHTML = '';
+      for (let i = 1; i <= quota.limit; i++) {
+        const step = document.createElement('div');
+        step.className = 'quota-step' + (i <= quota.consumed ? ' filled' : '');
+        step.title = i <= quota.consumed ? `Bouteille ${i} consommée` : `Bouteille ${i} disponible`;
+        track.appendChild(step);
+      }
+
+      const legend = document.getElementById('quota-legend-status');
+      if (quota.remaining > 0) {
+        legend.innerText = `🟢 ${quota.remaining} recharge${quota.remaining > 1 ? 's' : ''} restante${quota.remaining > 1 ? 's' : ''} (30j glissants)`;
+      } else {
+        legend.innerHTML = `<strong style="color:var(--color-primary);">🔴 Quota atteint (0 disponible)</strong>`;
+      }
+    }
+
+    async function ackNotice() {
+      if (currentNoticeId) {
+        try {
+          await fetch(`${API_URL}/notices/ack`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ noticeId: currentNoticeId, phone: BUYER_PHONE }),
+          });
+        } catch (e) {
+          console.warn('Notice ack error', e);
+        }
+      }
+      document.getElementById('notice-1').style.display = 'none';
+    }
+
     function confirmReceived() {
       const block = document.getElementById('confirmation-block');
       block.innerHTML = `
@@ -160,10 +226,13 @@
           🎉 Livraison confirmée avec succès !
         </div>
         <p style="font-size:0.78rem; color:var(--color-text-muted);">
-          Reçu officiel expédié sur votre WhatsApp. Votre jauge de quota a été mise à jour (3/5).
+          Reçu officiel expédié sur votre WhatsApp. Votre jauge de quota a été mise à jour dynamiquement.
         </p>
       `;
     }
+
+    // Chargement automatique au démarrage
+    window.addEventListener('DOMContentLoaded', loadBuyerData);
   </script>
 
 </body>
