@@ -25,21 +25,26 @@
 | M20 | Fraude interne et collusion staff/distributeur | Finance + Distributeur | Trésorerie / Reversements | Entente entre deux opérateurs pour approuver des reversements indus ou effacer des créances d'espèces. | Double approbation obligatoire pour tout lot dépassant le seuil `Setting`, rapprochement automatique avec relevés opérateurs bruts, clôture journalière et pistes d'audit immuables. | T-M20 | Critique | Faible | MVP |
 | M21 | Manipulation frauduleuse des barèmes de prix et commissions | Rôle privilégié corrompu | Catalogue / Revenus | Altérer rétroactivement ou discrètement un barème `ProductPrice` ou `FeeSchedule`. | Barèmes strictement versionnés et datés (jamais rétroactifs), Maker-Checker obligatoire, recalcul serveur systématique à la commande, journalisation `PriceHistory`. | T-M21 | Critique | Faible | MVP |
 | M22 | Abus d'accès d'urgence "Break-Glass" SUPER_ADMIN | Super-Admin malveillant | Intégrité plateforme | Utilisation de privilèges de secours pour contourner les contrôles ou modifier des configurations critiques. | Journalisation synchrone obligatoire et ineffaçable dans `AuditLog`, notification d'alerte temps réel immédiate aux autres administrateurs, justification textuelle obligatoire. | T-M22 | Haute | Faible | MVP |
+| M23 | Ingénierie sociale du défi WhatsApp | Escroc externe | Session / Compte | Convaincre la victime d'envoyer un code WhatsApp initié par l'attaquant sur son écran. | Code préfixé par action explicite, message prérempli d'avertissement clair ("Ne partagez jamais ce code..."), liaison stricte session-IP-appareil. | T-M23 | Haute | Moyenne | MVP |
+| M24 | Spoofing de webhook WhatsApp Meta | Attaquant réseau | Contrôle de compte | Forger de fausses requêtes webhook entrantes pour valider des numéros arbitraires. | Vérification cryptographique obligatoire de la signature HMAC SHA-256 (`X-Hub-Signature-256`), rejet 401 et audit synchrone. | T-M24 | Critique | Faible | MVP |
+| M25 | Reconnaissance inter-espaces et cartographie d'API | Attaquant curieux | Infrastructure / Rôles | Sonder les routes administrateur ou distributeur depuis un compte acheteur. | Portails totalement étanches, réponse 404 Not Found systématique (jamais 403), messages d'erreur de connexion strictement invariants. | T-M25 | Haute | Moyenne | MVP |
 
 
-## 2. Authentification et Sessions
-- **Politique de mots de passe** : Hachage fort via **Argon2id** (paramétrage OWASP). Cette protection s'applique au **personnel de PLEINGAZ** et aux **distributeurs** qui choisissent de définir un mot de passe classique. Les mots de passe exigent 12 caractères, avec majuscules, chiffres et symboles.
-- **OTP (Clients)** : Les clients se connectent via OTP (SMS/WhatsApp) uniquement.
-- **Ré-authentification pour actions sensibles** : Une ré-authentification (mot de passe ou nouvel OTP vocal/email) est exigée pour le changement de numéro de téléphone, la modification des coordonnées de reversement financier, ou la suppression de compte.
+## 2. Authentification, Sessions et Isolation (CR-003 D-11, D-12)
+- **Politique de mots de passe** : Hachage fort via **Argon2id** (64 Mo mémoire, 3 itérations). S'applique à **l'ensemble des comptes** (Acheteurs, Distributeurs, Livreurs et Staff).
+- **Preuve Entrante WhatsApp (`VerificationChannel` — D-12)** : Remplacement de l'OTP SMS payant par l'envoi d'un message prérempli par l'utilisateur vers le numéro officiel PLEINGAZ. Zéro coût sortant pour PLEINGAZ. Validation cryptographique webhook HMAC.
+- **Règle des Deux Numéros Obligatoires (D-12.3)** : Numéro WhatsApp principal (identifiant vérifié) + contact secondaire de secours distinct (`backupPhone`). Règle anti-contournement empêchant l'usage d'un numéro secondaire comme numéro principal tiers.
+- **Ré-authentification pour actions sensibles** : Exigée pour tout changement de mot de passe, changement de coordonnées de reversement ou modification de profil.
+- **Changement de numéro WhatsApp** : Défi obligatoire sur le NOUVEAU numéro + délai de sécurité (cooldown) de 48 heures bloquant les opérations sensibles + alerte administrateur.
+- **Numéro Perdu (Gestionnaire de Compte `ACCOUNT_MANAGER` — D-15, C-07)** : Traitement sous dossier `AccountCase` avec contre-appel sur le numéro secondaire. **Interdiction formelle d'usurpation d'identité ("voir comme") et de modification directe** : validation obligatoire par un `ADMIN` distinct.
 - **Verrouillage Progressif** : Blocage d'un compte (15m, 1h, puis 24h) après 5 tentatives échouées d'authentification.
-- **MFA / TOTP** : Authentification à deux facteurs via application TOTP (Authenticator) **obligatoire** pour tout le personnel (Admin, Support, Finance) et **strictement exigée pour toute action d'approbation financière Maker-Checker** (tarifs `ProductPrice`, barèmes `DeliveryFeeSchedule`, lots `PayoutBatch`).
-- **Création des comptes Staff** : Création sur **invitation uniquement** par un super-administrateur. Aucune inscription ouverte.
-- **Sessions** :
-  - Tokens d'accès à très courte durée (ex: JWT 15 minutes). Sessions limitées à 15 minutes d'inactivité pour les rôles financiers et administrateurs.
-  - **Refresh Token Rotatif** : Un nouveau refresh token est émis à chaque rafraîchissement.
-  - **Détection de réutilisation** : Si un vieux refresh token est présenté, l'ensemble de la chaîne de tokens (la session entière) est immédiatement invalidé.
-  - Endpoint de révocation globale permettant à un utilisateur ou admin de déconnecter un compte de tous les appareils.
-- **Récupération de compte** : Délais de grâce, notification croisée sur l'ancien et le nouveau numéro de téléphone, intervention du support pour les cas complexes.
+- **MFA / TOTP pour le Personnel Staff** : Authentification à deux facteurs TOTP (Authenticator) **obligatoire** pour tout le personnel staff. URL du portail staff non référencée, absente des sitemaps et de robots.txt.
+- **Sessions & Tokens Étanches (D-11.5)** :
+  - Tokens JWT liés à une **audience portail exclusive** (`aud: 'customer' | 'distributor' | 'courier' | 'staff'`).
+  - L'API répond **404 Not Found** en cas d'appel hors audience.
+  - Refresh Token rotatif et détection de réutilisation avec révocation globale immédiate.
+  - Écran de gestion des sessions actives et déconnexion à distance pour l'utilisateur.
+
 
 ## 3. Secrets, BDD, Uploads et Sauvegardes
 - **Secrets** : Jamais de clés (API MTN, S3, JWT) dans le dépôt de code. Rotation trimestrielle imposée. Un scanner de fuite (GitLeaks) tourne en CI/CD.

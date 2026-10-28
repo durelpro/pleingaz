@@ -1,54 +1,56 @@
 # Cadrage UX et Modèle RBAC
 
-## 1. Sitemap et Accès
+## 1. Sitemap et Accès (CR-003 D-11)
 
-L'application repose sur un modèle d'authentification centralisé : un seul compte (numéro de téléphone) permettant d'accéder à différents profils via un sélecteur d'espace.
+L'application repose sur un modèle d'accès authentifié obligatoire et d'espaces totalement cloisonnés :
+- **Un numéro WhatsApp = Un seul type d'espace** (défaut opérationnel). Tout sélecteur de profil ou switch inter-espaces est formellement aboli.
+- **Principe "Aucune Trace" (D-11.5, C-06)** : L'espace d'un profil ne contient aucun lien, menu ou sélecteur vers un autre profil. L'API renvoie 404 sur les routes d'un autre espace.
+- **Accès du personnel (Staff)** : URL d'accès non référencée (variable d'environnement), absente des moteurs, du sitemap et de robots.txt, protégée par Mot de passe fort + TOTP obligatoire.
 
 ### 1.1 Portail Public (Visiteurs non connectés)
-Ces pages sont accessibles librement. L'inscription (via OTP SMS/WhatsApp) n'est exigée qu'au moment de valider une action engageante (réserver, commander).
-- **Home** : Présentation du service.
-- **J'ai besoin de gaz** : Recherche au clic exclusivement (mention de transparence) ou sélection libre du lieu (Ville -> Quartier, repère textuel, carte interactive avec bascule sur liste texte de secours 20 Ko — CR-001 D-02).
-- **Devenir distributeur** : Formulaire d'inscription avec KYC simplifié à 3 pièces exclusives (CNI, portrait, boutique extérieure — CR-001 D-04).
-- **Products & Services** : Vitrine catalogue exclusif PLEINGAZ (zéro marque tierce, zéro marketplace — CR-001 D-01).
-- **About / FAQ / Blog / Contact** : Contenus informatifs existants.
-- **Sécurité d'utilisation du gaz** : Bonnes pratiques et urgences (Contenu à fournir par PLEINGAZ).
-- **Mentions légales, CGV, Confidentialité** : Pages légales obligatoires (Textes À CONFIRMER).
+L'accès libre est strictement circonscrit. Le réglage système `public_discovery_enabled = false` (réversible) protège l'annuaire, la carte, le catalogue avec prix, l'assistant IA et les commandes derrière une session authentifiée :
+- **Home (`/`)** : Présentation du service, comment ça marche en 3 étapes par profil, réassurance, FAQ, contacts. Accès direct vers les portails de connexion et inscription : Acheteur (`/acheteur`), Distributeur (`/distributeur`), Livreur (`/livreur`).
+- **Pages Légales & Sécurité** : CGV, Mentions Légales, Politique de Confidentialité, Sécurité d'utilisation du gaz.
+- **Portails de connexion / inscription / récupération** : Formulaires d'entrée dédiés par type de profil (`/acheteur/login`, `/distributeur/login`, `/livreur/login`).
 
-### 1.2 Espace Client (Authentification par OTP)
-- **Tableau de bord** : Résumé des commandes en cours, affichage du **Code de Confirmation confidentiel** (4-6 chiffres) à fournir au livreur lors de la remise (CR-001 D-05).
-- **Mes Commandes** : Historique et factures immuables émises par le système.
-- **Mon Profil & Adresses** : Gestion des informations personnelles et repères textuels de livraison locale ("en face de...", "derrière...").
+### 1.2 Espace Acheteur (`/acheteur` — D-14)
+*Accès authentifié par Numéro WhatsApp + Mot de passe (preuve entrante D-12).*
+- **Tableau de bord** : Jauge de quota (X sur 5 bouteilles / 30 jours), bouton "J'ai besoin de gaz", mes distributeurs habituels (avec historique C-01), recherche au clic (CR-001 D-02), commande rapide, suivi animé, panneau Infos (D-18).
+- **Mes Commandes** : Suivi des commandes actives, double confirmation de réception ("J'ai reçu ma commande"), historique et factures PDF immuables.
+- **Mon Profil & Sécurité** : Coordonnées, repère textuel, sessions actives et déconnexion à distance.
 
-### 1.3 Espace Distributeur (Authentification par OTP)
-- **Ma Boutique** : Horaires, localisation, statut d'ouverture.
-- **Mes Stocks** : Déclaration qualitative de l'état des stocks (`BON`/`MOYEN`/`FAIBLE`/`RUPTURE`) exclusivement sur les références du catalogue PLEINGAZ distribuées (CR-001 D-01).
-- **Gestion des Commandes** : Réception, préparation et remise/livraison des commandes locales.
-- **Mon Équipe** : Gestion des sous-comptes pour le personnel de la boutique.
-- **Mes Finances** : Relevé personnel en lecture seule (ventes, commissions prélevées, reversements reçus — CR-001 D-03, D-06).
+### 1.3 Espace Distributeur (`/distributeur`)
+*Accès authentifié par Numéro WhatsApp + Mot de passe (dossier validé).*
+- **Tableau de bord & Stock** : Mise à jour qualitative du stock en un geste (`BON`/`MOYEN`/`FAIBLE`/`RUPTURE` — CR-001 D-01).
+- **Commandes à traiter** : Préparation, remise client, expédition via livreur.
+- **Mode Vente au Comptoir (D-16)** : Enregistrement des ventes physiques en boutique pour décompte dans la limite d'achat et traçabilité admin.
+- **Approvisionnements** : Commandes de réassort passées directement à PLEINGAZ.
+- **Mon Équipe** : Gestion des comptes nominatifs individuels des employés de la boutique (aucun compte partagé).
+- **Mes Finances** : Relevé personnel en lecture seule (ventes, reversements reçus).
 
-### 1.4 Control Center Admin (Staff PLEINGAZ)
-*L'accès au staff exige obligatoirement Mot de passe + TOTP (Authenticator). L'OTP simple est interdit pour le staff.*
-- **Vue Globale & Pilotage** : 15 rapports exhaustifs sur données 100% réelles (zéro fictif, états vides explicites — CR-001 D-03).
-- **Gestion Distributeurs** : Validation KYC à 3 pièces exclusives (CNI, portrait, boutique — CR-001 D-04), suspension.
-- **Supervision Logistique & Livreurs** : Attribution manuelle assistée, suivi des livraisons, suivi des espèces en circulation (CR-001 D-05).
-- **Finances & Trésorerie** : Grand livre à double entrée immuable, barèmes versionnés, lots de reversement Maker-Checker (CR-001 D-06).
-- **Support & Commandes** : Saisie de commandes assistées, annulations d'urgence, remboursements LATE_SUCCESS.
-- **Gestion des Rôles** : Affectation des permissions granulaires sur 9 rôles.
+### 1.4 Espace Livreur (`/livreur` — D-17)
+*Interface mobile dédiée PWA ultra-légère (rôle COURIER).*
+- **Missions** : Courses proposées (acceptation/refus sous timeout), mission en cours (adresse, repère textuel, contact masqué WhatsApp/appel).
+- **Actions Logistiques** : Prise en charge (`PICKED_UP`), en route (`IN_TRANSIT`), double confirmation ("J'ai livré" D-17), échec motivé (`FAILED`).
+- **Mes Gains & Caisse** : Suivi des courses effectuées, calcul des gains et solde des espèces collectées détenues (dette envers PLEINGAZ, plafond `Setting`).
+- **Mes Tarifs** : Configuration des tarifs par zone/distance dans les bornes fixées par l'admin (pour livreurs non-PLEINGAZ).
 
-### 1.5 Espace Livreur (Authentification par OTP - Rôle COURIER)
-*(CR-001 D-05 — Interface mobile légère et mode hors ligne partiel)*
-- **Missions** : Liste des courses assignées ("À faire").
-- **Détail Mission** : Adresse avec repère, point carte, références PLEINGAZ, échange consigne, contact masqué / appel / WhatsApp.
-- **Actions Logistiques** : Accepter / Refuser, `PICKED_UP`, `IN_TRANSIT`, `DELIVERED` (saisie code client obligatoire), `FAILED` (motif obligatoire).
-- **Mes Gains & Caisse** : Suivi des rémunérations et total des espèces collectées détenues.
+### 1.5 Portail Staff & Control Center (`/<STAFF_PORTAL_ROUTE>`)
+*Accès sécurisé réservé au personnel habilité PLEINGAZ (Mot de passe + TOTP obligatoire).*
+- **Supervision Générale** : 15 rapports d'activité sur données 100% réelles (CR-001 D-03).
+- **Réseau Distributeurs (`DISTRIBUTOR_MANAGER`)** : Instruction des dossiers KYC 3 pièces (D-04), agréments, alertes d'écarts de stock.
+- **Logistique Flotte (`LOGISTICS_MANAGER`)** : Dispatching assisté, suivi des livreurs, réconciliations caisses espèces.
+- **Finances (`FINANCE_MANAGER`, `ADMIN`)** : Grand livre immuable, barèmes Maker-Checker, approbation des lots de reversements.
+- **Gestion des Comptes (`ACCOUNT_MANAGER` — D-15)** : Traitement des dossiers d'assistance (`AccountCase`), déverrouillages, préparation de changements de numéro sans usurpation.
+- **Annonces & Communication (`ADMIN`)** : Publication et ciblage des annonces du module Infos (D-18).
+- **Super-Administration (`SUPER_ADMIN`)** : Matrice des rôles, paramètres système `Setting`.
 
-### 1.6 Navigation Mobile (Menu Hamburger ~6 entrées)
-1. Trouver du gaz (Carte/Recherche au clic ou manuelle — CR-001 D-02)
-2. Mes Commandes
-3. Mon Profil
-4. Devenir Distributeur (KYC simplifié 3 pièces — CR-001 D-04)
-5. Sécurité & Urgences
-6. Contact & Support
+### 1.6 Navigation Mobile Dédiée par Espace (Aucune Trace)
+Chaque espace dispose de sa propre barre de navigation inférieure ou menu tiroir restreint à 5 entrées maximum, sans aucun lien vers les autres profils :
+- **Acheteur** : Accueil, Trouver du gaz, Mes commandes, Mes factures, Aide.
+- **Distributeur** : Tableau de bord, Stock, Commandes, Comptoir, Paramètres boutique.
+- **Livreur** : Missions, Disponibilité, Caisse & Gains, Profil.
+
 
 ---
 
@@ -166,23 +168,24 @@ sequenceDiagram
 
 ---
 
-## 3. Matrice des Rôles et Permissions (RBAC)
+## 3. Matrice des Rôles et Permissions (RBAC) (CR-003 D-15, C-07)
 
-Le système repose sur un modèle RBAC complet articulé autour de **9 rôles** : `CUSTOMER`, `DISTRIBUTOR_STAFF`, `DISTRIBUTOR_OWNER`, `COURIER`, `SUPPORT_AGENT`, `LOGISTICS_MANAGER`, `DISTRIBUTOR_MANAGER`, `FINANCE_MANAGER`, `SUPER_ADMIN` (avec délégation opérationnelle `ADMIN`).
-Le moteur d'autorisation vérifie exclusivement des permissions granulaires affectées en base de données (`RolePermission`), sans jamais coder de rôles en dur dans la logique applicative.
+Le système repose sur un modèle RBAC complet articulé autour de **10 rôles métier** : `CUSTOMER`, `DISTRIBUTOR_STAFF`, `DISTRIBUTOR_OWNER`, `COURIER`, `SUPPORT_AGENT`, `LOGISTICS_MANAGER`, `DISTRIBUTOR_MANAGER`, `FINANCE_MANAGER`, `ACCOUNT_MANAGER`, `SUPER_ADMIN` (avec délégation opérationnelle `ADMIN`).
+Le moteur d'autorisation vérifie exclusivement des permissions granulaires affectées en base de données (`RolePermission`), sans coder de rôles en dur dans la logique applicative.
 
 **Règles de visibilité, de cloisonnement et d'audit :**
 - Un client, distributeur ou livreur ne voit que les ressources lui appartenant (suffixe `:own`).
 - Le distributeur ne voit du client que le strict nécessaire pour la remise/livraison (Nom, Téléphone masqué ou redirigé, Adresse, Repère).
-- `document:view_identity` (pièces d'identité KYC) est ultra-restreint et l'accès est tracé dans l'Audit Log avec génération d'URL signées éphémères (15 min).
+- `document:view_identity` (pièces d'identité KYC) est ultra-restreint (`DISTRIBUTOR_MANAGER`, `ADMIN`) et l'accès est tracé dans l'Audit Log avec génération d'URL signées éphémères (15 min).
 - Les actions financières sensibles (barèmes, prix, lots de reversement) appliquent obligatoirement le principe **Maker-Checker** (proposé par `FINANCE_MANAGER`, approuvé par `ADMIN`/`SUPER_ADMIN`).
+- **Gestionnaire de Compte (`ACCOUNT_MANAGER` — D-15, C-07)** : Intervient **exclusivement** sous couvert d'un dossier ouvert (`AccountCase`). Ne peut ni modifier directement un profil, ni réinitialiser un mot de passe à la place de l'utilisateur, ni usurper une identité (« voir comme »). Toute mutation sensible (changement de numéro) est une demande préparée soumise à double validation par un `ADMIN`.
 - Toute action sensible génère un enregistrement immuable dans `AuditLog`.
 
 ### 3.1 Catalogue des Permissions Granulaires (Extrait Structuré)
 
 | Domaine | Permission | Description |
 |---|---|---|
-| **User** | `user:view_own` / `user:view_any` | Consulter son propre profil / tous les profils |
+| **User** | `user:view_own` / `user:view_any` | Consulter son propre profil / tous les profils (complets) |
 | **Catalog** | `catalog:manage` | Gérer le catalogue exclusif PLEINGAZ (Admin) |
 | **Store** | `store:update_stock` | Déclarer l'état qualitatif des stocks (`BON`/`MOYEN`/`FAIBLE`/`RUPTURE`) |
 | **Store** | `store:manage_staff` | Gérer les sous-comptes du personnel de la boutique |
@@ -201,42 +204,57 @@ Le moteur d'autorisation vérifie exclusivement des permissions granulaires affe
 | **Reporting** | `report:view_finance` / `report:view_analytics` | Accéder aux 15 rapports du Control Center |
 | **Admin** | `distributor:approve` / `distributor:suspend` | Valider (KYC 3 pièces) ou suspendre un distributeur |
 | **Admin** | `document:view_identity` | Consulter les pièces d'identité KYC (URL signée 15 min, action auditée) |
+| **Admin** | `announcement:publish` | Créer et publier des annonces ciblées du module Infos (D-18) |
+| **Account** | `account:view_masked` | Consulter un profil avec numéros masqués (Gestionnaire de compte) |
+| **Account** | `account:unmask_phone` | Démasquer un numéro sur motif obligatoire consigné dans `AuditLog` |
+| **Account** | `account:unlock` | Lever le verrouillage temporaire d'un compte après vérification |
+| **Account** | `account:revoke_sessions` | Déconnecter à distance les sessions d'un compte compromis |
+| **Account** | `account_case:manage` | Créer, instruire et clôturer un dossier d'assistance `AccountCase` |
+| **Account** | `account:prepare_phone_change` | Préparer une demande de changement de numéro (soumise à `ADMIN`) |
+| **Admin** | `account:approve_phone_change` | Valider formellement un changement de numéro de secours (Double validation) |
 | **Admin** | `system:manage_roles` | Gérer les rôles et permissions dynamiques (Super Admin) |
 
 ### 3.2 Matrice Rôles × Permissions Principales
 
-| Permission | CUSTOMER | DIST_STAFF | DIST_OWNER | COURIER | SUPPORT | LOGISTICS_MGR | DISTRIB_MGR | FINANCE_MGR | ADMIN / SUPER_ADMIN |
-|---|:---:|:---:|:---:|:---:|:---:|:---:|:---:|:---:|:---:|
-| `user:view_own` | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ |
-| `store:update_stock` | ❌ | ✅ | ✅ | ❌ | ❌ | ❌ | ❌ | ❌ | ✅ |
-| `store:manage_staff` | ❌ | ❌ | ✅ | ❌ | ❌ | ❌ | ❌ | ❌ | ✅ |
-| `order:create_own` | ✅ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ✅ |
-| `order:process` | ❌ | ✅ | ✅ | ❌ | ❌ | ❌ | ❌ | ❌ | ✅ |
-| `order:create_any` | ❌ | ❌ | ❌ | ❌ | ✅ | ❌ | ❌ | ❌ | ✅ |
-| `courier:view_assigned` | ❌ | ❌ | ❌ | ✅ | ❌ | ❌ | ❌ | ❌ | ✅ |
-| `courier:update_delivery_status` | ❌ | ❌ | ❌ | ✅ | ❌ | ❌ | ❌ | ❌ | ✅ |
-| `courier:manage` / `delivery:assign` | ❌ | ❌ | ❌ | ❌ | ❌ | ✅ | ❌ | ❌ | ✅ |
-| `document:view_identity` | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ✅ | ❌ | ✅ |
-| `distributor:approve` | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ✅ | ❌ | ✅ |
-| `price:propose` / `fee:propose` | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ✅ | ❌ |
-| `price:approve` / `fee:approve` | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ✅ |
-| `payout:create` | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ✅ | ❌ |
-| `payout:approve` | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ✅ |
-| `payout:execute` | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ✅ | ✅ |
-| `ledger:view` / `cash:reconcile` | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ✅ | ✅ |
-| `report:view_finance` | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ✅ | ✅ |
-| `system:manage_roles` | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ✅ (SUPER_ADMIN) |
+| Permission | CUSTOMER | DIST_STAFF | DIST_OWNER | COURIER | SUPPORT | LOGISTICS_MGR | DISTRIB_MGR | FINANCE_MGR | ACCOUNT_MGR | ADMIN / SUPER_ADMIN |
+|---|:---:|:---:|:---:|:---:|:---:|:---:|:---:|:---:|:---:|:---:|
+| `user:view_own` | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ |
+| `store:update_stock` | ❌ | ✅ | ✅ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ✅ |
+| `store:manage_staff` | ❌ | ❌ | ✅ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ✅ |
+| `order:create_own` | ✅ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ✅ |
+| `order:process` | ❌ | ✅ | ✅ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ✅ |
+| `order:create_any` | ❌ | ❌ | ❌ | ❌ | ✅ | ❌ | ❌ | ❌ | ❌ | ✅ |
+| `courier:view_assigned` | ❌ | ❌ | ❌ | ✅ | ❌ | ❌ | ❌ | ❌ | ❌ | ✅ |
+| `courier:update_delivery_status` | ❌ | ❌ | ❌ | ✅ | ❌ | ❌ | ❌ | ❌ | ❌ | ✅ |
+| `courier:manage` / `delivery:assign` | ❌ | ❌ | ❌ | ❌ | ❌ | ✅ | ❌ | ❌ | ❌ | ✅ |
+| `document:view_identity` | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ✅ | ❌ | ❌ | ✅ |
+| `distributor:approve` | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ✅ | ❌ | ❌ | ✅ |
+| `price:propose` / `fee:propose` | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ✅ | ❌ | ❌ |
+| `price:approve` / `fee:approve` | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ✅ |
+| `payout:create` | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ✅ | ❌ | ❌ |
+| `payout:approve` | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ✅ |
+| `payout:execute` | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ✅ | ❌ | ✅ |
+| `ledger:view` / `cash:reconcile` | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ✅ | ❌ | ✅ |
+| `account:view_masked` | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ✅ | ✅ |
+| `account:unlock` / `account:revoke_sessions` | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ✅ | ✅ |
+| `account:prepare_phone_change` | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ✅ | ❌ |
+| `account:approve_phone_change` | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ✅ |
+| `announcement:publish` | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ✅ |
+| `report:view_finance` | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ✅ | ❌ | ✅ |
+| `system:manage_roles` | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ✅ (SUPER_ADMIN) |
 
-### 3.3 Articulation des 9 Rôles Métier
-1. **`CUSTOMER`** : Acheteur final (recherche de points de vente au clic ou manuelle, commande, suivi, code de confirmation).
-2. **`DISTRIBUTOR_STAFF`** : Vendeur en boutique (déclaration qualitative de stock, remise des commandes).
-3. **`DISTRIBUTOR_OWNER`** : Titulaire de la boutique (gestion de l'équipe, relevé financier personnel en lecture seule).
-4. **`COURIER`** : Livreur indépendant de la plateforme (interface mobile dédiée, courses assignées, validation par code client, suivi caisse espèces).
-5. **`SUPPORT_AGENT`** : Agent de service client (saisie de commandes assistées, recherche et orientation des clients, aide aux incidents).
-6. **`LOGISTICS_MANAGER`** : Superviseur logistique (attribution et réattribution des courses, gestion de la flotte de livreurs).
-7. **`DISTRIBUTOR_MANAGER`** : Responsable du réseau de distribution (instruction des dossiers KYC 3 pièces, agrément et suivi des points de vente).
-8. **`FINANCE_MANAGER`** : Responsable financier (propositions tarifaires, création des lots de reversement, réconciliation grand livre et caisse espèces).
-9. **`SUPER_ADMIN`** (et délégation `ADMIN`) : Direction générale et administration centrale (approbation Maker-Checker des barèmes et reversements, gestion des rôles et sécurité).
+### 3.3 Articulation des 10 Rôles Métier
+1. **`CUSTOMER`** : Acheteur final (recherche au clic ou manuelle, commande de bouteilles, suivi animé, double confirmation).
+2. **`DISTRIBUTOR_STAFF`** : Vendeur en boutique (mise à jour du stock qualitatif, enregistrement des ventes au comptoir D-16).
+3. **`DISTRIBUTOR_OWNER`** : Gérant titulaire (gestion des sous-comptes employés, relevé financier en lecture seule).
+4. **`COURIER`** : Livreur rattaché à la plateforme (interface PWA dédiée, missions assignées, double confirmation "J'ai livré", encaissements espèces).
+5. **`SUPPORT_AGENT`** : Agent de relation client (saisie de commandes assistées, réponse aux réclamations d'orientation, gestion des litiges).
+6. **`LOGISTICS_MANAGER`** : Régulateur logistique (dispatching des courses, équilibrage des zones, gestion de la flotte de livreurs).
+7. **`DISTRIBUTOR_MANAGER`** : Responsable du réseau de distribution (instruction des dossiers KYC 3 pièces, agréments, détection des écarts approvisionnement/ventes).
+8. **`FINANCE_MANAGER`** : Responsable financier (propositions tarifaires, création des lots de reversements Maker, contrôle du grand livre).
+9. **`ACCOUNT_MANAGER` (D-15, C-07)** : Gestionnaire des accès et comptes utilisateurs (résolution des pertes de numéros, déverrouillages, dossiers `AccountCase` sans droits de modification directe).
+10. **`SUPER_ADMIN`** (et délégation `ADMIN`) : Direction générale et administration centrale (approbation Maker-Checker, validation finale des changements de numéros, gestion des rôles).
+
 
 ---
 

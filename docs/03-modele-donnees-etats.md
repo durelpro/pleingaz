@@ -6,16 +6,19 @@ Ce document dresse l'inventaire complet des entités du domaine et présente le 
 
 | Domaine | Entité | Description | Clés / Relations | Données Sensibles |
 |---|---|---|---|---|
-| **Accès** | `User` | Compte utilisateur unique par téléphone | Clé: `id`, `phone_number` | Oui |
-| **Accès** | `Role` | Rôle (ensemble de permissions) | Clé: `id` | Non |
+| **Accès** | `User` | Compte utilisateur unique avec 2 numéros E.164 (principal WhatsApp + secours) | Clé: `id`, `phone_number` (unique), `backup_phone_number` | Oui |
+| **Accès** | `Role` | Rôle (ensemble de permissions parmi les 10 rôles métier) | Clé: `id` | Non |
 | **Accès** | `Permission` | Permission granulaire | Clé: `id` | Non |
 | **Accès** | `RolePermission` | Association Rôle-Permission | FK: `role_id`, `permission_id` | Non |
-| **Accès** | `UserRole` | Rôle d'un utilisateur sur un scope (ex: une boutique) | FK: `user_id`, `role_id`, scope | Non |
-| **Accès** | `CustomerProfile` | Profil d'un client | FK: `user_id` | Oui (Données pers.) |
+| **Accès** | `UserRole` | Rôle d'un utilisateur sur un type d'espace exclusif | FK: `user_id`, `role_id`, scope | Non |
+| **Accès** | `VerificationChallenge` | Défi court éphémère de preuve entrante WhatsApp (Option A, TTL 10 min) | Clé: `id`, `code`, FK: `user_id`, `session_id` | Oui |
+| **Accès** | `DeviceFingerprint` | Empreinte d'appareil non sensible et jeton d'appareil de confiance | Clé: `id`, FK: `user_id` | Non |
+| **Accès** | `AccountCase` | Dossier d'assistance géré par le gestionnaire de compte (`ACCOUNT_MANAGER` D-15) | Clé: `id`, FK: `user_id`, `assigned_to` | Oui |
+| **Accès** | `CustomerProfile` | Profil d'un acheteur (limite 5 bouteilles, adresses) | FK: `user_id` | Oui (Données pers.) |
 | **Accès** | `DistributorProfile` | Profil d'un distributeur propriétaire | FK: `user_id` | Oui |
 | **Accès** | `StaffProfile` | Profil d'un employé PLEINGAZ | FK: `user_id` | Oui |
-| **Accès** | `Session` | Session de connexion | FK: `user_id` | Oui (Token) |
-| **Accès** | `MfaCredential` | Identifiant TOTP (double facteur) | FK: `user_id` | Oui |
+| **Accès** | `Session` | Session liée à une audience portail (`aud`), appareil, IP et révocation | FK: `user_id`, `device_id` | Oui (Token) |
+| **Accès** | `MfaCredential` | Identifiant TOTP (double facteur obligatoire staff) | FK: `user_id` | Oui |
 | **Accès** | `RecoveryCode` | Code de secours MFA | FK: `user_id` | Oui |
 | **Réseau** | `DistributorApplication` | Dossier de candidature | FK: `distributor_id` | Oui |
 | **Réseau** | `DistributorDocument` | Pièce justificative KYC restreinte aux 3 types : `ID_CARD_FRONT`, `ID_CARD_BACK`, `PORTRAIT_PHOTO`, `SHOP_PHOTO` (CR-001 D-04) | FK: `distributor_id` | Oui (CNI, etc.) |
@@ -94,50 +97,80 @@ erDiagram
     PAYMENT ||--|{ PAYMENT_TRANSACTION : "executes"
 ```
 
-### 2.2 ERD 1 : Utilisateurs, Accès et Profils
+### 2.2 ERD 1 : Utilisateurs, Accès et Profils (CR-003 D-11, D-12, D-15)
 ```mermaid
 erDiagram
     USER {
-        int id PK
-        string phone_number
+        uuid id PK
+        string phone_number UK "WhatsApp principal vérifié"
+        string backup_phone_number "Contact de secours distinct"
+        string password_hash "Argon2id"
+        boolean is_active
+        timestamp locked_until
     }
     ROLE {
-        int id PK
-        string name
+        uuid id PK
+        string name UK "10 rôles métier stricts"
     }
     PERMISSION {
-        int id PK
-        string action
+        uuid id PK
+        string action UK "e.g. account:unlock, order:create_own"
     }
     USER_ROLE {
-        int user_id FK
-        int role_id FK
-        string scope_type
-        int scope_id
+        uuid user_id FK
+        uuid role_id FK
+        string portal_scope "Audience exclusive"
     }
     ROLE_PERMISSION {
-        int role_id FK
-        int permission_id FK
+        uuid role_id FK
+        uuid permission_id FK
     }
     SESSION {
-        int id PK
-        int user_id FK
+        uuid id PK
+        uuid user_id FK
+        string portal "Audience: CUSTOMER|DISTRIBUTOR|COURIER|STAFF"
+        string ip_address
+        string user_agent
+        timestamp expires_at
+        timestamp revoked_at
+    }
+    DEVICE_FINGERPRINT {
+        uuid id PK
+        uuid user_id FK
+        string device_hash
+        boolean is_trusted
+        timestamp last_seen_at
+    }
+    VERIFICATION_CHALLENGE {
+        uuid id PK
+        string code "ex: PG-8492"
+        string phone_expected
+        timestamp expires_at "TTL 10 min"
+        boolean is_consumed
+        timestamp verified_at
+    }
+    ACCOUNT_CASE {
+        uuid id PK
+        uuid user_id FK "Compte concerne"
+        uuid assigned_to FK "ACCOUNT_MANAGER"
+        string reason "Motif obligatoire"
+        string status "OPEN|INVESTIGATING|RESOLVED|CLOSED"
+        json evidence_notes
     }
     MFA_CREDENTIAL {
-        int id PK
-        int user_id FK
-    }
-    RECOVERY_CODE {
-        int id PK
-        int user_id FK
+        uuid id PK
+        uuid user_id FK
+        string totp_secret
     }
     USER ||--o{ USER_ROLE : "has"
     ROLE ||--o{ USER_ROLE : "assigned_to"
     ROLE ||--o{ ROLE_PERMISSION : "includes"
     PERMISSION ||--o{ ROLE_PERMISSION : "part_of"
     USER ||--o{ SESSION : "starts"
-    USER ||--o| MFA_CREDENTIAL : "secures"
-    USER ||--o{ RECOVERY_CODE : "has"
+    USER ||--o{ DEVICE_FINGERPRINT : "uses"
+    USER ||--o{ VERIFICATION_CHALLENGE : "receives"
+    USER ||--o{ ACCOUNT_CASE : "subject_of"
+    USER ||--o| MFA_CREDENTIAL : "secures_staff"
 ```
 
 ### 2.3 ERD 2 : Réseau et Distributeurs

@@ -92,15 +92,32 @@
 | **Immutabilité** | Mutable via la machine à états stricte. |
 | **Rétention** | Soft delete uniquement. |
 
-### 1.10 `UserRole`
+### 1.10 `UserRole` (CR-003 D-11)
 | Propriété | Règle / Instruction SQL |
 |---|---|
-| **Clés & Unicités** | `id` (PK). `UNIQUE (user_id, role_id, scope_type, scope_id)`. |
+| **Clés & Unicités** | `id` (PK). `UNIQUE (user_id, role_id)`. **Contrainte d'espace exclusif** : Un utilisateur standard ne peut posséder qu'un seul rôle opérationnel d'espace à la fois (`portal_type IN ('CUSTOMER', 'DISTRIBUTOR', 'COURIER', 'STAFF')`). |
 | **Clés Étrangères**| `user_id`, `role_id`. |
-| **CHECK** | - |
-| **Index** | Index sur `user_id`. |
-| **Immutabilité** | Mutable (Révocable). |
+| **CHECK** | `CHECK (portal_type IN ('CUSTOMER', 'DISTRIBUTOR', 'COURIER', 'STAFF'))`. |
+| **Index** | Index sur `user_id`, `portal_type`. |
+| **Immutabilité** | Mutable uniquement par action administrative exceptionnelle avec enregistrement dans `AuditLog`. |
 | **Rétention** | Soft delete (conservation des logs d'accès). |
+
+### 1.10b `User` & Deux Numéros E.164 (CR-003 D-12, C-03)
+| Propriété | Règle / Instruction SQL |
+|---|---|
+| **Clés & Unicités** | `id` (PK). `phone_number` UNIQUE. |
+| **CHECK Numéros** | `CHECK (phone_number ~ '^\+237[26][0-9]{8}$')` (E.164 Cameroun). `CHECK (backup_phone_number ~ '^\+237[26][0-9]{8}$')`. `CHECK (phone_number <> backup_phone_number)` (Obligation de 2 numéros distincts). |
+| **Règle Anti-Contournement** | `backup_phone_number` ne peut pas être simultanément le `phone_number` actif d'un autre utilisateur (contrôlé par contrainte applicative / trigger). |
+| **Mot de passe** | `password_hash` chiffré obligatoirement via **Argon2id**. Interdiction de mot de passe nul sauf phase transitoire d'activation. |
+
+### 1.10c `VerificationChallenge` (CR-003 D-12, C-04)
+| Propriété | Règle / Instruction SQL |
+|---|---|
+| **Clés & Unicités** | `id` (PK). `code` (Indexé). |
+| **CHECK** | `CHECK (expires_at > created_at)`. |
+| **Usage Unique** | `is_consumed BOOLEAN DEFAULT FALSE`. La transition à `TRUE` est atomique (`UPDATE ... WHERE id = :id AND is_consumed = FALSE`). |
+| **Rétention** | Purge automatique des défis expirés après 24 heures. |
+
 
 ### 1.11 `DistributorDocument` (CR-001 D-04)
 | Propriété | Règle / Instruction SQL |

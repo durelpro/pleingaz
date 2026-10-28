@@ -255,3 +255,44 @@ stateDiagram-v2
 - **Règle de blocage automatique** :
   - Si le solde total `COLLECTED` non encore reversé d'un livreur dépasse le plafond configuré dans `Setting` (défaut appliqué, à confirmer : exemple illustratif 50 000 FCFA), le livreur est automatiquement bloqué pour de nouvelles affectations jusqu'à régularisation.
 
+## 15. VerificationChallenge (Preuve Entrante WhatsApp — CR-003 D-12, C-04)
+```mermaid
+stateDiagram-v2
+    [*] --> PENDING_INBOUND
+    PENDING_INBOUND --> VERIFIED : Message WhatsApp entrant valide
+    PENDING_INBOUND --> EXPIRED : TTL 10 min écoulé
+    PENDING_INBOUND --> FAILED : Mauvais expéditeur ou payload corrompu
+    VERIFIED --> CONSUMED : Session/Compte activé
+```
+- **Autorisées** :
+  - `PENDING_INBOUND` -> `VERIFIED` (Webhook Meta reçoit le message avec HMAC valide et identifie l'expéditeur E.164).
+  - `PENDING_INBOUND` -> `EXPIRED` (Aucun message reçu dans les 10 minutes).
+  - `VERIFIED` -> `CONSUMED` (Jeton consommé pour émettre la session ou le mot de passe réinitialisé ; usage unique strict).
+- **Interdites** :
+  - Réutiliser un défi déjà passé en `CONSUMED` (prévention du rejeu).
+  - Valider un défi dont le numéro expéditeur diffère du numéro attendu sur la session web.
+
+## 16. AccountCase (Dossier Gestionnaire de Compte — CR-003 D-15, C-07)
+```mermaid
+stateDiagram-v2
+    [*] --> OPEN
+    OPEN --> INVESTIGATING : Prise en charge par ACCOUNT_MANAGER
+    INVESTIGATING --> PENDING_ADMIN_APPROVAL : Demande changement numéro préparée
+    PENDING_ADMIN_APPROVAL --> APPROVED_BY_ADMIN : ADMIN valide la demande
+    PENDING_ADMIN_APPROVAL --> REJECTED_BY_ADMIN : ADMIN refuse la demande
+    APPROVED_BY_ADMIN --> RESOLVED : Défi réussi sur nouveau numéro
+    INVESTIGATING --> RESOLVED : Déblocage/révocation sessions effectuée
+    INVESTIGATING --> CLOSED_UNRESOLVED : Identité non prouvée / motif caduc
+    RESOLVED --> [*]
+    CLOSED_UNRESOLVED --> [*]
+```
+- **Autorisées** :
+  - `OPEN` -> `INVESTIGATING` (`ACCOUNT_MANAGER` ouvre le dossier après contact client, motif obligatoire).
+  - `INVESTIGATING` -> `PENDING_ADMIN_APPROVAL` (Préparation de changement de numéro après contre-appel sur numéro secondaire).
+  - `PENDING_ADMIN_APPROVAL` -> `APPROVED_BY_ADMIN` (`ADMIN` valide formellement — Double contrôle).
+  - `APPROVED_BY_ADMIN` -> `RESOLVED` (Nouveau numéro activé par défi entrant sous délai de sécurité 48h).
+- **Interdites** :
+  - Toute action du gestionnaire de compte sans dossier `OPEN` ou `INVESTIGATING` actif avec motif.
+  - Modification unilatérale directe du numéro ou d'une donnée de profil par le gestionnaire sans approbation `ADMIN`.
+
+

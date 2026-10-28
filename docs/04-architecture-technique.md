@@ -33,8 +33,8 @@ graph TD
     %% Services Tiers
     API --> PayGateway[Agrégateur Paiement MoMo]
     PayGateway --> API
-    API --> SMS[Provider SMS OTP]
-    API --> WhatsApp[WhatsApp Click-to-Chat / API]
+    API --> VerifChannel[VerificationChannel : WhatsAppInboundChannel / SimulatedChannel]
+    WhatsAppMeta[Meta WhatsApp Cloud API Webhook] -->|Preuve Entrante HMAC| API
     API --> Nominatim[Serveur Géocodage Nominatim bridé]
     ClientApp --> Tiles[Fournisseur Tuiles Carte / Secours 20Ko]
     Worker --> LLM[Service IA catalogue PLEINGAZ exclusif]
@@ -55,14 +55,14 @@ Il est critique de séparer les contenus statiques des contenus dynamiques (stoc
 - **Pages Vitrines (SSR Next.js)** : Pré-rendues avec ISR (Incremental Static Regeneration). Durée de cache/TTL de 1 heure.
 - **Blocs Dynamiques (ex: Stock d'un point de vente)** : Le squelette de la page du distributeur est en cache, mais **le bloc affichant le stock est toujours chargé dynamiquement (Client-Side Fetch)** et porte un TTL de 0 seconde (pas de cache). Il affiche systématiquement la "date de dernière mise à jour".
 - **Données Sensibles (Factures, Profils, KYC)** : En-têtes HTTP `Cache-Control: no-store, no-cache, max-age=0`.
-- **Redis** : Utilisé pour les caches temporaires (TTL courts, ex: 5 min pour une recherche sans géolocalisation), le rate limiting et le TTL des OTP (ex: 5 minutes). **Règle absolue : jamais de données qui doivent survivre à un redémarrage.**
+- **Redis** : Utilisé pour les caches temporaires (TTL courts, ex: 5 min pour une recherche sans géolocalisation), le rate limiting et le TTL des défis WhatsApp `VerificationChallenge` (10 minutes). **Règle absolue : jamais de données qui doivent survivre à un redémarrage.**
 
 ## 4. API REST et Recherche (CR-001 D-01, D-02)
 - **Standards** : API versionnée (`/api/v1`). Documentation OpenAPI (Swagger) générée automatiquement depuis le code. Erreurs standardisées (RFC 7807), CORS restrictif. 
 - **Politique de Versionnement** : Ajouts permis. Casseurs de compatibilité = `/api/v2`. Dépréciation annoncée 6 mois à l'avance via un en-tête `Deprecation: true`.
 - **Rate Limiting** : Limites strictes par endpoint via Redis pour contrer le flood :
-  - `POST /otp` (Génération) : 3/heure.
-  - `POST /login` (Connexion) : 10/heure.
+  - `POST /api/v1/auth/challenge/initiate` (Génération défi) : 3/heure par IP.
+  - `POST /api/v1/auth/login` (Connexion) : 10/heure par IP et par compte.
   - `GET /stores/search` (Recherche) : 30/minute.
   - `POST /geo/geocode` (Géocodage backend) : 1/seconde max par session/IP.
   - `POST /orders` (Création de commande) : 5/heure.
@@ -263,13 +263,41 @@ sequenceDiagram
     end
 ```
 
+### 10.7 Authentification par Preuve Entrante WhatsApp (Option A — CR-003 D-12, C-04)
+```mermaid
+sequenceDiagram
+    autonumber
+    actor U as Utilisateur (Mobile/PC)
+    participant W as Portail Web PLEINGAZ
+    participant API as API Backend NestJS
+    participant DB as PostgreSQL / Redis
+    participant WA as Application WhatsApp Client
+    participant Meta as Meta WhatsApp Cloud API
+
+    U->>W: Clique sur "Activer mon compte" / "Connexion WhatsApp"
+    W->>API: POST /api/v1/auth/challenge/initiate { phone, portal }
+    API->>DB: Crée VerificationChallenge (code: "PG-8492", TTL 10 min)
+    API-->>W: Renvoie challengeId + URL wa.me préremplie
+    W-->>U: Ouvre WhatsApp avec message prérempli vers le bot officiel
+    W->>API: Écoute SSE / Polling sur /api/v1/auth/challenge/:id/status
+    U->>WA: Appuie sur "Envoyer" dans WhatsApp
+    WA->>Meta: Envoi du message "PLEINGAZ code PG-8492"
+    Meta->>API: Webhook HTTPS POST /api/v1/auth/webhook/whatsapp (Signature HMAC SHA-256)
+    API->>API: Valide HMAC avec WHATSAPP_APP_SECRET
+    API->>DB: Recherche défi actif pour senderPhone == phone & code == "PG-8492"
+    API->>DB: Marque défi VERIFIED et is_consumed = true
+    API-->>W: Notifie le client Web via SSE (succès preuve entrante)
+    W->>API: Finalise session (émet cookie HttpOnly audience-bound)
+    W-->>U: Redirection directe vers l'espace dédié (Acheteur, Distributeur, Livreur)
+```
+
 ---
 
 ## 11. Correctifs Rapides Existants (Indépendants)
 Les correctifs identifiés lors de l'audit initial (notamment le comportement défectueux de Nginx renvoyant des 200 OK sur les fichiers `robots.txt` et `sitemap.xml` non trouvés) sont **indépendants de cette refonte technique globale**. Ils peuvent et doivent être corrigés immédiatement sur l'infrastructure actuelle sans attendre la migration vers Next.js.
 
 ## 12. Dépendances des ADR
-Les ADR D1 à D4 sont proposés ; les ADR D5 à D10 résultent des **décisions souveraines validées du propriétaire (CR-001)** et sont opposables.
+Les ADR D1 à D4 sont proposés ; les ADR D5 à D10 résultent de **CR-001** ; les ADR D11 à D18 résultent de **CR-003** et prévalent sur toute disposition antérieure :
 
 | ADR | Sujet | Statut | Choix techniques dépendants |
 |---|---|---|---|
@@ -283,6 +311,15 @@ Les ADR D1 à D4 sont proposés ; les ADR D5 à D10 résultent des **décisions 
 | **D8** | KYC Distributeur 3 pièces exclusives (CR-001 D-04) | **VALIDÉ** | S3 privé chiffré, URL signées 15 min, stripping EXIF systématique, checklist admin. |
 | **D9** | Rôle Livreur & Code confirmation (CR-001 D-05) | **VALIDÉ** | 9e rôle RBAC `COURIER`, PWA livreur légère, attribution manuelle, suivi caisse espèces. |
 | **D10**| Maker-Checker & Grand Livre immuable (CR-001 D-06) | **VALIDÉ** | Insert-Only `LedgerEntry`, débit=crédit, double signature reversements, TOTP obligatoire. |
+| **D11**| Authentification obligatoire & Espaces séparés (CR-003 D-11) | **VALIDÉ** | Portails étanches (`/acheteur`, `/distributeur`, `/livreur`), URL staff masquée, 404 inter-espaces, token audience-bound. |
+| **D12**| Inscription & Connexion WhatsApp gratuite (CR-003 D-12) | **VALIDÉ** | Preuve entrante (`VerificationChannel`), 2 numéros E.164 obligatoires, SimulatedChannel. |
+| **D13**| Charte graphique inchangée & Design System (CR-003 D-13) | **VALIDÉ** | Respect strict couleurs (#FF0000, #FFB000) et Montserrat, ratios WCAG AA, mobile-first. |
+| **D14**| Espace acheteur & Limite 5 bouteilles (CR-003 D-14) | **VALIDÉ** | Dashboard épuré, quota 5 bouteilles / fenêtre 30 jours décompté atomiquement, historique C-01. |
+| **D15**| Gestionnaire de compte sans usurpation (CR-003 D-15) | **VALIDÉ** | 10e rôle `ACCOUNT_MANAGER`, action sous dossier `AccountCase` obligatoire, zéro modification directe. |
+| **D16**| Registre complet & Vente au comptoir (CR-003 D-16) | **VALIDÉ** | Enregistrement `CounterSale` distributeur, confirmation acheteur, décompte quota. |
+| **D17**| Double confirmation livraison & Tarifs (CR-003 D-17) | **VALIDÉ** | Bouton "J'ai livré" + "J'ai reçu", tarif PLEINGAZ fixe 1 000 F, prix libres bornés tiers. |
+| **D18**| Rubrique "Infos" ciblée sur chaque espace (CR-003 D-18) | **VALIDÉ** | Annonces administratives dynamiques, ciblage rôles/zones, accusé "J'ai compris". |
+
 
 
 ## 14. Stack technique retenue
