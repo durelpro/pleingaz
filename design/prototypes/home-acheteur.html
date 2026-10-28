@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Espace Acheteur - PLEINGAZ</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+  <div class="mobile-app-wrapper">
+    
+    <!-- Topbar Mobile -->
+    <header class="navbar" style="padding:10px 16px;">
+      <div style="display:flex; align-items:center; gap:8px;">
+        <svg class="flame-icon" viewBox="0 0 24 24"><path d="M12 2C8 6 6 9 6 13a6 6 0 0012 0c0-4-2-7-6-11zm0 15a3 3 0 01-3-3c0-2 1-3.5 3-5.5 2 2 3 3.5 3 5.5a3 3 0 01-3 3z"/></svg>
+        <span style="font-weight:800; color:var(--color-primary); font-size:1.1rem;">PLEINGAZ</span>
+      </div>
+      <div style="display:flex; align-items:center; gap:8px;">
+        <span class="badge badge-success">Connecté</span>
+        <a href="index.html" style="font-size:0.75rem; color:var(--color-text-subtle);">Déconnexion</a>
+      </div>
+    </header>
+
+    <div style="padding:16px; flex:1; overflow-y:auto;">
+
+      <!-- Bannière InfoNotice Ciblée (D-18) -->
+      <div class="info-notice" id="notice-1">
+        <div>
+          <strong style="display:block; font-size:0.85rem; color:var(--color-status-info);">ℹ️ Approvisionnement Douala Akwa</strong>
+          <span style="font-size:0.78rem; color:var(--color-text-muted);">Tous les dépôts sont réapprovisionnés ce matin en bouteilles 12.5 kg.</span>
+        </div>
+        <button class="info-notice-btn" onclick="document.getElementById('notice-1').style.display='none'">
+          J'ai compris
+        </button>
+      </div>
+
+      <!-- Bienvenue & Raccourci Commande Urgente -->
+      <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:16px;">
+        <div>
+          <h1 style="font-size:1.25rem; font-weight:800;">Bonjour Marie 👋</h1>
+          <span style="font-size:0.8rem; color:var(--color-text-muted);">Douala • Quartier Akwa Nord</span>
+        </div>
+        <button class="btn btn-danger" style="min-height:36px; padding:6px 10px; font-size:0.75rem;" onclick="alert('🚨 PROTOCOLE FUITE : Aérez immédiatement, fermez le robinet détendeur, n’allumez aucun feu ni interrupteur. Ligne d’urgence appelée : +237 600 000 000')">
+          ⚠️ Fuite de gaz ?
+        </button>
+      </div>
+
+      <!-- JAUGE DE QUOTA VISUELLE (D-14) -->
+      <div class="quota-box">
+        <div class="quota-header">
+          <span class="quota-title">Mon Quota Mensuel (D-14)</span>
+          <span class="quota-counter">2 / 5 <span style="font-size:0.8rem; font-weight:500; color:var(--color-text-muted);">bouteilles</span></span>
+        </div>
+        <div class="quota-track">
+          <div class="quota-step filled" title="Bouteille 1 consommée"></div>
+          <div class="quota-step filled" title="Bouteille 2 consommée"></div>
+          <div class="quota-step" title="Bouteille 3 disponible"></div>
+          <div class="quota-step" title="Bouteille 4 disponible"></div>
+          <div class="quota-step" title="Bouteille 5 disponible"></div>
+        </div>
+        <div class="quota-legend">
+          <span>🟢 3 recharges disponibles ce mois-ci</span>
+          <span>Plafond : 5 max</span>
+        </div>
+      </div>
+
+      <!-- RECHARGE EXPRESS 1-CLIC (R11) -->
+      <div class="card" style="background:linear-gradient(135deg, #dc2626 0%, #b91c1c 100%); color:white;">
+        <span style="font-size:0.75rem; text-transform:uppercase; letter-spacing:0.5px; opacity:0.9;">Recharge habituelle rapide</span>
+        <div style="display:flex; justify-content:space-between; align-items:center; margin:8px 0 12px;">
+          <div>
+            <div style="font-size:1.15rem; font-weight:800;">Tradex 12.5 kg</div>
+            <div style="font-size:0.8rem; opacity:0.85;">Dépôt Akwa Nord (à 450m)</div>
+          </div>
+          <div style="text-align:right;">
+            <div style="font-size:1.25rem; font-weight:800;">7 500 FCFA</div>
+            <div style="font-size:0.75rem; opacity:0.85;">dont 1 000 F livraison</div>
+          </div>
+        </div>
+        <a href="parcours-commande.html" class="btn" style="background:white; color:var(--color-primary); width:100%; font-weight:700;">
+          ⚡ Commander en 1 clic
+        </a>
+      </div>
+
+      <!-- COMMANDE EN COURS & DOUBLE CONFIRMATION (D-17) -->
+      <div class="card" style="border-left:4px solid var(--color-whatsapp);">
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
+          <span class="badge badge-success">Course en cours</span>
+          <span style="font-size:0.75rem; color:var(--color-text-muted);">Arrivée estimée : 12 min</span>
+        </div>
+        <div style="font-weight:700; font-size:0.95rem; margin-bottom:4px;">1x Bouteille Total Gaz 12.5 kg</div>
+        <div style="font-size:0.82rem; color:var(--color-text-muted); margin-bottom:12px;">
+          Livreur : <strong>Paul M. (Moto #LT-402)</strong> • Repère : Devant pharmacie du rail
+        </div>
+
+        <!-- Bloc Double Confirmation Acheteur -->
+        <div class="confirmation-box" id="confirmation-block">
+          <div style="font-weight:700; font-size:0.88rem; color:#166534; margin-bottom:6px;">
+            📦 Le livreur signale être arrivé avec votre bouteille
+          </div>
+          <p style="font-size:0.78rem; color:var(--color-text-muted); margin-bottom:10px;">
+            Vérifiez le joint et le plombage officiel avant de confirmer la remise.
+          </p>
+          <div style="display:flex; gap:8px;">
+            <button class="btn btn-whatsapp" style="flex:1; min-height:40px; font-size:0.82rem;" onclick="confirmReceived()">
+              ✅ J'ai bien reçu ma bouteille
+            </button>
+            <button class="btn btn-danger" style="min-height:40px; font-size:0.82rem;" onclick="alert('Signalement transmis au support PLEINGAZ. Le livreur est bloqué en vérification.')">
+              ⚠️ Problème
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Mon Distributeur Favori (C-01) -->
+      <div class="card">
+        <div style="font-weight:700; font-size:0.9rem; margin-bottom:8px;">Mon Dépôt Agréé Habituel</div>
+        <div style="display:flex; justify-content:space-between; align-items:center;">
+          <div>
+            <div style="font-weight:700;">Dépôt Gaz Akwa Nord</div>
+            <div style="font-size:0.8rem; color:var(--color-text-muted);">Carrefour Rail • Ouvert jusqu'à 20h00</div>
+            <span class="badge badge-success" style="margin-top:4px;">En stock (18 btl)</span>
+          </div>
+          <a href="parcours-commande.html" class="btn btn-secondary" style="min-height:36px; padding:6px 12px; font-size:0.8rem;">
+            Changer
+          </a>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- Barre de Navigation Basse Mobile -->
+    <nav class="bottom-nav">
+      <a href="home-acheteur.html" class="nav-item active">
+        <span>🏠</span>
+        <span>Accueil</span>
+      </a>
+      <a href="parcours-commande.html" class="nav-item">
+        <span>🚀</span>
+        <span>Commander</span>
+      </a>
+      <a href="#" class="nav-item" onclick="alert('Historique des 2 commandes du mois : 12/10 Tradex 12.5kg (Livrée), 24/10 Total 12.5kg (En cours)')">
+        <span>📋</span>
+        <span>Historique</span>
+      </a>
+      <a href="#" class="nav-item" onclick="alert('Profil : Marie T. • WhatsApp : +237 699 123 456 • Appel : +237 677 654 321')">
+        <span>👤</span>
+        <span>Mon Compte</span>
+      </a>
+    </nav>
+
+  </div>
+
+  <script>
+    function confirmReceived() {
+      const block = document.getElementById('confirmation-block');
+      block.innerHTML = `
+        <div style="color:var(--color-status-success); font-weight:800; font-size:0.95rem; padding:8px 0;">
+          🎉 Livraison confirmée avec succès !
+        </div>
+        <p style="font-size:0.78rem; color:var(--color-text-muted);">
+          Reçu officiel expédié sur votre WhatsApp. Votre jauge de quota a été mise à jour (3/5).
+        </p>
+      `;
+    }
+  </script>
+
+</body>
+</html>

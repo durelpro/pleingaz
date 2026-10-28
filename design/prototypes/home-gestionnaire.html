@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Espace Gestionnaire de Compte - PLEINGAZ</title>
+  <link rel="stylesheet" href="style.css">
+  <style>
+    .case-card {
+      border: 1px solid var(--color-border);
+      border-radius: var(--radius-md);
+      padding: 16px;
+      margin-bottom: 12px;
+      background: var(--color-bg-surface);
+      transition: all 150ms ease;
+    }
+    .case-card:hover {
+      box-shadow: var(--shadow-sm);
+    }
+  </style>
+</head>
+<body style="background:#f1f5f9;">
+
+  <!-- Header Staff avec Alerte Sécurité D-15 -->
+  <header class="navbar" style="background:#0f172a; border-bottom:1px solid #1e293b; color:white;">
+    <div class="app-container" style="display:flex; justify-content:space-between; align-items:center; width:100%;">
+      <div style="display:flex; align-items:center; gap:12px;">
+        <span style="font-size:1.3rem;">🛡️</span>
+        <div>
+          <span style="font-weight:800; font-size:1.1rem; color:#f8fafc; display:block; line-height:1.2;">
+            PLEINGAZ Support Staff
+          </span>
+          <span style="font-size:0.75rem; color:#94a3b8;">
+            Espace Gestionnaire de Compte (D-15) • Session Authentifiée TOTP
+          </span>
+        </div>
+      </div>
+      <div style="display:flex; align-items:center; gap:12px;">
+        <span class="badge" style="background:#334155; color:#f8fafc;">Agent #MGR-07</span>
+        <a href="index.html" class="btn btn-secondary" style="background:transparent; border-color:#475569; color:white; min-height:34px; padding:4px 10px; font-size:0.75rem;">
+          Déconnexion
+        </a>
+      </div>
+    </div>
+  </header>
+
+  <main class="app-container" style="padding-top:24px; padding-bottom:48px;">
+
+    <!-- RÈGLE MAÎTRESSE D-15 : AVERTISSEMENT FORMEL -->
+    <div style="background:#fef2f2; border:1px solid #fecaca; border-left:4px solid var(--color-primary); padding:14px 18px; border-radius:var(--radius-md); margin-bottom:24px;">
+      <h3 style="font-size:0.95rem; font-weight:800; color:var(--color-primary); margin-bottom:4px;">
+        🔒 Règle de Sécurité et Traçabilité Obligatoire (Décision D-15)
+      </h3>
+      <p style="font-size:0.85rem; color:var(--color-text-muted);">
+        <strong>Aucune mutation directe autorisée.</strong> Toute modification sur le compte d'un usager doit impérativement faire l'objet d'un dossier formel <code>AccountCase</code> motivé. Les actions impactant le quota ou la sécurité sont soumises à la double validation obligatoire d'un administrateur (Maker-Checker). Usurpation d'identité (impersonation) strictement interdite.
+      </p>
+    </div>
+
+    <!-- En-tête des Dossiers & Bouton Nouveau Dossier -->
+    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:16px;">
+      <div>
+        <h1 style="font-size:1.4rem; font-weight:800;">Dossiers d'Assistance en Cours (AccountCase)</h1>
+        <span style="font-size:0.85rem; color:var(--color-text-muted);">3 dossiers nécessitant action sur votre file</span>
+      </div>
+      <button class="btn btn-primary" onclick="openNewCaseModal()">
+        ➕ Ouvrir un nouveau dossier
+      </button>
+    </div>
+
+    <!-- Filtres d'États -->
+    <div style="display:flex; gap:8px; margin-bottom:16px; overflow-x:auto;">
+      <button class="btn btn-secondary" style="min-height:36px; padding:6px 14px; font-size:0.8rem; background:white; font-weight:700;">
+        Tous les dossiers (3)
+      </button>
+      <button class="btn btn-secondary" style="min-height:36px; padding:6px 14px; font-size:0.8rem;">
+        🟡 En attente validation ADMIN (1)
+      </button>
+      <button class="btn btn-secondary" style="min-height:36px; padding:6px 14px; font-size:0.8rem;">
+        🟢 Traités récemment (8)
+      </button>
+    </div>
+
+    <!-- DOSSIER 1 : EN ATTENTE ADMIN (Maker-Checker D-15) -->
+    <div class="case-card" style="border-left:4px solid var(--color-secondary);">
+      <div style="display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:8px;">
+        <div>
+          <span class="badge badge-warning" style="margin-bottom:6px;">🟡 En Attente Validation Admin</span>
+          <h3 style="font-size:1.05rem; font-weight:800;">Dossier #CASE-8821 : Dérogation Quota Pro (Restaurateur)</h3>
+          <span style="font-size:0.8rem; color:var(--color-text-muted);">
+            Usager : <strong>Restaurant Le Kribien (Mokolo, Yaoundé)</strong> • Compte : +237 699 001 122
+          </span>
+        </div>
+        <span style="font-size:0.75rem; color:var(--color-text-subtle);">Créé le 28/10/2026 à 06:14 UTC</span>
+      </div>
+
+      <div style="background:var(--color-bg-subtle); padding:10px 12px; border-radius:var(--radius-sm); font-size:0.85rem; margin-bottom:12px;">
+        <strong>Motif :</strong> Demande d'extension du quota de 5 à 15 bouteilles / 30 jours suite à justificatif d'activité de restauration (Registre du commerce et photos des réchauds fournis).<br>
+        <strong>Action proposée par le gestionnaire :</strong> Passage au profil <code>CUSTOMER_PRO</code> (Quota mensuel = 15).
+      </div>
+
+      <div style="display:flex; justify-content:space-between; align-items:center;">
+        <span style="font-size:0.8rem; color:var(--color-secondary-dark); font-weight:600;">
+          ⏳ Notification automatique transmise au SUPER_ADMIN pour validation.
+        </span>
+        <button class="btn btn-secondary" style="min-height:36px; font-size:0.8rem;" onclick="alert('Détails complets du dossier #CASE-8821 avec pièces jointes')">
+          Consulter le dossier
+        </button>
+      </div>
+    </div>
+
+    <!-- DOSSIER 2 : NOUVEAU DOSSIER OUVERT -->
+    <div class="case-card" style="border-left:4px solid var(--color-status-info);">
+      <div style="display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:8px;">
+        <div>
+          <span class="badge badge-info" style="margin-bottom:6px;">🔵 Dossier Ouvert</span>
+          <h3 style="font-size:1.05rem; font-weight:800;">Dossier #CASE-8822 : Changement de Numéro d'Appel Livraison</h3>
+          <span style="font-size:0.8rem; color:var(--color-text-muted);">
+            Usager : <strong>Marie T. (Akwa Nord, Douala)</strong> • Compte : +237 699 123 456
+          </span>
+        </div>
+        <span style="font-size:0.75rem; color:var(--color-text-subtle);">Créé il y a 22 minutes</span>
+      </div>
+
+      <div style="background:var(--color-bg-subtle); padding:10px 12px; border-radius:var(--radius-sm); font-size:0.85rem; margin-bottom:12px;">
+        <strong>Motif :</strong> L'usager a perdu sa puce Orange (numéro vocal de livraison). Demande de mise à jour vers le nouveau numéro : +237 655 443 322. Vérification d'identité effectuée via échange WhatsApp certifié.
+      </div>
+
+      <div style="display:flex; justify-content:flex-end; gap:8px;">
+        <button class="btn btn-secondary" style="min-height:36px; font-size:0.8rem;" onclick="alert('Pièces jointes vérifiées')">
+          Voir pièces d'échange
+        </button>
+        <button class="btn btn-primary" style="min-height:36px; font-size:0.8rem;" onclick="submitForAdminApproval()">
+          📤 Soumettre à l'approbation Admin
+        </button>
+      </div>
+    </div>
+
+    <!-- DOSSIER 3 : CLÔTURÉ & AUDITÉ -->
+    <div class="case-card" style="border-left:4px solid var(--color-status-success);">
+      <div style="display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:8px;">
+        <div>
+          <span class="badge badge-success" style="margin-bottom:6px;">🟢 Appliqué & Clôturé</span>
+          <h3 style="font-size:1.05rem; font-weight:800;">Dossier #CASE-8819 : Rectification Adresse Dépôt</h3>
+          <span style="font-size:0.8rem; color:var(--color-text-muted);">
+            Distributeur : <strong>Dépôt Akwa Nord (#DIS-0042)</strong>
+          </span>
+        </div>
+        <span style="font-size:0.75rem; color:var(--color-text-subtle);">Clôturé le 27/10/2026 à 18:22 UTC</span>
+      </div>
+
+      <div style="font-size:0.82rem; color:var(--color-text-muted);">
+        Approuvé par <code>SUPER_ADMIN (ID: admin-01)</code> • Trace immuable enregistrée dans <code>AuditLog</code> (Hash: #7e2a91f)
+      </div>
+    </div>
+
+  </main>
+
+  <script>
+    function openNewCaseModal() {
+      const client = prompt("Entrez le numéro E.164 du compte usager concerné (+237...):", "+237 6");
+      if (!client) return;
+      const motif = prompt("Motif précis de l'intervention d'assistance (obligatoire):");
+      if (!motif) {
+        alert("Action annulée : Le motif formel est obligatoire selon la décision D-15.");
+        return;
+      }
+      alert("✅ Dossier temporaire AccountCase créé avec succès. Veuillez joindre les pièces justificatives avant soumission à l'Admin.");
+    }
+
+    function submitForAdminApproval() {
+      alert("✅ Dossier soumis à la file de validation Admin. Le gestionnaire ne peut pas appliquer la modification directement.");
+    }
+  </script>
+
+</body>
+</html>
