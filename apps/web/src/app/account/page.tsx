@@ -184,17 +184,13 @@ export default function BuyerDashboardPage() {
               Douala • Akwa • <span className="text-emerald-400 font-medium">PostgreSQL Direct</span>
             </p>
           </div>
-          <button
-            onClick={() =>
-              alert(
-                '🚨 PROTOCOLE FUITE PLEINGAZ :\n1. Aérez immédiatement les pièces.\n2. Fermez le robinet détendeur de la bouteille.\n3. N’allumez aucune flamme ni interrupteur électrique.\n4. Éloignez-vous et composez la ligne d’urgence : +237 600 000 000'
-              )
-            }
+          <Link
+            href="/support/securite"
             className="px-3 py-1.5 bg-red-950/80 border border-red-700/80 text-red-300 hover:bg-red-900 font-bold text-xs rounded-xl flex items-center gap-1.5 shadow-md shadow-red-900/20 active:scale-95 transition"
           >
             <AlertTriangle className="w-3.5 h-3.5 text-red-400" />
-            <span>Fuite de gaz ?</span>
-          </button>
+            <span>Guide Fuite de gaz ?</span>
+          </Link>
         </div>
 
         {/* JAUGE DE QUOTA VISUELLE (D-14 : 5 bouteilles max / 30j) */}

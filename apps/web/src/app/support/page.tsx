@@ -20,6 +20,25 @@ export default function SupportPage() {
           </p>
         </div>
 
+        {/* Bannière Guide de Sécurité Gaz */}
+        <div className="bg-gradient-to-r from-red-600 to-amber-600 rounded-3xl p-6 text-white shadow-lg flex flex-col sm:flex-row items-center justify-between gap-4">
+          <div className="space-y-1 text-center sm:text-left">
+            <span className="text-xs font-black uppercase tracking-wider bg-white/20 px-2.5 py-0.5 rounded-full inline-block">
+              Prévention & Urgences
+            </span>
+            <h2 className="text-xl font-black">Guide de Sécurité Gaz Domestique</h2>
+            <p className="text-xs text-red-100 max-w-md">
+              Que faire en cas d'odeur de gaz ? Comment vérifier l'étanchéité et le joint du détendeur ? Consultez nos règles vitales.
+            </p>
+          </div>
+          <a
+            href="/support/securite"
+            className="px-5 py-3 bg-white text-red-700 hover:bg-neutral-100 font-extrabold text-xs rounded-xl shadow-md transition-all shrink-0"
+          >
+            Consulter le guide →
+          </a>
+        </div>
+
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           {/* WhatsApp Direct */}
           <div className="bg-white dark:bg-neutral-900 p-8 rounded-3xl shadow-sm border border-gray-100 dark:border-neutral-800 text-center space-y-6">
