@@ -179,4 +179,60 @@ describe('Cr003Service - Tests Souverains D-11 à D-18', () => {
       });
     });
   });
+
+  describe('D-16: Visibilité totale de TOUTES les transactions Admin', () => {
+    it('doit agréger les commandes en ligne et les ventes directes au comptoir', async () => {
+      mockPrisma.order.findMany.mockResolvedValue([
+        {
+          id: 'ord-1',
+          orderNumber: 'ORD-101',
+          totalAmount: 7500,
+          paymentMethod: 'MOMO',
+          status: 'DELIVERED',
+          createdAt: new Date('2026-10-30T10:00:00Z'),
+          customer: { phone: '+237699111222', customerProfile: { firstName: 'Jean', lastName: 'Kamga' } },
+          store: { name: 'Dépôt Akwa Nord', city: 'Douala', neighborhood: 'Akwa' },
+          items: [{ quantity: 1, product: { name: 'Bouteille 12.5 kg PLEINGAZ' } }],
+          delivery: { id: 'del-1' },
+        },
+      ]);
+
+      mockPrisma.counterSale.findMany.mockResolvedValue([
+        {
+          id: 'cs-1',
+          receiptNumber: 'CS-505',
+          bottleType: 'Bouteille 12.5 kg PLEINGAZ',
+          quantity: 2,
+          amountTotal: 13000,
+          paymentMethod: 'CASH',
+          quotaValidated: true,
+          customerPhone: '+237677333444',
+          createdAt: new Date('2026-10-30T11:00:00Z'),
+          store: { name: 'Dépôt Akwa Nord', city: 'Douala', neighborhood: 'Akwa' },
+          customerUser: null,
+        },
+      ]);
+
+      const txs = await service.getAllTransactions();
+
+      expect(txs.length).toBe(2);
+      expect(txs[0].reference).toBe('CS-505'); // Le plus récent
+      expect(txs[0].type).toBe('COUNTER');
+      expect(txs[0].location).toContain('Douala');
+      expect(txs[1].reference).toBe('ORD-101');
+      expect(txs[1].type).toBe('ONLINE');
+    });
+
+    it('doit calculer les métriques globales administratives', async () => {
+      mockPrisma.order.findMany.mockResolvedValue([]);
+      mockPrisma.counterSale.findMany.mockResolvedValue([]);
+
+      const stats = await service.getAdminStats();
+
+      expect(stats.totalVolume).toBe(0);
+      expect(stats.totalRevenue).toBe(0);
+      expect(stats.deliveryFees).toBe(0);
+    });
+  });
 });
+

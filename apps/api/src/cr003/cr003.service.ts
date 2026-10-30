@@ -225,4 +225,98 @@ export class Cr003Service {
 
     return { success: true, message: 'Accusé de lecture enregistré dans la base de données' };
   }
+
+  // 8. Registre central de TOUTES les transactions (D-16 : Qui a acheté et Où)
+  async getAllTransactions() {
+    // A. Récupérer les commandes en ligne
+    const orders = await this.prisma.order.findMany({
+      include: {
+        customer: {
+          include: { customerProfile: true },
+        },
+        store: true,
+        items: {
+          include: { product: true },
+        },
+        delivery: true,
+        payments: true,
+      },
+      orderBy: { createdAt: 'desc' },
+      take: 50,
+    });
+
+    // B. Récupérer les ventes directes au comptoir
+    const counterSales = await this.prisma.counterSale.findMany({
+      include: {
+        store: true,
+        customerUser: {
+          include: { customerProfile: true },
+        },
+      },
+      orderBy: { createdAt: 'desc' },
+      take: 50,
+    });
+
+    // C. Fusionner et unifier
+    const unifiedList = [
+      ...orders.map((o) => ({
+        id: o.id,
+        reference: o.orderNumber,
+        type: 'ONLINE' as const,
+        typeLabel: 'Commande en Ligne (Livraison)',
+        customerName: o.customer.customerProfile ? `${o.customer.customerProfile.firstName} ${o.customer.customerProfile.lastName}` : 'Client Particulier',
+        customerPhone: o.customer.phone,
+        storeName: o.store?.name || 'Boutique Centrale PLEINGAZ',
+        location: o.store ? `${o.store.city} (${o.store.neighborhood})` : (o.deliveryAddress || 'Douala'),
+        product: o.items[0]?.product?.name || 'Bouteille 12.5 kg PLEINGAZ',
+        quantity: o.items.reduce((acc, it) => acc + it.quantity, 0) || 1,
+        amount: o.totalAmount,
+        paymentMethod: o.payments?.[0]?.method || 'MOMO',
+        status: o.status,
+        quotaValidated: true,
+        createdAt: o.createdAt,
+      })),
+      ...counterSales.map((cs) => ({
+        id: cs.id,
+        reference: cs.receiptNumber,
+        type: 'COUNTER' as const,
+        typeLabel: 'Vente Directe au Comptoir (D-16)',
+        customerName: cs.customerUser?.customerProfile ? `${cs.customerUser.customerProfile.firstName} ${cs.customerUser.customerProfile.lastName}` : 'Acheteur en Boutique',
+        customerPhone: cs.customerPhone,
+        storeName: cs.store.name,
+        location: `${cs.store.city} (${cs.store.neighborhood})`,
+        product: cs.bottleType,
+        quantity: cs.quantity,
+        amount: cs.amountTotal,
+        paymentMethod: cs.paymentMethod,
+        status: 'COMPLETED',
+        quotaValidated: cs.quotaValidated,
+        createdAt: cs.createdAt,
+      })),
+    ];
+
+    // Trier du plus récent au plus ancien
+    unifiedList.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
+
+    return unifiedList;
+  }
+
+  // 9. Synthèse statistique globale pour l'administrateur
+  async getAdminStats() {
+    const transactions = await this.getAllTransactions();
+    const totalVolume = transactions.reduce((acc, t) => acc + t.quantity, 0);
+    const onlineVolume = transactions.filter((t) => t.type === 'ONLINE').reduce((acc, t) => acc + t.quantity, 0);
+    const counterVolume = transactions.filter((t) => t.type === 'COUNTER').reduce((acc, t) => acc + t.quantity, 0);
+    const totalRevenue = transactions.reduce((acc, t) => acc + t.amount, 0);
+
+    return {
+      totalVolume,
+      onlineVolume,
+      counterVolume,
+      totalRevenue,
+      deliveryFees: onlineVolume * 1000,
+      totalTransactionsCount: transactions.length,
+    };
+  }
 }
+

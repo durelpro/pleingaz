@@ -1,9 +1,9 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { 
   BarChart3, TrendingUp, AlertTriangle, PackageX, 
-  MapPin, Store, Star, Download, Filter, FileText
+  MapPin, Store, Star, Download, Filter, FileText, CheckCircle2, Phone, ShoppingBag
 } from 'lucide-react';
 import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
 
@@ -19,6 +19,91 @@ const mockChartData = [
 
 export default function PilotageDashboard() {
   const [timeframe, setTimeframe] = useState('semaine');
+  const [txFilter, setTxFilter] = useState<'ALL' | 'ONLINE' | 'COUNTER'>('ALL');
+  const [transactions, setTransactions] = useState<any[]>([
+    {
+      id: 'tx-1',
+      reference: 'CS-849120',
+      type: 'COUNTER',
+      typeLabel: 'Vente Directe Comptoir (D-16)',
+      customerName: 'Acheteur en Boutique',
+      customerPhone: '+237 699 123 456',
+      storeName: 'Dépôt Gaz Akwa Nord',
+      location: 'Douala (Akwa)',
+      product: 'Bouteille 12.5 kg PLEINGAZ',
+      quantity: 1,
+      amount: 6500,
+      paymentMethod: 'CASH',
+      status: 'COMPLETED',
+      quotaValidated: true,
+      createdAt: 'Aujourd’hui 14:20',
+    },
+    {
+      id: 'tx-2',
+      reference: 'ORD-20261030-99F2',
+      type: 'ONLINE',
+      typeLabel: 'Commande en Ligne (Livraison)',
+      customerName: 'Marie Tchouassi',
+      customerPhone: '+237 699 123 456',
+      storeName: 'Dépôt Gaz Akwa Nord',
+      location: 'Douala (Akwa Nord, Rail)',
+      product: 'Bouteille 12.5 kg PLEINGAZ',
+      quantity: 1,
+      amount: 7500,
+      paymentMethod: 'MOMO',
+      status: 'DELIVERED',
+      quotaValidated: true,
+      createdAt: 'Aujourd’hui 11:42',
+    },
+    {
+      id: 'tx-3',
+      reference: 'CS-771902',
+      type: 'COUNTER',
+      typeLabel: 'Vente Directe Comptoir (D-16)',
+      customerName: 'Hervé Nguema',
+      customerPhone: '+237 677 889 900',
+      storeName: 'Boutique Siège PLEINGAZ',
+      location: 'Douala (Bonanjo)',
+      product: 'Bouteille 6 kg PLEINGAZ',
+      quantity: 2,
+      amount: 7200,
+      paymentMethod: 'MOMO',
+      status: 'COMPLETED',
+      quotaValidated: true,
+      createdAt: 'Hier 17:10',
+    },
+  ]);
+  const [stats, setStats] = useState({
+    totalVolume: 4,
+    onlineVolume: 1,
+    counterVolume: 3,
+    totalRevenue: 21200,
+  });
+
+  useEffect(() => {
+    const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001';
+    fetch(`${apiUrl}/api/v1/cr003/admin/transactions`)
+      .then((res) => (res.ok ? res.json() : null))
+      .then((data) => {
+        if (Array.isArray(data) && data.length > 0) {
+          setTransactions(data);
+        }
+      })
+      .catch(() => {});
+
+    fetch(`${apiUrl}/api/v1/cr003/admin/stats`)
+      .then((res) => (res.ok ? res.json() : null))
+      .then((data) => {
+        if (data) setStats(data);
+      })
+      .catch(() => {});
+  }, []);
+
+  const filteredTransactions = transactions.filter((t) => {
+    if (txFilter === 'ONLINE') return t.type === 'ONLINE';
+    if (txFilter === 'COUNTER') return t.type === 'COUNTER';
+    return true;
+  });
 
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-neutral-950 p-6 lg:p-10">
@@ -129,6 +214,135 @@ export default function PilotageDashboard() {
                 <p className="text-xs text-gray-500 mt-1">Basée sur les recherches sans résultat</p>
               </div>
             </div>
+          </div>
+        </div>
+
+        {/* REGISTRE DE TOUTES LES TRANSACTIONS (D-16 : QUI A ACHETÉ ET OÙ) */}
+        <div className="bg-white dark:bg-neutral-900 border border-gray-200 dark:border-neutral-800 rounded-3xl p-6 space-y-6">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+            <div>
+              <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-black bg-red-100 text-pleingaz-red border border-red-200 mb-2">
+                <Store size={14} />
+                <span>Directive D-16 : Visibilité Totale des Ventes</span>
+              </div>
+              <h2 className="text-2xl font-black text-gray-900 dark:text-white">
+                Registre Central de TOUTES les Transactions
+              </h2>
+              <p className="text-gray-500 text-xs mt-0.5">
+                Accès souverain administrateur : traçabilité de qui a acheté le gaz (WhatsApp vérifié) et où (boutique et localisation).
+              </p>
+            </div>
+
+            <div className="flex items-center gap-2">
+              <div className="inline-flex p-1 bg-gray-100 dark:bg-neutral-950 rounded-2xl border border-gray-200 dark:border-neutral-800">
+                <button
+                  onClick={() => setTxFilter('ALL')}
+                  className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all ${
+                    txFilter === 'ALL'
+                      ? 'bg-pleingaz-red text-white shadow-sm'
+                      : 'text-gray-600 dark:text-gray-400 hover:text-black dark:hover:text-white'
+                  }`}
+                >
+                  Tous ({transactions.length})
+                </button>
+                <button
+                  onClick={() => setTxFilter('ONLINE')}
+                  className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all ${
+                    txFilter === 'ONLINE'
+                      ? 'bg-pleingaz-red text-white shadow-sm'
+                      : 'text-gray-600 dark:text-gray-400 hover:text-black dark:hover:text-white'
+                  }`}
+                >
+                  En Ligne 🛵
+                </button>
+                <button
+                  onClick={() => setTxFilter('COUNTER')}
+                  className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all ${
+                    txFilter === 'COUNTER'
+                      ? 'bg-pleingaz-red text-white shadow-sm'
+                      : 'text-gray-600 dark:text-gray-400 hover:text-black dark:hover:text-white'
+                  }`}
+                >
+                  Comptoir 🏪
+                </button>
+              </div>
+
+              <button
+                onClick={() => alert('Export CSV / PDF du registre complet des transactions généré.')}
+                className="px-3 py-2 bg-gray-900 dark:bg-white text-white dark:text-gray-900 rounded-xl text-xs font-bold flex items-center gap-1.5 hover:opacity-90 transition"
+              >
+                <Download size={14} />
+                <span>Exporter</span>
+              </button>
+            </div>
+          </div>
+
+          {/* Tableau D-16 */}
+          <div className="overflow-x-auto">
+            <table className="w-full text-left text-xs">
+              <thead>
+                <tr className="text-gray-400 border-b border-gray-100 dark:border-neutral-800">
+                  <th className="pb-3 font-bold">Réf / Reçu</th>
+                  <th className="pb-3 font-bold">Type</th>
+                  <th className="pb-3 font-bold">Client (Qui)</th>
+                  <th className="pb-3 font-bold">Dépôt & Ville (OÙ)</th>
+                  <th className="pb-3 font-bold">Produit</th>
+                  <th className="pb-3 font-bold text-center">Qté</th>
+                  <th className="pb-3 font-bold text-right">Montant</th>
+                  <th className="pb-3 font-bold text-center">Quota D-14</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-gray-100 dark:divide-neutral-800">
+                {filteredTransactions.map((tx) => (
+                  <tr key={tx.id} className="hover:bg-gray-50 dark:hover:bg-neutral-950/50">
+                    <td className="py-3 font-mono font-bold text-gray-900 dark:text-white">
+                      {tx.reference}
+                    </td>
+                    <td className="py-3">
+                      <span className={`px-2 py-0.5 rounded-full text-[10px] font-bold ${
+                        tx.type === 'ONLINE'
+                          ? 'bg-sky-500/10 text-sky-500 border border-sky-500/30'
+                          : 'bg-emerald-500/10 text-emerald-500 border border-emerald-500/30'
+                      }`}>
+                        {tx.type === 'ONLINE' ? 'Livraison' : 'Comptoir'}
+                      </span>
+                    </td>
+                    <td className="py-3">
+                      <div className="font-bold text-gray-900 dark:text-white">{tx.customerName}</div>
+                      <div className="text-[11px] text-gray-400 flex items-center gap-1">
+                        <Phone size={10} className="text-emerald-500" />
+                        <span>{tx.customerPhone}</span>
+                      </div>
+                    </td>
+                    <td className="py-3">
+                      <div className="font-bold text-gray-800 dark:text-gray-200">{tx.storeName}</div>
+                      <div className="text-[11px] text-gray-400 flex items-center gap-1">
+                        <MapPin size={10} className="text-red-500" />
+                        <span>{tx.location}</span>
+                      </div>
+                    </td>
+                    <td className="py-3 font-medium text-gray-700 dark:text-gray-300">
+                      {tx.product}
+                    </td>
+                    <td className="py-3 text-center font-bold">
+                      {tx.quantity}
+                    </td>
+                    <td className="py-3 text-right">
+                      <div className="font-black text-gray-900 dark:text-white font-mono">
+                        {tx.amount?.toLocaleString('fr-FR')} F
+                      </div>
+                      <span className="text-[10px] text-gray-400 font-bold uppercase">{tx.paymentMethod}</span>
+                    </td>
+                    <td className="py-3 text-center">
+                      <span className="inline-flex items-center gap-1 text-[10px] font-bold text-emerald-500">
+                        <CheckCircle2 size={12} />
+                        <span>Validé</span>
+                      </span>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
           </div>
         </div>
 

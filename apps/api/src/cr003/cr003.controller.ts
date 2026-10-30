@@ -52,4 +52,15 @@ export class Cr003Controller {
   async ackNotice(@Body() body: { noticeId: string; phone: string }) {
     return this.cr003Service.ackNotice(body.noticeId, body.phone || '+237699123456');
   }
+
+  @Get('admin/transactions')
+  async getAllTransactions() {
+    return this.cr003Service.getAllTransactions();
+  }
+
+  @Get('admin/stats')
+  async getAdminStats() {
+    return this.cr003Service.getAdminStats();
+  }
 }
+
