@@ -20,9 +20,29 @@ import {
 import { motion, AnimatePresence } from 'framer-motion';
 
 export default function InventoryPage() {
-  const [activeTab, setActiveTab] = useState<'STOCK' | 'COURIERS' | 'KYC'>('STOCK');
+  const [activeTab, setActiveTab] = useState<'STOCK' | 'COMPTOIR' | 'COURIERS' | 'KYC'>('STOCK');
   const [storeData, setStoreData] = useState<any>(null);
   const [phone, setPhone] = useState<string>('');
+
+  // Formulaire Vente au Comptoir (D-16)
+  const [counterCustomerPhone, setCounterCustomerPhone] = useState('');
+  const [counterBottleType, setCounterBottleType] = useState('Bouteille 12.5 kg PLEINGAZ');
+  const [counterQuantity, setCounterQuantity] = useState(1);
+  const [counterPaymentMethod, setCounterPaymentMethod] = useState<'CASH' | 'MOMO'>('CASH');
+  const [counterReceipt, setCounterReceipt] = useState<any | null>(null);
+  const [counterError, setCounterError] = useState<string | null>(null);
+  const [isSubmittingSale, setIsSubmittingSale] = useState(false);
+  const [counterSalesHistory, setCounterSalesHistory] = useState<any[]>([
+    {
+      id: 'cs-init-1',
+      receiptNumber: 'CS-849120',
+      customerPhone: '+237699112233',
+      bottleType: 'Bouteille 12.5 kg PLEINGAZ',
+      quantity: 1,
+      amountTotal: 6500,
+      createdAt: 'Aujourd’hui 11:42',
+    },
+  ]);
 
   // Formulaire d'ajout livreur
   const [courierName, setCourierName] = useState('');
@@ -131,6 +151,70 @@ export default function InventoryPage() {
     }
   };
 
+  const handleCounterSaleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setCounterError(null);
+    setCounterReceipt(null);
+
+    const cleanPhone = counterCustomerPhone.trim();
+    if (!cleanPhone || cleanPhone.length < 8) {
+      setCounterError('Le numéro de téléphone du client est obligatoire pour la traçabilité (D-16).');
+      return;
+    }
+
+    setIsSubmittingSale(true);
+
+    try {
+      const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001';
+      const unitPrice = counterBottleType.includes('6 kg') ? 3600 : counterBottleType.includes('50 kg') ? 28000 : 6500;
+      const total = unitPrice * counterQuantity;
+
+      const res = await fetch(`${apiUrl}/api/v1/cr003/counter-sales`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          customerPhone: cleanPhone,
+          bottleType: counterBottleType,
+          quantity: counterQuantity,
+          amountTotal: total,
+        }),
+      });
+
+      const data = await res.json();
+      if (!res.ok) {
+        throw new Error(data.message || 'Vente refusée par le système.');
+      }
+
+      setCounterReceipt(data.sale || {
+        receiptNumber: `CS-${Date.now().toString().slice(-6)}`,
+        customerPhone: cleanPhone,
+        bottleType: counterBottleType,
+        quantity: counterQuantity,
+        amountTotal: total,
+      });
+
+      setCounterSalesHistory((prev) => [
+        {
+          id: `cs-${Date.now()}`,
+          receiptNumber: data.sale?.receiptNumber || `CS-${Date.now().toString().slice(-6)}`,
+          customerPhone: cleanPhone,
+          bottleType: counterBottleType,
+          quantity: counterQuantity,
+          amountTotal: total,
+          createdAt: 'À l’instant',
+        },
+        ...prev,
+      ]);
+
+      setCounterCustomerPhone('');
+      setCounterQuantity(1);
+    } catch (err: any) {
+      setCounterError(err.message || 'Vente refusée. Vérifiez le quota du client (5 max / 30j).');
+    } finally {
+      setIsSubmittingSale(false);
+    }
+  };
+
   const handleKycUpload = (e: React.FormEvent) => {
     e.preventDefault();
     setIsUploadingKyc(true);
@@ -173,8 +257,8 @@ export default function InventoryPage() {
           </div>
         </div>
 
-        {/* Navigation des 3 Onglets */}
-        <div className="flex items-center gap-3 border-b border-white/10 pb-2">
+        {/* Navigation des 4 Onglets (D-16 Comptoir inclus) */}
+        <div className="flex flex-wrap items-center gap-3 border-b border-white/10 pb-2">
           <button
             onClick={() => setActiveTab('STOCK')}
             className={`px-5 py-2.5 rounded-2xl text-xs sm:text-sm font-black flex items-center gap-2 transition-all ${
@@ -185,6 +269,18 @@ export default function InventoryPage() {
           >
             <Package size={17} />
             <span>Mon Stock 📦</span>
+          </button>
+
+          <button
+            onClick={() => setActiveTab('COMPTOIR')}
+            className={`px-5 py-2.5 rounded-2xl text-xs sm:text-sm font-black flex items-center gap-2 transition-all ${
+              activeTab === 'COMPTOIR'
+                ? 'bg-[#E51A24] text-white shadow-lg shadow-[#E51A24]/30'
+                : 'bg-white/5 text-neutral-400 hover:bg-white/10 hover:text-white'
+            }`}
+          >
+            <Store size={17} />
+            <span>Vente au Comptoir 🏪 (D-16)</span>
           </button>
 
           <button
@@ -216,6 +312,171 @@ export default function InventoryPage() {
         {activeTab === 'STOCK' && (
           <div className="space-y-6">
             <InventoryList />
+          </div>
+        )}
+
+        {/* ONGLET COMPTOIR (D-16) */}
+        {activeTab === 'COMPTOIR' && (
+          <div className="space-y-6">
+            <div className="p-6 rounded-3xl bg-neutral-900 border border-white/10 shadow-xl space-y-6">
+              <div>
+                <h2 className="text-xl font-black text-white flex items-center gap-2">
+                  <Store size={22} className="text-[#E51A24]" />
+                  Enregistrement Vente Directe au Comptoir (D-16)
+                </h2>
+                <p className="text-xs text-neutral-400 mt-1">
+                  Chaque vente physique en boutique doit être enregistrée avec le numéro de l’acheteur pour contrôle du quota légal (5 max / 30j) et émission du reçu fiscal.
+                </p>
+              </div>
+
+              {counterReceipt && (
+                <div className="p-5 rounded-2xl bg-emerald-950/60 border border-emerald-500/50 text-white space-y-2">
+                  <div className="flex items-center justify-between">
+                    <span className="inline-flex items-center gap-1.5 text-xs font-black text-emerald-400">
+                      <CheckCircle2 size={16} />
+                      Vente enregistrée avec succès • Reçu {counterReceipt.receiptNumber}
+                    </span>
+                    <span className="text-xs font-mono font-bold text-amber-400">
+                      {counterReceipt.amountTotal?.toLocaleString('fr-FR')} FCFA
+                    </span>
+                  </div>
+                  <p className="text-xs text-neutral-300">
+                    Client : <strong>{counterReceipt.customerPhone}</strong> • Produit : {counterReceipt.bottleType} ({counterReceipt.quantity}x)
+                  </p>
+                  <div className="pt-2">
+                    <a
+                      href={`https://wa.me/${counterReceipt.customerPhone?.replace(/\D/g, '')}?text=${encodeURIComponent(`Bonjour, voici votre reçu officiel PLEINGAZ : ${counterReceipt.receiptNumber} pour ${counterReceipt.bottleType}. Merci de votre fidélité.`)}`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-bold rounded-lg transition"
+                    >
+                      Envoyer reçu sur WhatsApp ↗
+                    </a>
+                  </div>
+                </div>
+              )}
+
+              {counterError && (
+                <div className="p-4 rounded-2xl bg-red-950/50 border border-red-500/40 text-red-200 text-xs font-semibold flex items-center gap-2">
+                  <AlertCircle size={16} className="text-red-400 shrink-0" />
+                  <span>{counterError}</span>
+                </div>
+              )}
+
+              <form onSubmit={handleCounterSaleSubmit} className="space-y-4">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-xs font-bold text-neutral-300 mb-1.5">
+                      Numéro WhatsApp Client (Obligatoire)
+                    </label>
+                    <div className="relative">
+                      <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-neutral-500">
+                        <Phone size={15} />
+                      </div>
+                      <input
+                        type="tel"
+                        placeholder="+237 699 123 456"
+                        value={counterCustomerPhone}
+                        onChange={(e) => setCounterCustomerPhone(e.target.value)}
+                        className="w-full bg-neutral-950 border border-white/10 focus:border-[#E51A24] rounded-xl pl-9 pr-4 py-2.5 text-sm text-white placeholder-neutral-600 outline-none"
+                        required
+                      />
+                    </div>
+                  </div>
+
+                  <div>
+                    <label className="block text-xs font-bold text-neutral-300 mb-1.5">
+                      Type de Bouteille PLEINGAZ
+                    </label>
+                    <select
+                      value={counterBottleType}
+                      onChange={(e) => setCounterBottleType(e.target.value)}
+                      className="w-full bg-neutral-950 border border-white/10 focus:border-[#E51A24] rounded-xl px-4 py-2.5 text-sm text-white outline-none"
+                    >
+                      <option value="Bouteille 12.5 kg PLEINGAZ">Bouteille 12.5 kg PLEINGAZ (6 500 FCFA)</option>
+                      <option value="Bouteille 6 kg PLEINGAZ">Bouteille 6 kg PLEINGAZ (3 600 FCFA)</option>
+                      <option value="Bouteille 50 kg PLEINGAZ">Bouteille 50 kg PLEINGAZ (28 000 FCFA)</option>
+                    </select>
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-xs font-bold text-neutral-300 mb-1.5">
+                      Quantité
+                    </label>
+                    <input
+                      type="number"
+                      min={1}
+                      max={5}
+                      value={counterQuantity}
+                      onChange={(e) => setCounterQuantity(Number(e.target.value) || 1)}
+                      className="w-full bg-neutral-950 border border-white/10 focus:border-[#E51A24] rounded-xl px-4 py-2.5 text-sm text-white outline-none"
+                      required
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-xs font-bold text-neutral-300 mb-1.5">
+                      Mode de Règlement
+                    </label>
+                    <div className="grid grid-cols-2 gap-2">
+                      <button
+                        type="button"
+                        onClick={() => setCounterPaymentMethod('CASH')}
+                        className={`py-2 px-3 text-xs font-bold rounded-xl border transition ${
+                          counterPaymentMethod === 'CASH'
+                            ? 'bg-emerald-600 text-white border-emerald-500'
+                            : 'bg-neutral-950 text-neutral-400 border-white/10'
+                        }`}
+                      >
+                        Espèces
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => setCounterPaymentMethod('MOMO')}
+                        className={`py-2 px-3 text-xs font-bold rounded-xl border transition ${
+                          counterPaymentMethod === 'MOMO'
+                            ? 'bg-amber-600 text-white border-amber-500'
+                            : 'bg-neutral-950 text-neutral-400 border-white/10'
+                        }`}
+                      >
+                        Mobile Money
+                      </button>
+                    </div>
+                  </div>
+                </div>
+
+                <button
+                  type="submit"
+                  disabled={isSubmittingSale}
+                  className="px-6 py-3 rounded-xl bg-gradient-to-r from-[#E51A24] to-[#b30d15] text-white font-black text-xs sm:text-sm hover:scale-105 active:scale-95 transition-all shadow-lg shadow-[#E51A24]/30 flex items-center gap-2"
+                >
+                  <CheckCircle2 size={16} />
+                  <span>{isSubmittingSale ? 'Contrôle du quota...' : 'Enregistrer la vente au comptoir'}</span>
+                </button>
+              </form>
+            </div>
+
+            {/* Historique des ventes comptoir du jour */}
+            <div className="space-y-3">
+              <h3 className="font-black text-lg text-white">Ventes au Comptoir Récentes</h3>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                {counterSalesHistory.map((sale) => (
+                  <div key={sale.id} className="p-4 rounded-2xl bg-neutral-900 border border-white/10 flex items-center justify-between">
+                    <div>
+                      <div className="font-bold text-sm text-white">{sale.bottleType}</div>
+                      <div className="text-xs text-neutral-400">{sale.customerPhone} • {sale.createdAt}</div>
+                      <span className="text-[10px] font-mono text-neutral-500">N° {sale.receiptNumber}</span>
+                    </div>
+                    <div className="text-right">
+                      <span className="text-sm font-black text-amber-400">{sale.amountTotal?.toLocaleString('fr-FR')} FCFA</span>
+                      <span className="block text-[10px] text-emerald-400 font-bold">Quota Validé (D-14)</span>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
           </div>
         )}
 

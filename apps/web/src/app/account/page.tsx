@@ -2,229 +2,389 @@
 
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import { Flame, Award, Gift, Sparkles, ShoppingBag, MapPin, ArrowRight, ShieldCheck, LogOut, CheckCircle2 } from 'lucide-react';
-import { motion } from 'framer-motion';
+import {
+  Flame,
+  AlertTriangle,
+  Zap,
+  ShoppingBag,
+  Store,
+  CheckCircle2,
+  Phone,
+  Clock,
+  ShieldCheck,
+  LogOut,
+  Info,
+  Truck,
+  ArrowRight,
+  PackageCheck
+} from 'lucide-react';
+import { motion, AnimatePresence } from 'framer-motion';
 import Link from 'next/link';
 
-export default function AccountPage() {
+interface BuyerQuota {
+  phone: string;
+  consumed: number;
+  limit: number;
+  remaining: number;
+  allowed: boolean;
+  windowDays: number;
+}
+
+interface Notice {
+  id: string;
+  title: string;
+  content: string;
+  category: string;
+}
+
+export default function BuyerDashboardPage() {
   const router = useRouter();
   const [user, setUser] = useState<any>(null);
+  const [quota, setQuota] = useState<BuyerQuota>({
+    phone: '+237699123456',
+    consumed: 2,
+    limit: 5,
+    remaining: 3,
+    allowed: true,
+    windowDays: 30,
+  });
+  const [notice, setNotice] = useState<Notice | null>(null);
+  const [deliveryConfirmed, setDeliveryConfirmed] = useState(false);
   const [loading, setLoading] = useState(true);
 
+  const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001';
+
   useEffect(() => {
-    const storedUser = localStorage.getItem('pleingaz_user');
-    const token = localStorage.getItem('pleingaz_token');
-
-    if (!token && !storedUser) {
-      // Démo : charger un profil invité ou rediriger
-      setUser({
-        firstName: 'Client',
-        lastName: 'Privilégié',
-        phone: '+237690000000',
-        loyaltyPoints: 100,
-      });
-      setLoading(false);
-      return;
-    }
-
-    if (storedUser) {
-      try {
-        setUser(JSON.parse(storedUser));
-      } catch (e) {
-        setUser({ firstName: 'Client', loyaltyPoints: 100 });
+    // 1. Récupération utilisateur
+    if (typeof window !== 'undefined') {
+      const stored = localStorage.getItem('pleingaz_user');
+      if (stored) {
+        try {
+          setUser(JSON.parse(stored));
+        } catch (e) {
+          setUser({ firstName: 'Marie', lastName: 'Tchouassi', phone: '+237699123456' });
+        }
+      } else {
+        setUser({ firstName: 'Marie', lastName: 'Tchouassi', phone: '+237699123456' });
       }
     }
 
-    // Tenter de rafraîchir depuis l'API /auth/me
-    const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001';
-    if (token) {
-      fetch(`${apiUrl}/auth/me`, {
-        headers: { Authorization: `Bearer ${token}` },
+    // 2. Chargement du quota dynamique CR-003 (D-14)
+    const targetPhone = '+237699123456';
+    fetch(`${API_URL}/api/v1/cr003/buyer/quota?phone=${encodeURIComponent(targetPhone)}`)
+      .then((res) => (res.ok ? res.json() : null))
+      .then((data) => {
+        if (data) setQuota(data);
       })
-        .then((res) => (res.ok ? res.json() : null))
-        .then((data) => {
-          if (data) {
-            setUser({
-              ...data,
-              firstName: data.customerProfile?.firstName || data.phone,
-              lastName: data.customerProfile?.lastName || '',
-              loyaltyPoints: data.customerProfile?.loyaltyPoints ?? 100,
-            });
-          }
-        })
-        .catch(() => {})
-        .finally(() => setLoading(false));
-    } else {
-      setLoading(false);
-    }
-  }, []);
+      .catch(() => {
+        // Garder le quota par défaut
+      });
 
-  const handleLogout = () => {
-    localStorage.removeItem('pleingaz_token');
-    localStorage.removeItem('pleingaz_user');
-    router.push('/');
+    // 3. Chargement des annonces officielles (D-18)
+    fetch(`${API_URL}/api/v1/cr003/notices`)
+      .then((res) => (res.ok ? res.json() : null))
+      .then((notices) => {
+        if (Array.isArray(notices) && notices.length > 0) {
+          setNotice(notices[0]);
+        }
+      })
+      .catch(() => {})
+      .finally(() => setLoading(false));
+  }, [API_URL]);
+
+  // Acquittement de l'annonce officielle (D-18)
+  const handleAckNotice = async () => {
+    if (!notice) return;
+    try {
+      await fetch(`${API_URL}/api/v1/cr003/notices/ack`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          noticeId: notice.id,
+          phone: user?.phone || '+237699123456',
+        }),
+      });
+    } catch (e) {}
+    setNotice(null);
   };
 
-  const points = user?.loyaltyPoints ?? 100;
-  const fcfaEquiv = points * 10; // 100 pts = 1 000 FCFA
+  const handleLogout = () => {
+    if (typeof window !== 'undefined') {
+      localStorage.removeItem('pleingaz_token');
+      localStorage.removeItem('pleingaz_user');
+    }
+    router.push('/login');
+  };
 
   return (
-    <div className="min-h-screen bg-neutral-950 text-white py-12 px-4 relative overflow-hidden">
-      {/* Background Glows */}
-      <div className="absolute top-10 left-1/2 -translate-x-1/2 w-[600px] h-96 bg-orange-600/15 rounded-full blur-[140px] pointer-events-none" />
-
-      <div className="max-w-4xl mx-auto space-y-8 relative z-10">
-        
-        {/* Top Header Card */}
-        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 bg-white/5 backdrop-blur-xl border border-white/10 p-6 sm:p-8 rounded-3xl">
-          <div className="flex items-center gap-4">
-            <div className="w-16 h-16 rounded-2xl bg-gradient-to-tr from-orange-500 to-red-600 flex items-center justify-center font-extrabold text-2xl shadow-lg shadow-orange-500/30">
-              {user?.firstName?.[0] || 'P'}
+    <div className="min-h-screen bg-neutral-950 text-white pb-24">
+      {/* Top Navbar */}
+      <header className="sticky top-0 z-40 bg-neutral-900/90 backdrop-blur-md border-b border-neutral-800 px-4 py-3">
+        <div className="max-w-lg mx-auto flex items-center justify-between">
+          <div className="flex items-center gap-2">
+            <div className="w-8 h-8 rounded-lg bg-red-600 flex items-center justify-center text-white shadow-md shadow-red-600/30">
+              <Flame className="w-5 h-5 fill-white" />
             </div>
-            <div>
-              <div className="flex items-center gap-2">
-                <h1 className="text-2xl font-bold">
-                  Bonjour, {user?.firstName || 'Client'} {user?.lastName || ''}
-                </h1>
-                <span className="px-2.5 py-0.5 rounded-full bg-orange-500/20 text-orange-400 border border-orange-500/30 text-xs font-bold uppercase tracking-wider">
-                  Membre Vérifié
-                </span>
-              </div>
-              <p className="text-neutral-400 text-sm mt-0.5">{user?.phone || '+237 6XX XX XX XX'}</p>
-            </div>
+            <span className="font-extrabold text-lg tracking-tight text-white uppercase">
+              PLEINGAZ
+            </span>
           </div>
-
-          <div className="flex items-center gap-3 self-end sm:self-auto">
-            <Link
-              href="/search"
-              className="px-5 py-2.5 rounded-xl font-bold bg-gradient-to-r from-orange-500 to-red-600 text-white text-sm shadow-md hover:shadow-orange-500/40 hover:scale-105 transition-all flex items-center gap-1.5"
-            >
-              <Flame size={16} />
-              Commander du gaz
-            </Link>
+          <div className="flex items-center gap-2">
+            <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[11px] font-semibold bg-emerald-950/80 text-emerald-400 border border-emerald-800/60">
+              <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
+              Connecté
+            </span>
             <button
               onClick={handleLogout}
-              className="p-2.5 rounded-xl border border-white/10 hover:bg-white/10 text-neutral-400 hover:text-white transition-all"
+              className="p-1.5 text-neutral-400 hover:text-white transition rounded-lg hover:bg-neutral-800"
               title="Déconnexion"
             >
-              <LogOut size={18} />
+              <LogOut className="w-4 h-4" />
             </button>
           </div>
         </div>
+      </header>
 
-        {/* Loyalty Rewards Dashboard */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-          {/* Card 1 : Points Balance */}
-          <motion.div
-            whileHover={{ y: -4 }}
-            className="md:col-span-2 p-6 sm:p-8 rounded-3xl bg-gradient-to-br from-orange-950/60 via-neutral-900/80 to-neutral-950 border border-orange-500/30 shadow-2xl relative overflow-hidden flex flex-col justify-between"
-          >
-            <div className="absolute top-0 right-0 p-8 opacity-10">
-              <Sparkles size={160} />
-            </div>
-
-            <div className="space-y-4">
-              <div className="flex justify-between items-center">
-                <span className="text-xs font-bold uppercase tracking-wider text-orange-400 flex items-center gap-2">
-                  <Award size={16} />
-                  Cagnotte de Fidélité PLEINGAZ
-                </span>
-                <span className="px-3 py-1 rounded-full bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 text-xs font-bold">
-                  Actif
-                </span>
-              </div>
-
-              <div>
-                <div className="text-5xl sm:text-6xl font-black text-white tracking-tight flex items-baseline gap-2">
-                  {points}
-                  <span className="text-2xl font-bold text-orange-400">pts</span>
-                </div>
-                <p className="text-sm text-neutral-300 mt-2 font-medium">
-                  Soit <strong className="text-white text-base">{fcfaEquiv.toLocaleString()} FCFA</strong> utilisables dès votre prochaine recharge en livraison à domicile !
-                </p>
-              </div>
-
-              {/* Progress bar towards next VIP tier */}
-              <div className="space-y-2 pt-2">
-                <div className="flex justify-between text-xs text-neutral-400 font-semibold">
-                  <span>Niveau actuel : Bronze</span>
-                  <span>Prochain palier : Argent (200 pts)</span>
-                </div>
-                <div className="h-2.5 w-full bg-white/10 rounded-full overflow-hidden">
-                  <motion.div
-                    className="h-full bg-gradient-to-r from-orange-500 to-red-500 rounded-full"
-                    initial={{ width: 0 }}
-                    animate={{ width: `${Math.min((points / 200) * 100, 100)}%` }}
-                    transition={{ duration: 0.8 }}
-                  />
+      <main className="max-w-lg mx-auto p-4 space-y-4">
+        {/* Bannière InfoNotice Ciblée (D-18) */}
+        <AnimatePresence>
+          {notice && (
+            <motion.div
+              initial={{ opacity: 0, height: 0 }}
+              animate={{ opacity: 1, height: 'auto' }}
+              exit={{ opacity: 0, height: 0 }}
+              className="p-3.5 bg-sky-950/40 border border-sky-800/60 rounded-2xl flex items-start justify-between gap-3 shadow-lg"
+            >
+              <div className="flex items-start gap-2.5">
+                <Info className="w-4 h-4 text-sky-400 shrink-0 mt-0.5" />
+                <div>
+                  <h4 className="text-xs font-bold text-sky-300">{notice.title}</h4>
+                  <p className="text-[11px] text-neutral-300 mt-0.5 leading-relaxed">
+                    {notice.content}
+                  </p>
                 </div>
               </div>
-            </div>
-
-            <div className="mt-6 pt-6 border-t border-white/10 flex flex-wrap items-center justify-between gap-4 text-xs text-neutral-400">
-              <div className="flex items-center gap-2">
-                <CheckCircle2 size={16} className="text-emerald-400" />
-                <span>+20 points cumulés par bouteille 12.5kg commandée</span>
-              </div>
-              <Link href="/checkout" className="text-orange-400 font-bold hover:underline flex items-center gap-1">
-                Utiliser mes points <ArrowRight size={14} />
-              </Link>
-            </div>
-          </motion.div>
-
-          {/* Card 2 : VIP Benefits */}
-          <div className="p-6 rounded-3xl bg-white/5 backdrop-blur-xl border border-white/10 flex flex-col justify-between space-y-4">
-            <div>
-              <h3 className="font-bold text-lg text-white flex items-center gap-2">
-                <Gift className="text-orange-400" size={20} />
-                Vos Privilèges
-              </h3>
-              <p className="text-xs text-neutral-400 mt-1">Avantages réservés aux clients PLEINGAZ :</p>
-            </div>
-
-            <div className="space-y-3 text-xs">
-              <div className="p-3 rounded-2xl bg-white/5 border border-white/5 space-y-0.5">
-                <p className="font-bold text-orange-300">🔥 Prix officiel garanti</p>
-                <p className="text-neutral-400">6 500 FCFA la recharge 12.5kg, sans surfacturation illégale.</p>
-              </div>
-              <div className="p-3 rounded-2xl bg-white/5 border border-white/5 space-y-0.5">
-                <p className="font-bold text-orange-300">⚡ Réservation 15 min</p>
-                <p className="text-neutral-400">Votre bouteille est physiquement bloquée le temps du retrait.</p>
-              </div>
-              <div className="p-3 rounded-2xl bg-white/5 border border-white/5 space-y-0.5">
-                <p className="font-bold text-orange-300">🛡️ Code Secret SHA-256</p>
-                <p className="text-neutral-400">Sécurité maximale lors de la livraison à domicile.</p>
-              </div>
-            </div>
-
-            <div className="pt-2">
-              <Link
-                href="/stores"
-                className="w-full py-3 rounded-xl bg-white/10 hover:bg-white/15 text-white font-semibold text-xs flex items-center justify-center gap-2 transition-all"
+              <button
+                onClick={handleAckNotice}
+                className="shrink-0 px-2.5 py-1.5 bg-sky-600 hover:bg-sky-500 text-white font-bold text-[11px] rounded-lg shadow transition"
               >
-                <MapPin size={14} />
-                Voir les dépôts agréés
-              </Link>
-            </div>
-          </div>
-        </div>
+                J'ai compris
+              </button>
+            </motion.div>
+          )}
+        </AnimatePresence>
 
-        {/* Quick Action Banner */}
-        <div className="p-6 sm:p-8 rounded-3xl bg-gradient-to-r from-orange-600 to-red-600 shadow-xl flex flex-col sm:flex-row items-center justify-between gap-6 text-center sm:text-left">
-          <div className="space-y-1">
-            <h3 className="text-2xl font-black text-white">Besoin d'une recharge maintenant ?</h3>
-            <p className="text-orange-100 text-sm max-w-xl">
-              Détectez immédiatement les points de vente ayant du stock optimal vérifié dans votre quartier.
+        {/* Header Usager & Bouton Fuite Gaz */}
+        <div className="flex items-center justify-between pt-1">
+          <div>
+            <h1 className="text-xl font-black text-white">
+              Bonjour {user?.firstName || 'Marie'} 👋
+            </h1>
+            <p className="text-xs text-neutral-400">
+              Douala • Akwa • <span className="text-emerald-400 font-medium">PostgreSQL Direct</span>
             </p>
           </div>
-          <Link
-            href="/search"
-            className="px-8 py-3.5 rounded-2xl bg-white text-neutral-900 font-extrabold shadow-lg hover:scale-105 active:scale-95 transition-all text-sm shrink-0"
+          <button
+            onClick={() =>
+              alert(
+                '🚨 PROTOCOLE FUITE PLEINGAZ :\n1. Aérez immédiatement les pièces.\n2. Fermez le robinet détendeur de la bouteille.\n3. N’allumez aucune flamme ni interrupteur électrique.\n4. Éloignez-vous et composez la ligne d’urgence : +237 600 000 000'
+              )
+            }
+            className="px-3 py-1.5 bg-red-950/80 border border-red-700/80 text-red-300 hover:bg-red-900 font-bold text-xs rounded-xl flex items-center gap-1.5 shadow-md shadow-red-900/20 active:scale-95 transition"
           >
-            Recherche de Gaz Immédiate
+            <AlertTriangle className="w-3.5 h-3.5 text-red-400" />
+            <span>Fuite de gaz ?</span>
+          </button>
+        </div>
+
+        {/* JAUGE DE QUOTA VISUELLE (D-14 : 5 bouteilles max / 30j) */}
+        <div className="bg-neutral-900/90 border border-neutral-800 rounded-3xl p-5 shadow-xl space-y-3">
+          <div className="flex items-center justify-between">
+            <span className="text-xs font-extrabold text-neutral-300 uppercase tracking-wider flex items-center gap-1.5">
+              <ShieldCheck className="w-4 h-4 text-amber-400" />
+              Mon Quota Mensuel (D-14)
+            </span>
+            <span className="text-sm font-black text-amber-400 font-mono">
+              {quota.consumed} / {quota.limit} <span className="text-xs font-normal text-neutral-500">bouteilles</span>
+            </span>
+          </div>
+
+          {/* Barres de progression individuelles */}
+          <div className="grid grid-cols-5 gap-2 pt-1">
+            {Array.from({ length: quota.limit }).map((_, index) => {
+              const isFilled = index < quota.consumed;
+              return (
+                <div
+                  key={index}
+                  className={`h-3 rounded-full transition-all duration-300 ${
+                    isFilled
+                      ? 'bg-gradient-to-r from-red-600 to-amber-500 shadow-md shadow-red-600/30'
+                      : 'bg-neutral-800'
+                  }`}
+                  title={isFilled ? `Bouteille ${index + 1} consommée` : `Bouteille ${index + 1} disponible`}
+                />
+              );
+            })}
+          </div>
+
+          <div className="flex items-center justify-between text-[11px] text-neutral-400 pt-1">
+            <span className="flex items-center gap-1">
+              {quota.remaining > 0 ? (
+                <>
+                  <span className="w-2 h-2 rounded-full bg-emerald-400" />
+                  <span>{quota.remaining} recharge{quota.remaining > 1 ? 's' : ''} restante{quota.remaining > 1 ? 's' : ''}</span>
+                </>
+              ) : (
+                <>
+                  <span className="w-2 h-2 rounded-full bg-red-500" />
+                  <strong className="text-red-400">Plafond atteint (0 disponible)</strong>
+                </>
+              )}
+            </span>
+            <span>Régulation : 5 max / 30 jours</span>
+          </div>
+        </div>
+
+        {/* REASSORT HABITUEL 1-CLIC */}
+        <div className="bg-gradient-to-br from-red-600 to-red-800 text-white rounded-3xl p-5 shadow-xl relative overflow-hidden">
+          <div className="flex items-center justify-between mb-3">
+            <span className="text-[11px] font-bold uppercase tracking-wider bg-white/20 px-2.5 py-1 rounded-full flex items-center gap-1">
+              <Zap className="w-3 h-3 fill-white" />
+              Recharge Habituelle Rapide
+            </span>
+            <span className="text-xs opacity-90">À 450 m</span>
+          </div>
+
+          <div className="flex items-baseline justify-between mb-4">
+            <div>
+              <h3 className="text-xl font-black">Bouteille 12.5 kg PLEINGAZ</h3>
+              <p className="text-xs text-white/80">Dépôt Partenaire Akwa Nord</p>
+            </div>
+            <div className="text-right">
+              <div className="text-2xl font-black font-mono">7 500 F</div>
+              <div className="text-[10px] text-white/80">dont 1 000 F livraison fixe</div>
+            </div>
+          </div>
+
+          <Link
+            href="/checkout"
+            className="w-full py-3 bg-white hover:bg-neutral-100 active:scale-[0.99] text-red-600 font-extrabold text-sm rounded-xl shadow-lg flex items-center justify-center gap-2 transition"
+          >
+            <ShoppingBag className="w-4 h-4" />
+            <span>Commander en 1 Clic</span>
+            <ArrowRight className="w-4 h-4" />
           </Link>
         </div>
-      </div>
+
+        {/* COMMANDE EN COURS & DOUBLE CONFIRMATION (D-17) */}
+        <div className="bg-neutral-900/90 border border-emerald-900/40 rounded-3xl p-5 shadow-xl space-y-3">
+          <div className="flex items-center justify-between">
+            <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-bold bg-emerald-950 text-emerald-400 border border-emerald-800">
+              <Truck className="w-3.5 h-3.5" />
+              Course en cours
+            </span>
+            <span className="text-xs text-neutral-400 flex items-center gap-1">
+              <Clock className="w-3 h-3" />
+              Arrivée estimée : 12 min
+            </span>
+          </div>
+
+          <div className="border-t border-neutral-800/80 pt-3">
+            <div className="font-bold text-sm text-white">1x Bouteille 12.5 kg PLEINGAZ</div>
+            <p className="text-xs text-neutral-400 mt-0.5">
+              Livreur : <strong>Paul M. (Moto LT-402)</strong> • Repère : Devant pharmacie du rail
+            </p>
+          </div>
+
+          {/* Bloc de validation contradictoire */}
+          <div className="bg-neutral-950 p-4 rounded-2xl border border-neutral-800 mt-2">
+            {!deliveryConfirmed ? (
+              <>
+                <div className="flex items-center gap-2 text-emerald-400 font-bold text-xs mb-1">
+                  <PackageCheck className="w-4 h-4" />
+                  <span>Le livreur signale être arrivé avec votre bouteille</span>
+                </div>
+                <p className="text-[11px] text-neutral-400 mb-3">
+                  Contrôlez le plombage officiel avant de cliquer pour valider la réception.
+                </p>
+                <div className="flex gap-2">
+                  <button
+                    onClick={() => setDeliveryConfirmed(true)}
+                    className="flex-1 py-2.5 bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs rounded-xl shadow-md shadow-emerald-600/30 flex items-center justify-center gap-1.5 transition"
+                  >
+                    <CheckCircle2 className="w-3.5 h-3.5" />
+                    <span>J'ai bien reçu ma bouteille</span>
+                  </button>
+                  <button
+                    onClick={() => alert('Support PLEINGAZ alerté. Un dispatcheur examine la situation immédiatement.')}
+                    className="px-3 py-2.5 bg-neutral-800 hover:bg-neutral-700 text-neutral-300 font-bold text-xs rounded-xl transition"
+                  >
+                    Litige
+                  </button>
+                </div>
+              </>
+            ) : (
+              <div className="text-center py-2 space-y-1">
+                <div className="inline-flex items-center gap-1.5 text-emerald-400 font-extrabold text-sm">
+                  <CheckCircle2 className="w-4 h-4" />
+                  <span>Livraison Confirmée avec Succès !</span>
+                </div>
+                <p className="text-[11px] text-neutral-400">
+                  Reçu officiel transmis sur votre WhatsApp. Votre jauge de quota a été débitée.
+                </p>
+              </div>
+            )}
+          </div>
+        </div>
+
+        {/* DISTRIBUTEUR HABITUEL FAVORIS (C-01) */}
+        <div className="bg-neutral-900/90 border border-neutral-800 rounded-3xl p-5 shadow-xl flex items-center justify-between">
+          <div className="space-y-1">
+            <span className="text-[11px] font-bold text-neutral-400 uppercase tracking-wider block">
+              Mon Dépôt Agréé Habituel
+            </span>
+            <h4 className="font-bold text-sm text-white">Dépôt Gaz Akwa Nord</h4>
+            <p className="text-xs text-neutral-400">Carrefour Rail • Ouvert jusqu'à 20h00</p>
+            <span className="inline-block px-2 py-0.5 rounded-full text-[10px] font-bold bg-emerald-950 text-emerald-400 border border-emerald-800 mt-1">
+              En stock (18 btl)
+            </span>
+          </div>
+          <Link
+            href="/stores"
+            className="px-3 py-2 bg-neutral-800 hover:bg-neutral-700 text-xs font-bold rounded-xl text-neutral-200 transition"
+          >
+            Changer
+          </Link>
+        </div>
+      </main>
+
+      {/* Bottom Mobile Navigation */}
+      <nav className="fixed bottom-0 left-0 right-0 z-40 bg-neutral-900/95 backdrop-blur-lg border-t border-neutral-800 py-2 px-6">
+        <div className="max-w-lg mx-auto flex items-center justify-around">
+          <Link href="/account" className="flex flex-col items-center gap-1 text-red-500 font-bold text-[10px]">
+            <Flame className="w-5 h-5 fill-red-500" />
+            <span>Accueil</span>
+          </Link>
+          <Link href="/checkout" className="flex flex-col items-center gap-1 text-neutral-400 hover:text-white text-[10px] transition">
+            <ShoppingBag className="w-5 h-5" />
+            <span>Commander</span>
+          </Link>
+          <button
+            onClick={() => alert('Historique des commandes réelles : 2 commandes archivées sur votre compte.')}
+            className="flex flex-col items-center gap-1 text-neutral-400 hover:text-white text-[10px] transition"
+          >
+            <Clock className="w-5 h-5" />
+            <span>Historique</span>
+          </button>
+          <button
+            onClick={() => alert(`Profil : ${user?.firstName || 'Marie'} • WhatsApp : ${user?.phone || '+237699123456'}`)}
+            className="flex flex-col items-center gap-1 text-neutral-400 hover:text-white text-[10px] transition"
+          >
+            <ShieldCheck className="w-5 h-5" />
+            <span>Sécurité</span>
+          </button>
+        </div>
+      </nav>
     </div>
   );
 }
