@@ -825,6 +825,12 @@ model PlatformSettings {
   supportPhone                    String   @default("+237 657696567")
   supportEmail                    String   @default("donfackdurel1980@icloud.com")
 
+  // --- New fields for pricing & limits (CR‑003) ---
+  buyerBottleLimit                Int      @default(5)          // Max bouteilles achetées par un client
+  deliveryFixedPrice              Int      @default(2000)       // Prix fixe de livraison (FCFA)
+  priceGasPerLitre                Int      @default(850)        // Prix du gaz par litre (FCFA)
+  priceBottlePerLitre             Int      @default(2500)       // Prix d'une bouteille de 12,5 kg (FCFA)
+
   updatedAt                       DateTime @updatedAt
 }
 

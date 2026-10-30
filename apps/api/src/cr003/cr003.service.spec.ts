@@ -127,7 +127,7 @@ describe('Cr003Service - Tests Souverains D-11 à D-18', () => {
         id: 'store-1',
         ownerId: 'owner-1',
       });
-      mockPrisma.counterSale.create.mockImplementation((args) => Promise.resolve({
+      mockPrisma.counterSale.create.mockImplementation((args: any) => Promise.resolve({
         id: 'sale-1',
         ...args.data,
       }));
