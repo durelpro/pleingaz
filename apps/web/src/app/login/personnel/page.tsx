@@ -42,10 +42,15 @@ export default function StaffLoginPage() {
       if (typeof window !== 'undefined') {
         localStorage.setItem('pleingaz_token', `jwt_staff_${Date.now()}`);
         localStorage.setItem('pleingaz_user', JSON.stringify(staffUser));
+        localStorage.setItem('pleingaz_admin_auth', 'true');
+        document.cookie = `pleingaz_session=${encodeURIComponent(JSON.stringify(staffUser))}; path=/; max-age=86400; SameSite=Lax`;
+        document.cookie = `pleingaz_admin_auth=true; path=/; max-age=86400; SameSite=Lax`;
       }
 
       // Redirection étanche staff
-      router.push('/admin/dashboard');
+      const params = typeof window !== 'undefined' ? new URLSearchParams(window.location.search) : null;
+      const target = params?.get('redirect') || '/admin/dashboard';
+      router.push(target);
     } catch (err: any) {
       setError("Échec de l'authentification staff. Vérifiez vos identifiants.");
     } finally {

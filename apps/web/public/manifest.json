@@ -1,11 +1,11 @@
 {
-  "name": "PLEINGAZ",
-  "short_name": "Pleingaz",
-  "description": "Votre gaz, au prix officiel, livré chez vous.",
+  "name": "PLEINGAZ — Bouteilles toujours pleines",
+  "short_name": "PLEINGAZ",
+  "description": "Réseau numérique officiel PLEINGAZ. Gaz domestique au prix officiel homologué, disponibilité en temps réel et livraison.",
   "start_url": "/",
   "display": "standalone",
-  "background_color": "#ffffff",
-  "theme_color": "#f97316",
+  "background_color": "#0a0a0a",
+  "theme_color": "#dc2626",
   "orientation": "portrait",
   "icons": [
     {

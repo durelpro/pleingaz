@@ -1,42 +1,48 @@
 import type { Metadata, Viewport } from "next";
-import { Geist, Geist_Mono } from "next/font/google";
+import { Montserrat } from "next/font/google";
 import "./globals.css";
 
-const geistSans = Geist({
-  variable: "--font-geist-sans",
+const montserrat = Montserrat({
+  variable: "--font-montserrat",
   subsets: ["latin"],
-});
-
-const geistMono = Geist_Mono({
-  variable: "--font-geist-mono",
-  subsets: ["latin"],
+  weight: ["400", "500", "600", "700", "800"],
+  display: "swap",
 });
 
 export const viewport: Viewport = {
-  themeColor: "#f97316",
+  themeColor: "#dc2626",
 };
 
 export const metadata: Metadata = {
-  title: "Pleingaz - Votre gaz domestique en un clic",
-  description: "Achetez votre bouteille de gaz domestique au prix officiel au Cameroun. Livraison rapide, paiement sécurisé (Mobile Money).",
+  title: "PLEINGAZ — Bouteilles toujours pleines | Réseau Officiel de Distribution",
+  description: "Réseau numérique officiel PLEINGAZ au Cameroun. Nos produits, votre énergie. Gaz domestique au prix officiel garanti, disponibilité vérifiée en direct et livraison rapide.",
   manifest: "/manifest.json",
+  icons: {
+    icon: "/favicon.ico",
+    apple: "/icons/icon-192x192.png",
+  },
   openGraph: {
-    title: "Pleingaz - Votre gaz domestique",
-    description: "Le gaz domestique au juste prix, livré chez vous.",
-    url: "https://pleingaz.cm",
-    siteName: "Pleingaz",
+    title: "PLEINGAZ — Bouteilles toujours pleines",
+    description: "Trouvez votre bouteille de gaz PLEINGAZ au prix officiel garanti. Disponibilité en temps réel et livraison à domicile.",
+    url: "https://monpleingaz.com",
+    siteName: "PLEINGAZ",
     locale: "fr_CM",
     type: "website",
   },
 };
 
-export default function RootLayout({ children }: LayoutProps<"/">) {
+export default function RootLayout({
+  children,
+}: {
+  children: React.ReactNode;
+}) {
   return (
     <html
-      lang="en"
-      className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
+      lang="fr"
+      className={`${montserrat.variable} h-full antialiased font-sans`}
     >
-      <body className="min-h-full flex flex-col">{children}</body>
+      <body className="min-h-full flex flex-col font-sans bg-[#0a0a0a] text-neutral-100">{children}</body>
     </html>
   );
 }
+

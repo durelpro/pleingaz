@@ -88,32 +88,34 @@ export default function Home() {
         <div className="max-w-7xl mx-auto px-4 h-20 flex items-center justify-between">
           
           <Link href="/" className="flex items-center gap-3 group">
-            <div className="w-11 h-11 rounded-2xl bg-gradient-to-tr from-[#E51A24] via-[#f02934] to-[#ff5964] flex items-center justify-center text-white shadow-lg shadow-[#E51A24]/40 group-hover:scale-105 group-hover:rotate-2 transition-all">
-              <Flame size={26} className="text-white fill-white" />
+            <div className="relative h-11 w-36 sm:w-44 flex items-center">
+              <Image
+                src="/logoprincipal.png"
+                alt="PLEINGAZ — Bouteilles toujours pleines"
+                width={176}
+                height={58}
+                className="h-full w-auto object-contain transition-transform group-hover:scale-105"
+                priority
+              />
             </div>
-            <div>
-              <span className="font-black text-2xl tracking-tight text-white block">
-                PLEIN<span className="text-[#E51A24]">GAZ</span>
-              </span>
-              <span className="text-[10px] text-red-300 font-extrabold uppercase tracking-widest block -mt-1">
-                Réseau Numérique Officiel
-              </span>
-            </div>
+            <span className="hidden sm:inline-block px-2.5 py-1 rounded-full bg-red-600/10 border border-red-600/30 text-[10px] text-red-400 font-bold uppercase tracking-wider">
+              Réseau Officiel
+            </span>
           </Link>
 
           <nav className="hidden lg:flex items-center gap-7 text-sm font-semibold text-neutral-300">
-            <Link href="/search?auto=true" className="hover:text-[#E51A24] transition-colors flex items-center gap-1.5 group">
-              <MapPin size={17} className="text-[#E51A24] group-hover:scale-110 transition-transform" />
+            <Link href="/search?auto=true" className="hover:text-red-500 transition-colors flex items-center gap-1.5 group">
+              <MapPin size={17} className="text-red-500 group-hover:scale-110 transition-transform" />
               <span>Où Trouver du Gaz ?</span>
             </Link>
-            <Link href="/stores" className="hover:text-[#E51A24] transition-colors">
+            <Link href="/stores" className="hover:text-red-500 transition-colors">
               Points de Vente Agréés
             </Link>
-            <Link href="/distributor/apply" className="hover:text-[#E51A24] transition-colors flex items-center gap-1.5">
+            <Link href="/distributor/apply" className="hover:text-red-500 transition-colors flex items-center gap-1.5">
               <Store size={16} className="text-amber-400" />
               <span>Espace Distributeur</span>
             </Link>
-            <Link href="/delivery" className="hover:text-[#E51A24] transition-colors flex items-center gap-1.5">
+            <Link href="/delivery" className="hover:text-red-500 transition-colors flex items-center gap-1.5">
               <Truck size={16} className="text-emerald-400" />
               <span>Espace Livreur</span>
             </Link>
@@ -122,16 +124,16 @@ export default function Home() {
           <div className="flex items-center gap-3">
             <Link
               href="/account"
-              className="px-4 py-2.5 rounded-xl text-xs font-bold border border-white/15 hover:bg-white/10 hover:border-[#E51A24]/40 transition-all text-neutral-200"
+              className="px-4 py-2.5 rounded-xl text-xs font-bold border border-white/15 hover:bg-white/10 hover:border-red-600/40 transition-all text-neutral-200"
             >
-              Mon Compte
+              Mon Espace
             </Link>
             <Link
-              href="/register"
-              className="px-4 py-2.5 rounded-xl text-xs font-black bg-gradient-to-r from-[#E51A24] to-[#c7101a] text-white shadow-lg shadow-[#E51A24]/30 hover:shadow-[#E51A24]/60 hover:scale-105 active:scale-95 transition-all flex items-center gap-1.5"
+              href="/search?auto=true"
+              className="px-4 py-2.5 rounded-xl text-xs font-bold bg-gradient-to-r from-red-600 to-red-700 text-white shadow-lg shadow-red-600/30 hover:shadow-red-600/60 hover:scale-105 active:scale-95 transition-all flex items-center gap-1.5"
             >
               <Sparkles size={15} />
-              <span>+100 pts Fidélité</span>
+              <span>Commander</span>
             </Link>
           </div>
         </div>
@@ -367,16 +369,16 @@ export default function Home() {
         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6">
           <Link
             href="/distributor/apply"
-            className="p-6 rounded-3xl bg-white/[0.04] border border-white/10 hover:border-[#E51A24]/60 hover:bg-white/[0.08] transition-all space-y-3 group"
+            className="p-6 rounded-3xl bg-white/[0.04] border border-white/10 hover:border-red-600/60 hover:bg-white/[0.08] transition-all space-y-3 group"
           >
-            <div className="w-11 h-11 rounded-2xl bg-[#E51A24]/20 text-red-400 flex items-center justify-center group-hover:scale-110 transition-transform">
+            <div className="w-11 h-11 rounded-2xl bg-red-600/20 text-red-500 flex items-center justify-center group-hover:scale-110 transition-transform">
               <Store size={22} />
             </div>
-            <h3 className="font-black text-lg text-white group-hover:text-[#E51A24] transition-colors">
+            <h3 className="font-bold text-lg text-white group-hover:text-red-500 transition-colors">
               Espace Distributeur
             </h3>
             <p className="text-xs text-neutral-400 leading-relaxed">
-              Inscription simplifiée, accès immédiat à votre espace, gestion de vos stocks et enrôlement de vos livreurs.
+              Rejoignez le réseau officiel agréé, gérez vos stocks déclaratifs et servez vos clients en toute conformité.
             </p>
           </Link>
 
@@ -387,39 +389,47 @@ export default function Home() {
             <div className="w-11 h-11 rounded-2xl bg-emerald-500/20 text-emerald-400 flex items-center justify-center group-hover:scale-110 transition-transform">
               <Truck size={22} />
             </div>
-            <h3 className="font-black text-lg text-white group-hover:text-emerald-400 transition-colors">
+            <h3 className="font-bold text-lg text-white group-hover:text-emerald-400 transition-colors">
               Portail Livreur Partenaire
             </h3>
             <p className="text-xs text-neutral-400 leading-relaxed">
-              Cockpit mobile pour recevoir les missions de livraison, valider les codes secrets et gérer la caisse espèces.
+              Cockpit mobile pour recevoir les missions de livraison, valider la double confirmation et gérer la caisse.
             </p>
           </Link>
 
           <Link
-            href="/admin/dashboard"
-            className="p-6 rounded-3xl bg-white/[0.04] border border-white/10 hover:border-purple-500/60 hover:bg-white/[0.08] transition-all space-y-3 group"
+            href="/support/securite"
+            className="p-6 rounded-3xl bg-white/[0.04] border border-white/10 hover:border-amber-500/60 hover:bg-white/[0.08] transition-all space-y-3 group"
           >
-            <div className="w-11 h-11 rounded-2xl bg-purple-500/20 text-purple-400 flex items-center justify-center group-hover:scale-110 transition-transform">
-              <Gauge size={22} />
+            <div className="w-11 h-11 rounded-2xl bg-amber-500/20 text-amber-400 flex items-center justify-center group-hover:scale-110 transition-transform">
+              <ShieldCheck size={22} />
             </div>
-            <h3 className="font-black text-lg text-white group-hover:text-purple-400 transition-colors">
-              Control Center & Flotte Siège
+            <h3 className="font-bold text-lg text-white group-hover:text-amber-400 transition-colors">
+              Sécurité & Guide d'Utilisation
             </h3>
             <p className="text-xs text-neutral-400 leading-relaxed">
-              Supervision centrale, 15 rapports réels, validation des pièces KYC et pilotage de la flotte officielle du siège.
+              Consignes essentielles de manipulation, détection des fuites, stockage sécurisé et numéros d'urgence 24/7.
             </p>
           </Link>
         </div>
       </section>
 
       {/* Footer Officiel */}
-      <footer className="border-t border-[#E51A24]/20 py-10 px-4 text-center text-xs text-neutral-500 space-y-3">
+      <footer className="border-t border-red-600/20 py-10 px-4 text-center text-xs text-neutral-500 space-y-3">
         <p className="text-neutral-400 font-semibold">
           © 2026 PLEINGAZ S.A. (Distribué par INFOTECH S.A.) — Tous droits réservés.
         </p>
         <p className="max-w-2xl mx-auto text-[11px] text-neutral-500">
           Distribution exclusive de gaz domestique au Cameroun sous barèmes officiels homologués par le Ministère du Commerce. Aucune majoration non autorisée.
         </p>
+        <div className="pt-2">
+          <Link
+            href="/login/personnel"
+            className="text-[11px] text-neutral-500 hover:text-neutral-400 underline underline-offset-4 transition-colors"
+          >
+            Accès Professionnel & Collaborateurs
+          </Link>
+        </div>
       </footer>
     </div>
   );

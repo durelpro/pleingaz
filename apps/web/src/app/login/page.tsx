@@ -55,6 +55,7 @@ export default function LoginPage() {
       if (typeof window !== 'undefined') {
         localStorage.setItem('pleingaz_token', `jwt_demo_${Date.now()}`);
         localStorage.setItem('pleingaz_user', JSON.stringify(userObj));
+        document.cookie = `pleingaz_session=${encodeURIComponent(JSON.stringify(userObj))}; path=/; max-age=86400; SameSite=Lax`;
         if (selectedRole === 'DISTRIBUTOR') {
           localStorage.setItem('distributor_phone', whatsappPhone);
           localStorage.setItem('distributor_store', JSON.stringify({
