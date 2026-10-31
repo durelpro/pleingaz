@@ -13,6 +13,8 @@ describe('Cr003Service - Tests Souverains D-11 à D-18', () => {
     },
     user: {
       findFirst: jest.fn(),
+      findUnique: jest.fn(),
+      update: jest.fn(),
     },
     order: {
       findMany: jest.fn(),
@@ -33,6 +35,16 @@ describe('Cr003Service - Tests Souverains D-11 à D-18', () => {
     },
     infoNoticeRead: {
       upsert: jest.fn(),
+      create: jest.fn(),
+    },
+    accountCase: {
+      create: jest.fn(),
+      findMany: jest.fn(),
+      findUnique: jest.fn(),
+      update: jest.fn(),
+      count: jest.fn().mockResolvedValue(0),
+    },
+    auditLog: {
       create: jest.fn(),
     },
   };
@@ -232,6 +244,87 @@ describe('Cr003Service - Tests Souverains D-11 à D-18', () => {
       expect(stats.totalVolume).toBe(0);
       expect(stats.totalRevenue).toBe(0);
       expect(stats.deliveryFees).toBe(0);
+    });
+  });
+
+  describe('D-15 & C-07: Gestion des Litiges, Dossiers AccountCase & Maker-Checker', () => {
+    it('doit créer un dossier AccountCase en statut PROPOSED avec caseNumber formaté', async () => {
+      mockPrisma.user.findUnique = jest.fn().mockResolvedValue({ id: 'target-1', phone: '+237699112233' });
+      mockPrisma.accountCase.count.mockResolvedValue(4);
+      mockPrisma.accountCase.create.mockImplementation((args: any) => ({
+        id: 'case-101',
+        ...args.data,
+      }));
+
+      const res = await service.createAccountCase('agent-mgr-1', {
+        targetPhone: '+237699112233',
+        reason: 'Perte de carte SIM et demande de mise à jour WhatsApp',
+        proposedAction: JSON.stringify({ action: 'UPDATE_PHONE', newPhone: '+237677998877' }),
+      });
+
+      expect(res.status).toBe('PROPOSED');
+      expect(res.caseNumber).toContain('CASE-');
+      expect(mockPrisma.auditLog.create).toHaveBeenCalled();
+    });
+
+    it('doit STRICTEMENT rejeter l’approbation si l’admin est le créateur du dossier (Maker-Checker D-15)', async () => {
+      mockPrisma.accountCase.findUnique.mockResolvedValue({
+        id: 'case-101',
+        agentId: 'same-user-id',
+        status: 'PROPOSED',
+      });
+
+      await expect(
+        service.reviewAccountCase('same-user-id', 'case-101', 'APPROVE')
+      ).rejects.toThrow(BadRequestException);
+    });
+
+    it('doit approuver le dossier si l’admin est distinct et appliquer la mise à jour (D-15)', async () => {
+      mockPrisma.accountCase.findUnique.mockResolvedValue({
+        id: 'case-101',
+        agentId: 'agent-1',
+        targetUserId: 'user-client-1',
+        status: 'PROPOSED',
+        proposedAction: JSON.stringify({ action: 'UPDATE_PHONE', newPhone: '+237677998877' }),
+      });
+      mockPrisma.user.update = jest.fn().mockResolvedValue({ id: 'user-client-1' });
+      mockPrisma.accountCase.update.mockResolvedValue({
+        id: 'case-101',
+        status: 'ADMIN_APPROVED',
+        approvedById: 'distinct-admin-2',
+      });
+
+      const res = await service.reviewAccountCase('distinct-admin-2', 'case-101', 'APPROVE', 'Identité validée');
+      expect(res.status).toBe('ADMIN_APPROVED');
+      expect(mockPrisma.user.update).toHaveBeenCalledWith(
+        expect.objectContaining({
+          where: { id: 'user-client-1' },
+          data: { whatsappPhone: '+237677998877' },
+        })
+      );
+    });
+
+    it('doit traiter un remboursement de consigne (+25 000 FCFA) et créer la trace comptable', async () => {
+      mockPrisma.accountCase.count.mockResolvedValue(12);
+      mockPrisma.user.findFirst.mockResolvedValue({ id: 'user-default' });
+      mockPrisma.accountCase.create.mockImplementation((args: any) => ({
+        id: 'case-consigne-1',
+        ...args.data,
+      }));
+
+      const res = await service.refundDeposit('agent-1', {
+        customerPhone: '+237699112233',
+        bottleType: 'Bouteille 12.5 kg PLEINGAZ',
+      });
+
+      expect(res.success).toBe(true);
+      expect(res.refundAmount).toBe(25000);
+      expect(res.caseNumber).toContain('CONSIGNE-');
+      expect(mockPrisma.auditLog.create).toHaveBeenCalledWith(
+        expect.objectContaining({
+          data: expect.objectContaining({ action: 'DEPOSIT_REFUNDED' }),
+        })
+      );
     });
   });
 });

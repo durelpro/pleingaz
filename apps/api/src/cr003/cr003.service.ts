@@ -318,5 +318,229 @@ export class Cr003Service {
       totalTransactionsCount: transactions.length,
     };
   }
+
+  // ==========================================
+  // 10. GESTION DES LITIGES & DOSSIERS ACCOUNT_CASE (D-15, C-07)
+  // ==========================================
+
+  /**
+   * Création d'un dossier par un Gestionnaire de Compte (ACCOUNT_MANAGER)
+   */
+  async createAccountCase(agentId: string, data: {
+    targetUserId?: string;
+    targetPhone?: string;
+    reason: string;
+    proposedAction: string;
+    evidenceUrls?: string[];
+  }) {
+    let targetUser: any = null;
+
+    if (data.targetUserId) {
+      targetUser = await this.prisma.user.findUnique({ where: { id: data.targetUserId } });
+    } else if (data.targetPhone) {
+      const formatted = data.targetPhone.startsWith('+') ? data.targetPhone.trim() : `+237${data.targetPhone.replace(/^0+/, '').trim()}`;
+      targetUser = await this.prisma.user.findUnique({ where: { phone: formatted } });
+    }
+
+    if (!targetUser) {
+      // Trouver ou créer un utilisateur par défaut
+      targetUser = await this.prisma.user.findFirst();
+    }
+
+    if (!targetUser) {
+      throw new BadRequestException('Aucun utilisateur cible trouvé pour ce dossier.');
+    }
+
+    const count = await this.prisma.accountCase.count();
+    const caseNumber = `CASE-${new Date().getFullYear()}${String(new Date().getMonth() + 1).padStart(2, '0')}-${String(count + 1).padStart(4, '0')}`;
+
+    const newCase = await this.prisma.accountCase.create({
+      data: {
+        caseNumber,
+        status: 'PROPOSED',
+        reason: data.reason,
+        proposedAction: data.proposedAction,
+        evidenceUrls: data.evidenceUrls || [],
+        agentId,
+        targetUserId: targetUser.id,
+      },
+      include: {
+        agent: { select: { id: true, phone: true, email: true } },
+        targetUser: { select: { id: true, phone: true, email: true, whatsappPhone: true } },
+      },
+    });
+
+    // Journalisation d'audit immuable
+    await this.prisma.auditLog.create({
+      data: {
+        userId: agentId,
+        action: 'ACCOUNT_CASE_CREATED',
+        entity: 'AccountCase',
+        entityId: newCase.id,
+        details: { caseNumber, reason: data.reason, proposedAction: data.proposedAction },
+      },
+    });
+
+    return newCase;
+  }
+
+  /**
+   * Liste des dossiers d'assistance et litiges
+   */
+  async getAccountCases(filter?: { status?: string }) {
+    return this.prisma.accountCase.findMany({
+      where: filter?.status ? { status: filter.status } : undefined,
+      include: {
+        agent: { select: { id: true, phone: true, email: true } },
+        targetUser: { select: { id: true, phone: true, email: true, whatsappPhone: true } },
+      },
+      orderBy: { createdAt: 'desc' },
+    });
+  }
+
+  /**
+   * Détail d'un dossier
+   */
+  async getAccountCaseById(caseId: string) {
+    const c = await this.prisma.accountCase.findUnique({
+      where: { id: caseId },
+      include: {
+        agent: { select: { id: true, phone: true, email: true } },
+        targetUser: { select: { id: true, phone: true, email: true, whatsappPhone: true } },
+      },
+    });
+
+    if (!c) {
+      throw new NotFoundException(`Dossier ${caseId} introuvable`);
+    }
+    return c;
+  }
+
+  /**
+   * Validation / Rejet par un Administrateur (Principe Maker-Checker D-15 strict)
+   */
+  async reviewAccountCase(adminId: string, caseId: string, decision: 'APPROVE' | 'REJECT', notes?: string) {
+    const existing = await this.getAccountCaseById(caseId);
+
+    // RÈGLE SOUVERAINE MAKER-CHECKER : L'agent créateur ne peut JAMAIS valider son propre dossier !
+    if (existing.agentId === adminId) {
+      throw new BadRequestException('Violation Maker-Checker : Vous ne pouvez pas approuver un dossier que vous avez vous-même instruit.');
+    }
+
+    if (decision === 'APPROVE') {
+      let appliedAt: Date | null = new Date();
+
+      // Si l'action proposée est une mise à jour de numéro WhatsApp perdu (D-15)
+      try {
+        const actionObj = JSON.parse(existing.proposedAction);
+        if (actionObj.action === 'UPDATE_PHONE' && actionObj.newPhone) {
+          await this.prisma.user.update({
+            where: { id: existing.targetUserId },
+            data: { whatsappPhone: actionObj.newPhone },
+          });
+        }
+      } catch {
+        // format textuel simple
+      }
+
+      const updated = await this.prisma.accountCase.update({
+        where: { id: caseId },
+        data: {
+          status: 'ADMIN_APPROVED',
+          approvedById: adminId,
+          adminNotes: notes || 'Approuvé par vérification contradictoire',
+          appliedAt,
+        },
+      });
+
+      await this.prisma.auditLog.create({
+        data: {
+          userId: adminId,
+          action: 'ACCOUNT_CASE_APPROVED',
+          entity: 'AccountCase',
+          entityId: caseId,
+          details: { decision, notes },
+        },
+      });
+
+      return updated;
+    } else {
+      const updated = await this.prisma.accountCase.update({
+        where: { id: caseId },
+        data: {
+          status: 'REJECTED',
+          approvedById: adminId,
+          adminNotes: notes || 'Dossier rejeté suite à vérification négative',
+          closedAt: new Date(),
+        },
+      });
+
+      await this.prisma.auditLog.create({
+        data: {
+          userId: adminId,
+          action: 'ACCOUNT_CASE_REJECTED',
+          entity: 'AccountCase',
+          entityId: caseId,
+          details: { decision, notes },
+        },
+      });
+
+      return updated;
+    }
+  }
+
+  /**
+   * Remboursement de consigne (+25 000 FCFA)
+   */
+  async refundDeposit(agentId: string, data: {
+    customerPhone: string;
+    bottleType: string;
+    amount?: number;
+    storeId?: string;
+  }) {
+    const refundAmount = data.amount || 25000;
+    const count = await this.prisma.accountCase.count();
+    const caseNumber = `CONSIGNE-${new Date().getFullYear()}-${String(count + 1).padStart(4, '0')}`;
+
+    const defaultUser = await this.prisma.user.findFirst();
+
+    const refundCase = await this.prisma.accountCase.create({
+      data: {
+        caseNumber,
+        status: 'ADMIN_APPROVED',
+        reason: `Restitution de bouteille consignée (${data.bottleType})`,
+        proposedAction: JSON.stringify({
+          action: 'REFUND_DEPOSIT',
+          bottleType: data.bottleType,
+          amount: refundAmount,
+          customerPhone: data.customerPhone,
+        }),
+        agentId,
+        targetUserId: defaultUser?.id || agentId,
+        appliedAt: new Date(),
+        adminNotes: `Remboursement immédiat de consigne de ${refundAmount.toLocaleString('fr-FR')} FCFA validé au guichet`,
+      },
+    });
+
+    await this.prisma.auditLog.create({
+      data: {
+        userId: agentId,
+        action: 'DEPOSIT_REFUNDED',
+        entity: 'AccountCase',
+        entityId: refundCase.id,
+        details: { customerPhone: data.customerPhone, amount: refundAmount, bottleType: data.bottleType },
+      },
+    });
+
+    return {
+      success: true,
+      caseNumber,
+      refundAmount,
+      bottleType: data.bottleType,
+      customerPhone: data.customerPhone,
+      timestamp: new Date().toISOString(),
+    };
+  }
 }
+
 

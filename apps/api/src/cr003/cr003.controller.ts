@@ -62,5 +62,63 @@ export class Cr003Controller {
   async getAdminStats() {
     return this.cr003Service.getAdminStats();
   }
-}
 
+  // ==========================================
+  // DOSSIERS LITIGES & ASSISTANCE (D-15, C-07)
+  // ==========================================
+
+  @Post('cases')
+  async createCase(
+    @Body()
+    body: {
+      agentId?: string;
+      targetUserId?: string;
+      targetPhone?: string;
+      reason: string;
+      proposedAction: string;
+      evidenceUrls?: string[];
+    },
+  ) {
+    const agentId = body.agentId || 'agent-account-manager-default';
+    return this.cr003Service.createAccountCase(agentId, body);
+  }
+
+  @Get('cases')
+  async getCases(@Query('status') status?: string) {
+    return this.cr003Service.getAccountCases({ status });
+  }
+
+  @Get('cases/:id')
+  async getCaseById(@Param('id') id: string) {
+    return this.cr003Service.getAccountCaseById(id);
+  }
+
+  @Patch('cases/:id/review')
+  async reviewCase(
+    @Param('id') id: string,
+    @Body()
+    body: {
+      adminId?: string;
+      decision: 'APPROVE' | 'REJECT';
+      notes?: string;
+    },
+  ) {
+    const adminId = body.adminId || 'admin-reviewer-default';
+    return this.cr003Service.reviewAccountCase(adminId, id, body.decision, body.notes);
+  }
+
+  @Post('refund-deposit')
+  async refundDeposit(
+    @Body()
+    body: {
+      agentId?: string;
+      customerPhone: string;
+      bottleType: string;
+      amount?: number;
+      storeId?: string;
+    },
+  ) {
+    const agentId = body.agentId || 'agent-account-manager-default';
+    return this.cr003Service.refundDeposit(agentId, body);
+  }
+}
