@@ -1,9 +1,10 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import Link from 'next/link';
 import { 
   BarChart3, TrendingUp, AlertTriangle, PackageX, 
-  MapPin, Store, Star, Download, Filter, FileText, CheckCircle2, Phone, ShoppingBag
+  MapPin, Store, Star, Download, Filter, FileText, CheckCircle2, Phone, ShoppingBag, Bell
 } from 'lucide-react';
 import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
 
@@ -118,13 +119,20 @@ export default function PilotageDashboard() {
             </h1>
             <p className="text-gray-500 mt-2">Vision globale, fiabilité des distributeurs et prévention des ruptures.</p>
           </div>
-          <div className="flex gap-3">
-            <button className="flex items-center gap-2 px-4 py-2.5 bg-white dark:bg-neutral-900 border border-gray-200 dark:border-neutral-800 rounded-xl text-gray-700 dark:text-gray-300 font-bold hover:border-pleingaz-red transition-colors">
-              <Filter size={18} />
+          <div className="flex flex-wrap gap-3">
+            <Link 
+              href="/admin/notifications" 
+              className="flex items-center gap-2 px-4 py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white font-bold rounded-xl shadow-md shadow-emerald-600/20 transition-all text-xs"
+            >
+              <Bell size={16} />
+              Webhooks & Notifications Meta
+            </Link>
+            <button className="flex items-center gap-2 px-4 py-2.5 bg-white dark:bg-neutral-900 border border-gray-200 dark:border-neutral-800 rounded-xl text-gray-700 dark:text-gray-300 font-bold hover:border-pleingaz-red transition-colors text-xs">
+              <Filter size={16} />
               Filtres
             </button>
-            <button className="flex items-center gap-2 px-4 py-2.5 bg-gray-900 dark:bg-white text-white dark:text-gray-900 font-bold rounded-xl hover:opacity-90 transition-opacity">
-              <Download size={18} />
+            <button className="flex items-center gap-2 px-4 py-2.5 bg-gray-900 dark:bg-white text-white dark:text-gray-900 font-bold rounded-xl hover:opacity-90 transition-opacity text-xs">
+              <Download size={16} />
               Exporter (PDF/CSV)
             </button>
           </div>

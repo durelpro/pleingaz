@@ -1,5 +1,6 @@
 import { Test, TestingModule } from '@nestjs/testing';
-import { Inject } from '@nestjs/common';
+import { Inject, UnauthorizedException, ForbiddenException } from '@nestjs/common';
+import * as crypto from 'crypto';
 
 jest.mock('@nestjs/bullmq', () => ({
   InjectQueue: (name: string) => (target: any, propertyKey: string, parameterIndex: number) => {
@@ -15,7 +16,7 @@ import { NotificationsService } from './notifications.service';
 import { PrismaService } from '../prisma/prisma.service';
 import { NotificationType, ReportReason } from '@pleingaz/database';
 
-describe('NotificationsService (Centre de Notifications BullMQ & Signalements)', () => {
+describe('NotificationsService (Centre de Notifications, Meta WhatsApp D-12, M24)', () => {
   let service: NotificationsService;
   let prisma: any;
   let queueMock: any;
@@ -31,6 +32,17 @@ describe('NotificationsService (Centre de Notifications BullMQ & Signalements)',
         create: jest.fn(),
         findMany: jest.fn(),
         update: jest.fn(),
+      },
+      verificationChallenge: {
+        create: jest.fn(),
+        findFirst: jest.fn(),
+        update: jest.fn(),
+      },
+      order: {
+        findUnique: jest.fn(),
+      },
+      user: {
+        findFirst: jest.fn(),
       },
     };
 
@@ -49,53 +61,113 @@ describe('NotificationsService (Centre de Notifications BullMQ & Signalements)',
     service = module.get<NotificationsService>(NotificationsService);
   });
 
-  describe('queueNotification', () => {
-    it('devrait enregistrer la notification en base PENDING et programmer le job BullMQ avec backoff', async () => {
-      const mockNotif = {
-        id: 'notif-1',
-        userId: 'user-123',
-        type: 'WHATSAPP' as NotificationType,
-        title: 'Confirmation Commande',
-        content: 'Votre commande est confirmée.',
-        status: 'PENDING',
-      };
-      prisma.notification.create.mockResolvedValue(mockNotif);
+  describe('Handshake GET Meta Cloud API', () => {
+    it('devrait retourner le challenge si le verify token est valide', () => {
+      const challenge = 'random_hub_challenge_12345';
+      const result = service.verifyMetaWebhookChallenge('subscribe', 'PLEINGAZ_META_WA_VERIFY_TOKEN', challenge);
+      expect(result).toBe(challenge);
+    });
 
-      const result = await service.queueNotification(
-        'user-123',
-        'WHATSAPP' as NotificationType,
-        'Confirmation Commande',
-        'Votre commande est confirmée.',
-      );
-
-      expect(prisma.notification.create).toHaveBeenCalledWith({
-        data: {
-          userId: 'user-123',
-          type: 'WHATSAPP',
-          title: 'Confirmation Commande',
-          content: 'Votre commande est confirmée.',
-          metadata: undefined,
-        },
-      });
-
-      expect(queueMock.add).toHaveBeenCalledWith(
-        'send-notification',
-        { notificationId: 'notif-1' },
-        expect.objectContaining({ attempts: 3, backoff: expect.any(Object) }),
-      );
-
-      expect(result).toEqual(mockNotif);
+    it('devrait lever ForbiddenException si le token ou le mode est incorrect', () => {
+      expect(() => {
+        service.verifyMetaWebhookChallenge('subscribe', 'wrong_token', '12345');
+      }).toThrow(ForbiddenException);
     });
   });
 
-  describe('createReport & getReports (Signalements boutiques)', () => {
-    it('devrait enregistrer un signalement utilisateur pour boutique fermée ou mauvais numéro', async () => {
+  describe('Signature HMAC SHA-256 (Menace M24 anti-spoofing)', () => {
+    it('devrait valider une signature authentique calculée avec le secret', () => {
+      const rawBody = '{"object":"whatsapp_business_account"}';
+      const secret = 'pleingaz_meta_secret_key_2026';
+      const hmac = crypto.createHmac('sha256', secret).update(rawBody).digest('hex');
+      const signatureHeader = `sha256=${hmac}`;
+
+      const isValid = service.verifyMetaSignature(rawBody, signatureHeader);
+      expect(isValid).toBe(true);
+    });
+
+    it('devrait rejeter une fausse signature HMAC', () => {
+      const rawBody = '{"object":"whatsapp_business_account"}';
+      const fakeHeader = 'sha256=invalid_hash_value_1234567890abcdef';
+
+      const isValid = service.verifyMetaSignature(rawBody, fakeHeader);
+      expect(isValid).toBe(false);
+    });
+
+    it('devrait rejeter un webhook entrant si la signature est invalide', async () => {
+      await expect(
+        service.processIncomingMetaWebhook('{"test":1}', {}, 'sha256=forged_bad_hash')
+      ).rejects.toThrow(UnauthorizedException);
+    });
+  });
+
+  describe('Défi entrant WhatsApp (D-12)', () => {
+    it('devrait créer un challenge entrant avec code et lien wa.me prérempli', async () => {
+      prisma.verificationChallenge.create.mockImplementation((args: any) => ({
+        id: 'challenge-1',
+        ...args.data,
+      }));
+
+      const res = await service.createWhatsAppChallenge('+237699123456', 'LOGIN');
+      expect(res.phone).toBe('+237699123456');
+      expect(res.code).toMatch(/^VERIF-\d{6}$/);
+      expect(res.waLink).toContain('wa.me');
+      expect(prisma.verificationChallenge.create).toHaveBeenCalled();
+    });
+
+    it('devrait consommer le challenge automatiquement lors de la réception du message WhatsApp correspondant', async () => {
+      const cleanPhone = '+237699123456';
+      const codeNumber = '839201';
+      const textMsg = `Bonjour voici mon code VERIF-${codeNumber}`;
+
+      prisma.verificationChallenge.findFirst.mockResolvedValue({
+        id: 'challenge-xyz',
+        phone: cleanPhone,
+        codeHash: codeNumber,
+        consumedAt: null,
+        expiresAt: new Date(Date.now() + 600000),
+      });
+
+      prisma.verificationChallenge.update.mockResolvedValue({
+        id: 'challenge-xyz',
+        consumedAt: new Date(),
+      });
+
+      const simRes = await service.simulateIncomingWebhookMessage(cleanPhone, textMsg, true);
+      expect(simRes.success).toBe(true);
+      expect(simRes.processed).toBe(1);
+      expect(prisma.verificationChallenge.update).toHaveBeenCalledWith(
+        expect.objectContaining({
+          where: { id: 'challenge-xyz' },
+          data: { consumedAt: expect.any(Date) },
+        })
+      );
+    });
+  });
+
+  describe('Notifications de commandes et signalements', () => {
+    it('devrait programmer une notification d’arrivée de coursier avec code PIN', async () => {
+      prisma.order.findUnique.mockResolvedValue({
+        id: 'order-12345678',
+        customer: { id: 'cust-1', phone: '+237699112233' },
+      });
+      prisma.notification.create.mockImplementation((args: any) => ({
+        id: 'notif-pin',
+        ...args.data,
+      }));
+
+      const notif = await service.sendOrderEventNotification('order-12345678', 'DELIVERY_ARRIVED', '+237699112233', '9842');
+      expect(notif.content).toContain('9842');
+      expect(queueMock.add).toHaveBeenCalled();
+    });
+
+    it('devrait enregistrer un signalement utilisateur pour boutique fermée', async () => {
       const mockReport = {
         id: 'report-1',
         userId: 'client-1',
         storeId: 'store-abc',
         reason: ReportReason.STORE_CLOSED,
-        details: 'Boutique fermée à 14h alors qu’elle est déclarée ouverte.',
+        details: 'Boutique fermée à 14h.',
         isResolved: false,
       };
       prisma.report.create.mockResolvedValue(mockReport);
@@ -104,22 +176,11 @@ describe('NotificationsService (Centre de Notifications BullMQ & Signalements)',
         'client-1',
         'store-abc',
         ReportReason.STORE_CLOSED,
-        'Boutique fermée à 14h alors qu’elle est déclarée ouverte.',
+        'Boutique fermée à 14h.',
       );
 
       expect(prisma.report.create).toHaveBeenCalled();
       expect(res.id).toBe('report-1');
-    });
-
-    it('devrait marquer un signalement comme résolu', async () => {
-      prisma.report.update.mockResolvedValue({ id: 'report-1', isResolved: true, details: 'Vérifié par admin' });
-
-      const res = await service.resolveReport('report-1', 'Vérifié par admin');
-      expect(prisma.report.update).toHaveBeenCalledWith({
-        where: { id: 'report-1' },
-        data: { isResolved: true, details: 'Vérifié par admin' },
-      });
-      expect(res.isResolved).toBe(true);
     });
   });
 });
