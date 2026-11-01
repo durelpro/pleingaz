@@ -41,21 +41,23 @@
 
 ---
 
-## 3. Matrice de Concordance
+## 3. Matrice de Concordance Exhaustive (100% Réalisée)
 
-| Document | Section Impactée | Nature de la Règle CR-003 |
+| Document | Section Impactée | Nature de la Règle CR-003 Intégrée |
 |---|---|---|
-| [`docs/02-cadrage-ux-roles.md`](file:///home/durel/pleingaz/docs/02-cadrage-ux-roles.md) | Section 1 (Sitemap et Accès) | Cloisonnement strict des 4 portails, sitemap épuré, isolation "Aucune Trace". |
-| [`docs/04-architecture-technique.md`](file:///home/durel/pleingaz/docs/04-architecture-technique.md) | Section 1 & 4 (Architecture, API & Auth) | Intégration de `VerificationChannel` et des webhooks WhatsApp Cloud API. |
-| [`docs/06a-securite.md`](file:///home/durel/pleingaz/docs/06a-securite.md) | Section 1 & 2 (Menaces, Auth & Sessions) | Menaces M23 à M25 (anti-spoofing WhatsApp, 404 inter-espaces, isolation des jetons). |
+| [`docs/02-cadrage-ux-roles.md`](file:///home/durel/pleingaz/docs/02-cadrage-ux-roles.md) | Section 1 (Sitemap et Accès) | Cloisonnement strict des 4 portails, sitemap épuré, isolation "Aucune Trace", zéro switch de profil. |
+| [`docs/03-modele-donnees-etats.md`](file:///home/durel/pleingaz/docs/03-modele-donnees-etats.md) | Section 1 (Inventaire) | Entités `VerificationChallenge`, `AccountCase` (D-15), `CounterSale` (D-16), `Courier` (D-05, D-17). |
+| [`docs/03b-machines-etats.md`](file:///home/durel/pleingaz/docs/03b-machines-etats.md) | Section 7 (Delivery D-17) | Cycle de double confirmation : `DELIVERED_PENDING_CONFIRMATION` -> `DELIVERED` ou `CONFIRMED_BY_COURIER_ONLY` après 2h. |
+| [`docs/03c-contraintes-modele-economique.md`](file:///home/durel/pleingaz/docs/03c-contraintes-modele-economique.md) | Section 1 (Contraintes SQL) | Contraintes `AccountCase` (Maker-Checker, anti-impersonation), `CounterSale` (non-anonyme), Quota acheteur 5 btl/30j (D-14). |
+| [`docs/04-architecture-technique.md`](file:///home/durel/pleingaz/docs/04-architecture-technique.md) | Section 1 & 4 (Architecture, API & Auth) | Intégration de `VerificationChannel`, webhooks WhatsApp Cloud API, isolation étanche et 404 inter-espaces. |
+| [`docs/06a-securite.md`](file:///home/durel/pleingaz/docs/06a-securite.md) | Section 1 & 2 (Menaces, Auth & Sessions) | Menaces M23 à M25, obligation stricte du `JWT_SECRET` (fail-fast, interdiction de fallback), règle des 2 numéros et cooldown 48h. |
+| [`docs/design/checklist-ui-cr003.md`](file:///home/durel/pleingaz/docs/design/checklist-ui-cr003.md) | Document complet | Préservation de la charte de marque (Rouge `#FF0000`/`#DC2626`, Jaune `#FFB000`, Montserrat), micro-animations, glassmorphism. |
 | [`docs/design/design-system.md`](file:///home/durel/pleingaz/docs/design/design-system.md) | Sections 2, 3 & 5 | Intégration des composants Jauge Quota (D-14), Double Confirmation (D-17) et boutons WhatsApp (D-12). |
 
 ---
 
-## 4. Prochaine Étape
+## 4. Bilan d'Exécution de la Phase 1
 
-Passage à la **Phase 2 : Backend d'Authentification & Stratégies JWT** :
-- Sécurisation du `JWT_SECRET` obligatoire au démarrage (fail-fast).
-- Vérification du champ obligatoire `secondaryPhone` / `callPhone`.
-- Service de validation du défi WhatsApp (`VerificationChallenge`).
-- Tests unitaires et intégration NestJS.
+- **Périmètre documentaire** : 100% des documents d'architecture, sécurité, modèles de données, machines d'états et design sont alignés sans aucune contradiction.
+- **Règles directrices** : R-01 (Isolation étanche "Aucune Trace"), R-02 (Préservation intégrale de l'identité visuelle), R-03 (Preuve entrante WhatsApp gratuite pour PLEINGAZ) sont gravées dans toutes les spécifications opposables.
+- **Dépôt distant** : Toutes les modifications sont écrites sur disque et synchronisées par commit et push GitHub.

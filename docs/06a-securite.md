@@ -30,7 +30,10 @@
 | M25 | Reconnaissance inter-espaces et cartographie d'API | Attaquant curieux | Infrastructure / Rôles | Sonder les routes administrateur ou distributeur depuis un compte acheteur. | Portails totalement étanches, réponse 404 Not Found systématique (jamais 403), messages d'erreur de connexion strictement invariants. | T-M25 | Haute | Moyenne | MVP |
 
 
-## 2. Authentification, Sessions et Isolation (CR-003 D-11, D-12)
+- **Politique de Secrets et Jetons JWT (CR-003 R-01)** :
+  - La variable `JWT_SECRET` est **strictement obligatoire** au démarrage du serveur NestJS. Aucun fallback de développement (ex: `'fallback_secret_for_dev_only'`) n'est toléré en production ou staging : le serveur s'arrête immédiatement avec un code d'erreur fatal si le secret est absent ou inférieur à 32 caractères.
+  - Les jetons JWT portent obligatoirement l'audience portail (`aud`), le numéro principal et la confirmation du numéro secondaire.
+  - Tout appel API présentant un jeton sur une route hors audience reçoit une réponse **HTTP 404 Not Found** (jamais 403).
 - **Politique de mots de passe** : Hachage fort via **Argon2id** (64 Mo mémoire, 3 itérations). S'applique à **l'ensemble des comptes** (Acheteurs, Distributeurs, Livreurs et Staff).
 - **Preuve Entrante WhatsApp (`VerificationChannel` — D-12)** : Remplacement de l'OTP SMS payant par l'envoi d'un message prérempli par l'utilisateur vers le numéro officiel PLEINGAZ. Zéro coût sortant pour PLEINGAZ. Validation cryptographique webhook HMAC.
 - **Règle des Deux Numéros Obligatoires (D-12.3)** : Numéro WhatsApp principal (identifiant vérifié) + contact secondaire de secours distinct (`backupPhone`). Règle anti-contournement empêchant l'usage d'un numéro secondaire comme numéro principal tiers.
