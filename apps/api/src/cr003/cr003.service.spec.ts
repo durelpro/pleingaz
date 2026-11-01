@@ -18,6 +18,7 @@ describe('Cr003Service - Tests Souverains D-11 à D-18', () => {
     },
     order: {
       findMany: jest.fn(),
+      update: jest.fn(),
     },
     counterSale: {
       findMany: jest.fn(),
@@ -46,6 +47,21 @@ describe('Cr003Service - Tests Souverains D-11 à D-18', () => {
     },
     auditLog: {
       create: jest.fn(),
+    },
+    platformSettings: {
+      findUnique: jest.fn().mockResolvedValue({
+        buyerBottleLimit: 5,
+        deliveryFixedPrice: 2000,
+        priceGasPerLitre: 850,
+        priceBottlePerLitre: 2500,
+        supportPhone: '+237 657696567',
+        maxCashHoldingCourier: 50000,
+      }),
+    },
+    delivery: {
+      findUnique: jest.fn(),
+      findMany: jest.fn(),
+      update: jest.fn(),
     },
   };
 
@@ -325,6 +341,97 @@ describe('Cr003Service - Tests Souverains D-11 à D-18', () => {
           data: expect.objectContaining({ action: 'DEPOSIT_REFUNDED' }),
         })
       );
+    });
+  });
+
+  describe('Barèmes Dynamiques & Double Confirmation Livraison D-17', () => {
+    it('doit retourner les barèmes dynamiques depuis PlatformSettings', async () => {
+      const pricing = await service.getPlatformPricing();
+      expect(pricing.buyerBottleLimit).toBe(5);
+      expect(pricing.deliveryFixedPrice).toBe(2000);
+      expect(pricing.priceGasPerLitre).toBe(850);
+      expect(pricing.priceBottlePerLitre).toBe(2500);
+    });
+
+    it('doit permettre au livreur de marquer "J\'ai livré" (Palier 1)', async () => {
+      mockPrisma.delivery.findUnique.mockResolvedValueOnce({
+        id: 'del-1',
+        orderId: 'order-1',
+        status: 'IN_TRANSIT',
+      });
+      mockPrisma.delivery.update.mockResolvedValueOnce({
+        id: 'del-1',
+        status: 'DELIVERED_PENDING_CONFIRMATION',
+      });
+
+      const res = await service.courierMarkDelivered('del-1', 'courier-user-1');
+      expect(res.success).toBe(true);
+      expect(res.status).toBe('DELIVERED_PENDING_CONFIRMATION');
+      expect(mockPrisma.delivery.update).toHaveBeenCalledWith(
+        expect.objectContaining({
+          where: { id: 'del-1' },
+          data: expect.objectContaining({
+            status: 'DELIVERED_PENDING_CONFIRMATION',
+            courierConfirmedAt: expect.any(Date),
+          }),
+        })
+      );
+    });
+
+    it('doit permettre au client de confirmer la réception (Palier 2)', async () => {
+      mockPrisma.delivery.findUnique.mockResolvedValueOnce({
+        id: 'del-1',
+        orderId: 'order-1',
+        status: 'DELIVERED_PENDING_CONFIRMATION',
+      });
+      mockPrisma.delivery.update.mockResolvedValueOnce({
+        id: 'del-1',
+        status: 'DELIVERED',
+      });
+      mockPrisma.order.update.mockResolvedValueOnce({
+        id: 'order-1',
+        status: 'DELIVERED',
+      });
+
+      const res = await service.customerConfirmDelivery('del-1', 'customer-user-1');
+      expect(res.success).toBe(true);
+      expect(res.status).toBe('DELIVERED');
+      expect(mockPrisma.order.update).toHaveBeenCalledWith({
+        where: { id: 'order-1' },
+        data: { status: 'DELIVERED' },
+      });
+    });
+
+    it('doit permettre au client de contester la livraison en cas de non réception', async () => {
+      mockPrisma.delivery.findUnique.mockResolvedValueOnce({
+        id: 'del-1',
+        status: 'DELIVERED_PENDING_CONFIRMATION',
+      });
+
+      const res = await service.customerDisputeDelivery('del-1', 'customer-user-1', 'Le livreur n\'est jamais venu');
+      expect(res.success).toBe(true);
+      expect(res.status).toBe('DISPUTED');
+      expect(mockPrisma.delivery.update).toHaveBeenCalledWith(
+        expect.objectContaining({
+          where: { id: 'del-1' },
+          data: expect.objectContaining({
+            status: 'DISPUTED',
+            disputeReason: 'Le livreur n\'est jamais venu',
+          }),
+        })
+      );
+    });
+
+    it('doit auto-valider les livraisons après expiration du délai de 2h sans litige', async () => {
+      mockPrisma.delivery.findMany.mockResolvedValueOnce([
+        { id: 'del-exp-1', orderId: 'ord-exp-1' },
+        { id: 'del-exp-2', orderId: 'ord-exp-2' },
+      ]);
+
+      const res = await service.autoValidateExpiredDeliveries();
+      expect(res.success).toBe(true);
+      expect(res.validatedCount).toBe(2);
+      expect(mockPrisma.delivery.update).toHaveBeenCalledTimes(2);
     });
   });
 });

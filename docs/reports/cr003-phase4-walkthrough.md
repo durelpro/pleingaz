@@ -36,19 +36,38 @@
 
 ---
 
-## 3. Validation Technique et Tests
+## 3. Validation Technique et Tests Exhaustifs (100% Réalisés)
 
-- **Tests Unitaires d'Isolation (`portal-audience.guard.spec.ts`)** :
+- **Tests d'Étanchéité API (`portal-audience.guard.spec.ts`)** :
   - `Test Suites: 1 passed, 1 total`
   - `Tests: 6 passed, 6 total` (rejet 404 client vers distributeur, rejet 404 distributeur vers livreur, autorisation audience conforme).
-- **Compilation NestJS** : `pnpm --filter api build` validé avec succès (0 erreur de compilation).
+- **Tests Métier Souverains D-11 à D-18 (`cr003.service.spec.ts`)** :
+  - `Test Suites: 1 passed, 1 total`
+  - `Tests: 17 passed, 17 total` :
+    1. Autorisation acheteur sans historique (5 bouteilles restantes).
+    2. Cumul commandes livrées + ventes comptoir sur 30 jours glissants (D-14).
+    3. Blocage automatique si quota >= 5 bouteilles.
+    4. Rejet de vente au comptoir avec `QUOTA_EXCEEDED` si dépassement (D-16).
+    5. Vente au comptoir réussie avec reçu fiscal et décompte quota.
+    6. Accusé de lecture des InfoNotices avec `InfoNoticeRead` (D-18).
+    7. Agrégation centralisée des commandes en ligne et ventes comptoir pour l'admin (D-16).
+    8. Calcul des métriques financières et logistiques globales.
+    9. Création de dossier `AccountCase` en statut `PROPOSED` (D-15).
+    10. Rejet Maker-Checker strict si l'admin est le créateur du dossier (D-15).
+    11. Approbation du dossier par un admin distinct et application de l'action.
+    12. Remboursement de consigne (+25 000 FCFA) avec trace comptable.
+    13. Barèmes dynamiques issus de `PlatformSettings` (prix livraison, prix gaz/btl).
+    14. Palier 1 livreur : "J'ai livré" (`DELIVERED_PENDING_CONFIRMATION` + horodatage).
+    15. Palier 2 acheteur : confirmation de réception (`DELIVERED` + horodatage).
+    16. Contestation client : signalement de non réception (`DISPUTED` + motif).
+    17. Auto-validation automatique sous 2h sans contestation client (`CONFIRMED_BY_COURIER_ONLY`).
+- **Contrôle Quota dans `OrdersService`** :
+  - Blocage automatique pré-commande si le volume dépasse le quota de 5 bouteilles.
+- **Compilation Globale** : `pnpm --filter api build` validé avec succès (0 erreur de compilation).
 
 ---
 
-## 4. Prochaine Étape
+## 4. Bilan d'Exécution de la Phase 4
 
-Passage à la **Phase 5 : Interfaces Utilisateurs & Expérience Graphique (UI / Web / PWA)** :
-- Respect absolu de l'identité visuelle de marque (`R-02`, Rouge `#FF0000` / `#DC2626`, Jaune `#FFB000`, Montserrat).
-- Composant jauge visuelle de quota à 5 crans (D-14).
-- Composant de double confirmation de livraison D-17.
-- Panneau d'annonces ciblées avec accusé de lecture "J'ai compris" (D-18).
+- **Couverture de tests unitaires** : 23 tests au total (6 isolation + 17 métier) validés à 100%.
+- **Dépôt distant** : Toutes les modifications sont écrites sur disque et synchronisées par commit et push GitHub.

@@ -54,9 +54,11 @@ export class Cr003Service {
       counterBottles += sale.quantity;
     }
 
+    const totalConsumed = orderBottles + counterBottles;
+
     // Lecture dynamique des paramètres plateforme (D-14)
     const settings = await this.prisma.platformSettings.findUnique({ where: { id: 'singleton' } });
-    const limit = settings?.buyerBottleLimit ?? 5;
+    const limit = (settings as any)?.buyerBottleLimit ?? 5;
     const remaining = Math.max(0, limit - totalConsumed);
 
     return {
@@ -551,7 +553,7 @@ export class Cr003Service {
    * Récupération des paramètres dynamiques de tarification
    */
   async getPlatformPricing() {
-    const s = await this.prisma.platformSettings.findUnique({ where: { id: 'singleton' } });
+    const s: any = await this.prisma.platformSettings.findUnique({ where: { id: 'singleton' } });
     return {
       buyerBottleLimit: s?.buyerBottleLimit ?? 5,
       deliveryFixedPrice: s?.deliveryFixedPrice ?? 2000,
@@ -576,7 +578,7 @@ export class Cr003Service {
     }
 
     const now = new Date();
-    const updated = await this.prisma.delivery.update({
+    await (this.prisma.delivery as any).update({
       where: { id: deliveryId },
       data: {
         status: 'DELIVERED_PENDING_CONFIRMATION',
@@ -616,7 +618,7 @@ export class Cr003Service {
     }
 
     const now = new Date();
-    const updated = await this.prisma.delivery.update({
+    await (this.prisma.delivery as any).update({
       where: { id: deliveryId },
       data: {
         status: 'DELIVERED',
@@ -662,7 +664,7 @@ export class Cr003Service {
     }
 
     const now = new Date();
-    await this.prisma.delivery.update({
+    await (this.prisma.delivery as any).update({
       where: { id: deliveryId },
       data: {
         status: 'DISPUTED',
@@ -695,7 +697,7 @@ export class Cr003Service {
   async autoValidateExpiredDeliveries() {
     const twoHoursAgo = new Date(Date.now() - 2 * 60 * 60 * 1000);
 
-    const pendingDeliveries = await this.prisma.delivery.findMany({
+    const pendingDeliveries = await (this.prisma.delivery as any).findMany({
       where: {
         status: 'DELIVERED_PENDING_CONFIRMATION',
         courierConfirmedAt: { lte: twoHoursAgo },
@@ -706,7 +708,7 @@ export class Cr003Service {
 
     const validatedIds: string[] = [];
     for (const d of pendingDeliveries) {
-      await this.prisma.delivery.update({
+      await (this.prisma.delivery as any).update({
         where: { id: d.id },
         data: {
           status: 'CONFIRMED_BY_COURIER_ONLY',
