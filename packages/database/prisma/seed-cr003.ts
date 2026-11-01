@@ -32,7 +32,17 @@ async function main() {
       searchDefaultRadiusKm: 5,
     },
   });
-  console.log('✅ Paramètres globaux PlatformSettings configurés (plafond quota 5 btl, livraison 2000 FCFA).');
+  await prisma.setting.upsert({
+    where: { id: 'singleton' },
+    update: { buyerBottleLimit: 5 },
+    create: {
+      id: 'singleton',
+      buyerBottleLimit: 5,
+      supportPhone: '+237 657696567',
+      supportEmail: 'support@pleingaz.cm',
+    },
+  });
+  console.log('✅ Paramètres Setting configurés (buyer_bottle_limit = 5).');
 
   // 2. Rôle ACCOUNT_MANAGER (D-15)
   await prisma.role.upsert({

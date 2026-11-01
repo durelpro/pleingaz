@@ -8,6 +8,8 @@
     "dev": "turbo run dev",
     "lint": "turbo run lint",
     "test": "turbo run test",
+    "db:up": "docker compose up -d postgres redis",
+    "prisma": "prisma",
     "format": "prettier --write \"**/*.{ts,tsx,md}\""
   },
   "devDependencies": {

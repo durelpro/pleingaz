@@ -41,6 +41,21 @@ async function main() {
   console.log('✅ 9 Rôles RBAC initialisés.');
 
   // ==========================================
+  // PARAMÈTRE SOUVERAIN (CR-003 T1 D-11 D-14)
+  // ==========================================
+  await prisma.setting.upsert({
+    where: { id: 'singleton' },
+    update: { buyerBottleLimit: 5 },
+    create: {
+      id: 'singleton',
+      buyerBottleLimit: 5,
+      supportPhone: '+237 657696567',
+      supportEmail: 'support@pleingaz.cm',
+    },
+  });
+  console.log('✅ Setting souverain (buyer_bottle_limit = 5) initialisé.');
+
+  // ==========================================
   // 2. GRAND LIVRE : PLAN DE COMPTES TYPE (D-06)
   // ==========================================
   const accountsData = [

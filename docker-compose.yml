@@ -1,7 +1,7 @@
 services:
   postgres:
     image: postgis/postgis:14-3.4
-    container_name: pleingaz-postgres
+    container_name: pleingaz_db
     restart: unless-stopped
     ports:
       - "5432:5432"
