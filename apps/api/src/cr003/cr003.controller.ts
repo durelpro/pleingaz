@@ -121,4 +121,42 @@ export class Cr003Controller {
     const agentId = body.agentId || 'agent-account-manager-default';
     return this.cr003Service.refundDeposit(agentId, body);
   }
+
+  // ==========================================
+  // BARÈMES DYNAMIQUES & DOUBLE CONFIRMATION D-17
+  // ==========================================
+
+  @Get('pricing')
+  async getPricing() {
+    return this.cr003Service.getPlatformPricing();
+  }
+
+  @Post('deliveries/:id/courier-confirm')
+  async courierConfirm(
+    @Param('id') id: string,
+    @Body('courierUserId') courierUserId?: string,
+  ) {
+    return this.cr003Service.courierMarkDelivered(id, courierUserId || 'courier-default-id');
+  }
+
+  @Post('deliveries/:id/customer-confirm')
+  async customerConfirm(
+    @Param('id') id: string,
+    @Body('customerUserId') customerUserId?: string,
+  ) {
+    return this.cr003Service.customerConfirmDelivery(id, customerUserId || 'customer-default-id');
+  }
+
+  @Post('deliveries/:id/dispute')
+  async disputeDelivery(
+    @Param('id') id: string,
+    @Body() body: { customerUserId?: string; reason: string },
+  ) {
+    return this.cr003Service.customerDisputeDelivery(id, body.customerUserId || 'customer-default-id', body.reason);
+  }
+
+  @Post('deliveries/auto-validate')
+  async autoValidateDeliveries() {
+    return this.cr003Service.autoValidateExpiredDeliveries();
+  }
 }

@@ -54,8 +54,9 @@ export class Cr003Service {
       counterBottles += sale.quantity;
     }
 
-    const totalConsumed = orderBottles + counterBottles;
-    const limit = 5;
+    // Lecture dynamique des paramètres plateforme (D-14)
+    const settings = await this.prisma.platformSettings.findUnique({ where: { id: 'singleton' } });
+    const limit = settings?.buyerBottleLimit ?? 5;
     const remaining = Math.max(0, limit - totalConsumed);
 
     return {
@@ -532,13 +533,199 @@ export class Cr003Service {
       },
     });
 
+      return {
+        success: true,
+        caseNumber,
+        refundAmount,
+        bottleType: data.bottleType,
+        customerPhone: data.customerPhone,
+        timestamp: new Date().toISOString(),
+      };
+    }
+
+  // ==========================================
+  // 11. BARÈMES DYNAMIQUES & DOUBLE CONFIRMATION D-17
+  // ==========================================
+
+  /**
+   * Récupération des paramètres dynamiques de tarification
+   */
+  async getPlatformPricing() {
+    const s = await this.prisma.platformSettings.findUnique({ where: { id: 'singleton' } });
+    return {
+      buyerBottleLimit: s?.buyerBottleLimit ?? 5,
+      deliveryFixedPrice: s?.deliveryFixedPrice ?? 2000,
+      priceGasPerLitre: s?.priceGasPerLitre ?? 850,
+      priceBottlePerLitre: s?.priceBottlePerLitre ?? 2500,
+      supportPhone: s?.supportPhone ?? '+237 657696567',
+      maxCashHoldingCourier: s?.maxCashHoldingCourier ?? 50000,
+    };
+  }
+
+  /**
+   * Livreur clique sur "J'ai livré" (D-17 palier 1)
+   */
+  async courierMarkDelivered(deliveryId: string, courierUserId: string) {
+    const delivery = await this.prisma.delivery.findUnique({
+      where: { id: deliveryId },
+      include: { courier: true, order: true },
+    });
+
+    if (!delivery) {
+      throw new NotFoundException(`Livraison ${deliveryId} introuvable`);
+    }
+
+    const now = new Date();
+    const updated = await this.prisma.delivery.update({
+      where: { id: deliveryId },
+      data: {
+        status: 'DELIVERED_PENDING_CONFIRMATION',
+        courierConfirmedAt: now,
+      },
+    });
+
+    await this.prisma.auditLog.create({
+      data: {
+        userId: courierUserId,
+        action: 'DELIVERY_MARKED_BY_COURIER',
+        entity: 'Delivery',
+        entityId: deliveryId,
+        details: { status: 'DELIVERED_PENDING_CONFIRMATION', courierConfirmedAt: now },
+      },
+    });
+
     return {
       success: true,
-      caseNumber,
-      refundAmount,
-      bottleType: data.bottleType,
-      customerPhone: data.customerPhone,
-      timestamp: new Date().toISOString(),
+      status: 'DELIVERED_PENDING_CONFIRMATION',
+      courierConfirmedAt: now,
+      message: 'Livraison marquée par le livreur. En attente de validation client (2h).',
+    };
+  }
+
+  /**
+   * Client confirme "J'ai bien reçu ma bouteille" (D-17 palier 2)
+   */
+  async customerConfirmDelivery(deliveryId: string, customerUserId: string) {
+    const delivery = await this.prisma.delivery.findUnique({
+      where: { id: deliveryId },
+      include: { order: true },
+    });
+
+    if (!delivery) {
+      throw new NotFoundException(`Livraison ${deliveryId} introuvable`);
+    }
+
+    const now = new Date();
+    const updated = await this.prisma.delivery.update({
+      where: { id: deliveryId },
+      data: {
+        status: 'DELIVERED',
+        customerConfirmedAt: now,
+        deliveredAt: now,
+      },
+    });
+
+    // Mettre à jour la commande associée
+    await this.prisma.order.update({
+      where: { id: delivery.orderId },
+      data: { status: 'DELIVERED' },
+    });
+
+    await this.prisma.auditLog.create({
+      data: {
+        userId: customerUserId,
+        action: 'DELIVERY_CONFIRMED_BY_CUSTOMER',
+        entity: 'Delivery',
+        entityId: deliveryId,
+        details: { status: 'DELIVERED', customerConfirmedAt: now },
+      },
+    });
+
+    return {
+      success: true,
+      status: 'DELIVERED',
+      customerConfirmedAt: now,
+      message: 'Livraison définitivement confirmée par le client.',
+    };
+  }
+
+  /**
+   * Client signale "Je n'ai rien reçu / Problème" (D-17 litige)
+   */
+  async customerDisputeDelivery(deliveryId: string, customerUserId: string, reason: string) {
+    const delivery = await this.prisma.delivery.findUnique({
+      where: { id: deliveryId },
+    });
+
+    if (!delivery) {
+      throw new NotFoundException(`Livraison ${deliveryId} introuvable`);
+    }
+
+    const now = new Date();
+    await this.prisma.delivery.update({
+      where: { id: deliveryId },
+      data: {
+        status: 'DISPUTED',
+        disputedAt: now,
+        disputeReason: reason || 'Non réception signalée par le client',
+      },
+    });
+
+    await this.prisma.auditLog.create({
+      data: {
+        userId: customerUserId,
+        action: 'DELIVERY_DISPUTED_BY_CUSTOMER',
+        entity: 'Delivery',
+        entityId: deliveryId,
+        details: { status: 'DISPUTED', reason },
+      },
+    });
+
+    return {
+      success: true,
+      status: 'DISPUTED',
+      disputedAt: now,
+      message: 'Litige de livraison enregistré. Le support logistique a été notifié.',
+    };
+  }
+
+  /**
+   * Auto-validation des livraisons après expiration du délai de 2h sans litige (D-17)
+   */
+  async autoValidateExpiredDeliveries() {
+    const twoHoursAgo = new Date(Date.now() - 2 * 60 * 60 * 1000);
+
+    const pendingDeliveries = await this.prisma.delivery.findMany({
+      where: {
+        status: 'DELIVERED_PENDING_CONFIRMATION',
+        courierConfirmedAt: { lte: twoHoursAgo },
+        disputedAt: null,
+      },
+      include: { order: true },
+    });
+
+    const validatedIds: string[] = [];
+    for (const d of pendingDeliveries) {
+      await this.prisma.delivery.update({
+        where: { id: d.id },
+        data: {
+          status: 'CONFIRMED_BY_COURIER_ONLY',
+          deliveredAt: new Date(),
+        },
+      });
+
+      await this.prisma.order.update({
+        where: { id: d.orderId },
+        data: { status: 'DELIVERED' },
+      });
+
+      validatedIds.push(d.id);
+    }
+
+    return {
+      success: true,
+      validatedCount: validatedIds.length,
+      deliveryIds: validatedIds,
     };
   }
 }

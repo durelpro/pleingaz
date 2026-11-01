@@ -12,7 +12,7 @@ import { OptionalJwtAuthGuard } from './guards/optional-jwt-auth.guard';
 
 import { getRequiredJwtSecret, JWT_EXPIRATION_ACCESS } from './constants/jwt.config';
 
-import { WhatsAppAuthService } from './services/whatsapp-auth.service';
+import { PortalAudienceGuard } from './guards/portal-audience.guard';
 
 @Module({
   imports: [
@@ -24,8 +24,25 @@ import { WhatsAppAuthService } from './services/whatsapp-auth.service';
       }),
     }),
   ],
-  providers: [AuthService, WhatsAppAuthService, JwtStrategy, RolesGuard, PermissionsGuard, JwtAuthGuard, OptionalJwtAuthGuard],
+  providers: [
+    AuthService,
+    WhatsAppAuthService,
+    JwtStrategy,
+    RolesGuard,
+    PermissionsGuard,
+    JwtAuthGuard,
+    OptionalJwtAuthGuard,
+    PortalAudienceGuard,
+  ],
   controllers: [AuthController],
-  exports: [AuthService, WhatsAppAuthService, RolesGuard, PermissionsGuard, JwtAuthGuard, OptionalJwtAuthGuard],
+  exports: [
+    AuthService,
+    WhatsAppAuthService,
+    RolesGuard,
+    PermissionsGuard,
+    JwtAuthGuard,
+    OptionalJwtAuthGuard,
+    PortalAudienceGuard,
+  ],
 })
 export class AuthModule {}
