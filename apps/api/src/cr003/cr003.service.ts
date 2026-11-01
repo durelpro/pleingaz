@@ -195,11 +195,58 @@ export class Cr003Service {
   }
 
   // 6. Annonces Officielles Ciblées (D-18)
-  async getNotices() {
+  async getNotices(filter?: { role?: string; city?: string }) {
+    const where: any = { isActive: true };
+    if (filter?.role) {
+      where.OR = [{ targetRole: filter.role }, { targetRole: 'ALL' }, { targetRole: null }];
+    }
     return this.prisma.infoNotice.findMany({
-      where: { isActive: true },
+      where,
+      include: {
+        reads: true,
+      },
       orderBy: { createdAt: 'desc' },
     });
+  }
+
+  // 6b. Création d'une annonce ciblée par l'administrateur (D-18)
+  async createNotice(data: {
+    title: string;
+    content: string;
+    category?: string;
+    targetRole?: string;
+    targetCity?: string;
+    requiresAck?: boolean;
+    createdById?: string;
+  }) {
+    const admin = await this.prisma.user.findFirst({
+      where: { spaceType: 'STAFF' },
+    });
+    const createdById = data.createdById || admin?.id || 'admin-system-id';
+
+    const notice = await this.prisma.infoNotice.create({
+      data: {
+        title: data.title,
+        content: data.content,
+        category: data.category || 'INFO',
+        targetRole: data.targetRole || 'ALL',
+        targetCity: data.targetCity || 'ALL',
+        requiresAck: data.requiresAck ?? true,
+        createdById,
+        isActive: true,
+      },
+    });
+
+    await this.prisma.auditLog.create({
+      data: {
+        userId: createdById,
+        action: 'INFO_NOTICE_CREATED',
+        entity: 'InfoNotice',
+        entityId: notice.id,
+      },
+    });
+
+    return notice;
   }
 
   // 7. Accusé de lecture "J'ai compris" (D-18)

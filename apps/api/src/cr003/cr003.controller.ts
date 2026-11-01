@@ -44,8 +44,27 @@ export class Cr003Controller {
   }
 
   @Get('notices')
-  async getNotices() {
-    return this.cr003Service.getNotices();
+  async getNotices(
+    @Query('role') role?: string,
+    @Query('city') city?: string,
+  ) {
+    return this.cr003Service.getNotices({ role, city });
+  }
+
+  @Post('notices')
+  async createNotice(
+    @Body()
+    body: {
+      title: string;
+      content: string;
+      category?: string;
+      targetRole?: string;
+      targetCity?: string;
+      requiresAck?: boolean;
+      createdById?: string;
+    },
+  ) {
+    return this.cr003Service.createNotice(body);
   }
 
   @Post('notices/ack')

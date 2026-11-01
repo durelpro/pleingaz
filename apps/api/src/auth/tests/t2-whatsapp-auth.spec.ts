@@ -124,7 +124,10 @@ describe('T2 : API d’authentification WhatsApp (Preuve Entrante & Règles Souv
     });
 
     it('doit interdire la double utilisation d’un même défi déjà consommé', async () => {
-      const phone = '+237699881122';
+      const phone = '+23769' + Math.floor(1000000 + Math.random() * 9000000);
+      const secondaryPhone = '+23765' + Math.floor(1000000 + Math.random() * 9000000);
+      const otherSecondaryPhone = '+23767' + Math.floor(1000000 + Math.random() * 9000000);
+
       const startRes = await request(app.getHttpServer())
         .post('/api/v1/buyer/auth/register/start')
         .send({ phone })
@@ -142,7 +145,7 @@ describe('T2 : API d’authentification WhatsApp (Preuve Entrante & Règles Souv
         .send({
           challengeId: startRes.body.challengeId,
           phone,
-          secondaryPhone: '+237655881122',
+          secondaryPhone,
           password: 'Password123!',
         })
         .expect(201);
@@ -153,7 +156,7 @@ describe('T2 : API d’authentification WhatsApp (Preuve Entrante & Règles Souv
         .send({
           challengeId: startRes.body.challengeId,
           phone,
-          secondaryPhone: '+237655990011',
+          secondaryPhone: otherSecondaryPhone,
           password: 'Password123!',
         })
         .expect(400); // Rejeté car défi déjà consommé ou utilisateur existant
