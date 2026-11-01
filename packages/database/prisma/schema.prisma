@@ -639,7 +639,10 @@ enum DeliveryStatus {
   ASSIGNED
   PICKED_UP
   IN_TRANSIT
+  DELIVERED_PENDING_CONFIRMATION
   DELIVERED
+  CONFIRMED_BY_COURIER_ONLY
+  DISPUTED
   FAILED
   CANCELLED
 }
@@ -657,6 +660,10 @@ model Delivery {
 
   pickedUpAt           DateTime?
   deliveredAt          DateTime?
+  courierConfirmedAt   DateTime?            // D-17: Horodatage quand le livreur clique "J'ai livré"
+  customerConfirmedAt  DateTime?            // D-17: Horodatage quand le client confirme "J'ai reçu"
+  disputedAt           DateTime?            // D-17: Horodatage en cas de contestation client
+  disputeReason        String?              // Motif du litige client
   failedReason         String?
 
   assignments          DeliveryAssignment[]

@@ -5,8 +5,37 @@ const prisma = new PrismaClient();
 async function main() {
   console.log('🌱 Insertion des données dynamiques CR-003...');
 
-  // 1. Rôle ACCOUNT_MANAGER (D-15)
-  const roleAccountMgr = await prisma.role.upsert({
+  // 1. Paramètres de la plateforme (PlatformSettings)
+  await prisma.platformSettings.upsert({
+    where: { id: 'singleton' },
+    update: {
+      buyerBottleLimit: 5,
+      deliveryFixedPrice: 2000,
+      priceGasPerLitre: 850,
+      priceBottlePerLitre: 2500,
+      supportPhone: '+237 657696567',
+      supportEmail: 'donfackdurel1980@icloud.com',
+      maxCashHoldingCourier: 50000,
+      payoutDoubleApprovalThreshold: 500000,
+      searchDefaultRadiusKm: 5,
+    },
+    create: {
+      id: 'singleton',
+      buyerBottleLimit: 5,
+      deliveryFixedPrice: 2000,
+      priceGasPerLitre: 850,
+      priceBottlePerLitre: 2500,
+      supportPhone: '+237 657696567',
+      supportEmail: 'donfackdurel1980@icloud.com',
+      maxCashHoldingCourier: 50000,
+      payoutDoubleApprovalThreshold: 500000,
+      searchDefaultRadiusKm: 5,
+    },
+  });
+  console.log('✅ Paramètres globaux PlatformSettings configurés (plafond quota 5 btl, livraison 2000 FCFA).');
+
+  // 2. Rôle ACCOUNT_MANAGER (D-15)
+  await prisma.role.upsert({
     where: { name: 'ACCOUNT_MANAGER' },
     update: {},
     create: {
@@ -16,7 +45,7 @@ async function main() {
   });
   console.log('✅ Rôle ACCOUNT_MANAGER configuré.');
 
-  // 2. Annonce officielle dynamique (D-18)
+  // 3. Annonce officielle dynamique (D-18)
   const existingNotice = await prisma.infoNotice.findFirst({
     where: { title: 'Approvisionnement Douala & Yaoundé' },
   });
@@ -36,12 +65,12 @@ async function main() {
     console.log('✅ Annonce officielle InfoNotice créée.');
   }
 
-  // 3. Utilisateur Acheteur de test (Marie T.) avec 2 numéros E.164 (D-12)
-  const buyerUser = await prisma.user.upsert({
+  // 4. Utilisateur Acheteur de test (Marie T.) avec 2 numéros E.164 distincts (D-12.3)
+  await prisma.user.upsert({
     where: { phone: '+237699123456' },
     update: {
       whatsappPhone: '+237699123456',
-      callPhone: '+237677654321',
+      callPhone: '+237677654321', // Distinct
     },
     create: {
       phone: '+237699123456',
@@ -58,17 +87,17 @@ async function main() {
   });
   console.log('✅ Usager Acheteur réel (Marie T.) configuré avec quota.');
 
-  // 4. Utilisateur Livreur certifié (Paul M.) (D-17)
-  const courierUser = await prisma.user.upsert({
+  // 5. Utilisateur Livreur certifié (Paul M.) avec 2 numéros distincts (D-12.3, D-17)
+  await prisma.user.upsert({
     where: { phone: '+237699555666' },
     update: {
       whatsappPhone: '+237699555666',
-      callPhone: '+237699555666',
+      callPhone: '+237655443322', // Strictement distinct du principal
     },
     create: {
       phone: '+237699555666',
       whatsappPhone: '+237699555666',
-      callPhone: '+237699555666',
+      callPhone: '+237655443322',
       isPhoneVerified: true,
       courierProfile: {
         create: {
@@ -79,7 +108,7 @@ async function main() {
       },
     },
   });
-  console.log('✅ Livreur Partenaire réel (Paul M.) configuré.');
+  console.log('✅ Livreur Partenaire réel (Paul M.) configuré avec 2 numéros distincts.');
 
   console.log('🎉 Données dynamiques CR-003 insérées avec succès dans PostgreSQL !');
 }
