@@ -145,32 +145,27 @@ export default function Home() {
           </Link>
 
           <nav className="hidden lg:flex items-center gap-7 text-sm font-semibold text-neutral-300">
-            <Link href="/search?auto=true" className="hover:text-red-500 transition-colors flex items-center gap-1.5 group">
-              <MapPin size={17} className="text-red-500 group-hover:scale-110 transition-transform" />
-              <span>Où Trouver du Gaz ?</span>
-            </Link>
-            <Link href="/stores" className="hover:text-red-500 transition-colors">
-              Points de Vente Agréés
-            </Link>
-            <Link href="/distributor/apply" className="hover:text-red-500 transition-colors flex items-center gap-1.5">
-              <Store size={16} className="text-amber-400" />
-              <span>Espace Distributeur</span>
-            </Link>
-            <Link href="/delivery" className="hover:text-red-500 transition-colors flex items-center gap-1.5">
-              <Truck size={16} className="text-emerald-400" />
-              <span>Espace Livreur</span>
-            </Link>
+            <a href="#catalogue" className="hover:text-red-500 transition-colors">
+              Recharges & Tarifs
+            </a>
+            <a href="#etapes" className="hover:text-red-500 transition-colors">
+              Comment ça marche ?
+            </a>
+            <a href="#securite" className="hover:text-red-500 transition-colors flex items-center gap-1.5">
+              <ShieldCheck size={16} className="text-amber-400" />
+              <span>Consignes Sécurité</span>
+            </a>
           </nav>
 
           <div className="flex items-center gap-3">
             <Link
-              href="/account"
+              href="/acheteur/connexion"
               className="px-4 py-2.5 rounded-xl text-xs font-bold border border-white/15 hover:bg-white/10 hover:border-red-600/40 transition-all text-neutral-200"
             >
-              Mon Espace
+              Je suis acheteur
             </Link>
             <Link
-              href="/search?auto=true"
+              href="/acheteur/inscription"
               className="px-4 py-2.5 rounded-xl text-xs font-bold bg-gradient-to-r from-red-600 to-red-700 text-white shadow-lg shadow-red-600/30 hover:shadow-red-600/60 hover:scale-105 active:scale-95 transition-all flex items-center gap-1.5"
             >
               <Sparkles size={15} />
@@ -541,75 +536,69 @@ export default function Home() {
         </div>
       </section>
 
-      {/* PORTAILS MÉTIERS & ACCÈS DIRECTS */}
-      <section className="max-w-6xl mx-auto px-4 py-12 space-y-8">
+      {/* CONSIGNES DE SÉCURITÉ & RÉASSURANCE (100% ACHETEUR) */}
+      <section id="securite" className="max-w-6xl mx-auto px-4 py-12 space-y-8">
         <div className="text-center space-y-2">
-          <h2 className="text-3xl font-black text-white">Espaces Dédiés & Professionnels</h2>
-          <p className="text-neutral-400 text-sm">Accédez à votre cockpit selon votre rôle dans le réseau PLEINGAZ</p>
+          <span className="inline-block px-3 py-1 rounded-full text-xs font-semibold bg-amber-500/10 text-amber-400 border border-amber-500/20">
+            Protection & Sérénité Domestique
+          </span>
+          <h2 className="text-3xl font-black text-white">Consignes de Sécurité PLEINGAZ</h2>
+          <p className="text-neutral-400 text-sm">Votre sécurité est notre priorité absolue lors de chaque utilisation</p>
         </div>
 
         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6">
-          <Link
-            href="/distributor/apply"
-            className="p-6 rounded-3xl bg-white/[0.04] border border-white/10 hover:border-red-600/60 hover:bg-white/[0.08] transition-all space-y-3 group"
-          >
-            <div className="w-11 h-11 rounded-2xl bg-red-600/20 text-red-500 flex items-center justify-center group-hover:scale-110 transition-transform">
-              <Store size={22} />
-            </div>
-            <h3 className="font-bold text-lg text-white group-hover:text-red-500 transition-colors">
-              Espace Distributeur
-            </h3>
-            <p className="text-xs text-neutral-400 leading-relaxed">
-              Rejoignez le réseau officiel agréé, gérez vos stocks déclaratifs et servez vos clients en toute conformité.
-            </p>
-          </Link>
-
-          <Link
-            href="/delivery"
-            className="p-6 rounded-3xl bg-white/[0.04] border border-white/10 hover:border-emerald-500/60 hover:bg-white/[0.08] transition-all space-y-3 group"
-          >
-            <div className="w-11 h-11 rounded-2xl bg-emerald-500/20 text-emerald-400 flex items-center justify-center group-hover:scale-110 transition-transform">
-              <Truck size={22} />
-            </div>
-            <h3 className="font-bold text-lg text-white group-hover:text-emerald-400 transition-colors">
-              Portail Livreur Partenaire
-            </h3>
-            <p className="text-xs text-neutral-400 leading-relaxed">
-              Cockpit mobile pour recevoir les missions de livraison, valider la double confirmation et gérer la caisse.
-            </p>
-          </Link>
-
-          <Link
-            href="/support/securite"
-            className="p-6 rounded-3xl bg-white/[0.04] border border-white/10 hover:border-amber-500/60 hover:bg-white/[0.08] transition-all space-y-3 group"
-          >
-            <div className="w-11 h-11 rounded-2xl bg-amber-500/20 text-amber-400 flex items-center justify-center group-hover:scale-110 transition-transform">
+          <div className="p-6 rounded-3xl bg-white/[0.04] border border-white/10 space-y-3">
+            <div className="w-11 h-11 rounded-2xl bg-red-600/20 text-red-500 flex items-center justify-center">
               <ShieldCheck size={22} />
             </div>
-            <h3 className="font-bold text-lg text-white group-hover:text-amber-400 transition-colors">
-              Sécurité & Guide d'Utilisation
+            <h3 className="font-bold text-lg text-white">
+              Scellé d'Usine Inviolable
             </h3>
             <p className="text-xs text-neutral-400 leading-relaxed">
-              Consignes essentielles de manipulation, détection des fuites, stockage sécurisé et numéros d'urgence 24/7.
+              Vérifiez toujours que la capsule de scellage d'origine est intacte lors de la réception de votre bouteille.
             </p>
-          </Link>
+          </div>
+
+          <div className="p-6 rounded-3xl bg-white/[0.04] border border-white/10 space-y-3">
+            <div className="w-11 h-11 rounded-2xl bg-amber-500/20 text-amber-400 flex items-center justify-center">
+              <Clock size={22} />
+            </div>
+            <h3 className="font-bold text-lg text-white">
+              Remplacement Périodique Tuyau
+            </h3>
+            <p className="text-xs text-neutral-400 leading-relaxed">
+              Remplacez votre tuyau de raccordement flexible avant la date d'expiration imprimée sur sa gaine.
+            </p>
+          </div>
+
+          <div className="p-6 rounded-3xl bg-white/[0.04] border border-white/10 space-y-3">
+            <div className="w-11 h-11 rounded-2xl bg-emerald-500/20 text-emerald-400 flex items-center justify-center">
+              <PhoneCall size={22} />
+            </div>
+            <h3 className="font-bold text-lg text-white">
+              Assistance Fuite 24/7
+            </h3>
+            <p className="text-xs text-neutral-400 leading-relaxed">
+              En cas d'odeur suspecte de gaz, fermez immédiatement le détendeur, aérez la pièce et contactez notre ligne d'urgence.
+            </p>
+          </div>
         </div>
       </section>
 
-      {/* Footer Officiel */}
+      {/* Footer Officiel & Lien Discret Professionnel */}
       <footer className="border-t border-red-600/20 py-10 px-4 text-center text-xs text-neutral-500 space-y-3">
         <p className="text-neutral-400 font-semibold">
           © 2026 PLEINGAZ S.A. (Distribué par INFOTECH S.A.) — Tous droits réservés.
         </p>
         <p className="max-w-2xl mx-auto text-[11px] text-neutral-500">
-          Distribution exclusive de gaz domestique au Cameroun sous barèmes officiels homologués par le Ministère du Commerce. Aucune majoration non autorisée.
+          Distribution exclusive de gaz domestique au Cameroun sous barèmes officiels homologués par le Ministère du Commerce. Tarif plafonné à 6 500 FCFA la recharge 12.5 kg.
         </p>
-        <div className="pt-2">
+        <div className="pt-3">
           <Link
-            href="/login/personnel"
-            className="text-[11px] text-neutral-500 hover:text-neutral-400 underline underline-offset-4 transition-colors"
+            href="/espace-pro"
+            className="text-[11px] text-neutral-600 hover:text-neutral-400 transition-colors"
           >
-            Accès Professionnel & Collaborateurs
+            Espace professionnel
           </Link>
         </div>
       </footer>

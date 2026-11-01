@@ -1,86 +1,125 @@
 import { NextResponse } from 'next/server';
 import type { NextRequest } from 'next/server';
 
-// Rôles autorisés pour l'espace administration / supervision
-const ADMIN_ROLES = ['ADMIN', 'SUPER_ADMIN', 'ACCOUNT_MANAGER', 'AUDITOR'];
-
+/**
+ * Middleware d'Étanchéité Souveraine R-01 (Invisibilité & Cloisonnement D-11)
+ * Chaque espace possède son propre cookie d'audience cryptographique étanche :
+ * - pleingaz_session_buyer (pleingaz:portal:customer)
+ * - pleingaz_session_distributor (pleingaz:portal:distributor)
+ * - pleingaz_session_courier (pleingaz:portal:courier)
+ * - pleingaz_session_staff (pleingaz:portal:staff)
+ */
 export function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
 
-  // Extraction de la session depuis le cookie
-  const sessionCookie = request.cookies.get('pleingaz_session')?.value;
-  const legacyAdminAuth = request.cookies.get('pleingaz_admin_auth')?.value;
+  const buyerSession = request.cookies.get('pleingaz_session_buyer')?.value || request.cookies.get('pleingaz_session')?.value;
+  const distributorSession = request.cookies.get('pleingaz_session_distributor')?.value;
+  const courierSession = request.cookies.get('pleingaz_session_courier')?.value;
+  const staffSession = request.cookies.get('pleingaz_session_staff')?.value || request.cookies.get('pleingaz_admin_auth')?.value;
 
-  let userRole: string | null = null;
-  if (sessionCookie) {
-    try {
-      const parsed = JSON.parse(decodeURIComponent(sessionCookie));
-      userRole = parsed?.role || null;
-    } catch {
-      userRole = null;
-    }
-  }
+  // 1. ESPACE ACHETEUR (/acheteur/* ou /account/*)
+  if (pathname.startsWith('/acheteur') || pathname.startsWith('/account')) {
+    const isPublicAuthRoute =
+      pathname === '/acheteur/connexion' ||
+      pathname === '/acheteur/inscription' ||
+      pathname === '/acheteur/mot-de-passe-oublie' ||
+      pathname === '/login' ||
+      pathname === '/register';
 
-  // 1. Protection de l'espace Administration (/admin/*)
-  if (pathname.startsWith('/admin')) {
-    // La page /admin/login reste accessible pour orienter vers le 2FA
-    if (pathname === '/admin/login') {
+    if (isPublicAuthRoute) {
       return NextResponse.next();
     }
 
-    const isAuthorized = (userRole && ADMIN_ROLES.includes(userRole)) || legacyAdminAuth === 'true';
-    if (!isAuthorized) {
-      const loginUrl = new URL('/login/personnel', request.url);
+    if (!buyerSession) {
+      const loginUrl = new URL('/acheteur/connexion', request.url);
       loginUrl.searchParams.set('redirect', pathname);
       return NextResponse.redirect(loginUrl);
     }
+
     return NextResponse.next();
   }
 
-  // 2. Protection de l'espace Distributeur (/distributor/*)
-  // Note: /distributor/apply et /distributor/onboarding restent publics pour l'enrôlement KYC (CR-001 D-04)
-  if (pathname.startsWith('/distributor') && !pathname.startsWith('/distributor/apply') && !pathname.startsWith('/distributor/onboarding')) {
-    const isDistributor = userRole === 'DISTRIBUTOR' || userRole === 'DISTRIBUTOR_MANAGER' || userRole === 'DISTRIBUTOR_STAFF';
-    if (!isDistributor && !sessionCookie) {
-      const loginUrl = new URL('/login', request.url);
-      loginUrl.searchParams.set('role', 'DISTRIBUTOR');
+  // 2. ESPACE DISTRIBUTEUR (/distributeur/* ou /distributor/*)
+  if (pathname.startsWith('/distributeur') || pathname.startsWith('/distributor')) {
+    const isPublicProRoute =
+      pathname === '/distributeur/connexion' ||
+      pathname === '/distributeur/inscription' ||
+      pathname === '/distributor/apply' ||
+      pathname === '/distributor/onboarding';
+
+    if (isPublicProRoute) {
+      return NextResponse.next();
+    }
+
+    // R-01 Souverain : Si l'utilisateur est connecté en tant qu'acheteur, 404 strict
+    if (buyerSession && !distributorSession) {
+      return new NextResponse(null, { status: 404, statusText: 'Not Found' });
+    }
+
+    if (!distributorSession) {
+      const loginUrl = new URL('/distributeur/connexion', request.url);
       loginUrl.searchParams.set('redirect', pathname);
       return NextResponse.redirect(loginUrl);
     }
+
     return NextResponse.next();
   }
 
-  // 3. Protection de l'espace Livreur (/delivery/*)
-  if (pathname.startsWith('/delivery')) {
-    // Si l'utilisateur n'est pas connecté du tout, redirection vers login
-    if (!sessionCookie) {
-      const loginUrl = new URL('/login', request.url);
-      loginUrl.searchParams.set('role', 'COURIER');
+  // 3. ESPACE LIVREUR (/livreur/* ou /delivery/*)
+  if (pathname.startsWith('/livreur') || pathname.startsWith('/delivery')) {
+    const isPublicCourierRoute =
+      pathname === '/livreur/connexion' ||
+      pathname === '/livreur/inscription';
+
+    if (isPublicCourierRoute) {
+      return NextResponse.next();
+    }
+
+    // R-01 Souverain : Si l'utilisateur est connecté en acheteur ou distributeur, 404 strict
+    if ((buyerSession || distributorSession) && !courierSession) {
+      return new NextResponse(null, { status: 404, statusText: 'Not Found' });
+    }
+
+    if (!courierSession) {
+      const loginUrl = new URL('/livreur/connexion', request.url);
       loginUrl.searchParams.set('redirect', pathname);
       return NextResponse.redirect(loginUrl);
     }
+
     return NextResponse.next();
   }
 
-  // 4. Protection de l'espace Client (/account/*)
-  if (pathname.startsWith('/account')) {
-    if (!sessionCookie) {
-      const loginUrl = new URL('/login', request.url);
-      loginUrl.searchParams.set('redirect', pathname);
-      return NextResponse.redirect(loginUrl);
+  // 4. ESPACE PERSONNEL & SUPERVISION ADMIN (/staff/* ou /admin/*)
+  if (pathname.startsWith('/staff') || pathname.startsWith('/admin')) {
+    const isPublicStaffRoute =
+      pathname === '/staff/login' ||
+      pathname === '/admin/login' ||
+      pathname === '/login/personnel';
+
+    if (isPublicStaffRoute) {
+      return NextResponse.next();
     }
+
+    // R-01 Souverain : Si l'accès staff est tenté par un utilisateur non staff, 404 strict (invisibilité absolue)
+    if (!staffSession) {
+      return new NextResponse(null, { status: 404, statusText: 'Not Found' });
+    }
+
     return NextResponse.next();
   }
 
   return NextResponse.next();
 }
 
-// Configuration du matcher : intercepte les espaces protégés, ignore les assets statiques
 export const config = {
   matcher: [
-    '/admin/:path*',
-    '/distributor/:path*',
-    '/delivery/:path*',
+    '/acheteur/:path*',
     '/account/:path*',
+    '/distributeur/:path*',
+    '/distributor/:path*',
+    '/livreur/:path*',
+    '/delivery/:path*',
+    '/staff/:path*',
+    '/admin/:path*',
   ],
 };
