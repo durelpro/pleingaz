@@ -49,6 +49,17 @@ Chaque cas d'abus correspond à une menace identifiée dans `06a-securite.md`.
 | M18 | Écriture grand livre déséquilibrée (`SUM(debit) != SUM(credit)`). | Finance | BDD | Rejet SQL transactionnel immédiat (Violation contrainte invariant). |
 | M20 | Exécution d'un lot de reversement `PayoutBatch` sans double approbation. | Finance | API | Rejet HTTP 403 / 400 (Statut non `APPROVED`). |
 | M20 | Double exécution d'un même lot de reversement (`PayoutBatch`). | Finance | API | Rejet HTTP 409 Conflict via verrou d'idempotence et statut `EXECUTED`. |
+| D11 | Appel API inter-espaces (Acheteur appelant `/api/v1/distributor/inventory`). | Auth/RBAC | API | **Réponse HTTP 404 Not Found systématique** (jamais 403, règle zéro fuite). |
+| D12 | Défi WhatsApp rejoué ou expiré (> 10 min). | Auth | API | Rejet 401 Unauthorized (`CHALLENGE_EXPIRED_OR_CONSUMED`). |
+| D12 | Faux webhook WhatsApp Meta (Signature HMAC invalide). | Auth | API | Rejet HTTP 401 Unauthorized et log de sécurité synchrone. |
+| D14 | Tentative d'achat de la 6e bouteille sur la période de 30 jours. | Commande | API / BDD | Rejet HTTP 400 Bad Request (`LIMIT_EXCEEDED`), jauge bloquée à 5/5. |
+| D14 | Commandes concurrentes sur 2 appareils pour dépasser le quota des 5. | Commande | Intégration | Verrou transactionnel sérialisable : la 2e requête est rejetée. |
+| D14 | Libération du quota après annulation de commande. | Commande | Intégration | Le quota réservé redevient immédiatement disponible à la commande. |
+| D15 | Tentative de modification directe d'un profil par un `ACCOUNT_MANAGER`. | Admin/Comptes | API | Rejet HTTP 403 Forbidden (Action non permise, demande requise). |
+| D15 | Tentative d'usurpation d'identité (« voir comme ») par le gestionnaire. | Auth | API | Rejet HTTP 403 Forbidden (Fonctionnalité bannie de l'architecture). |
+| D16 | Vente au comptoir avec acheteur ayant déjà atteint son quota de 5. | Comptoir | API | Rejet HTTP 400 Bad Request (`QUOTA_EXCEEDED`) sauf dérogation. |
+| D17 | Clôture de livraison avec seulement la validation livreur sans client. | Logistique | API | Reste à l'état `DELIVERED_PENDING_CONFIRMATION` (pas de clôture unilatérale sans trace). |
+
 
 ## 4. Tests de Résilience et Conformité Métier (Conditions Réelles)
 L'environnement cible (Cameroun) exige de tester la résilience face aux défaillances réseau et la rigueur des données :

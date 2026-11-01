@@ -92,15 +92,32 @@
 | **Immutabilité** | Mutable via la machine à états stricte. |
 | **Rétention** | Soft delete uniquement. |
 
-### 1.10 `UserRole`
+### 1.10 `UserRole` (CR-003 D-11)
 | Propriété | Règle / Instruction SQL |
 |---|---|
-| **Clés & Unicités** | `id` (PK). `UNIQUE (user_id, role_id, scope_type, scope_id)`. |
+| **Clés & Unicités** | `id` (PK). `UNIQUE (user_id, role_id)`. **Contrainte d'espace exclusif** : Un utilisateur standard ne peut posséder qu'un seul rôle opérationnel d'espace à la fois (`portal_type IN ('CUSTOMER', 'DISTRIBUTOR', 'COURIER', 'STAFF')`). |
 | **Clés Étrangères**| `user_id`, `role_id`. |
-| **CHECK** | - |
-| **Index** | Index sur `user_id`. |
-| **Immutabilité** | Mutable (Révocable). |
+| **CHECK** | `CHECK (portal_type IN ('CUSTOMER', 'DISTRIBUTOR', 'COURIER', 'STAFF'))`. |
+| **Index** | Index sur `user_id`, `portal_type`. |
+| **Immutabilité** | Mutable uniquement par action administrative exceptionnelle avec enregistrement dans `AuditLog`. |
 | **Rétention** | Soft delete (conservation des logs d'accès). |
+
+### 1.10b `User` & Deux Numéros E.164 (CR-003 D-12, C-03)
+| Propriété | Règle / Instruction SQL |
+|---|---|
+| **Clés & Unicités** | `id` (PK). `phone_number` UNIQUE. |
+| **CHECK Numéros** | `CHECK (phone_number ~ '^\+237[26][0-9]{8}$')` (E.164 Cameroun). `CHECK (backup_phone_number ~ '^\+237[26][0-9]{8}$')`. `CHECK (phone_number <> backup_phone_number)` (Obligation de 2 numéros distincts). |
+| **Règle Anti-Contournement** | `backup_phone_number` ne peut pas être simultanément le `phone_number` actif d'un autre utilisateur (contrôlé par contrainte applicative / trigger). |
+| **Mot de passe** | `password_hash` chiffré obligatoirement via **Argon2id**. Interdiction de mot de passe nul sauf phase transitoire d'activation. |
+
+### 1.10c `VerificationChallenge` (CR-003 D-12, C-04)
+| Propriété | Règle / Instruction SQL |
+|---|---|
+| **Clés & Unicités** | `id` (PK). `code` (Indexé). |
+| **CHECK** | `CHECK (expires_at > created_at)`. |
+| **Usage Unique** | `is_consumed BOOLEAN DEFAULT FALSE`. La transition à `TRUE` est atomique (`UPDATE ... WHERE id = :id AND is_consumed = FALSE`). |
+| **Rétention** | Purge automatique des défis expirés après 24 heures. |
+
 
 ### 1.11 `DistributorDocument` (CR-001 D-04)
 | Propriété | Règle / Instruction SQL |
@@ -171,7 +188,34 @@
 | **Maker-Checker** | `CHECK (approved_by IS NULL OR approved_by != created_by)`. L'approbateur doit obligatoirement être distinct du proposant. |
 | **Règle Serveur** | Le serveur recalcule obligatoirement le prix à la commande selon le tarif actif (`status = 'APPROVED'` et `NOW() BETWEEN effective_from AND COALESCE(effective_to, NOW())`). Tout montant envoyé par le client est écrasé. |
 | **Immutabilité** | Une fois `APPROVED`, le barème est immuable dans le temps. Toute modification génère une nouvelle ligne et une trace dans `PriceHistory`. |
-| **Rétention** | 10 ans légal (**À CONFIRMER** avec obligations fiscales/comptables). |
+### 1.18 `AccountCase` — Dossiers de Gestion de Compte & Litiges (CR-003 D-15)
+| Propriété | Règle / Instruction SQL |
+|---|---|
+| **Clés & Unicités** | `id` (PK). |
+| **Clés Étrangères**| `user_id` (Ref: User sujet), `created_by` (Ref: User `ACCOUNT_MANAGER`), `approved_by` (Ref: User `ADMIN` nullable). |
+| **CHECK** | `CHECK (type IN ('WHATSAPP_LOST', 'PHONE_CHANGE', 'DEPOSIT_REFUND', 'IDENTITY_CORRECTION'))`. `CHECK (status IN ('OPEN', 'PENDING_APPROVAL', 'APPROVED', 'REJECTED', 'CLOSED'))`. |
+| **Maker-Checker Strict**| `CHECK (approved_by IS NULL OR approved_by != created_by)`. L'approbateur doit obligatoirement être un `ADMIN` distinct du gestionnaire ayant instruit le dossier. |
+| **Règle Zéro Usurpation**| Interdiction absolue d'un mode "Voir en tant que" (impersonation). Les actions de support se font exclusivement par transition d'état auditée. |
+| **Immutabilité** | Une fois clos ou approuvé, le dossier et ses pièces jointes sont immuables. |
+| **Rétention** | 10 ans légal. |
+
+### 1.19 `CounterSale` — Ventes au Comptoir en Boutique (CR-003 D-16)
+| Propriété | Règle / Instruction SQL |
+|---|---|
+| **Clés & Unicités** | `id` (PK). `sale_number` (Unique). |
+| **Clés Étrangères**| `store_id` (Ref: Store), `customer_id` (Ref: User), `recorded_by` (Ref: User staff boutique). |
+| **CHECK** | `CHECK (quantity > 0 AND total_amount > 0 AND currency = 'XAF')`. |
+| **Obligation Client** | Interdiction formelle de la vente anonyme au comptoir. Le numéro WhatsApp de l'acheteur est obligatoire et vérifié. |
+| **Intégration Quota** | La quantité vendue au comptoir est immédiatement décomptée du quota mensuel de l'acheteur (D-14). Rejet automatique si le quota de 5 bouteilles est dépassé. |
+| **Immutabilité** | Écriture immuable. En cas d'erreur de saisie, émission d'une annulation auditée. |
+| **Rétention** | 10 ans légal. |
+
+### 1.20 `Quota Acheteur` — Plafond Mensuel de Consommation (CR-003 D-14)
+| Propriété | Règle Opérationnelle |
+|---|---|
+| **Plafond Particulier**| Strictement 5 bouteilles par période glissante de 30 jours pour tout profil acheteur particulier. |
+| **Contrôle Pré-Achat** | Vérifié côté serveur avant toute création de commande (`Order`) ou enregistrement au comptoir (`CounterSale`). |
+| **Jauge Graphique** | Affichage d'une jauge visuelle à 5 crans sur l'espace acheteur (Vert 1-3, Jaune 4, Rouge 5/5 avec blocage explicite). |
 
 ### 1.18 `Store` — Modèle de Réseau et Importation (CR-002 D-07, D-08, D-09, D-10)
 | Propriété | Règle / Instruction SQL |

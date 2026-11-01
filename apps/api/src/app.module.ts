@@ -20,6 +20,7 @@ import { ChatModule } from './chat/chat.module';
 import { AiModule } from './ai/ai.module';
 import { DashboardModule } from './dashboard/dashboard.module';
 import { ImportsModule } from './imports/imports.module';
+import { Cr003Module } from './cr003/cr003.module';
 
 @Module({
   imports: [
@@ -45,6 +46,7 @@ import { ImportsModule } from './imports/imports.module';
     AiModule,
     DashboardModule,
     ImportsModule,
+    Cr003Module,
     BullModule.forRoot({
       connection: {
         host: process.env.REDIS_HOST || 'localhost',

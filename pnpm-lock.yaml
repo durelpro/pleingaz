@@ -8,9 +8,15 @@ importers:
 
   .:
     devDependencies:
+      '@prisma/client':
+        specifier: ^5.10.0
+        version: 5.22.0(prisma@5.22.0)
       prettier:
         specifier: ^3.2.5
         version: 3.9.9
+      prisma:
+        specifier: ^5.10.0
+        version: 5.22.0
       turbo:
         specifier: ^1.13.2
         version: 1.13.4

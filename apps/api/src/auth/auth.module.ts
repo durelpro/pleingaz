@@ -10,16 +10,39 @@ import { PermissionsGuard } from './guards/permissions.guard';
 import { JwtAuthGuard } from './guards/jwt-auth.guard';
 import { OptionalJwtAuthGuard } from './guards/optional-jwt-auth.guard';
 
+import { getRequiredJwtSecret, JWT_EXPIRATION_ACCESS } from './constants/jwt.config';
+
+import { PortalAudienceGuard } from './guards/portal-audience.guard';
+
 @Module({
   imports: [
     PassportModule,
-    JwtModule.register({
-      secret: process.env.JWT_SECRET || 'fallback_secret_for_dev_only',
-      signOptions: { expiresIn: '15m' },
+    JwtModule.registerAsync({
+      useFactory: () => ({
+        secret: getRequiredJwtSecret(),
+        signOptions: { expiresIn: JWT_EXPIRATION_ACCESS },
+      }),
     }),
   ],
-  providers: [AuthService, JwtStrategy, RolesGuard, PermissionsGuard, JwtAuthGuard, OptionalJwtAuthGuard],
+  providers: [
+    AuthService,
+    WhatsAppAuthService,
+    JwtStrategy,
+    RolesGuard,
+    PermissionsGuard,
+    JwtAuthGuard,
+    OptionalJwtAuthGuard,
+    PortalAudienceGuard,
+  ],
   controllers: [AuthController],
-  exports: [AuthService, RolesGuard, PermissionsGuard, JwtAuthGuard, OptionalJwtAuthGuard],
+  exports: [
+    AuthService,
+    WhatsAppAuthService,
+    RolesGuard,
+    PermissionsGuard,
+    JwtAuthGuard,
+    OptionalJwtAuthGuard,
+    PortalAudienceGuard,
+  ],
 })
 export class AuthModule {}

@@ -117,7 +117,7 @@ stateDiagram-v2
   - `ISSUED` -> `CANCELLED_BY_CREDIT_NOTE` (Génère un Avoir, AuditLog OUI).
 - **Interdites** : Modifier une facture `ISSUED` ; Supprimer une facture.
 
-## 7. Delivery (Processus de livraison avec code de confirmation)
+## 7. Delivery (Processus de livraison & Double Confirmation D-17)
 ```mermaid
 stateDiagram-v2
     [*] --> PENDING
@@ -126,9 +126,14 @@ stateDiagram-v2
     ASSIGNED --> PICKED_UP
     ASSIGNED --> CANCELLED
     PICKED_UP --> IN_TRANSIT
-    IN_TRANSIT --> DELIVERED
-    IN_TRANSIT --> FAILED
+    IN_TRANSIT --> DELIVERED_PENDING_CONFIRMATION : Livreur clique "J'ai livré"
+    IN_TRANSIT --> FAILED : Incident de livraison
+    DELIVERED_PENDING_CONFIRMATION --> DELIVERED : Client confirme "J'ai reçu"
+    DELIVERED_PENDING_CONFIRMATION --> CONFIRMED_BY_COURIER_ONLY : Timeout 2h sans litige client
+    DELIVERED_PENDING_CONFIRMATION --> DISPUTED : Client signale "Rien reçu"
     DELIVERED --> [*]
+    CONFIRMED_BY_COURIER_ONLY --> [*]
+    DISPUTED --> FAILED : Litige confirmé
     FAILED --> [*]
     CANCELLED --> [*]
 ```
@@ -136,12 +141,15 @@ stateDiagram-v2
   - `PENDING` -> `ASSIGNED` (Attribution manuelle/assistée à un livreur via `DeliveryAssignment`).
   - `ASSIGNED` -> `PICKED_UP` (Livreur confirme le retrait de la marchandise chez le distributeur).
   - `PICKED_UP` -> `IN_TRANSIT` (Livreur prend la route vers l'adresse client).
-  - `IN_TRANSIT` -> `DELIVERED` (**Obligation absolue** : Saisie par le livreur du code secret de confirmation fourni au client).
-  - `IN_TRANSIT` -> `FAILED` (Échec de livraison avec motif obligatoire parmi enum fermée, alerte Support/Logistique).
+  - `IN_TRANSIT` -> `DELIVERED_PENDING_CONFIRMATION` (Livreur clique sur "J'ai livré" avec horodatage `courierConfirmedAt` - D-17).
+  - `DELIVERED_PENDING_CONFIRMATION` -> `DELIVERED` (Acheteur confirme la bonne réception dans son espace client).
+  - `DELIVERED_PENDING_CONFIRMATION` -> `CONFIRMED_BY_COURIER_ONLY` (Expiration du délai de 2h sans contestation du client - validation automatique).
+  - `DELIVERED_PENDING_CONFIRMATION` -> `DISPUTED` (Acheteur clique sur "Je n'ai rien reçu" - ouverture immédiate d'un ticket d'incident).
+  - `IN_TRANSIT` -> `FAILED` (Échec de livraison motivé avec motif parmi enum fermée).
   - `ASSIGNED` / `PENDING` -> `CANCELLED` (Annulation client/support avant prise en charge).
 - **Interdites** :
-  - Passer à `DELIVERED` sans saisie valide du code de confirmation client.
-  - Passer directement de `ASSIGNED` à `DELIVERED` sans passer par `PICKED_UP` et `IN_TRANSIT`.
+  - Passer directement de `IN_TRANSIT` à `DELIVERED` sans passer par le premier palier de confirmation du livreur (`DELIVERED_PENDING_CONFIRMATION`).
+  - Forcer la clôture d'une livraison contestée sans instruction du dossier par le support logistique.
 
 ## 8. StockReservation
 ```mermaid
@@ -305,5 +313,45 @@ stateDiagram-v2
 - **Interdites** :
   - Passage à `APPLIED` sans statut `APPROVED`.
   - Application d'un lot dont la case formelle d'attestation d'accord écrit PLEINGAZ est manquante.
+
+## 18. VerificationChallenge (Preuve Entrante WhatsApp — CR-003 D-12, C-04)
+```mermaid
+stateDiagram-v2
+    [*] --> PENDING_INBOUND
+    PENDING_INBOUND --> VERIFIED : Message WhatsApp entrant valide
+    PENDING_INBOUND --> EXPIRED : TTL 10 min écoulé
+    PENDING_INBOUND --> FAILED : Mauvais expéditeur ou payload corrompu
+    VERIFIED --> CONSUMED : Session/Compte activé
+```
+- **Autorisées** :
+  - `PENDING_INBOUND` -> `VERIFIED` (Webhook Meta reçoit le message avec HMAC valide et identifie l'expéditeur E.164).
+  - `PENDING_INBOUND` -> `EXPIRED` (Aucun message reçu dans les 10 minutes).
+  - `VERIFIED` -> `CONSUMED` (Jeton consommé pour émettre la session ou le mot de passe réinitialisé ; usage unique strict).
+- **Interdites** :
+  - Réutiliser un défi déjà passé en `CONSUMED` (prévention du rejeu).
+  - Valider un défi dont le numéro expéditeur diffère du numéro attendu sur la session web.
+
+## 19. AccountCase (Dossier Gestionnaire de Compte — CR-003 D-15, C-07)
+```mermaid
+stateDiagram-v2
+    [*] --> OPEN
+    OPEN --> INVESTIGATING : Prise en charge par ACCOUNT_MANAGER
+    INVESTIGATING --> PENDING_ADMIN_APPROVAL : Demande changement numéro préparée
+    PENDING_ADMIN_APPROVAL --> APPROVED_BY_ADMIN : ADMIN valide la demande
+    PENDING_ADMIN_APPROVAL --> REJECTED_BY_ADMIN : ADMIN refuse la demande
+    APPROVED_BY_ADMIN --> RESOLVED : Défi réussi sur nouveau numéro
+    INVESTIGATING --> RESOLVED : Déblocage/révocation sessions effectuée
+    INVESTIGATING --> CLOSED_UNRESOLVED : Identité non prouvée / motif caduc
+    RESOLVED --> [*]
+    CLOSED_UNRESOLVED --> [*]
+```
+- **Autorisées** :
+  - `OPEN` -> `INVESTIGATING` (`ACCOUNT_MANAGER` ouvre le dossier après contact client, motif obligatoire).
+  - `INVESTIGATING` -> `PENDING_ADMIN_APPROVAL` (Préparation de changement de numéro après contre-appel sur numéro secondaire).
+  - `PENDING_ADMIN_APPROVAL` -> `APPROVED_BY_ADMIN` (`ADMIN` valide formellement — Double contrôle).
+  - `APPROVED_BY_ADMIN` -> `RESOLVED` (Nouveau numéro activé par défi entrant sous délai de sécurité 48h).
+- **Interdites** :
+  - Toute action du gestionnaire de compte sans dossier `OPEN` ou `INVESTIGATING` actif avec motif.
+  - Modification unilatérale directe du numéro ou d'une donnée de profil par le gestionnaire sans approbation `ADMIN`.
 
 

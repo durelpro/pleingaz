@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>PWA Livreur Partenaire - PLEINGAZ</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+  <div class="mobile-app-wrapper">
+    
+    <!-- Topbar Livreur -->
+    <header class="navbar" style="padding:10px 16px;">
+      <div style="display:flex; align-items:center; gap:8px;">
+        <span style="font-size:1.4rem;">🛵</span>
+        <div>
+          <span style="font-weight:800; color:var(--color-primary); font-size:1.05rem; display:block; line-height:1.1;">Paul M. (Moto #LT-402)</span>
+          <span style="font-size:0.7rem; color:var(--color-status-success); font-weight:700;">● Disponible pour livraisons</span>
+        </div>
+      </div>
+      <a href="index.html" style="font-size:0.75rem; color:var(--color-text-subtle);">Déconnexion</a>
+    </header>
+
+    <div style="padding:16px; flex:1; overflow-y:auto;">
+
+      <!-- Résumé des Gains du Jour -->
+      <div class="card" style="background:#111827; color:white; margin-bottom:16px;">
+        <div style="display:flex; justify-content:space-between; align-items:center;">
+          <div>
+            <span style="font-size:0.75rem; text-transform:uppercase; color:#9ca3af; font-weight:700;">Gains Net Aujourd'hui</span>
+            <div style="font-size:1.6rem; font-weight:800; color:var(--color-whatsapp);">6 000 FCFA</div>
+            <span style="font-size:0.75rem; color:#d1d5db;">6 courses complétées (1 000 F / course)</span>
+          </div>
+          <button class="btn btn-secondary" style="background:white; color:#111827; min-height:36px; padding:6px 12px; font-size:0.8rem;" onclick="alert('Retrait MoMo 6 000 FCFA initié vers votre compte MTN Mobile Money !')">
+            Retirer
+          </button>
+        </div>
+      </div>
+
+      <!-- MISSION ACTIVE AVEC DOUBLE CONFIRMATION (D-17) -->
+      <div class="card" style="border:2px solid var(--color-whatsapp);">
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
+          <span class="badge badge-success">Course en Cours</span>
+          <span style="font-weight:800; color:var(--color-primary); font-size:1rem;">+1 000 FCFA Net</span>
+        </div>
+
+        <div style="background:var(--color-bg-subtle); border-radius:var(--radius-md); padding:12px; margin-bottom:12px;">
+          <div style="font-size:0.75rem; text-transform:uppercase; font-weight:700; color:var(--color-text-muted);">1. Récupération au Dépôt :</div>
+          <div style="font-weight:800; font-size:0.95rem;">Dépôt Gaz Akwa Nord</div>
+          <div style="font-size:0.8rem; color:var(--color-text-muted);">Carrefour Rail • Bouteille Tradex 12.5 kg</div>
+        </div>
+
+        <div style="background:var(--color-bg-subtle); border-radius:var(--radius-md); padding:12px; margin-bottom:14px;">
+          <div style="font-size:0.75rem; text-transform:uppercase; font-weight:700; color:var(--color-text-muted);">2. Livraison au Client :</div>
+          <div style="font-weight:800; font-size:0.95rem;">Marie T. (Akwa Nord)</div>
+          <div style="font-size:0.82rem; color:var(--color-primary); font-weight:600; margin-bottom:6px;">📍 Repère : En face de la pharmacie du rail, portail noir</div>
+          
+          <div style="display:flex; gap:8px;">
+            <a href="tel:+237677654321" class="btn btn-secondary" style="flex:1; min-height:38px; padding:4px 8px; font-size:0.8rem;">
+              📞 Appeler cliente
+            </a>
+            <a href="https://wa.me/237699123456" class="btn btn-whatsapp" style="flex:1; min-height:38px; padding:4px 8px; font-size:0.8rem;">
+              💬 WhatsApp
+            </a>
+          </div>
+        </div>
+
+        <!-- Boutons d'Action Double Confirmation -->
+        <div id="mission-action-block">
+          <button type="button" class="btn btn-secondary btn-block" id="btn-pickup" onclick="markPickedUp()" style="margin-bottom:8px;">
+            🛵 1. Bouteille récupérée au dépôt
+          </button>
+          
+          <button type="button" class="btn btn-whatsapp btn-block" id="btn-delivered" onclick="markDelivered()" style="opacity:0.5; pointer-events:none;">
+            📦 2. J'ai remis la bouteille au client
+          </button>
+        </div>
+
+        <div id="mission-status-feedback" style="display:none; margin-top:12px; padding:12px; background:#f0fdf4; border:1px solid #bbf7d0; border-radius:var(--radius-sm); text-align:center;">
+          <span style="font-weight:800; color:#166534; font-size:0.9rem; display:block;">
+            ⏳ Confirmation transmise au client !
+          </span>
+          <span style="font-size:0.78rem; color:var(--color-text-muted);">
+            En attente du clic de Marie T. Dès confirmation, 1 000 FCFA seront crédités à votre solde.
+          </span>
+        </div>
+
+      </div>
+
+      <!-- NOUVELLES MISSIONS DISPONIBLES DANS LE SECTEUR -->
+      <div class="card">
+        <h3 style="font-size:0.95rem; font-weight:800; margin-bottom:12px;">Missions Disponibles (1 en attente)</h3>
+        
+        <div style="border:1px solid var(--color-border); border-radius:var(--radius-md); padding:12px; margin-bottom:8px;">
+          <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:4px;">
+            <span style="font-weight:700; font-size:0.9rem;">Deïdo • Total 12.5 kg</span>
+            <span class="badge badge-success">+1 000 F</span>
+          </div>
+          <div style="font-size:0.78rem; color:var(--color-text-muted); margin-bottom:8px;">
+            Dépôt : Total Deïdo (à 1.2 km) • Destination : Carrefour Trois Boutiques
+          </div>
+          <button class="btn btn-primary btn-block" style="min-height:36px; font-size:0.8rem;" onclick="alert('Mission acceptée ! Vous êtes assigné à la course Deïdo.')">
+            Accepter cette course
+          </button>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- Bottom Nav Livreur -->
+    <nav class="bottom-nav">
+      <a href="home-livreur.html" class="nav-item active">
+        <span>🛵</span>
+        <span>Mes Courses</span>
+      </a>
+      <a href="#" class="nav-item" onclick="alert('Historique des 6 courses du jour')">
+        <span>📋</span>
+        <span>Historique</span>
+      </a>
+      <a href="#" class="nav-item" onclick="alert('Solde : 6 000 FCFA • Paiement hebdomadaire chaque lundi')">
+        <span>💰</span>
+        <span>Portefeuille</span>
+      </a>
+      <a href="index.html" class="nav-item">
+        <span>🚪</span>
+        <span>Déconnexion</span>
+      </a>
+    </nav>
+
+  </div>
+
+  <script>
+    function markPickedUp() {
+      document.getElementById('btn-pickup').style.background = '#d1fae5';
+      document.getElementById('btn-pickup').innerHTML = '✅ Bouteille chargée sur la moto';
+      document.getElementById('btn-pickup').style.pointerEvents = 'none';
+
+      const btnDelivered = document.getElementById('btn-delivered');
+      btnDelivered.style.opacity = '1';
+      btnDelivered.style.pointerEvents = 'auto';
+    }
+
+    function markDelivered() {
+      document.getElementById('btn-delivered').style.display = 'none';
+      document.getElementById('btn-pickup').style.display = 'none';
+      document.getElementById('mission-status-feedback').style.display = 'block';
+    }
+  </script>
+
+</body>
+</html>

@@ -1,0 +1,291 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Espace Distributeur Agréé - PLEINGAZ</title>
+  <link rel="stylesheet" href="style.css">
+  <style>
+    .stock-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 12px;
+      border-bottom: 1px solid var(--color-border);
+    }
+    .stock-controls {
+      display: flex;
+      gap: 6px;
+      align-items: center;
+    }
+    .btn-circle {
+      width: 38px;
+      height: 38px;
+      border-radius: 50%;
+      border: 1px solid var(--color-border);
+      background: var(--color-bg-subtle);
+      font-weight: 800;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1rem;
+    }
+    .btn-circle:active {
+      transform: scale(0.92);
+    }
+  </style>
+</head>
+<body>
+
+  <div class="mobile-app-wrapper">
+    
+    <!-- Topbar Distributeur -->
+    <header class="navbar" style="padding:10px 16px;">
+      <div style="display:flex; align-items:center; gap:8px;">
+        <svg class="flame-icon" viewBox="0 0 24 24"><path d="M12 2C8 6 6 9 6 13a6 6 0 0012 0c0-4-2-7-6-11zm0 15a3 3 0 01-3-3c0-2 1-3.5 3-5.5 2 2 3 3.5 3 5.5a3 3 0 01-3 3z"/></svg>
+        <div>
+          <span style="font-weight:800; color:var(--color-primary); font-size:1.05rem; display:block; line-height:1.1;">Dépôt Akwa Nord</span>
+          <span style="font-size:0.7rem; color:var(--color-text-muted);">Agréé PLEINGAZ #DIS-0042</span>
+        </div>
+      </div>
+      <span class="badge badge-success">Boutique Ouverte</span>
+    </header>
+
+    <div style="padding:16px; flex:1; overflow-y:auto;">
+
+      <!-- Résumé de Caisse & Ventes du Jour -->
+      <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-bottom:16px;">
+        <div class="card" style="margin-bottom:0; padding:12px; text-align:center;">
+          <span style="font-size:0.75rem; color:var(--color-text-muted); font-weight:600;">Ventes du Jour</span>
+          <div style="font-size:1.35rem; font-weight:800; color:var(--color-text-main);">14 <span style="font-size:0.8rem; font-weight:500;">btl</span></div>
+          <span style="font-size:0.7rem; color:var(--color-status-success);">9 comptoir • 5 livrées</span>
+        </div>
+        <div class="card" style="margin-bottom:0; padding:12px; text-align:center;">
+          <span style="font-size:0.75rem; color:var(--color-text-muted); font-weight:600;">Encaissements</span>
+          <div style="font-size:1.35rem; font-weight:800; color:var(--color-primary);">91 000 <span style="font-size:0.75rem; font-weight:500;">F</span></div>
+          <span style="font-size:0.7rem; color:var(--color-text-muted);">Espèces & MoMo</span>
+        </div>
+      </div>
+
+      <!-- MODULE VENTE AU COMPTOIR DIRECTE (D-16) -->
+      <div class="card" style="border:2px solid var(--color-primary);">
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px;">
+          <h2 style="font-size:1rem; font-weight:800; color:var(--color-primary);">⚡ Vente au Comptoir Directe (D-16)</h2>
+          <span class="badge badge-warning">En Direct</span>
+        </div>
+        <p style="font-size:0.8rem; color:var(--color-text-muted); margin-bottom:12px;">
+          Enregistrez un client physique présent au dépôt avec contrôle de son quota 5 bouteilles.
+        </p>
+
+        <div class="form-group">
+          <label class="form-label">Numéro Téléphone Client (obligatoire) :</label>
+          <input type="tel" id="counter-phone" class="form-control" placeholder="+237 6XX XX XX XX" value="699887766">
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">Bouteille remise :</label>
+          <select id="counter-bottle" class="form-control">
+            <option value="tradex-12">Tradex 12.5 kg - 6 500 FCFA (Échange)</option>
+            <option value="total-12">TotalEnergies 12.5 kg - 6 500 FCFA (Échange)</option>
+            <option value="sctm-12">SCTM 12.5 kg - 6 500 FCFA (Échange)</option>
+            <option value="camgaz-6">Camgaz 6 kg - 3 500 FCFA (Échange)</option>
+          </select>
+        </div>
+
+        <button type="button" class="btn btn-primary btn-block" onclick="processCounterSale()">
+          ✅ Encaisser 6 500 FCFA & Valider Quota
+        </button>
+
+        <div id="counter-result" style="display:none; margin-top:12px; padding:10px; border-radius:var(--radius-sm); font-size:0.8rem;">
+          <!-- Mis à jour en direct par API NestJS -->
+        </div>
+      </div>
+
+      <!-- GESTION DES STOCKS EN 1 CLIC (CR-003) -->
+      <div class="card">
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px;">
+          <h3 style="font-size:0.95rem; font-weight:800;">Mes Bouteilles Disponibles</h3>
+          <span style="font-size:0.75rem; color:var(--color-status-success); font-weight:700;">● BDD PostgreSQL Native</span>
+        </div>
+
+        <div id="stock-list-container">
+          <!-- Chargement dynamique depuis BDD -->
+          <div style="padding:16px; text-align:center; color:var(--color-text-muted); font-size:0.85rem;">
+            Chargement des stocks en direct...
+          </div>
+        </div>
+
+      </div>
+
+      <!-- COMMANDES DE LIVRAISON REÇUES -->
+      <div class="card">
+        <h3 style="font-size:0.95rem; font-weight:800; margin-bottom:8px;">Commandes de Livraison en Attente</h3>
+        
+        <div style="padding:10px; background:var(--color-bg-subtle); border-radius:var(--radius-sm); margin-bottom:8px; display:flex; justify-content:space-between; align-items:center;">
+          <div>
+            <span class="badge badge-warning" style="margin-bottom:4px;">En attente livreur</span>
+            <div style="font-weight:700; font-size:0.85rem;">1x Tradex 12.5 kg • Akwa Nord</div>
+            <div style="font-size:0.75rem; color:var(--color-text-muted);">Client : Marie T. (Devant pharmacie)</div>
+          </div>
+          <button class="btn btn-whatsapp" style="min-height:34px; padding:4px 10px; font-size:0.75rem;" onclick="alert('Livreur Paul M. alerté sur WhatsApp !')">
+            Notifier livreur
+          </button>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- Bottom Nav Distributeur -->
+    <nav class="bottom-nav">
+      <a href="home-distributeur.html" class="nav-item active">
+        <span>🏪</span>
+        <span>Ma Boutique</span>
+      </a>
+      <a href="#" class="nav-item" onclick="alert('Module Comptoir activé')">
+        <span>⚡</span>
+        <span>Comptoir</span>
+      </a>
+      <a href="#" class="nav-item" onclick="alert('Historique des 14 transactions de la journée')">
+        <span>📊</span>
+        <span>Journal Caisse</span>
+      </a>
+      <a href="index.html" class="nav-item">
+        <span>🚪</span>
+        <span>Déconnexion</span>
+      </a>
+    </nav>
+
+  </div>
+
+  <script>
+    const API_URL = 'http://localhost:3001/api/v1/cr003';
+    let currentStore = null;
+
+    async function loadDistributorData() {
+      try {
+        const res = await fetch(`${API_URL}/distributor/stock`);
+        if (res.ok) {
+          const data = await res.json();
+          currentStore = data.store;
+          renderStocks(data.inventories);
+        }
+      } catch (e) {
+        console.warn('API locale non joignable', e);
+        document.getElementById('stock-list-container').innerHTML = `
+          <div style="padding:12px; color:var(--color-status-error); font-size:0.8rem; text-align:center;">
+            Connexion API en attente...
+          </div>
+        `;
+      }
+    }
+
+    function renderStocks(inventories) {
+      const container = document.getElementById('stock-list-container');
+      if (!inventories || inventories.length === 0) {
+        container.innerHTML = '<div style="padding:12px;">Aucun stock configuré.</div>';
+        return;
+      }
+
+      container.innerHTML = inventories.map((inv, idx) => {
+        const levelBadge = inv.stockLevel === 'BON' 
+          ? '<span class="badge badge-success">En Stock</span>'
+          : (inv.stockLevel === 'RUPTURE' ? '<span class="badge badge-danger">Rupture</span>' : '<span class="badge badge-warning">Faible</span>');
+
+        return `
+          <div class="stock-row" style="${idx === inventories.length - 1 ? 'border-bottom:none;' : ''}">
+            <div>
+              <div style="font-weight:700; font-size:0.9rem;">${inv.productName}</div>
+              <div style="font-size:0.75rem; color:var(--color-text-muted);">${Number(inv.unitPrice).toLocaleString('fr-FR')} FCFA • ${levelBadge}</div>
+            </div>
+            <div class="stock-controls">
+              <button class="btn btn-secondary" style="min-height:32px; padding:4px 8px; font-size:0.75rem;" onclick="setStockStatus('${inv.id}', 'BON')">Dispo</button>
+              <button class="btn btn-danger" style="min-height:32px; padding:4px 8px; font-size:0.75rem;" onclick="setStockStatus('${inv.id}', 'RUPTURE')">Rupture</button>
+            </div>
+          </div>
+        `;
+      }).join('');
+    }
+
+    async function setStockStatus(inventoryId, level) {
+      try {
+        await fetch(`${API_URL}/distributor/stock/${inventoryId}`, {
+          method: 'PATCH',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ level }),
+        });
+        loadDistributorData();
+      } catch (e) {
+        console.warn('Erreur mise à jour stock', e);
+      }
+    }
+
+    async function processCounterSale() {
+      const rawPhone = document.getElementById('counter-phone').value;
+      if (!rawPhone || !rawPhone.trim()) {
+        alert('Veuillez renseigner le numéro du client.');
+        return;
+      }
+
+      const phone = rawPhone.trim().startsWith('+') ? rawPhone.trim() : '+237' + rawPhone.trim();
+      const bottleSelect = document.getElementById('counter-bottle');
+      const bottleType = bottleSelect.options[bottleSelect.selectedIndex].text;
+      const resultBox = document.getElementById('counter-result');
+
+      resultBox.style.display = 'block';
+      resultBox.style.background = '#fef3c7';
+      resultBox.style.border = '1px solid #fde68a';
+      resultBox.style.color = '#92400e';
+      resultBox.innerHTML = '⏳ Vérification du quota et enregistrement dans PostgreSQL...';
+
+      try {
+        const res = await fetch(`${API_URL}/counter-sales`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            storeId: currentStore?.id,
+            buyerPhone: phone,
+            bottleType: bottleType,
+            quantity: 1,
+            totalAmount: 6500,
+            paymentMethod: 'CASH',
+          }),
+        });
+
+        const data = await res.json();
+
+        if (res.ok && data.success) {
+          resultBox.style.background = '#f0fdf4';
+          resultBox.style.border = '1px solid #bbf7d0';
+          resultBox.style.color = '#166534';
+          resultBox.innerHTML = `
+            <strong>✅ Vente au Comptoir Validée !</strong><br>
+            • Reçu fiscal N° <strong>${data.sale.receiptNumber}</strong><br>
+            • Montant encaissé : <strong>6 500 FCFA</strong> (Espèces)<br>
+            • Quota client contrôlé : <strong>${data.newQuota.consumed}/5 consommé</strong> (${data.newQuota.remaining} restantes).<br>
+            • Reçu numérique WhatsApp généré.
+          `;
+          loadDistributorData();
+        } else {
+          // Erreur de Quota ou Rejet
+          resultBox.style.background = '#fef2f2';
+          resultBox.style.border = '1px solid #fecaca';
+          resultBox.style.color = '#991b1b';
+          resultBox.innerHTML = `
+            <strong>🚨 VENTE REFUSÉE (Souveraineté Quota D-14 / D-16) :</strong><br>
+            ${data.message || 'Plafond mensuel dépassé.'}
+          `;
+        }
+      } catch (e) {
+        resultBox.style.background = '#fef2f2';
+        resultBox.style.border = '1px solid #fecaca';
+        resultBox.style.color = '#991b1b';
+        resultBox.innerHTML = `<strong>Erreur de communication :</strong> ${e.message}`;
+      }
+    }
+
+    window.addEventListener('DOMContentLoaded', loadDistributorData);
+  </script>
+
+</body>
+</html>

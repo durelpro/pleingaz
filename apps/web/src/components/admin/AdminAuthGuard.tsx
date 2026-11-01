@@ -19,15 +19,25 @@ export default function AdminAuthGuard({ children }: { children: React.ReactNode
       return;
     }
 
-    // Vérification du localStorage
     try {
-      const auth = localStorage.getItem('pleingaz_admin_auth');
-      if (auth === 'true') {
-        setIsAuthenticated(true);
-      } else {
-        setIsAuthenticated(false);
+      const userRaw = localStorage.getItem("pleingaz_user");
+      const legacyAuth = localStorage.getItem("pleingaz_admin_auth");
+      
+      if (userRaw) {
+        const user = JSON.parse(userRaw);
+        if (['ADMIN', 'SUPER_ADMIN', 'ACCOUNT_MANAGER', 'AUDITOR'].includes(user.role)) {
+          setIsAuthenticated(true);
+          return;
+        }
       }
-    } catch (e) {
+      
+      if (legacyAuth === "true") {
+        setIsAuthenticated(true);
+        return;
+      }
+
+      setIsAuthenticated(false);
+    } catch {
       setIsAuthenticated(false);
     }
   }, [pathname]);
