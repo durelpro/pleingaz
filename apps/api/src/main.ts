@@ -8,12 +8,23 @@ async function bootstrap() {
   
   // Phase 10: Sécurité en production
   app.use(helmet());
-  app.enableCors();
-  
-  app.useGlobalPipes(new ValidationPipe({
-    whitelist: true,
-    transform: true,
-  }));
+  app.enableCors({ origin: true, credentials: true });
+
+  // Préfixe d'API REST global versionné
+  app.setGlobalPrefix('api/v1');
+
+  // Middleware de parsing de cookies léger et résilient
+  app.use((req: any, res: any, next: any) => {
+    const cookieHeader = req.headers?.cookie;
+    req.cookies = req.cookies || {};
+    if (cookieHeader) {
+      cookieHeader.split(';').forEach((c: string) => {
+        const [k, v] = c.trim().split('=');
+        if (k && v) req.cookies[k] = decodeURIComponent(v);
+      });
+    }
+    next();
+  });
 
   await app.listen(process.env.PORT ?? 3001);
 }

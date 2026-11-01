@@ -296,6 +296,8 @@ export class AuthService {
         phone: true,
         callPhone: true,
         email: true,
+        spaceType: true,
+        status: true,
         roles: { include: { role: true } },
         customerProfile: {
           include: { addresses: true },

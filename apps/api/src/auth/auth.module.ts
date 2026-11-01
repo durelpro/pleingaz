@@ -14,9 +14,18 @@ import { getRequiredJwtSecret, JWT_EXPIRATION_ACCESS } from './constants/jwt.con
 
 import { PortalAudienceGuard } from './guards/portal-audience.guard';
 import { WhatsAppAuthService } from './services/whatsapp-auth.service';
+import { SimulatedChannel } from './services/channels/simulated.channel';
+import { WhatsAppInboundChannel } from './services/channels/whatsapp-inbound.channel';
+import { ManualAssistedChannel } from './services/channels/manual-assisted.channel';
+import { SpaceAuthController } from './controllers/space-auth.controller';
+import { WhatsAppWebhookController } from './controllers/whatsapp-webhook.controller';
+import { DevWhatsAppController } from './controllers/dev-whatsapp.controller';
+
+import { PrismaModule } from '../prisma/prisma.module';
 
 @Module({
   imports: [
+    PrismaModule,
     PassportModule,
     JwtModule.registerAsync({
       useFactory: () => ({
@@ -28,6 +37,9 @@ import { WhatsAppAuthService } from './services/whatsapp-auth.service';
   providers: [
     AuthService,
     WhatsAppAuthService,
+    SimulatedChannel,
+    WhatsAppInboundChannel,
+    ManualAssistedChannel,
     JwtStrategy,
     RolesGuard,
     PermissionsGuard,
@@ -35,10 +47,18 @@ import { WhatsAppAuthService } from './services/whatsapp-auth.service';
     OptionalJwtAuthGuard,
     PortalAudienceGuard,
   ],
-  controllers: [AuthController],
+  controllers: [
+    AuthController,
+    SpaceAuthController,
+    WhatsAppWebhookController,
+    DevWhatsAppController,
+  ],
   exports: [
     AuthService,
     WhatsAppAuthService,
+    SimulatedChannel,
+    WhatsAppInboundChannel,
+    ManualAssistedChannel,
     RolesGuard,
     PermissionsGuard,
     JwtAuthGuard,
