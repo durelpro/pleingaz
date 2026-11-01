@@ -13,6 +13,7 @@ import { OptionalJwtAuthGuard } from './guards/optional-jwt-auth.guard';
 import { getRequiredJwtSecret, JWT_EXPIRATION_ACCESS } from './constants/jwt.config';
 
 import { PortalAudienceGuard } from './guards/portal-audience.guard';
+import { WhatsAppAuthService } from './services/whatsapp-auth.service';
 
 @Module({
   imports: [

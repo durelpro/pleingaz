@@ -173,7 +173,7 @@ export class Cr003Service {
       data: {
         receiptNumber,
         storeId: store.id,
-        sellerId: store.ownerId,
+        sellerId: store.ownerId ?? store.id,
         customerPhone: phone,
         customerUserId: existingUser?.id ?? null,
         bottleType: bottle,
