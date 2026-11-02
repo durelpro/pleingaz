@@ -10,6 +10,8 @@ import { PermissionsGuard } from './guards/permissions.guard';
 import { JwtAuthGuard } from './guards/jwt-auth.guard';
 import { OptionalJwtAuthGuard } from './guards/optional-jwt-auth.guard';
 
+import { WhatsAppAuthService } from './whatsapp-auth.service';
+
 @Module({
   imports: [
     PassportModule,
@@ -18,8 +20,8 @@ import { OptionalJwtAuthGuard } from './guards/optional-jwt-auth.guard';
       signOptions: { expiresIn: '15m' },
     }),
   ],
-  providers: [AuthService, JwtStrategy, RolesGuard, PermissionsGuard, JwtAuthGuard, OptionalJwtAuthGuard],
+  providers: [AuthService, WhatsAppAuthService, JwtStrategy, RolesGuard, PermissionsGuard, JwtAuthGuard, OptionalJwtAuthGuard],
   controllers: [AuthController],
-  exports: [AuthService, RolesGuard, PermissionsGuard, JwtAuthGuard, OptionalJwtAuthGuard],
+  exports: [AuthService, WhatsAppAuthService, RolesGuard, PermissionsGuard, JwtAuthGuard, OptionalJwtAuthGuard],
 })
 export class AuthModule {}

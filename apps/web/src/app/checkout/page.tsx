@@ -1,141 +1,239 @@
 'use client';
 
-import { useState } from 'react';
-import { CreditCard, Banknote, ShieldCheck, CheckCircle2, Loader2 } from 'lucide-react';
-import { motion, AnimatePresence } from 'framer-motion';
+import React, { useState, useEffect } from 'react';
+import { CreditCard, Banknote, ShieldCheck, CheckCircle2, Loader2, MapPin, ArrowRight, Flame, AlertCircle } from 'lucide-react';
+import Link from 'next/link';
 
 export default function CheckoutPage() {
-  const [method, setMethod] = useState<'MTN_MOMO' | 'ORANGE_MONEY' | 'CASH'>('MTN_MOMO');
+  const [method, setMethod] = useState<'MTN_MOMO' | 'ORANGE_MONEY' | 'CASH'>('CASH');
   const [status, setStatus] = useState<'IDLE' | 'PROCESSING' | 'SUCCESS'>('IDLE');
-  const [phone, setPhone] = useState('670000000');
+  const [phone, setPhone] = useState('699112233');
+  const [city, setCity] = useState('Douala');
+  const [neighborhood, setNeighborhood] = useState('Akwa Nord');
+  const [landmark, setLandmark] = useState('Face Pharmacie du Rail, portail noir');
+
+  const [quotaRemaining, setQuotaRemaining] = useState(4);
+  const secretCode = '4815';
 
   const handlePay = () => {
     setStatus('PROCESSING');
-    
-    // Simulate payment API call and webhook delay
     setTimeout(() => {
       setStatus('SUCCESS');
-    }, 4000);
+    }, 1500);
   };
 
   return (
-    <div className="min-h-screen bg-gray-50 dark:bg-neutral-950 py-12 px-4">
-      <div className="max-w-md mx-auto space-y-6">
-        
-        <div className="text-center space-y-2 mb-8">
-          <h1 className="text-3xl font-black text-gray-900 dark:text-white">Paiement</h1>
-          <p className="text-gray-500">Choisissez votre méthode de paiement</p>
+    <div className="min-h-screen bg-gray-50 text-gray-900 py-12 px-4">
+      <div className="max-w-xl mx-auto space-y-6">
+        {/* Header */}
+        <div className="text-center space-y-1">
+          <span className="text-xs font-bold uppercase tracking-wider text-red-600 bg-red-50 border border-red-200 px-3 py-1 rounded-full">
+            Commande Officielle PLEINGAZ
+          </span>
+          <h1 className="text-2xl sm:text-3xl font-black text-gray-900 pt-2">Validation de Commande</h1>
+          <p className="text-xs text-gray-500">Gaz certifié scellé d&apos;usine livré chez vous à prix réglementé.</p>
         </div>
 
         {status === 'SUCCESS' ? (
-          <motion.div 
-            initial={{ scale: 0.9, opacity: 0 }}
-            animate={{ scale: 1, opacity: 1 }}
-            className="bg-green-50 dark:bg-green-900/20 border-2 border-green-200 dark:border-green-800 rounded-3xl p-8 text-center space-y-4"
-          >
-            <div className="inline-flex items-center justify-center w-20 h-20 bg-green-500 rounded-full text-white mb-4 shadow-lg shadow-green-500/30">
-              <CheckCircle2 size={40} />
+          <div className="bg-white border-2 border-emerald-400 rounded-3xl p-6 sm:p-8 text-center space-y-5 shadow-lg">
+            <div className="w-16 h-16 bg-emerald-100 text-emerald-600 rounded-full flex items-center justify-center mx-auto shadow-sm">
+              <CheckCircle2 size={36} />
             </div>
-            <h2 className="text-2xl font-bold text-green-700 dark:text-green-400">Paiement Réussi !</h2>
-            <p className="text-green-600 dark:text-green-500">Votre commande est confirmée et réservée.</p>
-            
-            {/* Code de remise client D-05 */}
-            <div className="bg-white dark:bg-neutral-900 border border-green-200 dark:border-green-800 rounded-2xl p-4 my-2">
-              <span className="text-xs uppercase font-bold text-gray-400 tracking-wider block mb-1">Code de remise physique (D-05)</span>
-              <span className="text-3xl font-black text-pleingaz-red font-mono tracking-widest">4829</span>
-              <p className="text-xs text-gray-500 mt-1">À communiquer au livreur UNIQUEMENT après réception physique de la bouteille.</p>
+
+            <div className="space-y-1">
+              <h2 className="text-2xl font-black text-gray-900">Commande Confirmée !</h2>
+              <p className="text-xs text-gray-600">
+                Votre bouteille PLEINGAZ 12.5 kg est en cours de préparation au dépôt le plus proche.
+              </p>
             </div>
-            
-            <button className="mt-4 w-full py-4 bg-gray-900 dark:bg-white text-white dark:text-gray-900 font-bold rounded-2xl hover:bg-pleingaz-red transition-colors">
-              Suivre ma livraison
-            </button>
-          </motion.div>
+
+            {/* Code Confidentiel Client (ADR D9, D17) */}
+            <div className="bg-amber-50 border-2 border-amber-300 rounded-2xl p-5 space-y-2">
+              <span className="text-xs font-extrabold uppercase tracking-wide text-amber-900 block">
+                Votre Code Confidentiel de Remise (D-17)
+              </span>
+              <span className="text-4xl font-mono font-black text-red-600 tracking-widest block py-1">
+                {secretCode}
+              </span>
+              <p className="text-xs text-amber-900/80 leading-relaxed">
+                ⚠️ <strong>IMPORTANT :</strong> Ne communiquez ce code au livreur qu&apos;au moment exact où vous avez la bouteille en main.
+              </p>
+            </div>
+
+            {/* Récapitulatif adresse */}
+            <div className="text-left bg-gray-50 rounded-xl p-4 text-xs font-mono space-y-1 text-gray-700">
+              <div className="flex justify-between">
+                <span>Lieu de livraison :</span>
+                <span className="font-bold">{neighborhood}, {city}</span>
+              </div>
+              <div className="flex justify-between">
+                <span>Repère :</span>
+                <span>{landmark}</span>
+              </div>
+              <div className="flex justify-between border-t border-gray-200 pt-1 mt-1 font-bold text-gray-900">
+                <span>Total à régler :</span>
+                <span>7 500 FCFA ({method === 'CASH' ? 'Espèces à la livraison' : 'Mobile Money'})</span>
+              </div>
+            </div>
+
+            <div className="flex gap-3 pt-2">
+              <Link
+                href="/delivery"
+                className="flex-1 py-3.5 bg-red-600 hover:bg-red-700 text-white font-bold text-xs rounded-xl shadow-md transition-colors text-center"
+              >
+                Suivre mon livreur en direct
+              </Link>
+              <Link
+                href="/account"
+                className="py-3.5 px-4 bg-gray-100 hover:bg-gray-200 text-gray-800 font-bold text-xs rounded-xl transition-colors text-center"
+              >
+                Mon compte
+              </Link>
+            </div>
+          </div>
         ) : (
           <>
-            {/* 15 min Stock Reservation Banner (D-05) */}
-            <div className="bg-amber-50 dark:bg-amber-950/40 border border-amber-200 dark:border-amber-800 rounded-2xl p-4 flex items-center justify-between text-amber-900 dark:text-amber-300 text-sm">
-              <span className="font-medium">⏱️ Réservation de stock garantie :</span>
-              <span className="font-black px-2.5 py-1 bg-amber-200 dark:bg-amber-900/60 rounded-lg font-mono">14:30 min</span>
-            </div>
-
-            {/* Amount Summary */}
-            <div className="bg-white dark:bg-neutral-900 rounded-3xl p-6 shadow-sm border border-gray-100 dark:border-neutral-800">
-              <div className="flex justify-between items-center mb-4">
-                <span className="text-gray-600 dark:text-gray-300 font-medium">Bouteille PLEINGAZ 12.5 kg (Officielle)</span>
-                <span className="font-bold text-gray-900 dark:text-white">6 500 FCFA</span>
+            {/* Jauge Quota & Réservation 15 min (ADR D5, D14) */}
+            <div className="grid grid-cols-2 gap-3">
+              <div className="bg-emerald-50 border border-emerald-200 rounded-2xl p-3 text-xs flex items-center space-x-2 text-emerald-800 font-bold">
+                <ShieldCheck size={18} className="text-emerald-600 shrink-0" />
+                <span>Quota : {quotaRemaining}/5 bouteilles dispo</span>
               </div>
-              <div className="flex justify-between items-center pb-4 border-b border-gray-100 dark:border-neutral-800">
-                <span className="text-gray-500 font-medium">Frais de livraison à domicile</span>
-                <span className="font-bold text-gray-900 dark:text-white">1 000 FCFA</span>
-              </div>
-              <div className="flex justify-between items-center pt-4">
-                <span className="text-lg font-bold text-gray-900 dark:text-white">Total à payer</span>
-                <span className="text-2xl font-black text-pleingaz-red">7 500 FCFA</span>
+              <div className="bg-amber-50 border border-amber-200 rounded-2xl p-3 text-xs flex items-center justify-between text-amber-900 font-bold">
+                <span>⏱️ Stock réservé :</span>
+                <span className="font-mono bg-white px-2 py-0.5 rounded border border-amber-300">14:45 min</span>
               </div>
             </div>
 
-            {/* Methods */}
-            <div className="space-y-3">
-              {[
-                { id: 'MTN_MOMO', label: 'MTN Mobile Money', color: 'border-yellow-500', bg: 'bg-yellow-50 dark:bg-yellow-900/10' },
-                { id: 'ORANGE_MONEY', label: 'Orange Money', color: 'border-orange-500', bg: 'bg-orange-50 dark:bg-orange-900/10' },
-                { id: 'CASH', label: 'Paiement à la livraison', color: 'border-blue-500', bg: 'bg-blue-50 dark:bg-blue-900/10' },
-              ].map((m) => (
-                <button
-                  key={m.id}
-                  onClick={() => setMethod(m.id as any)}
-                  className={`w-full p-4 rounded-2xl border-2 transition-all flex items-center justify-between ${method === m.id ? m.color + ' ' + m.bg + ' ring-4 ring-opacity-50 ring-' + m.color.replace('border-', '') : 'border-gray-200 dark:border-neutral-800 bg-white dark:bg-neutral-900'}`}
-                >
-                  <div className="flex items-center gap-3">
-                    {m.id === 'CASH' ? <Banknote className={method === m.id ? 'text-blue-500' : 'text-gray-400'} /> : <CreditCard className={method === m.id ? 'text-gray-900 dark:text-white' : 'text-gray-400'} />}
-                    <span className="font-bold text-gray-900 dark:text-white">{m.label}</span>
+            {/* Récapitulatif Produit & Tarifs Nationaux (CR-001 D-01) */}
+            <div className="bg-white border border-gray-200 rounded-2xl p-5 shadow-sm space-y-3">
+              <div className="flex justify-between items-center">
+                <div className="flex items-center space-x-3">
+                  <div className="w-10 h-10 rounded-xl bg-red-100 text-red-600 flex items-center justify-center shrink-0">
+                    <Flame size={22} />
                   </div>
-                  {method === m.id && <CheckCircle2 className="text-gray-900 dark:text-white" />}
-                </button>
-              ))}
+                  <div>
+                    <h3 className="font-extrabold text-sm text-gray-900">Bouteille PLEINGAZ 12.5 kg</h3>
+                    <span className="text-[11px] text-gray-500">Recharge officielle scellée d&apos;usine</span>
+                  </div>
+                </div>
+                <span className="font-extrabold text-gray-900 text-sm">6 500 FCFA</span>
+              </div>
+
+              <div className="flex justify-between items-center text-xs text-gray-500 pt-2 border-t border-gray-100">
+                <span>Livraison standard (Tarif fixe flotte urbaine D-17)</span>
+                <span className="font-bold text-gray-700">1 000 FCFA</span>
+              </div>
+
+              <div className="flex justify-between items-center text-base font-black text-gray-900 pt-2 border-t border-gray-100">
+                <span>Total à payer</span>
+                <span className="text-xl text-red-600">7 500 FCFA</span>
+              </div>
             </div>
 
-            {/* Form */}
-            <AnimatePresence>
-              {method !== 'CASH' && (
-                <motion.div
-                  initial={{ height: 0, opacity: 0 }}
-                  animate={{ height: 'auto', opacity: 1 }}
-                  exit={{ height: 0, opacity: 0 }}
-                  className="overflow-hidden"
-                >
-                  <div className="pt-4 space-y-2">
-                    <label className="text-sm font-bold text-gray-700 dark:text-gray-300">Numéro de téléphone</label>
-                    <input 
-                      type="tel"
-                      value={phone}
-                      onChange={(e) => setPhone(e.target.value)}
-                      className="w-full px-4 py-4 bg-white dark:bg-neutral-900 border-2 border-gray-200 dark:border-neutral-800 rounded-xl text-lg font-bold focus:border-pleingaz-red outline-none transition-colors"
-                    />
-                  </div>
-                </motion.div>
-              )}
-            </AnimatePresence>
+            {/* Adresse et Repère Visuel Obligatoire (R7, R8, D6) */}
+            <div className="bg-white border border-gray-200 rounded-2xl p-5 shadow-sm space-y-3">
+              <h2 className="text-xs font-bold text-gray-800 uppercase tracking-wider flex items-center gap-1.5">
+                <MapPin size={15} className="text-red-600" />
+                Lieu de livraison & Repère visuel
+              </h2>
 
-            {/* Pay Button */}
-            <button 
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="text-[11px] font-bold text-gray-600 block mb-1">Ville</label>
+                  <select
+                    value={city}
+                    onChange={(e) => setCity(e.target.value)}
+                    className="w-full px-3 py-2 bg-gray-50 border border-gray-300 rounded-lg text-xs font-semibold focus:outline-none focus:ring-1 focus:ring-red-500"
+                  >
+                    <option value="Douala">Douala</option>
+                    <option value="Yaoundé">Yaoundé</option>
+                  </select>
+                </div>
+
+                <div>
+                  <label className="text-[11px] font-bold text-gray-600 block mb-1">Quartier</label>
+                  <input
+                    type="text"
+                    value={neighborhood}
+                    onChange={(e) => setNeighborhood(e.target.value)}
+                    className="w-full px-3 py-2 bg-gray-50 border border-gray-300 rounded-lg text-xs font-semibold focus:outline-none focus:ring-1 focus:ring-red-500"
+                  />
+                </div>
+              </div>
+
+              <div>
+                <label className="text-[11px] font-bold text-gray-600 block mb-1">
+                  Repère familier précis (Pharmacie, portail, barrière...) *
+                </label>
+                <input
+                  type="text"
+                  required
+                  placeholder="Ex: Face Pharmacie du Rail, portail noir"
+                  value={landmark}
+                  onChange={(e) => setLandmark(e.target.value)}
+                  className="w-full px-3 py-2 bg-gray-50 border border-gray-300 rounded-lg text-xs font-semibold focus:outline-none focus:ring-1 focus:ring-red-500"
+                />
+              </div>
+            </div>
+
+            {/* Modes de Règlement */}
+            <div className="space-y-2">
+              <label className="text-xs font-bold text-gray-800 block">Mode de règlement</label>
+
+              <div className="space-y-2">
+                {[
+                  { id: 'CASH', label: 'Espèces à la livraison (Cash on Delivery)', sub: 'Code secret obligatoire à la remise', icon: Banknote },
+                  { id: 'MTN_MOMO', label: 'MTN Mobile Money', sub: 'Paiement immédiat sans contact', icon: CreditCard },
+                  { id: 'ORANGE_MONEY', label: 'Orange Money', sub: 'Paiement immédiat sans contact', icon: CreditCard },
+                ].map((m) => {
+                  const Icon = m.icon;
+                  const isSelected = method === m.id;
+                  return (
+                    <button
+                      key={m.id}
+                      type="button"
+                      onClick={() => setMethod(m.id as any)}
+                      className={`w-full p-3.5 rounded-xl border text-left flex items-center justify-between transition-all ${
+                        isSelected
+                          ? 'border-red-600 bg-red-50/40 ring-1 ring-red-600'
+                          : 'border-gray-200 bg-white hover:bg-gray-50'
+                      }`}
+                    >
+                      <div className="flex items-center space-x-3">
+                        <Icon className={`w-5 h-5 ${isSelected ? 'text-red-600' : 'text-gray-400'}`} />
+                        <div>
+                          <span className="font-bold text-xs text-gray-900 block">{m.label}</span>
+                          <span className="text-[10px] text-gray-500">{m.sub}</span>
+                        </div>
+                      </div>
+                      {isSelected && <CheckCircle2 className="w-5 h-5 text-red-600" />}
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+
+            {/* Bouton de Validation */}
+            <button
+              type="button"
               onClick={handlePay}
               disabled={status === 'PROCESSING'}
-              className="w-full py-4 bg-pleingaz-red text-white font-black text-lg rounded-2xl shadow-lg shadow-orange-500/30 flex items-center justify-center gap-3 hover:-translate-y-0.5 transition-all disabled:opacity-50 disabled:hover:translate-y-0"
+              className="w-full py-4 bg-red-600 hover:bg-red-700 text-white font-black text-sm rounded-xl shadow-lg shadow-red-600/30 flex items-center justify-center space-x-2 transition-transform hover:scale-[1.01]"
             >
               {status === 'PROCESSING' ? (
                 <>
-                  <Loader2 className="animate-spin" />
-                  Paiement en cours...
+                  <Loader2 className="w-5 h-5 animate-spin" />
+                  <span>Réservation de la commande...</span>
                 </>
               ) : (
                 <>
-                  <ShieldCheck />
-                  {method === 'CASH' ? 'Confirmer la commande' : 'Payer 7 500 FCFA'}
+                  <ShieldCheck size={18} />
+                  <span>Confirmer la commande (7 500 FCFA)</span>
+                  <ArrowRight size={18} />
                 </>
               )}
             </button>
-            <p className="text-center text-xs text-gray-400 font-medium">Paiement 100% sécurisé</p>
           </>
         )}
       </div>

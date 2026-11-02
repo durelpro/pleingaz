@@ -16,6 +16,8 @@ datasource db {
 model User {
   id              String           @id @default(uuid())
   phone           String           @unique
+  whatsappPhone   String?          @unique // E.164 D-12
+  callPhone       String?          // E.164 D-12
   email           String?          @unique
   passwordHash    String?          // Argon2id hash
   isPhoneVerified Boolean          @default(false)
@@ -31,6 +33,14 @@ model User {
   sessions        Session[]
   auditLogs       AuditLog[]       @relation("UserAuditLogs")
   demandAlerts    DemandAlert[]
+
+  // CR-003: Relations
+  verificationChallenges VerificationChallenge[]
+  managedAccountCases    AccountCase[]           @relation("ManagedAccountCases")
+  subjectAccountCases    AccountCase[]           @relation("SubjectAccountCases")
+  adminAccountCases      AccountCase[]           @relation("AdminApprovedAccountCases")
+  infoNoticesCreated     InfoNotice[]            @relation("NoticeCreatedBy")
+  infoNoticeReads        InfoNoticeRead[]
 
   // Commandes & Livraisons
   customerOrders  Order[]          @relation("CustomerOrders")
@@ -256,6 +266,7 @@ model Store {
   orders          Order[]
   stockReservations StockReservation[]
   reports         Report[]
+  counterSales    CounterSale[]
 
   createdAt       DateTime               @default(now())
   updatedAt       DateTime               @updatedAt
@@ -977,4 +988,95 @@ model LoyaltyTransaction {
   points      Int
   description String
   createdAt   DateTime @default(now())
+}
+
+// ==========================================
+// 10. MODÈLES CR-003 (D-11 à D-18)
+// ==========================================
+
+model VerificationChallenge {
+  id              String           @id @default(uuid())
+  phone           String           // E.164
+  codeHash        String           // Argon2id
+  purpose         String           @default("LOGIN") // LOGIN, REGISTER, PHONE_CHANGE
+  channel         String           @default("WHATSAPP") // WHATSAPP, SMS_BACKUP
+  ipAddress       String?
+  attempts        Int              @default(0)
+  expiresAt       DateTime
+  consumedAt      DateTime?
+  createdAt       DateTime         @default(now())
+
+  userId          String?
+  user            User?            @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([phone, expiresAt])
+}
+
+model AccountCase {
+  id              String           @id @default(uuid())
+  caseNumber      String           @unique
+  status          String           @default("OPEN") // OPEN, PROPOSED, ADMIN_APPROVED, APPLIED, REJECTED, CLOSED
+  reason          String           // Motif formel obligatoire D-15
+  proposedAction  String           // JSON ou description structurée
+  evidenceUrls    String[]         // Pièces justificatives
+  
+  agentId         String           // Gestionnaire de compte (ACCOUNT_MANAGER)
+  agent           User             @relation("ManagedAccountCases", fields: [agentId], references: [id])
+  
+  targetUserId    String           // Usager concerné
+  targetUser      User             @relation("SubjectAccountCases", fields: [targetUserId], references: [id])
+  
+  approvedById    String?          // Rôle ADMIN
+  approvedBy      User?            @relation("AdminApprovedAccountCases", fields: [approvedById], references: [id])
+  adminNotes      String?
+  appliedAt       DateTime?
+  closedAt        DateTime?
+  createdAt       DateTime         @default(now())
+  updatedAt       DateTime         @updatedAt
+}
+
+model CounterSale {
+  id              String           @id @default(uuid())
+  receiptNumber   String           @unique
+  storeId         String
+  store           Store            @relation(fields: [storeId], references: [id])
+  
+  customerPhone   String           // E.164
+  bottleCount     Int              @default(1)
+  totalAmount     Int              // FCFA
+  paymentMethod   PaymentMethod    @default(CASH)
+  
+  quotaChecked    Boolean          @default(true)
+  metadata        Json?
+  
+  createdAt       DateTime         @default(now())
+}
+
+model InfoNotice {
+  id              String           @id @default(uuid())
+  title           String
+  content         String
+  category        String           @default("INFO") // INFO, ALERT, PROMO, REGULATION
+  targetRole      String           @default("ALL") // ALL, CUSTOMER, DISTRIBUTOR, COURIER
+  targetCity      String           @default("ALL")
+  isActive        Boolean          @default(true)
+  requiresAck     Boolean          @default(false)
+  
+  createdById     String
+  createdBy       User             @relation("NoticeCreatedBy", fields: [createdById], references: [id])
+  
+  reads           InfoNoticeRead[]
+  createdAt       DateTime         @default(now())
+  updatedAt       DateTime         @updatedAt
+}
+
+model InfoNoticeRead {
+  id              String           @id @default(uuid())
+  noticeId        String
+  notice          InfoNotice       @relation(fields: [noticeId], references: [id], onDelete: Cascade)
+  userId          String
+  user            User             @relation(fields: [userId], references: [id], onDelete: Cascade)
+  acknowledgedAt  DateTime         @default(now())
+
+  @@unique([noticeId, userId])
 }

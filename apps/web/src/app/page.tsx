@@ -20,6 +20,7 @@ import {
   CookingPot,
 } from 'lucide-react';
 import { motion } from 'framer-motion';
+import { InfoNoticesDrawer } from '@/components/common/InfoNoticesDrawer';
 
 const officialCatalog = [
   {
@@ -107,31 +108,21 @@ export default function Home() {
               <span>Où Trouver du Gaz ?</span>
             </Link>
             <Link href="/stores" className="hover:text-[#E51A24] transition-colors">
-              Points de Vente Agréés
+              Points de Vente Agréés (71)
             </Link>
-            <Link href="/distributor/apply" className="hover:text-[#E51A24] transition-colors flex items-center gap-1.5">
-              <Store size={16} className="text-amber-400" />
-              <span>Espace Distributeur</span>
-            </Link>
-            <Link href="/delivery" className="hover:text-[#E51A24] transition-colors flex items-center gap-1.5">
-              <Truck size={16} className="text-emerald-400" />
-              <span>Espace Livreur</span>
+            <Link href="/support" className="hover:text-[#E51A24] transition-colors flex items-center gap-1.5">
+              <span>Aide & Sécurité</span>
             </Link>
           </nav>
 
           <div className="flex items-center gap-3">
+            <InfoNoticesDrawer role="CUSTOMER" city="Douala" />
             <Link
-              href="/account"
-              className="px-4 py-2.5 rounded-xl text-xs font-bold border border-white/15 hover:bg-white/10 hover:border-[#E51A24]/40 transition-all text-neutral-200"
+              href="/acheteur"
+              className="px-5 py-2.5 rounded-xl text-xs font-black bg-gradient-to-r from-[#E51A24] to-[#c7101a] text-white shadow-lg shadow-[#E51A24]/30 hover:shadow-[#E51A24]/60 hover:scale-105 active:scale-95 transition-all flex items-center gap-1.5"
             >
-              Mon Compte
-            </Link>
-            <Link
-              href="/register"
-              className="px-4 py-2.5 rounded-xl text-xs font-black bg-gradient-to-r from-[#E51A24] to-[#c7101a] text-white shadow-lg shadow-[#E51A24]/30 hover:shadow-[#E51A24]/60 hover:scale-105 active:scale-95 transition-all flex items-center gap-1.5"
-            >
-              <Sparkles size={15} />
-              <span>+100 pts Fidélité</span>
+              <span>Je suis acheteur</span>
+              <ArrowRight size={14} />
             </Link>
           </div>
         </div>
@@ -357,62 +348,50 @@ export default function Home() {
         </div>
       </section>
 
-      {/* PORTAILS MÉTIERS & ACCÈS DIRECTS */}
+      {/* COMMENT ÇA MARCHE EN 3 ÉTAPES (Conforme T3) */}
       <section className="max-w-6xl mx-auto px-4 py-12 space-y-8">
         <div className="text-center space-y-2">
-          <h2 className="text-3xl font-black text-white">Espaces Dédiés & Professionnels</h2>
-          <p className="text-neutral-400 text-sm">Accédez à votre cockpit selon votre rôle dans le réseau PLEINGAZ</p>
+          <span className="text-xs bg-[#E51A24]/10 text-red-400 font-bold uppercase tracking-wider px-3 py-1 rounded-full border border-[#E51A24]/20">
+            Simplicité & Rapidité
+          </span>
+          <h2 className="text-3xl font-black text-white">Comment ça marche en 3 étapes</h2>
+          <p className="text-neutral-400 text-sm">Votre recharge de gaz domestique au prix officiel garanti</p>
         </div>
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6">
-          <Link
-            href="/distributor/apply"
-            className="p-6 rounded-3xl bg-white/[0.04] border border-white/10 hover:border-[#E51A24]/60 hover:bg-white/[0.08] transition-all space-y-3 group"
-          >
-            <div className="w-11 h-11 rounded-2xl bg-[#E51A24]/20 text-red-400 flex items-center justify-center group-hover:scale-110 transition-transform">
-              <Store size={22} />
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+          <div className="p-6 rounded-3xl bg-neutral-900/60 border border-neutral-800 space-y-3">
+            <div className="w-10 h-10 rounded-2xl bg-[#E51A24]/20 text-[#E51A24] flex items-center justify-center font-black text-lg">
+              1
             </div>
-            <h3 className="font-black text-lg text-white group-hover:text-[#E51A24] transition-colors">
-              Espace Distributeur
-            </h3>
+            <h3 className="font-black text-base text-white">Localisez votre point de vente</h3>
             <p className="text-xs text-neutral-400 leading-relaxed">
-              Inscription simplifiée, accès immédiat à votre espace, gestion de vos stocks et enrôlement de vos livreurs.
+              Consultez les 71 dépôts et boutiques officielles géo-référencés à Douala, Yaoundé et dans les régions.
             </p>
-          </Link>
+          </div>
 
-          <Link
-            href="/delivery"
-            className="p-6 rounded-3xl bg-white/[0.04] border border-white/10 hover:border-emerald-500/60 hover:bg-white/[0.08] transition-all space-y-3 group"
-          >
-            <div className="w-11 h-11 rounded-2xl bg-emerald-500/20 text-emerald-400 flex items-center justify-center group-hover:scale-110 transition-transform">
-              <Truck size={22} />
+          <div className="p-6 rounded-3xl bg-neutral-900/60 border border-neutral-800 space-y-3">
+            <div className="w-10 h-10 rounded-2xl bg-amber-500/20 text-amber-400 flex items-center justify-center font-black text-lg">
+              2
             </div>
-            <h3 className="font-black text-lg text-white group-hover:text-emerald-400 transition-colors">
-              Portail Livreur Partenaire
-            </h3>
+            <h3 className="font-black text-base text-white">Vérifiez le stock en direct</h3>
             <p className="text-xs text-neutral-400 leading-relaxed">
-              Cockpit mobile pour recevoir les missions de livraison, valider les codes secrets et gérer la caisse espèces.
+              Disponibilité certifiée de votre bouteille 12.5 kg au prix réglementé de <strong>6 500 FCFA</strong>. Zéro majoration.
             </p>
-          </Link>
+          </div>
 
-          <Link
-            href="/admin/dashboard"
-            className="p-6 rounded-3xl bg-white/[0.04] border border-white/10 hover:border-purple-500/60 hover:bg-white/[0.08] transition-all space-y-3 group"
-          >
-            <div className="w-11 h-11 rounded-2xl bg-purple-500/20 text-purple-400 flex items-center justify-center group-hover:scale-110 transition-transform">
-              <Gauge size={22} />
+          <div className="p-6 rounded-3xl bg-neutral-900/60 border border-neutral-800 space-y-3">
+            <div className="w-10 h-10 rounded-2xl bg-emerald-500/20 text-emerald-400 flex items-center justify-center font-black text-lg">
+              3
             </div>
-            <h3 className="font-black text-lg text-white group-hover:text-purple-400 transition-colors">
-              Control Center & Flotte Siège
-            </h3>
+            <h3 className="font-black text-base text-white">Retrait ou livraison coursier</h3>
             <p className="text-xs text-neutral-400 leading-relaxed">
-              Supervision centrale, 15 rapports réels, validation des pièces KYC et pilotage de la flotte officielle du siège.
+              Passez récupérer votre bouteille au comptoir ou faites-vous livrer pour un forfait fixe de 1 000 FCFA avec validation par code secret.
             </p>
-          </Link>
+          </div>
         </div>
       </section>
 
-      {/* Footer Officiel */}
+      {/* Footer Officiel avec lien discret Espace professionnel (R-01 / T3) */}
       <footer className="border-t border-[#E51A24]/20 py-10 px-4 text-center text-xs text-neutral-500 space-y-3">
         <p className="text-neutral-400 font-semibold">
           © 2026 PLEINGAZ S.A. (Distribué par INFOTECH S.A.) — Tous droits réservés.
@@ -420,6 +399,11 @@ export default function Home() {
         <p className="max-w-2xl mx-auto text-[11px] text-neutral-500">
           Distribution exclusive de gaz domestique au Cameroun sous barèmes officiels homologués par le Ministère du Commerce. Aucune majoration non autorisée.
         </p>
+        <div className="pt-4 border-t border-neutral-900 max-w-xs mx-auto">
+          <Link href="/pro" className="text-[11px] text-neutral-600 hover:text-neutral-400 transition-colors">
+            Espace professionnel
+          </Link>
+        </div>
       </footer>
     </div>
   );

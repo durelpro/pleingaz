@@ -7,7 +7,8 @@
   "scripts": {
     "db:generate": "prisma generate",
     "db:migrate": "prisma migrate deploy",
-    "db:seed": "ts-node prisma/seed.ts"
+    "db:seed": "ts-node prisma/seed.ts",
+    "db:import-mymaps": "ts-node prisma/import-mymaps.ts"
   },
   "prisma": {
     "seed": "ts-node prisma/seed.ts"

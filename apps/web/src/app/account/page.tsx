@@ -1,26 +1,39 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import { Flame, Award, Gift, Sparkles, ShoppingBag, MapPin, ArrowRight, ShieldCheck, LogOut, CheckCircle2 } from 'lucide-react';
-import { motion } from 'framer-motion';
+import { Flame, Award, ShoppingBag, MapPin, ArrowRight, ShieldCheck, LogOut, CheckCircle2, AlertOctagon, RefreshCw, PhoneCall } from 'lucide-react';
 import Link from 'next/link';
+import { InfoNoticesDrawer } from '@/components/common/InfoNoticesDrawer';
 
 export default function AccountPage() {
   const router = useRouter();
   const [user, setUser] = useState<any>(null);
+  const [quota, setQuota] = useState<{
+    usedCount: number;
+    remainingCount: number;
+    limit: number;
+    earliestReleaseDate: string | null;
+  }>({
+    usedCount: 1,
+    remainingCount: 4,
+    limit: 5,
+    earliestReleaseDate: null,
+  });
   const [loading, setLoading] = useState(true);
+
+  const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001';
 
   useEffect(() => {
     const storedUser = localStorage.getItem('pleingaz_user');
     const token = localStorage.getItem('pleingaz_token');
 
     if (!token && !storedUser) {
-      // Démo : charger un profil invité ou rediriger
       setUser({
-        firstName: 'Client',
-        lastName: 'Privilégié',
-        phone: '+237690000000',
+        firstName: 'Paul',
+        lastName: 'Kamga',
+        phone: '+237699112233',
+        whatsappPhone: '+237699112233',
         loyaltyPoints: 100,
       });
       setLoading(false);
@@ -29,14 +42,24 @@ export default function AccountPage() {
 
     if (storedUser) {
       try {
-        setUser(JSON.parse(storedUser));
+        const parsed = JSON.parse(storedUser);
+        setUser(parsed);
+        // Interroger l'API pour récupérer le quota exact sur 30 jours
+        fetch(`${apiUrl}/api/v1/counter-sales/check-quota`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ customerPhone: parsed.whatsappPhone || parsed.phone }),
+        })
+          .then((res) => (res.ok ? res.json() : null))
+          .then((q) => {
+            if (q) setQuota(q);
+          })
+          .catch(() => {});
       } catch (e) {
-        setUser({ firstName: 'Client', loyaltyPoints: 100 });
+        setUser({ firstName: 'Acheteur', loyaltyPoints: 100 });
       }
     }
 
-    // Tenter de rafraîchir depuis l'API /auth/me
-    const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001';
     if (token) {
       fetch(`${apiUrl}/auth/me`, {
         headers: { Authorization: `Bearer ${token}` },
@@ -66,165 +89,167 @@ export default function AccountPage() {
   };
 
   const points = user?.loyaltyPoints ?? 100;
-  const fcfaEquiv = points * 10; // 100 pts = 1 000 FCFA
+  const quotaPercent = Math.min(100, (quota.usedCount / quota.limit) * 100);
 
   return (
-    <div className="min-h-screen bg-neutral-950 text-white py-12 px-4 relative overflow-hidden">
-      {/* Background Glows */}
-      <div className="absolute top-10 left-1/2 -translate-x-1/2 w-[600px] h-96 bg-orange-600/15 rounded-full blur-[140px] pointer-events-none" />
-
-      <div className="max-w-4xl mx-auto space-y-8 relative z-10">
-        
-        {/* Top Header Card */}
-        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 bg-white/5 backdrop-blur-xl border border-white/10 p-6 sm:p-8 rounded-3xl">
-          <div className="flex items-center gap-4">
-            <div className="w-16 h-16 rounded-2xl bg-gradient-to-tr from-orange-500 to-red-600 flex items-center justify-center font-extrabold text-2xl shadow-lg shadow-orange-500/30">
-              {user?.firstName?.[0] || 'P'}
-            </div>
-            <div>
-              <div className="flex items-center gap-2">
-                <h1 className="text-2xl font-bold">
-                  Bonjour, {user?.firstName || 'Client'} {user?.lastName || ''}
-                </h1>
-                <span className="px-2.5 py-0.5 rounded-full bg-orange-500/20 text-orange-400 border border-orange-500/30 text-xs font-bold uppercase tracking-wider">
-                  Membre Vérifié
-                </span>
-              </div>
-              <p className="text-neutral-400 text-sm mt-0.5">{user?.phone || '+237 6XX XX XX XX'}</p>
-            </div>
+    <div className="min-h-screen bg-gray-50 text-gray-900 pb-16">
+      {/* Top Bar avec Logo & Tiroir Infos */}
+      <header className="bg-white border-b border-gray-200 sticky top-0 z-30 shadow-xs">
+        <div className="max-w-4xl mx-auto px-4 h-16 flex items-center justify-between">
+          <div className="flex items-center space-x-3">
+            <span className="w-9 h-9 rounded-xl bg-red-600 flex items-center justify-center text-white font-black text-xl shadow-sm">
+              PG
+            </span>
+            <span className="font-extrabold text-xl tracking-tight text-gray-900">
+              PLEINGAZ <span className="text-red-600 text-xs uppercase font-bold px-2 py-0.5 rounded bg-red-50 border border-red-200">Acheteur</span>
+            </span>
           </div>
 
-          <div className="flex items-center gap-3 self-end sm:self-auto">
-            <Link
-              href="/search"
-              className="px-5 py-2.5 rounded-xl font-bold bg-gradient-to-r from-orange-500 to-red-600 text-white text-sm shadow-md hover:shadow-orange-500/40 hover:scale-105 transition-all flex items-center gap-1.5"
-            >
-              <Flame size={16} />
-              Commander du gaz
-            </Link>
+          <div className="flex items-center space-x-3">
+            {/* Composant transversal Infos & Annonces (ADR D18) */}
+            <InfoNoticesDrawer role="CUSTOMER" city="Douala" />
+
             <button
               onClick={handleLogout}
-              className="p-2.5 rounded-xl border border-white/10 hover:bg-white/10 text-neutral-400 hover:text-white transition-all"
+              className="p-2 text-gray-400 hover:text-red-600 rounded-full hover:bg-gray-100 transition-colors"
               title="Déconnexion"
+              aria-label="Déconnexion"
             >
               <LogOut size={18} />
             </button>
           </div>
         </div>
+      </header>
 
-        {/* Loyalty Rewards Dashboard */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-          {/* Card 1 : Points Balance */}
-          <motion.div
-            whileHover={{ y: -4 }}
-            className="md:col-span-2 p-6 sm:p-8 rounded-3xl bg-gradient-to-br from-orange-950/60 via-neutral-900/80 to-neutral-950 border border-orange-500/30 shadow-2xl relative overflow-hidden flex flex-col justify-between"
-          >
-            <div className="absolute top-0 right-0 p-8 opacity-10">
-              <Sparkles size={160} />
-            </div>
-
-            <div className="space-y-4">
-              <div className="flex justify-between items-center">
-                <span className="text-xs font-bold uppercase tracking-wider text-orange-400 flex items-center gap-2">
-                  <Award size={16} />
-                  Cagnotte de Fidélité PLEINGAZ
-                </span>
-                <span className="px-3 py-1 rounded-full bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 text-xs font-bold">
-                  Actif
-                </span>
-              </div>
-
-              <div>
-                <div className="text-5xl sm:text-6xl font-black text-white tracking-tight flex items-baseline gap-2">
-                  {points}
-                  <span className="text-2xl font-bold text-orange-400">pts</span>
-                </div>
-                <p className="text-sm text-neutral-300 mt-2 font-medium">
-                  Soit <strong className="text-white text-base">{fcfaEquiv.toLocaleString()} FCFA</strong> utilisables dès votre prochaine recharge en livraison à domicile !
-                </p>
-              </div>
-
-              {/* Progress bar towards next VIP tier */}
-              <div className="space-y-2 pt-2">
-                <div className="flex justify-between text-xs text-neutral-400 font-semibold">
-                  <span>Niveau actuel : Bronze</span>
-                  <span>Prochain palier : Argent (200 pts)</span>
-                </div>
-                <div className="h-2.5 w-full bg-white/10 rounded-full overflow-hidden">
-                  <motion.div
-                    className="h-full bg-gradient-to-r from-orange-500 to-red-500 rounded-full"
-                    initial={{ width: 0 }}
-                    animate={{ width: `${Math.min((points / 200) * 100, 100)}%` }}
-                    transition={{ duration: 0.8 }}
-                  />
-                </div>
-              </div>
-            </div>
-
-            <div className="mt-6 pt-6 border-t border-white/10 flex flex-wrap items-center justify-between gap-4 text-xs text-neutral-400">
-              <div className="flex items-center gap-2">
-                <CheckCircle2 size={16} className="text-emerald-400" />
-                <span>+20 points cumulés par bouteille 12.5kg commandée</span>
-              </div>
-              <Link href="/checkout" className="text-orange-400 font-bold hover:underline flex items-center gap-1">
-                Utiliser mes points <ArrowRight size={14} />
-              </Link>
-            </div>
-          </motion.div>
-
-          {/* Card 2 : VIP Benefits */}
-          <div className="p-6 rounded-3xl bg-white/5 backdrop-blur-xl border border-white/10 flex flex-col justify-between space-y-4">
+      <main className="max-w-4xl mx-auto px-4 pt-6 space-y-6">
+        {/* Encart Salutation & Jauge de Quota (ADR D14) */}
+        <section className="bg-white border border-gray-200 rounded-2xl p-6 shadow-sm">
+          <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-4">
             <div>
-              <h3 className="font-bold text-lg text-white flex items-center gap-2">
-                <Gift className="text-orange-400" size={20} />
-                Vos Privilèges
-              </h3>
-              <p className="text-xs text-neutral-400 mt-1">Avantages réservés aux clients PLEINGAZ :</p>
+              <h1 className="text-2xl font-black text-gray-900">
+                Bonjour, {user?.firstName || 'Paul'} !
+              </h1>
+              <p className="text-xs text-gray-500 font-mono mt-0.5">
+                {user?.whatsappPhone || user?.phone || '+237 699 11 22 33'} • Compte Vérifié
+              </p>
             </div>
 
-            <div className="space-y-3 text-xs">
-              <div className="p-3 rounded-2xl bg-white/5 border border-white/5 space-y-0.5">
-                <p className="font-bold text-orange-300">🔥 Prix officiel garanti</p>
-                <p className="text-neutral-400">6 500 FCFA la recharge 12.5kg, sans surfacturation illégale.</p>
-              </div>
-              <div className="p-3 rounded-2xl bg-white/5 border border-white/5 space-y-0.5">
-                <p className="font-bold text-orange-300">⚡ Réservation 15 min</p>
-                <p className="text-neutral-400">Votre bouteille est physiquement bloquée le temps du retrait.</p>
-              </div>
-              <div className="p-3 rounded-2xl bg-white/5 border border-white/5 space-y-0.5">
-                <p className="font-bold text-orange-300">🛡️ Code Secret SHA-256</p>
-                <p className="text-neutral-400">Sécurité maximale lors de la livraison à domicile.</p>
-              </div>
-            </div>
-
-            <div className="pt-2">
-              <Link
-                href="/stores"
-                className="w-full py-3 rounded-xl bg-white/10 hover:bg-white/15 text-white font-semibold text-xs flex items-center justify-center gap-2 transition-all"
-              >
-                <MapPin size={14} />
-                Voir les dépôts agréés
-              </Link>
+            <div className="flex items-center space-x-2">
+              <span className="text-xs font-bold px-3 py-1 bg-emerald-50 border border-emerald-200 text-emerald-700 rounded-full flex items-center gap-1">
+                <CheckCircle2 size={14} />
+                Fidélité : {points} pts ({(points * 10).toLocaleString()} F)
+              </span>
             </div>
           </div>
-        </div>
 
-        {/* Quick Action Banner */}
-        <div className="p-6 sm:p-8 rounded-3xl bg-gradient-to-r from-orange-600 to-red-600 shadow-xl flex flex-col sm:flex-row items-center justify-between gap-6 text-center sm:text-left">
-          <div className="space-y-1">
-            <h3 className="text-2xl font-black text-white">Besoin d'une recharge maintenant ?</h3>
-            <p className="text-orange-100 text-sm max-w-xl">
-              Détectez immédiatement les points de vente ayant du stock optimal vérifié dans votre quartier.
-            </p>
+          {/* Jauge Visuelle de Quota 5 Bouteilles / 30 Jours */}
+          <div className="bg-gray-50 border border-gray-200 rounded-xl p-4 space-y-2">
+            <div className="flex justify-between items-center text-xs font-bold text-gray-700">
+              <span className="flex items-center gap-1.5">
+                <ShieldCheck size={16} className="text-red-600" />
+                Quota Réglementaire (30 jours glissants) :
+              </span>
+              <span className={quota.remainingCount === 0 ? 'text-red-600 font-black' : 'text-emerald-700'}>
+                {quota.usedCount} / {quota.limit} bouteilles utilisées ({quota.remainingCount} autorisées)
+              </span>
+            </div>
+
+            {/* Barre de progression */}
+            <div className="w-full bg-gray-200 h-3 rounded-full overflow-hidden">
+              <div
+                className={`h-full transition-all duration-500 ${
+                  quotaPercent >= 100
+                    ? 'bg-red-600'
+                    : quotaPercent >= 60
+                    ? 'bg-amber-500'
+                    : 'bg-emerald-500'
+                }`}
+                style={{ width: `${quotaPercent}%` }}
+              />
+            </div>
+
+            <div className="flex justify-between text-[11px] text-gray-500 pt-0.5">
+              <span>Plafond légal : 5 bouteilles max</span>
+              {quota.earliestReleaseDate && (
+                <span>
+                  Prochaine libération :{' '}
+                  {new Date(quota.earliestReleaseDate).toLocaleDateString('fr-FR', {
+                    day: 'numeric',
+                    month: 'short',
+                  })}
+                </span>
+              )}
+            </div>
           </div>
+        </section>
+
+        {/* Bouton Proéminent "J'ai besoin de gaz maintenant" (D-14) */}
+        <section>
           <Link
             href="/search"
-            className="px-8 py-3.5 rounded-2xl bg-white text-neutral-900 font-extrabold shadow-lg hover:scale-105 active:scale-95 transition-all text-sm shrink-0"
+            className="w-full py-5 px-6 rounded-2xl bg-red-600 hover:bg-red-700 text-white font-black text-lg shadow-lg shadow-red-600/25 flex items-center justify-center space-x-3 transition-transform hover:scale-[1.01] active:scale-[0.99]"
           >
-            Recherche de Gaz Immédiate
+            <Flame className="w-7 h-7 text-amber-300 animate-pulse" />
+            <span>J&apos;AI BESOIN DE GAZ MAINTENANT</span>
+            <ArrowRight className="w-6 h-6" />
           </Link>
-        </div>
-      </div>
+        </section>
+
+        {/* Raccourci Réassort 1-Clic & Mes Distributeurs Habituels (C-01) */}
+        <section className="bg-white border border-gray-200 rounded-2xl p-6 shadow-sm space-y-4">
+          <div className="flex items-center justify-between">
+            <h2 className="text-base font-bold text-gray-900 flex items-center gap-2">
+              <ShoppingBag size={18} className="text-red-600" />
+              Mes Distributeurs Habituels & Réassort Rapide
+            </h2>
+          </div>
+
+          <div className="border border-gray-200 rounded-xl p-4 bg-gray-50/50 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+            <div>
+              <div className="flex items-center space-x-2">
+                <span className="font-bold text-gray-900">Dépôt Officiel Akwa Nord</span>
+                <span className="px-2 py-0.5 bg-emerald-100 text-emerald-800 text-[10px] font-bold rounded">
+                  Stock BON (confirmé il y a 1h)
+                </span>
+              </div>
+              <p className="text-xs text-gray-500 mt-1">
+                Dernière commande : 1 x Bouteille 12.5kg (6 500 FCFA) • Total 4 commandes sur 12 mois
+              </p>
+            </div>
+
+            <div className="flex items-center space-x-2 w-full sm:w-auto">
+              <Link
+                href="/checkout?repeat=last"
+                className="py-2.5 px-4 bg-gray-900 hover:bg-black text-white text-xs font-bold rounded-lg transition-colors flex items-center space-x-1.5 shadow-sm"
+              >
+                <RefreshCw size={14} />
+                <span>Recommander en 1 clic</span>
+              </Link>
+            </div>
+          </div>
+        </section>
+
+        {/* Bouton d'Urgence Fuite de Gaz (ADR D14) */}
+        <section className="bg-red-50 border border-red-200 rounded-2xl p-4 flex items-center justify-between">
+          <div className="flex items-center space-x-3">
+            <div className="w-10 h-10 rounded-full bg-red-100 text-red-600 flex items-center justify-center shrink-0">
+              <AlertOctagon size={22} />
+            </div>
+            <div>
+              <h3 className="text-sm font-bold text-red-900">Urgence : Odeur ou fuite suspectée ?</h3>
+              <p className="text-xs text-red-700">Fermez le détendeur et appelez immédiatement l&apos;assistance.</p>
+            </div>
+          </div>
+
+          <a
+            href="tel:+237699000000"
+            className="py-2 px-3 bg-red-600 hover:bg-red-700 text-white font-bold text-xs rounded-lg flex items-center space-x-1 transition-colors shadow-xs shrink-0"
+          >
+            <PhoneCall size={14} />
+            <span>Appel d&apos;urgence</span>
+          </a>
+        </section>
+      </main>
     </div>
   );
 }

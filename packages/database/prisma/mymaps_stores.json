@@ -1,0 +1,632 @@
+[
+  {
+    "name": "CENTRE EMPLISSEUR DIBAMBA",
+    "regionFolder": "DOUALA",
+    "city": "Douala",
+    "latitude": 4.01286111111111,
+    "longitude": 9.86233333333333,
+    "description": "",
+    "phone": null
+  },
+  {
+    "name": "Washington",
+    "regionFolder": "DOUALA",
+    "city": "Douala",
+    "latitude": 4.08180555555556,
+    "longitude": 9.65144444444445,
+    "description": "",
+    "phone": null
+  },
+  {
+    "name": "Maison du Gaz - Nouvel route",
+    "regionFolder": "DOUALA",
+    "city": "Douala",
+    "latitude": 4.07438888888889,
+    "longitude": 9.67572222222222,
+    "description": "",
+    "phone": null
+  },
+  {
+    "name": "Yassa face Auto-Service",
+    "regionFolder": "DOUALA",
+    "city": "Douala",
+    "latitude": 4.00988888888889,
+    "longitude": 9.80033333333333,
+    "description": "",
+    "phone": null
+  },
+  {
+    "name": "Total Nkolbong",
+    "regionFolder": "DOUALA",
+    "city": "Douala",
+    "latitude": 4.01744444444444,
+    "longitude": 9.79658333333333,
+    "description": "",
+    "phone": null
+  },
+  {
+    "name": "Nyalla Pariso face canal plus",
+    "regionFolder": "DOUALA",
+    "city": "Douala",
+    "latitude": 4.02219444444444,
+    "longitude": 9.794,
+    "description": "",
+    "phone": null
+  },
+  {
+    "name": "Nyalla Pariso face Hopital Catholique",
+    "regionFolder": "DOUALA",
+    "city": "Douala",
+    "latitude": 4.02497222222222,
+    "longitude": 9.79288888888889,
+    "description": "",
+    "phone": null
+  },
+  {
+    "name": "Nyalla rail carrefour",
+    "regionFolder": "DOUALA",
+    "city": "Douala",
+    "latitude": 4.03419444444444,
+    "longitude": 9.7795,
+    "description": "",
+    "phone": null
+  },
+  {
+    "name": "Entrée chefferie Ndogpassi auto école américaine",
+    "regionFolder": "DOUALA",
+    "city": "Douala",
+    "latitude": 4.02441666666667,
+    "longitude": 9.76905555555556,
+    "description": "",
+    "phone": null
+  },
+  {
+    "name": "Cimetière de Newbell Plein Gaz face confex oil chez alioum",
+    "regionFolder": "DOUALA",
+    "city": "Douala",
+    "latitude": 4.03025,
+    "longitude": 9.71175,
+    "description": "",
+    "phone": null
+  },
+  {
+    "name": "Cimetière Newbell chez mohamed",
+    "regionFolder": "DOUALA",
+    "city": "Douala",
+    "latitude": 4.02983333333333,
+    "longitude": 9.71161111111111,
+    "description": "",
+    "phone": null
+  },
+  {
+    "name": "MRS Nkouloulou chez venesa",
+    "regionFolder": "DOUALA",
+    "city": "Douala",
+    "latitude": 4.03677777777778,
+    "longitude": 9.71372222222222,
+    "description": "",
+    "phone": null
+  },
+  {
+    "name": "Entrée Face Hopital General",
+    "regionFolder": "DOUALA",
+    "city": "Douala",
+    "latitude": 4.06636111111111,
+    "longitude": 9.75947222222222,
+    "description": "",
+    "phone": null
+  },
+  {
+    "name": "Quincaillerie Lydie face hotel Ghoshen",
+    "regionFolder": "DOUALA",
+    "city": "Douala",
+    "latitude": 4.00219444444444,
+    "longitude": 9.81513888888889,
+    "description": "",
+    "phone": null
+  },
+  {
+    "name": "Auto école équatorial",
+    "regionFolder": "DOUALA",
+    "city": "Douala",
+    "latitude": 4.00222222222222,
+    "longitude": 9.75952777777778,
+    "description": "",
+    "phone": null
+  },
+  {
+    "name": "Mama Yvonne",
+    "regionFolder": "DOUALA",
+    "city": "Douala",
+    "latitude": 3.99083333333333,
+    "longitude": 9.77183333333333,
+    "description": "",
+    "phone": null
+  },
+  {
+    "name": "Batisseur",
+    "regionFolder": "DOUALA",
+    "city": "Douala",
+    "latitude": 4.08708333333333,
+    "longitude": 9.74130555555555,
+    "description": "Depot : Batisseur<br>Catégorie : détaillant<br>Tel: 674375057 / 699769404",
+    "phone": "+237674375057"
+  },
+  {
+    "name": "Albine",
+    "regionFolder": "DOUALA",
+    "city": "Douala",
+    "latitude": 4.08702777777778,
+    "longitude": 9.74088888888889,
+    "description": "Depot : Albine<br>Catégorie : détaillant<br>Tel: 693443738",
+    "phone": "+237693443738"
+  },
+  {
+    "name": "Ajospel",
+    "regionFolder": "DOUALA",
+    "city": "Douala",
+    "latitude": 4.08708333333333,
+    "longitude": 9.74091666666667,
+    "description": "Depot : Ajospel<br>Catégorie : détaillant<br>Tel: 693219325",
+    "phone": "+237693219325"
+  },
+  {
+    "name": "Magni gaz",
+    "regionFolder": "DOUALA",
+    "city": "Douala",
+    "latitude": 4.08702777777778,
+    "longitude": 9.74072222222222,
+    "description": "Depot : magni gaz<br>Catégorie : détaillant<br>Tel: 699991474 / 699672970",
+    "phone": "+237699991474"
+  },
+  {
+    "name": "Univers construction",
+    "regionFolder": "DOUALA",
+    "city": "Douala",
+    "latitude": 4.08705555555556,
+    "longitude": 9.74083333333333,
+    "description": "Depot: univers construction <br>Catégorie : détaillant<br>Tel: 655562641",
+    "phone": "+237655562641"
+  },
+  {
+    "name": "Référence construction",
+    "regionFolder": "DOUALA",
+    "city": "Douala",
+    "latitude": 4.08716666666667,
+    "longitude": 9.74083333333333,
+    "description": "Point : Référence construction <br>Catégorie : détaillant<br>Tel: 698795879",
+    "phone": "+237698795879"
+  },
+  {
+    "name": "Watt",
+    "regionFolder": "DOUALA",
+    "city": "Douala",
+    "latitude": 4.06616666666667,
+    "longitude": 9.72388888888889,
+    "description": "Point : Watt<br>Catégorie : grossiste<br>Tel: 696969780",
+    "phone": "+237696969780"
+  },
+  {
+    "name": "Éric",
+    "regionFolder": "DOUALA",
+    "city": "Douala",
+    "latitude": 3.99891666666667,
+    "longitude": 9.72338888888889,
+    "description": "Point: Éric<br>Catégorie : détaillant<br>Tel: 653066848",
+    "phone": "+237653066848"
+  },
+  {
+    "name": "Elvis",
+    "regionFolder": "DOUALA",
+    "city": "Douala",
+    "latitude": 3.99883333333333,
+    "longitude": 9.72330555555556,
+    "description": "Point: Elvis<br>Catégorie :détaillant<br>Tel: 675074033",
+    "phone": "+237675074033"
+  },
+  {
+    "name": "Magui gaz",
+    "regionFolder": "DOUALA",
+    "city": "Douala",
+    "latitude": 4.07925,
+    "longitude": 9.79088888888889,
+    "description": "Detaillant<br>Tel: 694498975",
+    "phone": "+237694498975"
+  },
+  {
+    "name": "MD GAZ",
+    "regionFolder": "DOUALA",
+    "city": "Douala",
+    "latitude": 4.10191666666667,
+    "longitude": 9.75813888888889,
+    "description": "672901310<br>GROSSISTE",
+    "phone": "+237672901310"
+  },
+  {
+    "name": "Kengne bernadette",
+    "regionFolder": "DOUALA",
+    "city": "Douala",
+    "latitude": 4.04883333333333,
+    "longitude": 9.71902777777778,
+    "description": "691691052<br>Détaillant",
+    "phone": "+237691691052"
+  },
+  {
+    "name": "SAHEL",
+    "regionFolder": "DOUALA",
+    "city": "Douala",
+    "latitude": 3.99769444444444,
+    "longitude": 9.72441666666667,
+    "description": "699533790<br>DÉTAILLANT",
+    "phone": "+237699533790"
+  },
+  {
+    "name": "Kabirou",
+    "regionFolder": "DOUALA",
+    "city": "Douala",
+    "latitude": 4.00069444444444,
+    "longitude": 9.72055555555556,
+    "description": "676066334<br>Détaillant",
+    "phone": "+237676066334"
+  },
+  {
+    "name": "Pomema",
+    "regionFolder": "DOUALA",
+    "city": "Douala",
+    "latitude": 4.00130555555556,
+    "longitude": 9.71983333333333,
+    "description": "677726451<br>Détaillant",
+    "phone": "+237677726451"
+  },
+  {
+    "name": "QME",
+    "regionFolder": "DOUALA",
+    "city": "Douala",
+    "latitude": 4.00327777777778,
+    "longitude": 9.71816666666667,
+    "description": "694101320<br>DÉTAILLANT",
+    "phone": "+237694101320"
+  },
+  {
+    "name": "ETS PACHA",
+    "regionFolder": "DOUALA",
+    "city": "Douala",
+    "latitude": 4.06144444444444,
+    "longitude": 9.78658333333333,
+    "description": "ETS PACHA<br>675709239<br>DÉTAILLANT",
+    "phone": "+237675709239"
+  },
+  {
+    "name": "Djoms construction",
+    "regionFolder": "DOUALA",
+    "city": "Douala",
+    "latitude": 4.06194444444444,
+    "longitude": 9.78655555555556,
+    "description": "Djoms construction <br>656102222<br>Détaillant",
+    "phone": "+237656102222"
+  },
+  {
+    "name": "CEDRIC",
+    "regionFolder": "DOUALA",
+    "city": "Douala",
+    "latitude": 4.08897222222222,
+    "longitude": 9.79591666666667,
+    "description": "CEDRIC<br>693954733<br>DÉTAILLANT",
+    "phone": "+237693954733"
+  },
+  {
+    "name": "GRASCO",
+    "regionFolder": "DOUALA",
+    "city": "Douala",
+    "latitude": 4.10875,
+    "longitude": 9.81105555555556,
+    "description": "GRASCO<br>696962878<br>DÉTAILLANT",
+    "phone": "+237696962878"
+  },
+  {
+    "name": "EMPIRE SARL",
+    "regionFolder": "DOUALA",
+    "city": "Douala",
+    "latitude": 4.1255,
+    "longitude": 9.82669444444444,
+    "description": "EMPIRE SARL<br>694314367<br>DÉTAILLANT",
+    "phone": "+237694314367"
+  },
+  {
+    "name": "Mme Wandji",
+    "regionFolder": "DOUALA",
+    "city": "Douala",
+    "latitude": 4.02838888888889,
+    "longitude": 9.73447222222222,
+    "description": "Mme Wandji <br>Détaillante<br>673323934",
+    "phone": "+237673323934"
+  },
+  {
+    "name": "Boutique Alain",
+    "regionFolder": "DOUALA",
+    "city": "Douala",
+    "latitude": 4.02530555555556,
+    "longitude": 9.73725,
+    "description": "Boutique Alain <br>678437295<br>Détaillant",
+    "phone": "+237678437295"
+  },
+  {
+    "name": "Dieudonne",
+    "regionFolder": "DOUALA",
+    "city": "Douala",
+    "latitude": 3.85758333333333,
+    "longitude": 11.6026111111111,
+    "description": "Dieudonne",
+    "phone": null
+  },
+  {
+    "name": "Yannick",
+    "regionFolder": "DOUALA",
+    "city": "Douala",
+    "latitude": 3.88191666666667,
+    "longitude": 11.4678333333333,
+    "description": "Yannick <br>Détaillant <br>699056912",
+    "phone": "+237699056912"
+  },
+  {
+    "name": "Gladis",
+    "regionFolder": "DOUALA",
+    "city": "Douala",
+    "latitude": 3.85527777777778,
+    "longitude": 11.5875555555556,
+    "description": "Gladis <br>Detaillant <br>Nkoabang",
+    "phone": null
+  },
+  {
+    "name": "Dieunedort",
+    "regionFolder": "DOUALA",
+    "city": "Douala",
+    "latitude": 4.02375,
+    "longitude": 9.73544444444444,
+    "description": "Dieunedort<br>699673398<br>Détaillant",
+    "phone": "+237699673398"
+  },
+  {
+    "name": "Quincaillerie paguem",
+    "regionFolder": "DOUALA",
+    "city": "Douala",
+    "latitude": 4.01586111111111,
+    "longitude": 9.73575,
+    "description": "Quincaillerie paguem<br>Détaillant <br>677747195",
+    "phone": "+237677747195"
+  },
+  {
+    "name": "Est Talla",
+    "regionFolder": "DOUALA",
+    "city": "Douala",
+    "latitude": 4.01575,
+    "longitude": 9.74208333333333,
+    "description": "Ets Talla<br>Détaillant <br>699939496",
+    "phone": "+237699939496"
+  },
+  {
+    "name": "CENTRE EMPLISSEUR YAOUNDE",
+    "regionFolder": "YAOUNDE",
+    "city": "Yaoundé",
+    "latitude": 3.81113888888889,
+    "longitude": 11.5139444444444,
+    "description": "",
+    "phone": null
+  },
+  {
+    "name": "Boulangerie des lys",
+    "regionFolder": "YAOUNDE",
+    "city": "Yaoundé",
+    "latitude": 3.78302777777778,
+    "longitude": 11.5254722222222,
+    "description": "Point: boulangerie des lys <br>Catégorie: grossiste",
+    "phone": null
+  },
+  {
+    "name": "Nkam",
+    "regionFolder": "YAOUNDE",
+    "city": "Yaoundé",
+    "latitude": 3.85252777777778,
+    "longitude": 11.4972222222222,
+    "description": "Point :Nkam <br>Catégories : grossiste <br>Téléphone : 699445150",
+    "phone": "+237699445150"
+  },
+  {
+    "name": "Fotsin",
+    "regionFolder": "YAOUNDE",
+    "city": "Yaoundé",
+    "latitude": 3.88588888888889,
+    "longitude": 11.5000277777778,
+    "description": "Point : Fotsin <br>Catégorie : détaillant <br>Tel:673316843",
+    "phone": "+237673316843"
+  },
+  {
+    "name": "M Tchabe",
+    "regionFolder": "YAOUNDE",
+    "city": "Yaoundé",
+    "latitude": 3.88480555555556,
+    "longitude": 11.4922777777778,
+    "description": "Point : M Tchabe <br>Catégorie : détaillant <br>Tel:699333882",
+    "phone": "+237699333882"
+  },
+  {
+    "name": "NWAIN gweteh",
+    "regionFolder": "YAOUNDE",
+    "city": "Yaoundé",
+    "latitude": 3.87566666666667,
+    "longitude": 11.4515833333333,
+    "description": "Catégorie :détaillant <br>Tel : 676422347",
+    "phone": "+237676422347"
+  },
+  {
+    "name": "maman Anny",
+    "regionFolder": "YAOUNDE",
+    "city": "Yaoundé",
+    "latitude": 3.87286111111111,
+    "longitude": 11.4982222222222,
+    "description": "Client :maman Anny <br>Catégorie :détaillant <br>Tel:697595304",
+    "phone": "+237697595304"
+  },
+  {
+    "name": "Stevan feri",
+    "regionFolder": "YAOUNDE",
+    "city": "Yaoundé",
+    "latitude": 3.884,
+    "longitude": 11.4960555555556,
+    "description": "Client :Stevan feri <br>Catégorie:détaillant <br>Tel:698436346",
+    "phone": "+237698436346"
+  },
+  {
+    "name": "Butagaz",
+    "regionFolder": "YAOUNDE",
+    "city": "Yaoundé",
+    "latitude": 3.87852777777778,
+    "longitude": 11.4951666666667,
+    "description": "Client :Butagaz<br>Catégorie :grossiste <br>Tel: 679121212",
+    "phone": "+237679121212"
+  },
+  {
+    "name": "JP",
+    "regionFolder": "YAOUNDE",
+    "city": "Yaoundé",
+    "latitude": 3.87344444444444,
+    "longitude": 11.4429722222222,
+    "description": "Client :Jp <br>Catégorie :détaillant <br>Tel:675042785",
+    "phone": "+237675042785"
+  },
+  {
+    "name": "Ecotradi",
+    "regionFolder": "YAOUNDE",
+    "city": "Yaoundé",
+    "latitude": 3.83147222222222,
+    "longitude": 11.4688888888889,
+    "description": "Ecotradi <br>Détaillant",
+    "phone": null
+  },
+  {
+    "name": "Ivania center",
+    "regionFolder": "YAOUNDE",
+    "city": "Yaoundé",
+    "latitude": 4.02844444444444,
+    "longitude": 9.7345,
+    "description": "Ivania center<br>673598061<br>Detaillante",
+    "phone": "+237673598061"
+  },
+  {
+    "name": "Manto Marie",
+    "regionFolder": "YAOUNDE",
+    "city": "Yaoundé",
+    "latitude": 3.86841666666667,
+    "longitude": 11.4858888888889,
+    "description": "Manto Marie <br>670214702",
+    "phone": "+237670214702"
+  },
+  {
+    "name": "Ismaël",
+    "regionFolder": "YAOUNDE",
+    "city": "Yaoundé",
+    "latitude": 3.91808333333333,
+    "longitude": 11.4441666666667,
+    "description": "Ismaël <br>Détaillant<br>699855031",
+    "phone": "+237699855031"
+  },
+  {
+    "name": "Johnny gaz",
+    "regionFolder": "YAOUNDE",
+    "city": "Yaoundé",
+    "latitude": 3.86158333333333,
+    "longitude": 11.5895277777778,
+    "description": "Johnny gaz",
+    "phone": null
+  },
+  {
+    "name": "Escalier leboudji",
+    "regionFolder": "YAOUNDE",
+    "city": "Yaoundé",
+    "latitude": 3.90825,
+    "longitude": 11.4472222222222,
+    "description": "Escalier leboudji<br>Détaillant <br>676931304",
+    "phone": "+237676931304"
+  },
+  {
+    "name": "Awa Verlaine",
+    "regionFolder": "YAOUNDE",
+    "city": "Yaoundé",
+    "latitude": 3.89683333333333,
+    "longitude": 11.4555277777778,
+    "description": "Awa Verlaine<br>Détaillant <br>675611136",
+    "phone": "+237675611136"
+  },
+  {
+    "name": "PRIX NORMAL",
+    "regionFolder": "AUTRES REGIONS",
+    "city": "Autres Régions",
+    "latitude": 4.23269444444444,
+    "longitude": 9.61330555555556,
+    "description": "PRIX NORMAL<br>676499870<br>DÉTAILLANT",
+    "phone": "+237676499870"
+  },
+  {
+    "name": "LE CLIENT EST ROI",
+    "regionFolder": "AUTRES REGIONS",
+    "city": "Autres Régions",
+    "latitude": 4.23355555555556,
+    "longitude": 9.61327777777778,
+    "description": "LE CLIENT EST ROI<br>675006057<br>DÉTAILLANT",
+    "phone": "+237675006057"
+  },
+  {
+    "name": "AMICAL",
+    "regionFolder": "AUTRES REGIONS",
+    "city": "Autres Régions",
+    "latitude": 4.49883333333333,
+    "longitude": 9.56572222222222,
+    "description": "AMICAL <br>675997820<br>GROSSISTE",
+    "phone": "+237675997820"
+  },
+  {
+    "name": "LIPAL",
+    "regionFolder": "AUTRES REGIONS",
+    "city": "Autres Régions",
+    "latitude": 4.95688888888889,
+    "longitude": 9.93661111111111,
+    "description": "693935386<br>GROSSISTE",
+    "phone": "+237693935386"
+  },
+  {
+    "name": "PARISIEN",
+    "regionFolder": "AUTRES REGIONS",
+    "city": "Autres Régions",
+    "latitude": 5.12175,
+    "longitude": 9.9465,
+    "description": "PARISIEN<br>677699025<br>DÉTAILLANT",
+    "phone": "+237677699025"
+  },
+  {
+    "name": "Shekina nyom",
+    "regionFolder": "AUTRES REGIONS",
+    "city": "Autres Régions",
+    "latitude": 3.97366666666667,
+    "longitude": 11.5186111111111,
+    "description": "",
+    "phone": null
+  },
+  {
+    "name": "Divine energie nyom",
+    "regionFolder": "AUTRES REGIONS",
+    "city": "Autres Régions",
+    "latitude": 3.96411111111111,
+    "longitude": 11.5218055555556,
+    "description": "",
+    "phone": null
+  },
+  {
+    "name": "Njoya Ntui",
+    "regionFolder": "AUTRES REGIONS",
+    "city": "Autres Régions",
+    "latitude": 4.44988888888889,
+    "longitude": 11.6261666666667,
+    "description": "",
+    "phone": null
+  }
+]

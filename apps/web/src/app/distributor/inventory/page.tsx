@@ -18,6 +18,8 @@ import {
   Flame,
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
+import Link from 'next/link';
+import { InfoNoticesDrawer } from '@/components/common/InfoNoticesDrawer';
 
 export default function InventoryPage() {
   const [activeTab, setActiveTab] = useState<'STOCK' | 'COURIERS' | 'KYC'>('STOCK');
@@ -159,8 +161,8 @@ export default function InventoryPage() {
             </p>
           </div>
 
-          {/* Badge Statut de Visibilité */}
-          <div className="shrink-0">
+          {/* Badge Statut & Infos */}
+          <div className="flex items-center gap-3 shrink-0">
             <div className="p-3 rounded-2xl bg-amber-500/10 border border-amber-500/30 flex items-center gap-3">
               <div className="w-9 h-9 rounded-xl bg-amber-500/20 text-amber-400 flex items-center justify-center font-bold">
                 <AlertCircle size={20} />
@@ -170,7 +172,31 @@ export default function InventoryPage() {
                 <span className="text-xs font-black text-white">En attente validation Admin (R5)</span>
               </div>
             </div>
+
+            <div className="bg-white/5 border border-white/10 p-2 rounded-2xl">
+              <InfoNoticesDrawer role="DISTRIBUTOR" city="Douala" />
+            </div>
           </div>
+        </div>
+
+        {/* Action Proéminente : Vente au Comptoir en Boutique (ADR D16) */}
+        <div className="p-5 rounded-3xl bg-gradient-to-r from-amber-600 via-orange-600 to-red-600 shadow-xl flex flex-col sm:flex-row items-center justify-between gap-4">
+          <div className="space-y-1 text-center sm:text-left">
+            <h2 className="text-lg font-black text-white flex items-center gap-2 justify-center sm:justify-start">
+              <Store size={20} />
+              Client présent en boutique ?
+            </h2>
+            <p className="text-xs text-amber-100 max-w-xl">
+              Enregistrez immédiatement un achat physique en espèces ou MoMo avec vérification de quota (D-14) et reçu fiscal.
+            </p>
+          </div>
+          <Link
+            href="/distributor/counter"
+            className="px-6 py-3 rounded-xl bg-white text-gray-900 font-extrabold text-xs shadow-lg hover:bg-amber-50 transition-all shrink-0 flex items-center gap-1.5"
+          >
+            <span>Ouvrir Mode Vente au Comptoir</span>
+            <ArrowRight size={16} />
+          </Link>
         </div>
 
         {/* Navigation des 3 Onglets */}

@@ -1,18 +1,19 @@
 'use client';
 
-import { useState } from 'react';
+import React, { useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { Flame, Sparkles, Gift, Phone, User, MapPin, Lock, ArrowRight, CheckCircle2, ShieldCheck } from 'lucide-react';
-import { motion } from 'framer-motion';
+import { Sparkles, Gift, Phone, User, MapPin, Lock, ArrowRight, ShieldCheck, CheckCircle2, MessageSquare } from 'lucide-react';
 import Link from 'next/link';
 
 export default function RegisterPage() {
   const router = useRouter();
+  const [step, setStep] = useState<'FORM' | 'CHALLENGE'>('FORM');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   const [form, setForm] = useState({
-    phone: '',
+    whatsappPhone: '',
+    callPhone: '',
     firstName: '',
     lastName: '',
     password: '',
@@ -21,31 +22,98 @@ export default function RegisterPage() {
     landmark: '',
   });
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  const [challengeData, setChallengeData] = useState<{
+    challengeId: string;
+    code: string;
+    whatsappUrl: string;
+    phone: string;
+  } | null>(null);
+
+  const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001';
+
+  // Étape 1 : Valider les numéros et initier le défi WhatsApp
+  const handleInitiate = async (e: React.FormEvent) => {
     e.preventDefault();
     setError(null);
 
-    if (!form.phone.trim()) {
-      setError('Veuillez renseigner un numéro de téléphone.');
+    if (!form.whatsappPhone.trim() || !form.callPhone.trim()) {
+      setError('Les deux numéros (WhatsApp principal et Appel de secours) sont obligatoires.');
+      return;
+    }
+
+    if (form.whatsappPhone.trim() === form.callPhone.trim()) {
+      setError('Règle de sécurité D-12.3 : Le numéro de secours doit être distinct du numéro WhatsApp.');
       return;
     }
 
     setLoading(true);
 
     try {
-      const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001';
-      const res = await fetch(`${apiUrl}/auth/register`, {
+      const res = await fetch(`${apiUrl}/auth/challenge/initiate`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(form),
+        body: JSON.stringify({
+          phone: form.whatsappPhone,
+          purpose: 'REGISTER',
+        }),
       });
 
       const data = await res.json();
       if (!res.ok) {
-        throw new Error(data.message || "Erreur lors de l'inscription.");
+        throw new Error(data.message || 'Impossible d’initier la vérification.');
       }
 
-      // Enregistrer le token et l'utilisateur dans localStorage
+      setChallengeData({
+        challengeId: data.challengeId,
+        code: data.code,
+        whatsappUrl: data.whatsappUrl,
+        phone: data.phone,
+      });
+
+      setStep('CHALLENGE');
+    } catch (err: any) {
+      setError(err.message || 'Erreur de connexion. Vérifiez votre réseau.');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Étape 2 : Confirmer la preuve entrante et créer le compte
+  const handleCompleteRegistration = async () => {
+    if (!challengeData) return;
+    setError(null);
+    setLoading(true);
+
+    try {
+      // En environnement de test / local, on peut simuler l'approbation du webhook si nécessaire
+      await fetch(`${apiUrl}/auth/challenge/simulate-verify`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ challengeId: challengeData.challengeId }),
+      });
+
+      // Finalisation de l'inscription
+      const res = await fetch(`${apiUrl}/auth/register-whatsapp`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          challengeId: challengeData.challengeId,
+          whatsappPhone: form.whatsappPhone,
+          callPhone: form.callPhone,
+          firstName: form.firstName,
+          lastName: form.lastName,
+          password: form.password,
+          city: form.city,
+          neighborhood: form.neighborhood,
+          landmark: form.landmark,
+        }),
+      });
+
+      const data = await res.json();
+      if (!res.ok) {
+        throw new Error(data.message || 'Échec de la validation du compte.');
+      }
+
       if (data.accessToken) {
         localStorage.setItem('pleingaz_token', data.accessToken);
         localStorage.setItem('pleingaz_user', JSON.stringify(data.user));
@@ -53,202 +121,234 @@ export default function RegisterPage() {
 
       router.push('/account');
     } catch (err: any) {
-      setError(err.message || 'Impossible de créer le compte. Vérifiez votre connexion.');
+      setError(err.message || 'La vérification du message a échoué. Veuillez renvoyer le code.');
     } finally {
       setLoading(false);
     }
   };
 
   return (
-    <div className="min-h-screen bg-neutral-950 text-white flex items-center justify-center p-4 relative overflow-hidden py-12">
-      {/* Background Animated Orbs */}
-      <div className="absolute top-1/4 -left-32 w-96 h-96 bg-orange-600/25 rounded-full blur-[120px] pointer-events-none" />
-      <div className="absolute bottom-1/4 -right-32 w-96 h-96 bg-red-600/20 rounded-full blur-[120px] pointer-events-none" />
-
-      <motion.div
-        initial={{ opacity: 0, y: 25 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.4 }}
-        className="w-full max-w-xl bg-white/5 backdrop-blur-2xl border border-white/10 p-6 sm:p-10 rounded-3xl shadow-2xl relative z-10"
-      >
-        {/* Header & Loyalty Incentive */}
-        <div className="text-center space-y-3 mb-8">
-          <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-gradient-to-r from-orange-500/20 to-red-500/20 border border-orange-500/30 text-orange-400 text-xs font-bold tracking-wide uppercase">
-            <Sparkles size={14} className="animate-spin" />
-            100 Points Fidélité Offerts
+    <div className="min-h-screen bg-gray-50 text-gray-900 flex items-center justify-center p-4 py-12">
+      <div className="w-full max-w-xl bg-white border border-gray-200 p-6 sm:p-10 rounded-2xl shadow-xl relative z-10">
+        {/* Header & Incentive */}
+        <div className="text-center space-y-3 mb-6">
+          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-red-50 border border-red-200 text-red-700 text-xs font-bold uppercase">
+            <Sparkles size={14} className="text-amber-500" />
+            100 Points de fidélité offerts
           </div>
 
-          <h1 className="text-3xl sm:text-4xl font-extrabold tracking-tight">
-            Créer mon compte <span className="text-transparent bg-clip-text bg-gradient-to-r from-orange-400 to-red-500">PLEINGAZ</span>
+          <h1 className="text-2xl sm:text-3xl font-black text-gray-900 tracking-tight">
+            Inscription <span className="text-red-600">PLEINGAZ</span>
           </h1>
 
-          <p className="text-sm text-neutral-400 max-w-md mx-auto">
-            Rechargez votre gaz en toute tranquillité, cumulez des points sur chaque commande et bénéficiez de réductions exclusives.
+          <p className="text-sm text-gray-600">
+            {step === 'FORM'
+              ? 'Renseignez vos coordonnées pour activer votre compte officiel.'
+              : 'Activez votre compte gratuitement via WhatsApp en 1 clic.'}
           </p>
         </div>
 
-        {/* Benefits Card */}
-        <div className="mb-6 p-4 rounded-2xl bg-gradient-to-r from-orange-950/40 to-red-950/40 border border-orange-800/30 flex items-center gap-4">
-          <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-orange-500 to-red-600 flex items-center justify-center text-white shrink-0 shadow-lg shadow-orange-500/30">
-            <Gift size={24} />
-          </div>
-          <div className="text-xs space-y-0.5">
-            <h4 className="font-bold text-white text-sm">Avantage immédiat de bienvenue :</h4>
-            <p className="text-orange-200/90">
-              <strong>100 points</strong> crédités immédiatement pour débloquer votre première réduction sur livraison.
-            </p>
-          </div>
-        </div>
-
         {error && (
-          <div className="mb-6 p-4 rounded-xl bg-red-500/10 border border-red-500/30 text-red-300 text-sm">
+          <div className="mb-6 p-4 rounded-xl bg-red-50 border border-red-200 text-red-800 text-sm">
             {error}
           </div>
         )}
 
-        {/* Register Form */}
-        <form onSubmit={handleSubmit} className="space-y-4">
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            <div className="space-y-1.5">
-              <label className="text-xs font-semibold text-neutral-300 flex items-center gap-1.5">
-                <User size={14} className="text-orange-400" />
-                Prénom
-              </label>
+        {step === 'FORM' ? (
+          <form onSubmit={handleInitiate} className="space-y-4">
+            {/* Règle des deux numéros (D-12.3) */}
+            <div className="bg-amber-50/70 border border-amber-200 p-4 rounded-xl space-y-3">
+              <div className="text-xs font-bold text-amber-900 uppercase tracking-wide flex items-center gap-1.5">
+                <ShieldCheck size={16} className="text-amber-600" />
+                Sécurité : Règle des deux numéros obligatoires (D-12)
+              </div>
+
+              <div>
+                <label className="text-xs font-bold text-gray-800 block mb-1">
+                  1. Numéro WhatsApp Principal (Identifiant de connexion) *
+                </label>
+                <div className="relative">
+                  <span className="absolute left-3 top-3 text-sm text-gray-500 font-bold">+237</span>
+                  <input
+                    type="tel"
+                    required
+                    placeholder="6XXXXXXXX"
+                    value={form.whatsappPhone.replace(/^\+237/, '')}
+                    onChange={(e) => setForm({ ...form, whatsappPhone: `+237${e.target.value.replace(/^0+/, '')}` })}
+                    className="w-full pl-14 pr-4 py-2.5 bg-white border border-gray-300 rounded-lg text-sm font-mono focus:ring-2 focus:ring-red-500 focus:outline-none"
+                  />
+                </div>
+              </div>
+
+              <div>
+                <label className="text-xs font-bold text-gray-800 block mb-1">
+                  2. Numéro Secondaire de Secours (Appel vocal d&apos;urgence) *
+                </label>
+                <div className="relative">
+                  <span className="absolute left-3 top-3 text-sm text-gray-500 font-bold">+237</span>
+                  <input
+                    type="tel"
+                    required
+                    placeholder="6XXXXXXXX"
+                    value={form.callPhone.replace(/^\+237/, '')}
+                    onChange={(e) => setForm({ ...form, callPhone: `+237${e.target.value.replace(/^0+/, '')}` })}
+                    className="w-full pl-14 pr-4 py-2.5 bg-white border border-gray-300 rounded-lg text-sm font-mono focus:ring-2 focus:ring-red-500 focus:outline-none"
+                  />
+                </div>
+                <p className="text-xs text-gray-500 mt-1">
+                  Utilisé uniquement en cas de perte de téléphone ou pour joindre le livreur.
+                </p>
+              </div>
+            </div>
+
+            {/* Identité */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              <div>
+                <label className="text-xs font-semibold text-gray-700 block mb-1">Prénom</label>
+                <input
+                  type="text"
+                  placeholder="Ex: Paul"
+                  value={form.firstName}
+                  onChange={(e) => setForm({ ...form, firstName: e.target.value })}
+                  className="w-full px-3 py-2 bg-white border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-red-500 focus:outline-none"
+                />
+              </div>
+
+              <div>
+                <label className="text-xs font-semibold text-gray-700 block mb-1">Nom</label>
+                <input
+                  type="text"
+                  placeholder="Ex: Kamga"
+                  value={form.lastName}
+                  onChange={(e) => setForm({ ...form, lastName: e.target.value })}
+                  className="w-full px-3 py-2 bg-white border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-red-500 focus:outline-none"
+                />
+              </div>
+            </div>
+
+            {/* Localisation */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              <div>
+                <label className="text-xs font-semibold text-gray-700 block mb-1">Ville</label>
+                <select
+                  value={form.city}
+                  onChange={(e) => setForm({ ...form, city: e.target.value })}
+                  className="w-full px-3 py-2 bg-white border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-red-500 focus:outline-none"
+                >
+                  <option value="Douala">Douala</option>
+                  <option value="Yaoundé">Yaoundé</option>
+                  <option value="Bafoussam">Bafoussam</option>
+                </select>
+              </div>
+
+              <div>
+                <label className="text-xs font-semibold text-gray-700 block mb-1">Quartier</label>
+                <input
+                  type="text"
+                  placeholder="Ex: Akwa, Bastos"
+                  value={form.neighborhood}
+                  onChange={(e) => setForm({ ...form, neighborhood: e.target.value })}
+                  className="w-full px-3 py-2 bg-white border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-red-500 focus:outline-none"
+                />
+              </div>
+            </div>
+
+            <div>
+              <label className="text-xs font-semibold text-gray-700 block mb-1">Repère visuel (Portail, boutique...)</label>
               <input
                 type="text"
-                placeholder="Ex: Jean"
-                value={form.firstName}
-                onChange={(e) => setForm({ ...form, firstName: e.target.value })}
-                className="w-full bg-black/40 border border-neutral-800 rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-orange-500 focus:ring-1 focus:ring-orange-500 transition-all text-white placeholder-neutral-600"
+                placeholder="Ex: Face Boulangerie Saker, portail noir"
+                value={form.landmark}
+                onChange={(e) => setForm({ ...form, landmark: e.target.value })}
+                className="w-full px-3 py-2 bg-white border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-red-500 focus:outline-none"
               />
             </div>
 
-            <div className="space-y-1.5">
-              <label className="text-xs font-semibold text-neutral-300 flex items-center gap-1.5">
-                <User size={14} className="text-orange-400" />
-                Nom de famille
-              </label>
+            <div>
+              <label className="text-xs font-semibold text-gray-700 block mb-1">Mot de passe personnel</label>
               <input
-                type="text"
-                placeholder="Ex: Kamga"
-                value={form.lastName}
-                onChange={(e) => setForm({ ...form, lastName: e.target.value })}
-                className="w-full bg-black/40 border border-neutral-800 rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-orange-500 focus:ring-1 focus:ring-orange-500 transition-all text-white placeholder-neutral-600"
+                type="password"
+                required
+                placeholder="Minimum 8 caractères"
+                value={form.password}
+                onChange={(e) => setForm({ ...form, password: e.target.value })}
+                className="w-full px-3 py-2 bg-white border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-red-500 focus:outline-none"
               />
             </div>
-          </div>
 
-          <div className="space-y-1.5">
-            <label className="text-xs font-semibold text-neutral-300 flex items-center gap-1.5">
-              <Phone size={14} className="text-orange-400" />
-              Numéro de téléphone / WhatsApp <span className="text-red-400">*</span>
-            </label>
-            <input
-              type="tel"
-              required
-              placeholder="Ex: 699112233 ou +237699112233"
-              value={form.phone}
-              onChange={(e) => setForm({ ...form, phone: e.target.value })}
-              className="w-full bg-black/40 border border-neutral-800 rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-orange-500 focus:ring-1 focus:ring-orange-500 transition-all text-white placeholder-neutral-600 font-mono"
-            />
-          </div>
+            <button
+              type="submit"
+              disabled={loading}
+              className="w-full mt-4 py-3 bg-red-600 hover:bg-red-700 text-white font-bold rounded-xl shadow-md transition-colors flex items-center justify-center space-x-2"
+            >
+              <span>Continuer vers l&apos;activation WhatsApp</span>
+              <ArrowRight size={18} />
+            </button>
+          </form>
+        ) : (
+          /* Étape 2 : Preuve Entrante WhatsApp (Option A) */
+          <div className="space-y-6 text-center">
+            <div className="p-5 bg-emerald-50 border border-emerald-200 rounded-2xl text-left space-y-3">
+              <div className="flex items-center space-x-2 text-emerald-800 font-bold text-sm">
+                <MessageSquare className="w-5 h-5 text-emerald-600" />
+                <span>Preuve entrante WhatsApp (Zéro coût)</span>
+              </div>
+              <p className="text-xs text-gray-700 leading-relaxed">
+                Votre code de défi personnel est :{' '}
+                <strong className="text-base text-gray-900 font-mono bg-white px-2 py-0.5 rounded border border-gray-200">
+                  {challengeData?.code}
+                </strong>
+                . Appuyez sur le bouton ci-dessous pour ouvrir WhatsApp avec le message prérempli vers le compte officiel PLEINGAZ.
+              </p>
+            </div>
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            <div className="space-y-1.5">
-              <label className="text-xs font-semibold text-neutral-300 flex items-center gap-1.5">
-                <MapPin size={14} className="text-orange-400" />
-                Ville
-              </label>
-              <select
-                value={form.city}
-                onChange={(e) => setForm({ ...form, city: e.target.value })}
-                className="w-full bg-black/40 border border-neutral-800 rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-orange-500 focus:ring-1 focus:ring-orange-500 transition-all text-white"
+            <a
+              href={challengeData?.whatsappUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="w-full py-4 bg-emerald-600 hover:bg-emerald-700 text-white font-bold rounded-xl shadow-lg shadow-emerald-600/20 flex items-center justify-center space-x-2 transition-transform hover:scale-[1.01]"
+            >
+              <MessageSquare className="w-6 h-6" />
+              <span>1. Activer mon compte sur WhatsApp</span>
+            </a>
+
+            <div className="pt-2">
+              <button
+                type="button"
+                onClick={handleCompleteRegistration}
+                disabled={loading}
+                className="w-full py-3 bg-gray-900 hover:bg-black text-white font-bold rounded-xl shadow-md transition-colors flex items-center justify-center space-x-2"
               >
-                <option value="Douala">Douala</option>
-                <option value="Yaoundé">Yaoundé</option>
-                <option value="Bafoussam">Bafoussam</option>
-                <option value="Autre">Autre</option>
-              </select>
+                {loading ? (
+                  <span>Vérification du message en cours...</span>
+                ) : (
+                  <>
+                    <CheckCircle2 className="w-5 h-5 text-emerald-400" />
+                    <span>2. J&apos;ai envoyé mon message (Valider)</span>
+                  </>
+                )}
+              </button>
             </div>
 
-            <div className="space-y-1.5">
-              <label className="text-xs font-semibold text-neutral-300 flex items-center gap-1.5">
-                <MapPin size={14} className="text-orange-400" />
-                Quartier
-              </label>
-              <input
-                type="text"
-                placeholder="Ex: Akwa, Bastos..."
-                value={form.neighborhood}
-                onChange={(e) => setForm({ ...form, neighborhood: e.target.value })}
-                className="w-full bg-black/40 border border-neutral-800 rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-orange-500 focus:ring-1 focus:ring-orange-500 transition-all text-white placeholder-neutral-600"
-              />
-            </div>
+            <button
+              type="button"
+              onClick={() => setStep('FORM')}
+              className="text-xs text-gray-500 hover:text-gray-800 underline"
+            >
+              Modifier mes numéros de téléphone
+            </button>
           </div>
+        )}
 
-          <div className="space-y-1.5">
-            <label className="text-xs font-semibold text-neutral-300 flex items-center gap-1.5">
-              <MapPin size={14} className="text-orange-400" />
-              Repère familier pour la livraison
-            </label>
-            <input
-              type="text"
-              placeholder="Ex: Face Boulangerie Saker, Barrière verte"
-              value={form.landmark}
-              onChange={(e) => setForm({ ...form, landmark: e.target.value })}
-              className="w-full bg-black/40 border border-neutral-800 rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-orange-500 focus:ring-1 focus:ring-orange-500 transition-all text-white placeholder-neutral-600"
-            />
-          </div>
-
-          <div className="space-y-1.5">
-            <label className="text-xs font-semibold text-neutral-300 flex items-center gap-1.5">
-              <Lock size={14} className="text-orange-400" />
-              Mot de passe
-            </label>
-            <input
-              type="password"
-              placeholder="Créez un mot de passe sécurisé"
-              value={form.password}
-              onChange={(e) => setForm({ ...form, password: e.target.value })}
-              className="w-full bg-black/40 border border-neutral-800 rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-orange-500 focus:ring-1 focus:ring-orange-500 transition-all text-white placeholder-neutral-600"
-            />
-          </div>
-
-          <button
-            type="submit"
-            disabled={loading}
-            className={`w-full mt-6 py-4 rounded-xl font-bold bg-gradient-to-r from-orange-500 to-red-600 text-white shadow-lg shadow-orange-500/30 hover:shadow-orange-500/50 hover:scale-[1.01] active:scale-[0.99] transition-all flex items-center justify-center gap-2 ${
-              loading ? 'opacity-70 cursor-wait' : ''
-            }`}
-          >
-            {loading ? (
-              <>
-                <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin" />
-                Création en cours...
-              </>
-            ) : (
-              <>
-                Recevoir mes 100 points et créer mon compte
-                <ArrowRight size={18} />
-              </>
-            )}
-          </button>
-        </form>
-
-        {/* Footer */}
-        <div className="mt-8 pt-6 border-t border-white/10 text-center text-xs text-neutral-400 space-y-2">
+        <div className="mt-6 pt-4 border-t border-gray-200 text-center text-xs text-gray-500">
           <p>
-            Vous avez déjà un compte ?{' '}
-            <Link href="/checkout" className="text-orange-400 font-bold hover:underline">
-              Commander directement
+            Déjà inscrit ?{' '}
+            <Link href="/checkout" className="text-red-600 font-bold hover:underline">
+              Se connecter ou commander
             </Link>
           </p>
-          <div className="flex items-center justify-center gap-2 text-neutral-500">
-            <ShieldCheck size={14} />
-            <span>Données confidentielles protégées par PLEINGAZ Cameroun</span>
-          </div>
         </div>
-      </motion.div>
+      </div>
     </div>
   );
 }
