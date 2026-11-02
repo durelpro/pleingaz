@@ -6,7 +6,7 @@ generator client {
 datasource db {
   provider   = "postgresql"
   url        = env("DATABASE_URL")
-  extensions = [postgis, pg_trgm, unaccent]
+  extensions = [pg_trgm, unaccent]
 }
 
 // ==========================================
@@ -640,7 +640,10 @@ enum DeliveryStatus {
   ASSIGNED
   PICKED_UP
   IN_TRANSIT
+  DELIVERED_PENDING_CONFIRMATION
   DELIVERED
+  CONFIRMED_BY_COURIER_ONLY
+  DISPUTED
   FAILED
   CANCELLED
 }
@@ -658,6 +661,10 @@ model Delivery {
 
   pickedUpAt           DateTime?
   deliveredAt          DateTime?
+  courierConfirmedAt   DateTime?            // D-17: Horodatage quand le livreur clique "J'ai livré"
+  customerConfirmedAt  DateTime?            // D-17: Horodatage quand le client confirme "J'ai reçu"
+  disputedAt           DateTime?            // D-17: Horodatage en cas de contestation client
+  disputeReason        String?              // Motif du litige client
   failedReason         String?
 
   assignments          DeliveryAssignment[]
@@ -825,6 +832,12 @@ model PlatformSettings {
 
   supportPhone                    String   @default("+237 657696567")
   supportEmail                    String   @default("donfackdurel1980@icloud.com")
+
+  // --- New fields for pricing & limits (CR‑003) ---
+  buyerBottleLimit                Int      @default(5)          // Max bouteilles achetées par un client
+  deliveryFixedPrice              Int      @default(2000)       // Prix fixe de livraison (FCFA)
+  priceGasPerLitre                Int      @default(850)        // Prix du gaz par litre (FCFA)
+  priceBottlePerLitre             Int      @default(2500)       // Prix d'une bouteille de 12,5 kg (FCFA)
 
   updatedAt                       DateTime @updatedAt
 }

@@ -6,18 +6,11 @@ import { Lock, Shield, ArrowRight } from 'lucide-react';
 import { motion } from 'framer-motion';
 
 export default function AdminLogin() {
-  const [password, setPassword] = useState('');
-  const [error, setError] = useState('');
   const router = useRouter();
 
-  const handleLogin = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (password === 'admin123') { // Mot de passe démo
-      localStorage.setItem('pleingaz_admin_auth', 'true');
-      router.push('/admin/dashboard');
-    } else {
-      setError('Mot de passe incorrect.');
-    }
+  // Redirection souveraine vers le portail personnel officiel (D-11.4 / suppression de E1)
+  const handleRedirect = () => {
+    router.push('/login/personnel?redirect=/admin/dashboard');
   };
 
   return (
@@ -39,37 +32,22 @@ export default function AdminLogin() {
           </div>
           <h1 className="text-2xl font-bold text-white">Espace Administrateur</h1>
           <p className="text-zinc-400 text-sm mt-2 text-center">
-            Veuillez vous authentifier pour accéder à la supervision de PLEINGAZ.
+            L'accès à l'administration PLEINGAZ nécessite une authentification forte à deux facteurs (TOTP) sur le portail personnel officiel.
           </p>
         </div>
 
-        <form onSubmit={handleLogin} className="space-y-6">
-          <div>
-            <div className="relative">
-              <Lock className="absolute left-4 top-1/2 -translate-y-1/2 text-zinc-400" size={20} />
-              <input
-                type="password"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                placeholder="Mot de passe d'accès..."
-                className="w-full bg-black/50 border border-zinc-800 text-white placeholder-zinc-500 rounded-xl py-4 pl-12 pr-4 focus:outline-none focus:border-purple-500 focus:ring-1 focus:ring-purple-500 transition-all"
-                required
-              />
-            </div>
-            {error && <p className="text-red-400 text-sm mt-2 font-medium">{error}</p>}
-          </div>
-
+        <div className="space-y-4">
           <button
-            type="submit"
-            className="w-full bg-gradient-to-r from-purple-600 to-blue-600 text-white font-bold rounded-xl py-4 flex items-center justify-center gap-2 hover:opacity-90 transition-opacity"
+            onClick={handleRedirect}
+            className="w-full bg-gradient-to-r from-red-600 to-red-700 text-white font-bold rounded-xl py-4 flex items-center justify-center gap-2 hover:opacity-90 shadow-lg shadow-red-600/30 transition-all text-sm"
           >
-            Accéder au Dashboard
+            S'authentifier via le Portail Personnel (2FA)
             <ArrowRight size={18} />
           </button>
-        </form>
+        </div>
         
         <p className="text-zinc-500 text-xs text-center mt-6">
-          Démo : tapez <code className="text-purple-400 font-mono">admin123</code>
+          Conformité D-11.4 & D-12 : Authentification sécurisée obligatoire.
         </p>
       </motion.div>
 

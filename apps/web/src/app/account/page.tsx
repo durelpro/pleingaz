@@ -6,7 +6,23 @@ import { Flame, Award, ShoppingBag, MapPin, ArrowRight, ShieldCheck, LogOut, Che
 import Link from 'next/link';
 import { InfoNoticesDrawer } from '@/components/common/InfoNoticesDrawer';
 
-export default function AccountPage() {
+interface BuyerQuota {
+  phone: string;
+  consumed: number;
+  limit: number;
+  remaining: number;
+  allowed: boolean;
+  windowDays: number;
+}
+
+interface Notice {
+  id: string;
+  title: string;
+  content: string;
+  category: string;
+}
+
+export default function BuyerDashboardPage() {
   const router = useRouter();
   const [user, setUser] = useState<any>(null);
   const [quota, setQuota] = useState<{
@@ -64,28 +80,36 @@ export default function AccountPage() {
       fetch(`${apiUrl}/auth/me`, {
         headers: { Authorization: `Bearer ${token}` },
       })
-        .then((res) => (res.ok ? res.json() : null))
-        .then((data) => {
-          if (data) {
-            setUser({
-              ...data,
-              firstName: data.customerProfile?.firstName || data.phone,
-              lastName: data.customerProfile?.lastName || '',
-              loyaltyPoints: data.customerProfile?.loyaltyPoints ?? 100,
-            });
-          }
-        })
-        .catch(() => {})
-        .finally(() => setLoading(false));
-    } else {
-      setLoading(false);
-    }
-  }, []);
+      .catch(() => {
+        // Garder le quota par défaut
+      });
 
-  const handleLogout = () => {
-    localStorage.removeItem('pleingaz_token');
-    localStorage.removeItem('pleingaz_user');
-    router.push('/');
+    // 3. Chargement des annonces officielles (D-18)
+    fetch(`${API_URL}/api/v1/cr003/notices`)
+      .then((res) => (res.ok ? res.json() : null))
+      .then((notices) => {
+        if (Array.isArray(notices) && notices.length > 0) {
+          setNotice(notices[0]);
+        }
+      })
+      .catch(() => {})
+      .finally(() => setLoading(false));
+  }, [API_URL]);
+
+  // Acquittement de l'annonce officielle (D-18)
+  const handleAckNotice = async () => {
+    if (!notice) return;
+    try {
+      await fetch(`${API_URL}/api/v1/cr003/notices/ack`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          noticeId: notice.id,
+          phone: user?.phone || '+237699123456',
+        }),
+      });
+    } catch (e) {}
+    setNotice(null);
   };
 
   const points = user?.loyaltyPoints ?? 100;
@@ -115,7 +139,7 @@ export default function AccountPage() {
               title="Déconnexion"
               aria-label="Déconnexion"
             >
-              <LogOut size={18} />
+              <LogOut className="w-4 h-4" />
             </button>
           </div>
         </div>

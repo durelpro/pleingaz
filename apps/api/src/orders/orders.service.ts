@@ -39,6 +39,35 @@ export class OrdersService {
         }
       }
 
+      // 1.b Vérification Quota Acheteur (CR-003 D-14 : Max 5 bouteilles / 30 jours glissants)
+      const requestedBottles = dto.items.reduce((acc, it) => acc + (it.quantity || 0), 0);
+      const thirtyDaysAgo = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000);
+
+      const pastOrders = await tx.order.findMany({
+        where: {
+          customerId,
+          createdAt: { gte: thirtyDaysAgo },
+          status: { in: ['CONFIRMED', 'PREPARING', 'SHIPPED', 'DELIVERED'] },
+        },
+        include: { items: true },
+      });
+
+      let pastBottles = 0;
+      for (const ord of pastOrders) {
+        for (const it of ord.items) {
+          pastBottles += it.quantity;
+        }
+      }
+
+      const settings = await tx.platformSettings.findUnique({ where: { id: 'singleton' } });
+      const bottleLimit = settings?.buyerBottleLimit ?? 5;
+
+      if (pastBottles + requestedBottles > bottleLimit) {
+        throw new BadRequestException(
+          `Plafond mensuel de ${bottleLimit} bouteilles dépassé. Vous avez déjà commandé ${pastBottles} bouteille(s) ces 30 derniers jours.`
+        );
+      }
+
       // 2. Vérification des produits et calcul du montant avec prix approuvés (D-01)
       let totalAmount = 0;
       const orderItemsData: any[] = [];

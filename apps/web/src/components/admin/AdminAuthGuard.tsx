@@ -15,11 +15,26 @@ export default function AdminAuthGuard({ children }: { children: React.ReactNode
       return;
     }
 
-    const auth = localStorage.getItem("pleingaz_admin_auth");
-    if (auth !== "true") {
-      router.replace("/admin/login");
-    } else {
-      setIsAuthenticated(true);
+    try {
+      const userRaw = localStorage.getItem("pleingaz_user");
+      const legacyAuth = localStorage.getItem("pleingaz_admin_auth");
+      
+      if (userRaw) {
+        const user = JSON.parse(userRaw);
+        if (['ADMIN', 'SUPER_ADMIN', 'ACCOUNT_MANAGER', 'AUDITOR'].includes(user.role)) {
+          setIsAuthenticated(true);
+          return;
+        }
+      }
+      
+      if (legacyAuth === "true") {
+        setIsAuthenticated(true);
+        return;
+      }
+
+      router.replace("/login/personnel?redirect=" + encodeURIComponent(pathname));
+    } catch {
+      router.replace("/login/personnel?redirect=" + encodeURIComponent(pathname));
     }
   }, [router, pathname]);
 

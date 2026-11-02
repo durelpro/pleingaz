@@ -89,22 +89,24 @@ export default function Home() {
         <div className="max-w-7xl mx-auto px-4 h-20 flex items-center justify-between">
           
           <Link href="/" className="flex items-center gap-3 group">
-            <div className="w-11 h-11 rounded-2xl bg-gradient-to-tr from-[#E51A24] via-[#f02934] to-[#ff5964] flex items-center justify-center text-white shadow-lg shadow-[#E51A24]/40 group-hover:scale-105 group-hover:rotate-2 transition-all">
-              <Flame size={26} className="text-white fill-white" />
+            <div className="relative h-11 w-36 sm:w-44 flex items-center">
+              <Image
+                src="/logoprincipal.png"
+                alt="PLEINGAZ — Bouteilles toujours pleines"
+                width={176}
+                height={58}
+                className="h-full w-auto object-contain transition-transform group-hover:scale-105"
+                priority
+              />
             </div>
-            <div>
-              <span className="font-black text-2xl tracking-tight text-white block">
-                PLEIN<span className="text-[#E51A24]">GAZ</span>
-              </span>
-              <span className="text-[10px] text-red-300 font-extrabold uppercase tracking-widest block -mt-1">
-                Réseau Numérique Officiel
-              </span>
-            </div>
+            <span className="hidden sm:inline-block px-2.5 py-1 rounded-full bg-red-600/10 border border-red-600/30 text-[10px] text-red-400 font-bold uppercase tracking-wider">
+              Réseau Officiel
+            </span>
           </Link>
 
           <nav className="hidden lg:flex items-center gap-7 text-sm font-semibold text-neutral-300">
-            <Link href="/search?auto=true" className="hover:text-[#E51A24] transition-colors flex items-center gap-1.5 group">
-              <MapPin size={17} className="text-[#E51A24] group-hover:scale-110 transition-transform" />
+            <Link href="/search?auto=true" className="hover:text-red-500 transition-colors flex items-center gap-1.5 group">
+              <MapPin size={17} className="text-red-500 group-hover:scale-110 transition-transform" />
               <span>Où Trouver du Gaz ?</span>
             </Link>
             <Link href="/stores" className="hover:text-[#E51A24] transition-colors">

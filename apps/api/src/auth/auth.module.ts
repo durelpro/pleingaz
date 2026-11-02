@@ -15,9 +15,11 @@ import { WhatsAppAuthService } from './whatsapp-auth.service';
 @Module({
   imports: [
     PassportModule,
-    JwtModule.register({
-      secret: process.env.JWT_SECRET || 'fallback_secret_for_dev_only',
-      signOptions: { expiresIn: '15m' },
+    JwtModule.registerAsync({
+      useFactory: () => ({
+        secret: getRequiredJwtSecret(),
+        signOptions: { expiresIn: JWT_EXPIRATION_ACCESS },
+      }),
     }),
   ],
   providers: [AuthService, WhatsAppAuthService, JwtStrategy, RolesGuard, PermissionsGuard, JwtAuthGuard, OptionalJwtAuthGuard],

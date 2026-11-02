@@ -117,7 +117,7 @@ stateDiagram-v2
   - `ISSUED` -> `CANCELLED_BY_CREDIT_NOTE` (Génère un Avoir, AuditLog OUI).
 - **Interdites** : Modifier une facture `ISSUED` ; Supprimer une facture.
 
-## 7. Delivery (Processus de livraison avec code de confirmation)
+## 7. Delivery (Processus de livraison & Double Confirmation D-17)
 ```mermaid
 stateDiagram-v2
     [*] --> PENDING
@@ -126,9 +126,14 @@ stateDiagram-v2
     ASSIGNED --> PICKED_UP
     ASSIGNED --> CANCELLED
     PICKED_UP --> IN_TRANSIT
-    IN_TRANSIT --> DELIVERED
-    IN_TRANSIT --> FAILED
+    IN_TRANSIT --> DELIVERED_PENDING_CONFIRMATION : Livreur clique "J'ai livré"
+    IN_TRANSIT --> FAILED : Incident de livraison
+    DELIVERED_PENDING_CONFIRMATION --> DELIVERED : Client confirme "J'ai reçu"
+    DELIVERED_PENDING_CONFIRMATION --> CONFIRMED_BY_COURIER_ONLY : Timeout 2h sans litige client
+    DELIVERED_PENDING_CONFIRMATION --> DISPUTED : Client signale "Rien reçu"
     DELIVERED --> [*]
+    CONFIRMED_BY_COURIER_ONLY --> [*]
+    DISPUTED --> FAILED : Litige confirmé
     FAILED --> [*]
     CANCELLED --> [*]
 ```
@@ -136,12 +141,15 @@ stateDiagram-v2
   - `PENDING` -> `ASSIGNED` (Attribution manuelle/assistée à un livreur via `DeliveryAssignment`).
   - `ASSIGNED` -> `PICKED_UP` (Livreur confirme le retrait de la marchandise chez le distributeur).
   - `PICKED_UP` -> `IN_TRANSIT` (Livreur prend la route vers l'adresse client).
-  - `IN_TRANSIT` -> `DELIVERED` (**Obligation absolue** : Saisie par le livreur du code secret de confirmation fourni au client).
-  - `IN_TRANSIT` -> `FAILED` (Échec de livraison avec motif obligatoire parmi enum fermée, alerte Support/Logistique).
+  - `IN_TRANSIT` -> `DELIVERED_PENDING_CONFIRMATION` (Livreur clique sur "J'ai livré" avec horodatage `courierConfirmedAt` - D-17).
+  - `DELIVERED_PENDING_CONFIRMATION` -> `DELIVERED` (Acheteur confirme la bonne réception dans son espace client).
+  - `DELIVERED_PENDING_CONFIRMATION` -> `CONFIRMED_BY_COURIER_ONLY` (Expiration du délai de 2h sans contestation du client - validation automatique).
+  - `DELIVERED_PENDING_CONFIRMATION` -> `DISPUTED` (Acheteur clique sur "Je n'ai rien reçu" - ouverture immédiate d'un ticket d'incident).
+  - `IN_TRANSIT` -> `FAILED` (Échec de livraison motivé avec motif parmi enum fermée).
   - `ASSIGNED` / `PENDING` -> `CANCELLED` (Annulation client/support avant prise en charge).
 - **Interdites** :
-  - Passer à `DELIVERED` sans saisie valide du code de confirmation client.
-  - Passer directement de `ASSIGNED` à `DELIVERED` sans passer par `PICKED_UP` et `IN_TRANSIT`.
+  - Passer directement de `IN_TRANSIT` à `DELIVERED` sans passer par le premier palier de confirmation du livreur (`DELIVERED_PENDING_CONFIRMATION`).
+  - Forcer la clôture d'une livraison contestée sans instruction du dossier par le support logistique.
 
 ## 8. StockReservation
 ```mermaid
