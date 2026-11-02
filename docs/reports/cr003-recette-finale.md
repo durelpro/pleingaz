@@ -120,3 +120,18 @@ Tous les livrables ont été enregistrés sur le disque et poussés sur la branc
 ## 6. Conclusion de Recette
 
 La version issue de la mission **CR-003** garantit à PLEINGAZ une plateforme robuste, étanche, traçable au centime et à la bouteille près, sans aucun coût sortant de SMS, tout en valorisant son identité visuelle d'origine. Le projet est prêt pour le déploiement opérationnel.
+
+---
+
+## 7. Validation Souveraine du Propriétaire & Déploiement Local Réussi
+
+- **Validation Propriétaire** : Accord explicite accordé le **02 Novembre 2026** ("je valide").
+- **71 Points de Vente Officiels** : Importation complète et géolocalisée depuis le lien Google My Maps officiel (`mid=1-QaFMsM1sKrPvNInK5Hn7P-4pjvJDWc`) via `packages/database/prisma/import-mymaps.ts` dans PostgreSQL PostGIS (71 boutiques réelles, 217 inventaires).
+- **Espaces Dédiés Actifs** :
+  - Portail Acheteur dédié : `/acheteur` (jauge 5 bouteilles, réassort 1-clic, urgence 118).
+  - Portail Gestionnaire de compte dédié : `/gestionnaire` (masquage/démasquage audité, révocation de sessions, reset lockout, Maker-Checker).
+  - Centre de Contrôle Administrateur : `/admin/dashboard` (métriques réelles PostGIS, centre Maker-Checker, D-18 InfoNotices).
+  - Réseau Points de Vente : `/stores` (liste et carte des 71 dépôts et stations partenaires).
+  - Hub Professionnel Neutre : `/pro` (passerelle vers distributeurs et livreurs).
+- **Statut d'Exécution** : Backend NestJS (`localhost:3001`), Frontend Next.js (`localhost:3000`), PostgreSQL PostGIS (`5432`) et Redis (`6379`) tous opérationnels avec 100% de réponses HTTP 200.
+
