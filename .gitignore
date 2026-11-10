@@ -9,4 +9,6 @@ dist/
 .vscode/
 uploads/
 apps/api/uploads/
+packages/reportlab-lib/
+
 
