@@ -143,10 +143,22 @@ export function middleware(request: NextRequest) {
     return NextResponse.next();
   }
 
+  // 6. Protection absolue du Tunnel de Commande & Paiement (/checkout)
+  // Règle de traçabilité totale : aucun achat ni réservation sans compte authentifié
+  if (pathname.startsWith('/checkout')) {
+    if (!sessionData) {
+      const loginUrl = new URL('/login', request.url);
+      loginUrl.searchParams.set('role', 'CUSTOMER');
+      loginUrl.searchParams.set('redirect', pathname);
+      return NextResponse.redirect(loginUrl);
+    }
+    return NextResponse.next();
+  }
+
   return NextResponse.next();
 }
 
-// Configuration du matcher : intercepte TOUS les espaces protégés
+// Configuration du matcher : intercepte TOUS les espaces protégés et le checkout
 export const config = {
   matcher: [
     '/admin/:path*',
@@ -155,5 +167,6 @@ export const config = {
     '/delivery/:path*',
     '/account/:path*',
     '/acheteur/:path*',
+    '/checkout/:path*',
   ],
 };

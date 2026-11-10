@@ -17,10 +17,15 @@ import {
   Smartphone,
   PauseCircle,
   Clock,
+  Lock,
+  UserCheck,
 } from 'lucide-react';
 import Link from 'next/link';
 
 export default function CheckoutPage() {
+  const [currentUser, setCurrentUser] = useState<any>(null);
+  const [isClientLoaded, setIsClientLoaded] = useState(false);
+
   const [method, setMethod] = useState<'MTN_MOMO' | 'ORANGE_MONEY' | 'CASH'>('CASH');
   const [status, setStatus] = useState<'IDLE' | 'PROCESSING' | 'SUCCESS' | 'PAUSED'>('IDLE');
   const [phone, setPhone] = useState('699112233');
@@ -42,9 +47,30 @@ export default function CheckoutPage() {
   const [secondsRemaining, setSecondsRemaining] = useState(900); // 15 min
   const secretCode = '4815';
 
+  // Chargement et vérification de la session acheteur obligatoire
+  useEffect(() => {
+    setIsClientLoaded(true);
+    if (typeof window !== 'undefined') {
+      const stored = localStorage.getItem('pleingaz_user');
+      if (stored) {
+        try {
+          const parsed = JSON.parse(stored);
+          setCurrentUser(parsed);
+          if (parsed.phone || parsed.whatsappPhone) {
+            const userPhone = parsed.phone || parsed.whatsappPhone;
+            setPhone(userPhone);
+            setSenderMomoPhone(userPhone);
+          }
+        } catch {
+          setCurrentUser(null);
+        }
+      }
+    }
+  }, []);
+
   // Compte à rebours de réservation 15 min
   useEffect(() => {
-    if (status !== 'IDLE') return;
+    if (status !== 'IDLE' || !currentUser) return;
     const interval = setInterval(() => {
       setSecondsRemaining((prev) => {
         if (prev <= 1) {
@@ -56,7 +82,7 @@ export default function CheckoutPage() {
       });
     }, 1000);
     return () => clearInterval(interval);
-  }, [status]);
+  }, [status, currentUser]);
 
   const formatTimer = (totalSeconds: number) => {
     const mins = Math.floor(totalSeconds / 60);
@@ -91,8 +117,54 @@ export default function CheckoutPage() {
           <p className="text-xs text-gray-500">Gaz certifié scellé d&apos;usine livré chez vous à prix réglementé.</p>
         </div>
 
-        {/* Écran État : COMMANDE MISE EN PAUSE */}
-        {status === 'PAUSED' ? (
+        {/* 1. Vérification stricte : Connexion obligatoire avant toute commande */}
+        {isClientLoaded && !currentUser ? (
+          <div className="bg-white border-2 border-red-200 rounded-3xl p-6 sm:p-8 text-center space-y-5 shadow-xl">
+            <div className="w-16 h-16 bg-red-100 text-red-600 rounded-2xl flex items-center justify-center mx-auto shadow-inner">
+              <Lock size={36} />
+            </div>
+
+            <div className="space-y-2">
+              <span className="text-[11px] font-extrabold uppercase tracking-wider text-red-700 bg-red-50 border border-red-200 px-3 py-1 rounded-full">
+                Identification obligatoire (D-14)
+              </span>
+              <h2 className="text-2xl font-black text-gray-900 pt-1">
+                Connectez-vous pour commander
+              </h2>
+              <p className="text-xs sm:text-sm text-gray-600 leading-relaxed max-w-md mx-auto">
+                Pour assurer la <strong>traçabilité intégrale</strong> de votre achat, le contrôle du quota légal de 5 bouteilles et l&apos;attribution de votre code secret de remise, vous devez être connecté à votre compte acheteur.
+              </p>
+            </div>
+
+            <div className="bg-neutral-50 border border-gray-200 rounded-2xl p-4 text-left text-xs space-y-2">
+              <div className="flex items-center space-x-2 text-gray-900 font-bold">
+                <ShieldCheck size={16} className="text-emerald-600 shrink-0" />
+                <span>Garanties de traçabilité et sécurité :</span>
+              </div>
+              <ul className="text-gray-600 space-y-1.5 text-[11px] list-disc list-inside">
+                <li>Contrôle instantané du quota national (5 bouteilles max / mois).</li>
+                <li>Génération de votre code confidentiel à 4 chiffres pour la remise.</li>
+                <li>Rattachement officiel de la commande à votre numéro pour suivi en direct.</li>
+              </ul>
+            </div>
+
+            <div className="pt-2 flex flex-col sm:flex-row gap-3">
+              <Link
+                href="/login?role=CUSTOMER&redirect=/checkout"
+                className="flex-1 py-4 bg-red-600 hover:bg-red-700 text-white font-black text-sm rounded-xl shadow-lg shadow-red-600/30 flex items-center justify-center space-x-2 transition-transform active:scale-[0.98]"
+              >
+                <span>Se connecter (WhatsApp ou Mot de passe)</span>
+                <ArrowRight size={18} />
+              </Link>
+              <Link
+                href="/register?redirect=/checkout"
+                className="py-4 px-6 bg-gray-100 hover:bg-gray-200 text-gray-800 font-bold text-xs rounded-xl flex items-center justify-center transition-colors"
+              >
+                Créer un compte (1 min)
+              </Link>
+            </div>
+          </div>
+        ) : status === 'PAUSED' ? (
           <div className="bg-white border-2 border-amber-400 rounded-3xl p-6 sm:p-8 text-center space-y-5 shadow-lg">
             <div className="w-16 h-16 bg-amber-100 text-amber-600 rounded-full flex items-center justify-center mx-auto shadow-sm">
               <PauseCircle size={36} />
@@ -212,6 +284,28 @@ export default function CheckoutPage() {
         ) : (
           /* Formulaire de commande */
           <>
+            {/* Profil acheteur certifié & Traçabilité */}
+            {currentUser && (
+              <div className="bg-emerald-50/80 border border-emerald-200 rounded-2xl p-3.5 flex items-center justify-between text-xs shadow-sm">
+                <div className="flex items-center space-x-2.5">
+                  <div className="w-8 h-8 rounded-xl bg-emerald-600 text-white flex items-center justify-center font-black">
+                    <UserCheck size={16} />
+                  </div>
+                  <div>
+                    <span className="font-extrabold text-gray-900 block">
+                      Acheteur vérifié : {currentUser.firstName || 'Client'} {currentUser.lastName || ''}
+                    </span>
+                    <span className="text-[11px] font-mono text-emerald-800">
+                      N° certifié : {currentUser.phone || currentUser.whatsappPhone || phone}
+                    </span>
+                  </div>
+                </div>
+                <span className="text-[10px] font-extrabold uppercase bg-emerald-200/70 text-emerald-900 px-2.5 py-1 rounded-full border border-emerald-300">
+                  Traçabilité Active
+                </span>
+              </div>
+            )}
+
             {/* Jauge Quota & Réservation 15 min (ADR D5, D14) */}
             <div className="grid grid-cols-2 gap-3">
               <div className="bg-emerald-50 border border-emerald-200 rounded-2xl p-3 text-xs flex items-center space-x-2 text-emerald-800 font-bold">

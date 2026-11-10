@@ -300,7 +300,7 @@ export default function Home() {
                 </div>
 
                 <Link
-                  href="/search?auto=true"
+                  href="/checkout"
                   className="px-4 py-2.5 rounded-xl bg-gradient-to-r from-[#E51A24] to-[#b30d15] text-white text-xs font-black shadow-md hover:shadow-lg hover:shadow-[#E51A24]/30 hover:scale-105 active:scale-95 transition-all flex items-center gap-1.5"
                 >
                   <span>Commander</span>

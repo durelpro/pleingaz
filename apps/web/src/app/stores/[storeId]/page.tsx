@@ -137,13 +137,23 @@ export default function StoreProfilePage({ params }: { params: any }) {
                     </div>
                   </div>
                   
-                  <button 
-                    disabled={item.status !== 'En stock'}
-                    className={`mt-4 w-full py-3 rounded-xl font-bold flex items-center justify-center gap-2 transition-all ${item.status === 'En stock' ? 'bg-gray-900 dark:bg-white text-white dark:text-gray-900 hover:bg-pleingaz-red hover:text-white' : 'bg-gray-200 dark:bg-neutral-800 text-gray-400 cursor-not-allowed'}`}
-                  >
-                    <ShoppingCart size={18} />
-                    {item.status === 'En stock' ? 'Commander' : 'Indisponible'}
-                  </button>
+                  {item.status === 'En stock' ? (
+                    <Link
+                      href="/checkout"
+                      className="mt-4 w-full py-3 rounded-xl font-bold flex items-center justify-center gap-2 transition-all bg-gray-900 dark:bg-white text-white dark:text-gray-900 hover:bg-pleingaz-red hover:text-white"
+                    >
+                      <ShoppingCart size={18} />
+                      <span>Commander</span>
+                    </Link>
+                  ) : (
+                    <button 
+                      disabled
+                      className="mt-4 w-full py-3 rounded-xl font-bold flex items-center justify-center gap-2 bg-gray-200 dark:bg-neutral-800 text-gray-400 cursor-not-allowed"
+                    >
+                      <ShoppingCart size={18} />
+                      <span>Indisponible</span>
+                    </button>
+                  )}
                 </motion.div>
               ))}
             </div>
