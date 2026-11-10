@@ -4,6 +4,7 @@ import React, { useState } from 'react';
 import { Truck, CheckCircle2, PhoneCall, MessageSquare, AlertCircle, ShieldCheck, DollarSign, MapPin, Navigation, ArrowRight, Lock } from 'lucide-react';
 import Link from 'next/link';
 import { InfoNoticesDrawer } from '@/components/common/InfoNoticesDrawer';
+import { DoubleConfirmationCard } from '@/components/cr003';
 
 export default function DeliveryCourierPage() {
   const [isAvailable, setIsAvailable] = useState(true);
@@ -17,6 +18,26 @@ export default function DeliveryCourierPage() {
 
   const [todayEarnings, setTodayEarnings] = useState(6000); // 6 courses x 1000 FCFA
   const [completedCount, setCompletedCount] = useState(6);
+  const [doubleConfStatus, setDoubleConfStatus] = useState<
+    'IN_TRANSIT' | 'DELIVERED_PENDING_CONFIRMATION' | 'DELIVERED' | 'DISPUTED'
+  >('IN_TRANSIT');
+
+  const handleCourierMarkDelivered = async () => {
+    setDoubleConfStatus('DELIVERED_PENDING_CONFIRMATION');
+  };
+
+  const handleCustomerConfirmReceived = async () => {
+    setDoubleConfStatus('DELIVERED');
+    setDeliveryState('COMPLETED');
+    setTodayEarnings((prev) => prev + 1000);
+    setCompletedCount((prev) => prev + 1);
+    setCashCollected((prev) => prev + 6500);
+  };
+
+  const handleCustomerDispute = async (reason: string) => {
+    setDoubleConfStatus('DISPUTED');
+    setCodeError(`Litige signalé : ${reason}`);
+  };
 
   // Validation contradictoire par code confidentiel (ADR D9, D17)
   const handleConfirmDelivery = () => {
@@ -185,6 +206,21 @@ export default function DeliveryCourierPage() {
                 </a>
               </div>
             </div>
+
+            {/* Composant Officiel Double Confirmation Contradictoire (D-17) */}
+            <DoubleConfirmationCard
+              deliveryId="del-demo-9482"
+              orderNumber="PG-9482"
+              courierName="Paul M. (Livreur Agréé)"
+              status={doubleConfStatus}
+              courierConfirmedAt={
+                doubleConfStatus !== 'IN_TRANSIT' ? new Date().toISOString() : undefined
+              }
+              isCourierView={true}
+              onCourierMarkDelivered={handleCourierMarkDelivered}
+              onCustomerConfirmReceived={handleCustomerConfirmReceived}
+              onCustomerDispute={handleCustomerDispute}
+            />
 
             {/* Clôture Contradictoire avec Saisie du Code Confidentiel Client (ADR D9, D17) */}
             <div className="border-t border-gray-100 pt-3 space-y-3">

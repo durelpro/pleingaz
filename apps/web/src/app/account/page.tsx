@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation';
 import { Flame, Award, ShoppingBag, MapPin, ArrowRight, ShieldCheck, LogOut, CheckCircle2, AlertOctagon, RefreshCw, PhoneCall } from 'lucide-react';
 import Link from 'next/link';
 import { InfoNoticesDrawer } from '@/components/common/InfoNoticesDrawer';
+import { QuotaGauge, InfoNoticeBanner } from '@/components/cr003';
 
 interface BuyerQuota {
   phone: string;
@@ -154,9 +155,21 @@ export default function BuyerDashboardPage() {
       </header>
 
       <main className="max-w-4xl mx-auto px-4 pt-6 space-y-6">
+        {/* Bandeau d'Annonce Officielle Horodatée (ADR D18) */}
+        {notice && (
+          <InfoNoticeBanner
+            id={notice.id}
+            title={notice.title}
+            content={notice.content}
+            category={notice.category || 'INFO'}
+            requiresAck={true}
+            onAck={handleAckNotice}
+          />
+        )}
+
         {/* Encart Salutation & Jauge de Quota (ADR D14) */}
-        <section className="bg-white border border-gray-200 rounded-2xl p-6 shadow-sm">
-          <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-4">
+        <section className="bg-white border border-gray-200 rounded-2xl p-6 shadow-sm space-y-4">
+          <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
             <div>
               <h1 className="text-2xl font-black text-gray-900">
                 Bonjour, {user?.firstName || 'Paul'} !
@@ -174,45 +187,14 @@ export default function BuyerDashboardPage() {
             </div>
           </div>
 
-          {/* Jauge Visuelle de Quota 5 Bouteilles / 30 Jours */}
-          <div className="bg-gray-50 border border-gray-200 rounded-xl p-4 space-y-2">
-            <div className="flex justify-between items-center text-xs font-bold text-gray-700">
-              <span className="flex items-center gap-1.5">
-                <ShieldCheck size={16} className="text-red-600" />
-                Quota Réglementaire (30 jours glissants) :
-              </span>
-              <span className={quota.remainingCount === 0 ? 'text-red-600 font-black' : 'text-emerald-700'}>
-                {quota.usedCount} / {quota.limit} bouteilles utilisées ({quota.remainingCount} autorisées)
-              </span>
-            </div>
-
-            {/* Barre de progression */}
-            <div className="w-full bg-gray-200 h-3 rounded-full overflow-hidden">
-              <div
-                className={`h-full transition-all duration-500 ${
-                  quotaPercent >= 100
-                    ? 'bg-red-600'
-                    : quotaPercent >= 60
-                    ? 'bg-amber-500'
-                    : 'bg-emerald-500'
-                }`}
-                style={{ width: `${quotaPercent}%` }}
-              />
-            </div>
-
-            <div className="flex justify-between text-[11px] text-gray-500 pt-0.5">
-              <span>Plafond légal : 5 bouteilles max</span>
-              {quota.earliestReleaseDate && (
-                <span>
-                  Prochaine libération :{' '}
-                  {new Date(quota.earliestReleaseDate).toLocaleDateString('fr-FR', {
-                    day: 'numeric',
-                    month: 'short',
-                  })}
-                </span>
-              )}
-            </div>
-          </div>
+          {/* Jauge Visuelle de Quota 5 Bouteilles / 30 Jours Officielle (D-14) */}
+          <QuotaGauge
+            consumed={quota.usedCount}
+            limit={quota.limit}
+            remaining={quota.remainingCount}
+            phone={user?.whatsappPhone || user?.phone}
+            onOrderClick={() => router.push('/search')}
+          />
         </section>
 
         {/* Bouton Proéminent "J'ai besoin de gaz maintenant" (D-14) */}

@@ -36,8 +36,9 @@ export const WhatsAppInboundAuthCard: React.FC<WhatsAppInboundAuthCardProps> = (
     }
 
     setLoading(true);
+    const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001';
     try {
-      const res = await fetch('/api/v1/auth/challenge/initiate', {
+      const res = await fetch(`${apiUrl}/auth/challenge/initiate`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ phone, purpose: isRegisterMode ? 'REGISTER' : 'LOGIN' }),
@@ -64,8 +65,9 @@ export const WhatsAppInboundAuthCard: React.FC<WhatsAppInboundAuthCardProps> = (
     setErrorMessage(null);
     setLoading(true);
 
+    const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001';
     try {
-      const res = await fetch('/api/v1/auth/challenge/verify', {
+      const res = await fetch(`${apiUrl}/auth/challenge/verify`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ phone, code: challengeCode, portal }),
@@ -76,10 +78,22 @@ export const WhatsAppInboundAuthCard: React.FC<WhatsAppInboundAuthCardProps> = (
         throw new Error(data.message || 'Code WhatsApp incorrect');
       }
 
+      if (typeof window !== 'undefined') {
+        const userObj = data.user || {
+          phone,
+          whatsappPhone: phone,
+          role: portal,
+          firstName: portal === 'CUSTOMER' ? 'Client' : portal === 'DISTRIBUTOR' ? 'Distributeur' : 'Livreur',
+        };
+        localStorage.setItem('pleingaz_token', data.accessToken || `jwt_demo_${Date.now()}`);
+        localStorage.setItem('pleingaz_user', JSON.stringify(userObj));
+        document.cookie = `pleingaz_session=${encodeURIComponent(JSON.stringify(userObj))}; path=/; max-age=86400; SameSite=Lax`;
+      }
+
       if (onAuthenticated && data.accessToken) {
         onAuthenticated(data.accessToken);
       } else {
-        window.location.href = portal === 'CUSTOMER' ? '/account' : portal === 'DISTRIBUTOR' ? '/distributor' : '/delivery';
+        window.location.href = portal === 'CUSTOMER' ? '/account' : portal === 'DISTRIBUTOR' ? '/distributor/inventory' : '/delivery';
       }
     } catch (err: any) {
       setErrorMessage(err.message || 'Code erroné');

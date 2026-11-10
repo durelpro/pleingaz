@@ -5,12 +5,14 @@ import { useRouter } from 'next/navigation';
 import { Flame, MessageSquare, Phone, ArrowRight, ShieldCheck, CheckCircle2, Lock, Sparkles, AlertCircle } from 'lucide-react';
 import { motion } from 'framer-motion';
 import Link from 'next/link';
+import { WhatsAppInboundAuthCard } from '@/components/cr003';
 
 type UserRole = 'CUSTOMER' | 'DISTRIBUTOR' | 'COURIER';
 
 export default function LoginPage() {
   const router = useRouter();
   const [selectedRole, setSelectedRole] = useState<UserRole>('CUSTOMER');
+  const [authMode, setAuthMode] = useState<'WHATSAPP_1TAP' | 'MANUAL'>('WHATSAPP_1TAP');
   const [whatsappPhone, setWhatsappPhone] = useState('');
   const [callPhone, setCallPhone] = useState('');
   const [step, setStep] = useState<'PHONE' | 'CHALLENGE'>('PHONE');
@@ -143,118 +145,150 @@ export default function LoginPage() {
           </button>
         </div>
 
-        {error && (
-          <div className="p-3 mb-4 rounded-xl bg-red-950/60 border border-red-800 text-red-200 text-xs flex items-center gap-2">
-            <AlertCircle className="w-4 h-4 shrink-0 text-red-400" />
-            <span>{error}</span>
-          </div>
-        )}
+        {/* Onglets Choix du Mode de Connexion */}
+        <div className="flex border-b border-neutral-800 mb-6 text-xs font-bold">
+          <button
+            type="button"
+            onClick={() => setAuthMode('WHATSAPP_1TAP')}
+            className={`flex-1 py-2 text-center border-b-2 transition-all ${
+              authMode === 'WHATSAPP_1TAP'
+                ? 'border-emerald-500 text-emerald-400'
+                : 'border-transparent text-neutral-400 hover:text-white'
+            }`}
+          >
+            WhatsApp 1-Tap (D-12)
+          </button>
+          <button
+            type="button"
+            onClick={() => setAuthMode('MANUAL')}
+            className={`flex-1 py-2 text-center border-b-2 transition-all ${
+              authMode === 'MANUAL'
+                ? 'border-red-500 text-red-400'
+                : 'border-transparent text-neutral-400 hover:text-white'
+            }`}
+          >
+            Formulaire Classique
+          </button>
+        </div>
 
-        {step === 'PHONE' ? (
-          <form onSubmit={handleRequestChallenge} className="space-y-4">
-            <div>
-              <label className="block text-xs font-semibold text-neutral-300 mb-1.5">
-                Numéro WhatsApp principal (Identifiant E.164)
-              </label>
-              <div className="relative">
-                <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-neutral-500">
-                  <MessageSquare className="w-4 h-4 text-emerald-500" />
-                </div>
-                <input
-                  type="tel"
-                  placeholder="+237 699 123 456"
-                  value={whatsappPhone}
-                  onChange={(e) => setWhatsappPhone(e.target.value)}
-                  className="w-full bg-neutral-950/80 border border-neutral-800 focus:border-red-500 focus:ring-1 focus:ring-red-500 rounded-xl pl-10 pr-4 py-3 text-sm text-white placeholder-neutral-600 outline-none transition"
-                  required
-                />
-              </div>
-              <span className="text-[11px] text-neutral-500 mt-1 block">
-                Aucun SMS payant ne vous sera facturé.
-              </span>
-            </div>
-
-            <div>
-              <label className="block text-xs font-semibold text-neutral-300 mb-1.5">
-                Numéro d'appel de secours (Optionnel)
-              </label>
-              <div className="relative">
-                <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-neutral-500">
-                  <Phone className="w-4 h-4" />
-                </div>
-                <input
-                  type="tel"
-                  placeholder="+237 677 654 321"
-                  value={callPhone}
-                  onChange={(e) => setCallPhone(e.target.value)}
-                  className="w-full bg-neutral-950/80 border border-neutral-800 focus:border-red-500 focus:ring-1 focus:ring-red-500 rounded-xl pl-10 pr-4 py-3 text-sm text-white placeholder-neutral-600 outline-none transition"
-                />
-              </div>
-            </div>
-
-            <button
-              type="submit"
-              className="w-full py-3.5 px-4 bg-emerald-600 hover:bg-emerald-500 active:scale-[0.99] text-white font-bold text-sm rounded-xl shadow-lg shadow-emerald-600/25 flex items-center justify-center gap-2 transition duration-200 mt-2"
-            >
-              <MessageSquare className="w-4 h-4" />
-              <span>Recevoir le défi WhatsApp</span>
-              <ArrowRight className="w-4 h-4" />
-            </button>
-          </form>
+        {authMode === 'WHATSAPP_1TAP' ? (
+          <WhatsAppInboundAuthCard portal={selectedRole} />
         ) : (
-          <div className="space-y-5 text-center">
-            <div className="p-4 bg-emerald-950/40 border border-emerald-800/60 rounded-2xl text-left">
-              <span className="text-xs font-bold text-emerald-400 block mb-1">
-                💬 Étape 1 : Envoyez ce code sur WhatsApp
-              </span>
-              <p className="text-xs text-neutral-300 mb-3">
-                Pour prouver votre numéro sans frais, envoyez ce message prérempli au numéro officiel PLEINGAZ :
-              </p>
-              
-              <div className="flex items-center justify-between p-3 bg-neutral-950 rounded-xl border border-neutral-800">
-                <span className="font-mono font-bold text-base text-amber-400 tracking-wider">
-                  {challengeCode}
-                </span>
-                <a
-                  href={`https://wa.me/237657696567?text=${encodeURIComponent(challengeCode)}`}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="px-3 py-1.5 bg-emerald-600 text-white text-xs font-bold rounded-lg hover:bg-emerald-500 transition"
-                >
-                  Ouvrir WhatsApp ↗
-                </a>
+          <>
+            {error && (
+              <div className="p-3 mb-4 rounded-xl bg-red-950/60 border border-red-800 text-red-200 text-xs flex items-center gap-2">
+                <AlertCircle className="w-4 h-4 shrink-0 text-red-400" />
+                <span>{error}</span>
               </div>
-            </div>
+            )}
 
-            <div className="text-left space-y-2">
-              <span className="text-xs font-bold text-neutral-300 block">
-                ⚡ Étape 2 : Confirmation instantanée
-              </span>
-              <button
-                type="button"
-                onClick={handleVerify}
-                disabled={loading}
-                className="w-full py-3 px-4 bg-red-600 hover:bg-red-500 text-white font-bold text-sm rounded-xl shadow-lg shadow-red-600/30 flex items-center justify-center gap-2 transition"
-              >
-                {loading ? (
-                  <span className="inline-block animate-spin w-4 h-4 border-2 border-white border-t-transparent rounded-full" />
-                ) : (
-                  <>
-                    <CheckCircle2 className="w-4 h-4 text-emerald-300" />
-                    <span>J'ai envoyé le message • Me connecter</span>
-                  </>
-                )}
-              </button>
+            {step === 'PHONE' ? (
+              <form onSubmit={handleRequestChallenge} className="space-y-4">
+                <div>
+                  <label className="block text-xs font-semibold text-neutral-300 mb-1.5">
+                    Numéro WhatsApp principal (Identifiant E.164)
+                  </label>
+                  <div className="relative">
+                    <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-neutral-500">
+                      <MessageSquare className="w-4 h-4 text-emerald-500" />
+                    </div>
+                    <input
+                      type="tel"
+                      placeholder="+237 699 123 456"
+                      value={whatsappPhone}
+                      onChange={(e) => setWhatsappPhone(e.target.value)}
+                      className="w-full bg-neutral-950/80 border border-neutral-800 focus:border-red-500 focus:ring-1 focus:ring-red-500 rounded-xl pl-10 pr-4 py-3 text-sm text-white placeholder-neutral-600 outline-none transition"
+                      required
+                    />
+                  </div>
+                  <span className="text-[11px] text-neutral-500 mt-1 block">
+                    Aucun SMS payant ne vous sera facturé.
+                  </span>
+                </div>
 
-              <button
-                type="button"
-                onClick={() => setStep('PHONE')}
-                className="w-full py-2 text-xs text-neutral-500 hover:text-neutral-300 transition"
-              >
-                ← Changer de numéro
-              </button>
-            </div>
-          </div>
+                <div>
+                  <label className="block text-xs font-semibold text-neutral-300 mb-1.5">
+                    Numéro d'appel de secours (Optionnel)
+                  </label>
+                  <div className="relative">
+                    <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-neutral-500">
+                      <Phone className="w-4 h-4" />
+                    </div>
+                    <input
+                      type="tel"
+                      placeholder="+237 677 654 321"
+                      value={callPhone}
+                      onChange={(e) => setCallPhone(e.target.value)}
+                      className="w-full bg-neutral-950/80 border border-neutral-800 focus:border-red-500 focus:ring-1 focus:ring-red-500 rounded-xl pl-10 pr-4 py-3 text-sm text-white placeholder-neutral-600 outline-none transition"
+                    />
+                  </div>
+                </div>
+
+                <button
+                  type="submit"
+                  className="w-full py-3.5 px-4 bg-emerald-600 hover:bg-emerald-500 active:scale-[0.99] text-white font-bold text-sm rounded-xl shadow-lg shadow-emerald-600/25 flex items-center justify-center gap-2 transition duration-200 mt-2"
+                >
+                  <MessageSquare className="w-4 h-4" />
+                  <span>Recevoir le défi WhatsApp</span>
+                  <ArrowRight className="w-4 h-4" />
+                </button>
+              </form>
+            ) : (
+              <div className="space-y-5 text-center">
+                <div className="p-4 bg-emerald-950/40 border border-emerald-800/60 rounded-2xl text-left">
+                  <span className="text-xs font-bold text-emerald-400 block mb-1">
+                    💬 Étape 1 : Envoyez ce code sur WhatsApp
+                  </span>
+                  <p className="text-xs text-neutral-300 mb-3">
+                    Pour prouver votre numéro sans frais, envoyez ce message prérempli au numéro officiel PLEINGAZ :
+                  </p>
+                  
+                  <div className="flex items-center justify-between p-3 bg-neutral-950 rounded-xl border border-neutral-800">
+                    <span className="font-mono font-bold text-base text-amber-400 tracking-wider">
+                      {challengeCode}
+                    </span>
+                    <a
+                      href={`https://wa.me/237657696567?text=${encodeURIComponent(challengeCode)}`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="px-3 py-1.5 bg-emerald-600 text-white text-xs font-bold rounded-lg hover:bg-emerald-500 transition"
+                    >
+                      Ouvrir WhatsApp ↗
+                    </a>
+                  </div>
+                </div>
+
+                <div className="text-left space-y-2">
+                  <span className="text-xs font-bold text-neutral-300 block">
+                    ⚡ Étape 2 : Confirmation instantanée
+                  </span>
+                  <button
+                    type="button"
+                    onClick={handleVerify}
+                    disabled={loading}
+                    className="w-full py-3 px-4 bg-red-600 hover:bg-red-500 text-white font-bold text-sm rounded-xl shadow-lg shadow-red-600/30 flex items-center justify-center gap-2 transition"
+                  >
+                    {loading ? (
+                      <span className="inline-block animate-spin w-4 h-4 border-2 border-white border-t-transparent rounded-full" />
+                    ) : (
+                      <>
+                        <CheckCircle2 className="w-4 h-4 text-emerald-300" />
+                        <span>J'ai envoyé le message • Me connecter</span>
+                      </>
+                    )}
+                  </button>
+
+                  <button
+                    type="button"
+                    onClick={() => setStep('PHONE')}
+                    className="w-full py-2 text-xs text-neutral-500 hover:text-neutral-300 transition"
+                  >
+                    ← Changer de numéro
+                  </button>
+                </div>
+              </div>
+            )}
+          </>
         )}
 
         {/* Footer & Liens mot de passe et personnel */}

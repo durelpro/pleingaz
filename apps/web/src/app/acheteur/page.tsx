@@ -9,6 +9,7 @@ import {
 } from 'lucide-react';
 import Link from 'next/link';
 import { InfoNoticesDrawer } from '@/components/common/InfoNoticesDrawer';
+import { QuotaGauge } from '@/components/cr003';
 
 export default function EspaceAcheteurPage() {
   // Quota légal 5 bouteilles / 30 jours glissants (D-14)
@@ -126,41 +127,14 @@ export default function EspaceAcheteurPage() {
             </div>
           </div>
 
-          {/* Jauge Quota 5 Bouteilles / 30 Jours (D-14) */}
-          <div className="bg-neutral-900 border border-neutral-800 p-6 rounded-3xl flex flex-col justify-between space-y-4 shadow-xl">
-            <div>
-              <div className="flex items-center justify-between text-neutral-400 mb-1">
-                <span className="text-xs font-bold uppercase tracking-wider">Plafond Réglementaire</span>
-                <ShieldCheck size={16} className="text-emerald-400" />
-              </div>
-              <h2 className="text-base font-black text-white">Quota Ménage (30 jours)</h2>
-              <p className="text-xs text-neutral-400 mt-1">
-                Loi anti-spéculation : limité à 5 bouteilles par période glissante de 30 jours.
-              </p>
-            </div>
-
-            <div className="space-y-2">
-              <div className="flex items-end justify-between">
-                <span className="text-3xl font-black text-white">
-                  {quota.used} <span className="text-base font-normal text-neutral-500">/ {quota.limit}</span>
-                </span>
-                <span className="text-xs text-emerald-400 font-bold bg-emerald-500/10 px-2 py-0.5 rounded-lg border border-emerald-500/20">
-                  {quota.remaining} disponibles
-                </span>
-              </div>
-
-              {/* Barre de progression */}
-              <div className="w-full bg-neutral-800 rounded-full h-3 overflow-hidden p-0.5 border border-neutral-700">
-                <div 
-                  className="bg-gradient-to-r from-emerald-500 via-amber-500 to-[#E51A24] h-full rounded-full transition-all duration-500"
-                  style={{ width: `${(quota.used / quota.limit) * 100}%` }}
-                />
-              </div>
-
-              <span className="text-[11px] text-neutral-500 block pt-1">
-                Prochaine libération de quota : <strong>{quota.earliestReleaseDate}</strong>
-              </span>
-            </div>
+          {/* Jauge Quota 5 Bouteilles / 30 Jours Officielle (D-14) */}
+          <div className="flex flex-col justify-between">
+            <QuotaGauge
+              consumed={quota.used}
+              limit={quota.limit}
+              remaining={quota.remaining}
+              onOrderClick={() => {}}
+            />
           </div>
 
         </div>
