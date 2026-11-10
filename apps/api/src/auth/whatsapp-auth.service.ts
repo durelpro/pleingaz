@@ -29,7 +29,7 @@ export interface LoginWithWhatsAppDto {
 
 @Injectable()
 export class WhatsAppAuthService {
-  private readonly OFFICIAL_WHATSAPP_NUMBER = process.env.WHATSAPP_OFFICIAL_NUMBER || '+237699000000';
+  private readonly OFFICIAL_WHATSAPP_NUMBER = process.env.WHATSAPP_OFFICIAL_NUMBER || '+237657696567';
   private readonly CHALLENGE_TTL_MS = 10 * 60 * 1000; // 10 minutes
   private readonly MAX_ATTEMPTS = 5;
 
@@ -403,5 +403,86 @@ export class WhatsAppAuthService {
     });
 
     return { accessToken, refreshToken };
+  }
+
+  /**
+   * Réinitialisation de mot de passe par vérification de défi WhatsApp
+   */
+  async resetPasswordWithWhatsApp(dto: {
+    phone: string;
+    code: string;
+    newPassword?: string;
+  }) {
+    const cleanPhone = this.normalizeE164(dto.phone);
+
+    const activeChallenges = await this.prisma.verificationChallenge.findMany({
+      where: {
+        phone: cleanPhone,
+        purpose: 'PASSWORD_RESET',
+        consumedAt: null,
+        expiresAt: { gt: new Date() },
+      },
+      orderBy: { createdAt: 'desc' },
+      take: 3,
+    });
+
+    if (!activeChallenges || activeChallenges.length === 0) {
+      throw new BadRequestException('Aucune demande de réinitialisation en cours ou code expiré.');
+    }
+
+    let matchingChallenge = null;
+    const cleanCode = dto.code.trim().toUpperCase();
+
+    for (const ch of activeChallenges) {
+      if (ch.attempts >= this.MAX_ATTEMPTS) {
+        continue;
+      }
+      const isMatch = await argon2.verify(ch.codeHash, cleanCode);
+      if (isMatch) {
+        matchingChallenge = ch;
+        break;
+      } else {
+        await this.prisma.verificationChallenge.update({
+          where: { id: ch.id },
+          data: { attempts: { increment: 1 } },
+        });
+      }
+    }
+
+    if (!matchingChallenge) {
+      throw new BadRequestException('Code de confirmation incorrect.');
+    }
+
+    // Marquer le défi comme consommé
+    await this.prisma.verificationChallenge.update({
+      where: { id: matchingChallenge.id },
+      data: { consumedAt: new Date() },
+    });
+
+    // Mettre à jour le mot de passe
+    const user = await this.prisma.user.findFirst({
+      where: { OR: [{ phone: cleanPhone }, { whatsappPhone: cleanPhone }] },
+    });
+
+    if (!user) {
+      throw new NotFoundException('Utilisateur introuvable.');
+    }
+
+    const newPass = dto.newPassword || 'Pleingaz2026!';
+    const passwordHash = await argon2.hash(newPass);
+
+    await this.prisma.user.update({
+      where: { id: user.id },
+      data: {
+        passwordHash,
+        failedAttempts: 0,
+        lockedUntil: null,
+      },
+    });
+
+    return {
+      success: true,
+      message: 'Mot de passe réinitialisé avec succès.',
+    };
   }
 }

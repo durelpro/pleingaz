@@ -231,4 +231,41 @@ export class AuthController {
       accessToken: result.tokens.accessToken,
     };
   }
+
+  /**
+   * Demande de réinitialisation de mot de passe par WhatsApp (100% gratuit)
+   */
+  @Post('forgot-password/initiate')
+  @HttpCode(HttpStatus.OK)
+  async forgotPasswordInitiate(
+    @Body() body: { phone: string },
+    @Req() req: Request,
+  ) {
+    const forwarded = req.headers ? req.headers['x-forwarded-for'] : undefined;
+    const ipAddress =
+      (Array.isArray(forwarded)
+        ? forwarded[0]
+        : (forwarded as string | undefined)) || req.socket?.remoteAddress;
+    return this.whatsAppAuthService.initiateChallenge({
+      phone: body.phone,
+      purpose: 'PASSWORD_RESET',
+      ipAddress,
+    });
+  }
+
+  /**
+   * Validation du code WhatsApp et réinitialisation du mot de passe
+   */
+  @Post('forgot-password/reset')
+  @HttpCode(HttpStatus.OK)
+  async forgotPasswordReset(
+    @Body()
+    body: {
+      phone: string;
+      code: string;
+      newPassword?: string;
+    },
+  ) {
+    return this.whatsAppAuthService.resetPasswordWithWhatsApp(body);
+  }
 }

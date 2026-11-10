@@ -237,6 +237,90 @@ export default function AdminControlCenterDashboard() {
           )}
         </div>
 
+        {/* Section 1.5 : Approbation Administrative des Nouveaux Comptes (Distributeurs & Gestionnaires) */}
+        <div className="bg-neutral-900 border border-neutral-800 rounded-2xl p-6 space-y-4">
+          <div className="flex items-center justify-between">
+            <div>
+              <h2 className="text-base font-black text-white flex items-center gap-2">
+                <Users size={18} className="text-amber-400" />
+                Approbation des Nouveaux Profils (Gestionnaires & Distributeurs)
+              </h2>
+              <p className="text-xs text-neutral-400 mt-0.5">
+                Conformité stricte : Aucun gestionnaire ni distributeur ne peut opérer sans agrément préalable du Super Administrateur.
+              </p>
+            </div>
+            <span className="text-xs bg-amber-500/20 text-amber-300 px-2.5 py-1 rounded-full border border-amber-500/30 font-bold">
+              2 dossiers en attente
+            </span>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            {/* Dossier Gestionnaire */}
+            <div className="p-4 bg-neutral-950 border border-neutral-800 rounded-xl space-y-3">
+              <div className="flex items-center justify-between">
+                <span className="text-[10px] font-extrabold uppercase px-2 py-0.5 rounded bg-sky-500/20 text-sky-400 border border-sky-500/30">
+                  Gestionnaire de compte
+                </span>
+                <span className="text-xs text-neutral-500">Inscrit il y a 35 min</span>
+              </div>
+              <div>
+                <h3 className="font-bold text-sm text-white">Jean-Paul Kamga</h3>
+                <p className="text-xs text-neutral-400 font-mono">+237 657 88 99 00 • Agence Akwa</p>
+                <p className="text-xs text-neutral-400 mt-1">Dossier habilitation support niveau 1 & litiges clients.</p>
+              </div>
+              <div className="flex gap-2 pt-1">
+                <button
+                  type="button"
+                  onClick={() => showToast('Compte Gestionnaire de Jean-Paul Kamga APPROUVÉ avec succès.')}
+                  className="flex-1 py-2 bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs rounded-lg transition-colors flex items-center justify-center gap-1 shadow-sm"
+                >
+                  <Check size={14} />
+                  <span>Valider l&apos;accès</span>
+                </button>
+                <button
+                  type="button"
+                  onClick={() => showToast('Demande Gestionnaire rejetée.')}
+                  className="py-2 px-3 bg-neutral-800 hover:bg-neutral-700 text-neutral-300 font-bold text-xs rounded-lg transition-colors"
+                >
+                  Refuser
+                </button>
+              </div>
+            </div>
+
+            {/* Dossier Distributeur */}
+            <div className="p-4 bg-neutral-950 border border-neutral-800 rounded-xl space-y-3">
+              <div className="flex items-center justify-between">
+                <span className="text-[10px] font-extrabold uppercase px-2 py-0.5 rounded bg-amber-500/20 text-amber-400 border border-amber-500/30">
+                  Distributeur / Revendeur
+                </span>
+                <span className="text-xs text-neutral-500">Inscrit il y a 1h 10</span>
+              </div>
+              <div>
+                <h3 className="font-bold text-sm text-white">Dépôt Gaz Biyem-Assi Acacias</h3>
+                <p className="text-xs text-neutral-400 font-mono">+237 675 22 33 44 • Yaoundé</p>
+                <p className="text-xs text-neutral-400 mt-1">Pièces CNI + photo façade boutique vérifiées conformes.</p>
+              </div>
+              <div className="flex gap-2 pt-1">
+                <button
+                  type="button"
+                  onClick={() => showToast('Dépôt Biyem-Assi Acacias validé et rattaché au réseau officiel PLEINGAZ.')}
+                  className="flex-1 py-2 bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs rounded-lg transition-colors flex items-center justify-center gap-1 shadow-sm"
+                >
+                  <Check size={14} />
+                  <span>Valider l&apos;agrément</span>
+                </button>
+                <button
+                  type="button"
+                  onClick={() => showToast('Dossier distributeur mis en attente de complément.')}
+                  className="py-2 px-3 bg-neutral-800 hover:bg-neutral-700 text-neutral-300 font-bold text-xs rounded-lg transition-colors"
+                >
+                  Refuser
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+
         {/* Section 2 : Annonces Administratives Ciblées (D-18 / T5) */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
           

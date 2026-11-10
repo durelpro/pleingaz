@@ -177,9 +177,12 @@ export default function StaffLoginPage() {
           </button>
         </form>
 
-        <div className="mt-6 pt-4 border-t border-slate-800 text-center">
-          <Link href="/login" className="text-xs text-slate-500 hover:text-slate-300 transition">
-            ← Retour au portail public
+        <div className="mt-6 pt-4 border-t border-slate-800 flex items-center justify-between text-xs text-slate-500">
+          <Link href="/forgot-password" className="hover:text-sky-400 transition underline underline-offset-2">
+            Mot de passe oublié ?
+          </Link>
+          <Link href="/login" className="hover:text-slate-300 transition">
+            ← Portail public
           </Link>
         </div>
       </motion.div>

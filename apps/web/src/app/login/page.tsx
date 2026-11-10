@@ -216,7 +216,7 @@ export default function LoginPage() {
                   {challengeCode}
                 </span>
                 <a
-                  href={`https://wa.me/237600000000?text=${encodeURIComponent(challengeCode)}`}
+                  href={`https://wa.me/237657696567?text=${encodeURIComponent(challengeCode)}`}
                   target="_blank"
                   rel="noopener noreferrer"
                   className="px-3 py-1.5 bg-emerald-600 text-white text-xs font-bold rounded-lg hover:bg-emerald-500 transition"
@@ -257,13 +257,18 @@ export default function LoginPage() {
           </div>
         )}
 
-        {/* Footer & Lien personnel masqué */}
-        <div className="mt-8 pt-4 border-t border-neutral-800/80 flex flex-col gap-2 text-center text-xs text-neutral-400">
-          <div>
-            Pas encore inscrit ?{' '}
-            <Link href="/register" className="text-red-400 hover:text-red-300 font-semibold underline underline-offset-2">
-              Créer un compte
+        {/* Footer & Liens mot de passe et personnel */}
+        <div className="mt-8 pt-4 border-t border-neutral-800/80 flex flex-col gap-2.5 text-center text-xs text-neutral-400">
+          <div className="flex items-center justify-between px-1">
+            <Link href="/forgot-password" className="text-neutral-400 hover:text-white transition-colors underline underline-offset-2">
+              Mot de passe oublié ?
             </Link>
+            <div>
+              Pas encore inscrit ?{' '}
+              <Link href="/register" className="text-red-400 hover:text-red-300 font-semibold underline underline-offset-2">
+                Créer un compte
+              </Link>
+            </div>
           </div>
           <div className="pt-2">
             <Link
@@ -271,7 +276,7 @@ export default function LoginPage() {
               className="text-[11px] text-neutral-500 hover:text-neutral-300 transition flex items-center justify-center gap-1"
             >
               <Lock className="w-3 h-3 text-neutral-600" />
-              <span>Accès réservé au personnel (2FA)</span>
+              <span>Accès réservé au personnel & gestionnaires (2FA)</span>
             </Link>
           </div>
         </div>
