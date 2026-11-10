@@ -16,7 +16,11 @@ import { RolesGuard } from '../auth/guards/roles.guard';
 import { Roles } from '../auth/decorators/roles.decorator';
 import { CurrentUser } from '../auth/decorators/current-user.decorator';
 import { RoleName } from '../auth/constants/roles.enum';
-import { InitiatePaymentDto } from './dto/payment.dto';
+import {
+  InitiatePaymentDto,
+  SubmitManualTransferDto,
+  ConfirmManualPaymentDto,
+} from './dto/payment.dto';
 import {
   CreatePayoutBatchDto,
   ApprovePayoutDto,
@@ -30,6 +34,57 @@ export class PaymentsController {
     private readonly payoutService: PayoutService,
     private readonly ledgerService: LedgerService,
   ) {}
+
+  /**
+   * Numéros officiels de transfert Mobile Money (Orange Money & MTN MoMo)
+   */
+  @Get('official-accounts')
+  async getOfficialAccounts(): Promise<any> {
+    return this.paymentsService.getOfficialPaymentAccounts();
+  }
+
+  /**
+   * Soumission par le client de la preuve de transfert P2P Mobile Money
+   */
+  @Post('submit-manual-transfer')
+  async submitManualTransfer(
+    @Body() dto: SubmitManualTransferDto,
+  ): Promise<any> {
+    return this.paymentsService.submitManualTransfer(dto);
+  }
+
+  /**
+   * Validation d'un transfert manuel par le superviseur / admin PLEINGAZ
+   */
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(
+    RoleName.ADMIN_FINANCE,
+    RoleName.SUPER_ADMIN,
+    RoleName.ADMIN_SUPPORT,
+    RoleName.DISTRIBUTOR,
+  )
+  @Post(':id/confirm-manual')
+  async confirmManualPayment(
+    @CurrentUser('id') adminId: string,
+    @Param('id') paymentId: string,
+    @Body() dto: ConfirmManualPaymentDto,
+  ): Promise<any> {
+    return this.paymentsService.confirmManualPayment(
+      adminId,
+      paymentId,
+      dto.notes,
+    );
+  }
+
+  /**
+   * Mise en pause d'une commande suite à délai d'attente de paiement dépassé
+   */
+  @Post('orders/:orderId/pause')
+  async pauseOrderForUnpaidTimeout(
+    @Param('orderId') orderId: string,
+  ): Promise<any> {
+    return this.paymentsService.pauseOrderForUnpaidTimeout(orderId);
+  }
 
   /**
    * D-06: Initiation de paiement MoMo / OM / Cash

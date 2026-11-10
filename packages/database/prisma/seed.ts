@@ -69,9 +69,15 @@ async function main() {
   // ==========================================
   await prisma.platformSettings.upsert({
     where: { id: 'singleton' },
-    update: {},
+    update: {
+      adminOrangeNumber: '657696567',
+      adminMomoNumber: '675119989',
+      supportPhone: '+237 657696567',
+    },
     create: {
       id: 'singleton',
+      adminOrangeNumber: '657696567',
+      adminMomoNumber: '675119989',
       searchDefaultRadiusKm: 5,
       searchGpsTimeoutSeconds: 8,
       maxCashHoldingCourier: 50000,
