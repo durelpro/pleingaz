@@ -36,9 +36,16 @@ export default function BuyerDashboardPage() {
     limit: 5,
     earliestReleaseDate: null,
   });
+  const [notice, setNotice] = useState<any>(null);
   const [loading, setLoading] = useState(true);
 
   const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001';
+
+  const handleLogout = () => {
+    localStorage.removeItem('pleingaz_token');
+    localStorage.removeItem('pleingaz_user');
+    router.push('/login');
+  };
 
   useEffect(() => {
     const storedUser = localStorage.getItem('pleingaz_user');
@@ -83,9 +90,10 @@ export default function BuyerDashboardPage() {
       .catch(() => {
         // Garder le quota par défaut
       });
+    }
 
     // 3. Chargement des annonces officielles (D-18)
-    fetch(`${API_URL}/api/v1/cr003/notices`)
+    fetch(`${apiUrl}/api/v1/cr003/notices`)
       .then((res) => (res.ok ? res.json() : null))
       .then((notices) => {
         if (Array.isArray(notices) && notices.length > 0) {
@@ -94,13 +102,13 @@ export default function BuyerDashboardPage() {
       })
       .catch(() => {})
       .finally(() => setLoading(false));
-  }, [API_URL]);
+  }, [apiUrl]);
 
   // Acquittement de l'annonce officielle (D-18)
   const handleAckNotice = async () => {
     if (!notice) return;
     try {
-      await fetch(`${API_URL}/api/v1/cr003/notices/ack`, {
+      await fetch(`${apiUrl}/api/v1/cr003/notices/ack`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
