@@ -53,8 +53,8 @@ export class OrdersService {
       });
 
       let pastBottles = 0;
-      for (const ord of pastOrders) {
-        for (const it of ord.items) {
+      for (const ord of (pastOrders || [])) {
+        for (const it of (ord?.items || [])) {
           pastBottles += it.quantity;
         }
       }

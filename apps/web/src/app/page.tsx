@@ -104,16 +104,22 @@ export default function Home() {
             </span>
           </Link>
 
-          <nav className="hidden lg:flex items-center gap-7 text-sm font-semibold text-neutral-300">
+          <nav className="hidden lg:flex items-center gap-6 text-sm font-semibold text-neutral-300">
             <Link href="/search?auto=true" className="hover:text-red-500 transition-colors flex items-center gap-1.5 group">
               <MapPin size={17} className="text-red-500 group-hover:scale-110 transition-transform" />
               <span>Où Trouver du Gaz ?</span>
             </Link>
             <Link href="/stores" className="hover:text-[#E51A24] transition-colors">
-              Points de Vente Agréés (71)
+              Points de Vente (71)
             </Link>
-            <Link href="/support" className="hover:text-[#E51A24] transition-colors flex items-center gap-1.5">
-              <span>Aide & Sécurité</span>
+            <Link href="/tarifs" className="hover:text-[#E51A24] transition-colors">
+              Tarifs
+            </Link>
+            <Link href="/support/securite" className="hover:text-amber-400 transition-colors flex items-center gap-1.5">
+              <span>Sécurité Gaz</span>
+            </Link>
+            <Link href="/faq" className="hover:text-[#E51A24] transition-colors">
+              FAQ
             </Link>
           </nav>
 
@@ -393,18 +399,129 @@ export default function Home() {
         </div>
       </section>
 
-      {/* Footer Officiel avec lien discret Espace professionnel (R-01 / T3) */}
-      <footer className="border-t border-[#E51A24]/20 py-10 px-4 text-center text-xs text-neutral-500 space-y-3">
-        <p className="text-neutral-400 font-semibold">
-          © 2026 PLEINGAZ S.A. (Distribué par INFOTECH S.A.) — Tous droits réservés.
-        </p>
-        <p className="max-w-2xl mx-auto text-[11px] text-neutral-500">
-          Distribution exclusive de gaz domestique au Cameroun sous barèmes officiels homologués par le Ministère du Commerce. Aucune majoration non autorisée.
-        </p>
-        <div className="pt-4 border-t border-neutral-900 max-w-xs mx-auto">
-          <Link href="/pro" className="text-[11px] text-neutral-600 hover:text-neutral-400 transition-colors">
-            Espace professionnel
-          </Link>
+      {/* Footer Officiel Enrichi */}
+      <footer className="border-t border-[#E51A24]/20 pt-16 pb-12 px-4 bg-[#080404] text-xs text-neutral-400">
+        <div className="max-w-6xl mx-auto grid grid-cols-1 md:grid-cols-4 gap-8 pb-12 border-b border-neutral-800">
+          
+          {/* Colonne 1 : Entreprise */}
+          <div className="space-y-3">
+            <div className="flex items-center gap-2">
+              <span className="w-8 h-8 rounded-lg bg-[#E51A24] flex items-center justify-center text-white font-black text-sm">
+                PG
+              </span>
+              <span className="font-black text-base text-white tracking-tight">
+                PLEINGAZ S.A.
+              </span>
+            </div>
+            <p className="text-xs text-neutral-400 leading-relaxed">
+              Distribué au Cameroun par <strong>INFOTECH S.A.</strong> Bouteilles scellées, pesées et garanties au prix officiel national homologué par la CSPH.
+            </p>
+            <div className="text-[11px] text-neutral-500">
+              Douala, République du Cameroun
+            </div>
+          </div>
+
+          {/* Colonne 2 : Le Réseau */}
+          <div className="space-y-3">
+            <h4 className="font-bold text-sm text-white uppercase tracking-wider text-[11px]">
+              Le Réseau
+            </h4>
+            <ul className="space-y-2 text-xs">
+              <li>
+                <Link href="/search?auto=true" className="hover:text-red-400 transition-colors">
+                  Où trouver du gaz maintenant ?
+                </Link>
+              </li>
+              <li>
+                <Link href="/stores" className="hover:text-red-400 transition-colors">
+                  Points de vente agréés (71)
+                </Link>
+              </li>
+              <li>
+                <Link href="/tarifs" className="hover:text-red-400 transition-colors">
+                  Barème officiel des prix
+                </Link>
+              </li>
+              <li>
+                <Link href="/acheteur" className="hover:text-red-400 transition-colors">
+                  Espace Acheteur &amp; Jauge Quota
+                </Link>
+              </li>
+            </ul>
+          </div>
+
+          {/* Colonne 3 : Assistance & Sécurité */}
+          <div className="space-y-3">
+            <h4 className="font-bold text-sm text-white uppercase tracking-wider text-[11px]">
+              Assistance &amp; Sécurité
+            </h4>
+            <ul className="space-y-2 text-xs">
+              <li>
+                <Link href="/support/securite" className="text-amber-400 hover:text-amber-300 font-semibold transition-colors flex items-center gap-1">
+                  <span>Prévention fuite &amp; Urgence (118)</span>
+                </Link>
+              </li>
+              <li>
+                <Link href="/faq" className="hover:text-red-400 transition-colors">
+                  Foire aux questions (FAQ)
+                </Link>
+              </li>
+              <li>
+                <Link href="/support" className="hover:text-red-400 transition-colors">
+                  Service client &amp; WhatsApp
+                </Link>
+              </li>
+              <li>
+                <a href="tel:118" className="hover:text-red-400 transition-colors">
+                  Sapeurs-pompiers : Composer le 118
+                </a>
+              </li>
+            </ul>
+          </div>
+
+          {/* Colonne 4 : Informations Légales */}
+          <div className="space-y-3">
+            <h4 className="font-bold text-sm text-white uppercase tracking-wider text-[11px]">
+              Informations Légales
+            </h4>
+            <ul className="space-y-2 text-xs">
+              <li>
+                <Link href="/a-propos" className="hover:text-red-400 transition-colors">
+                  À propos d&apos;INFOTECH S.A.
+                </Link>
+              </li>
+              <li>
+                <Link href="/mentions-legales" className="hover:text-red-400 transition-colors">
+                  Mentions Légales
+                </Link>
+              </li>
+              <li>
+                <Link href="/cgu" className="hover:text-red-400 transition-colors">
+                  Conditions Générales (CGU)
+                </Link>
+              </li>
+              <li>
+                <Link href="/confidentialite" className="hover:text-red-400 transition-colors">
+                  Protection des données (ANTIC)
+                </Link>
+              </li>
+              <li>
+                <Link href="/pro" className="text-neutral-500 hover:text-neutral-300 transition-colors">
+                  Portail professionnel (Distributeurs &amp; Livreurs)
+                </Link>
+              </li>
+            </ul>
+          </div>
+
+        </div>
+
+        <div className="max-w-6xl mx-auto pt-6 flex flex-col sm:flex-row items-center justify-between gap-3 text-center sm:text-left text-[11px] text-neutral-500">
+          <p>
+            © 2026 PLEINGAZ (INFOTECH S.A.) — Tous droits réservés. Distribution exclusive au Cameroun.
+          </p>
+          <p>
+            Conforme aux normes du Ministère du Commerce &amp; de la CSPH.
+          </p>
         </div>
       </footer>
     </div>
