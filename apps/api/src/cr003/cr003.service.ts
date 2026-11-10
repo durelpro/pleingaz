@@ -137,7 +137,11 @@ export class Cr003Service {
     amountTotal?: number;
     totalAmount?: number;
     paymentMethod?: string;
-  }) {
+  }): Promise<{
+    success: boolean;
+    sale: any;
+    newQuota: { consumed: number; remaining: number };
+  }> {
     const qty = Number(data.quantity) || 1;
     const rawPhone = data.customerPhone || data.buyerPhone || (data as any).phone || '+237699123456';
     const phone = rawPhone.trim();

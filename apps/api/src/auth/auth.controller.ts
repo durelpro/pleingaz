@@ -1,7 +1,7 @@
-import { Controller, Post, Get, Body, Param, HttpCode, HttpStatus, Res, UseGuards } from '@nestjs/common';
-import { AuthService } from './auth.service';
+import { Controller, Post, Get, Body, Param, HttpCode, HttpStatus, Res, UseGuards, Req, Headers } from '@nestjs/common';
+import { AuthService, PortalType } from './auth.service';
 import { WhatsAppAuthService } from './whatsapp-auth.service';
-import { Response } from 'express';
+import { Response, Request } from 'express';
 import { JwtAuthGuard } from './guards/jwt-auth.guard';
 import { CurrentUser } from './decorators/current-user.decorator';
 
@@ -96,7 +96,8 @@ export class AuthController {
     },
     @Req() req: Request,
   ) {
-    const ipAddress = (req.headers['x-forwarded-for'] as string) || req.socket?.remoteAddress;
+    const forwarded = req.headers ? req.headers['x-forwarded-for'] : undefined;
+    const ipAddress = (Array.isArray(forwarded) ? forwarded[0] : (forwarded as string | undefined)) || req.socket?.remoteAddress;
     return this.authService.initiateWhatsAppChallenge(body.phone, body.purpose || 'LOGIN', ipAddress);
   }
 
@@ -146,19 +147,17 @@ export class AuthController {
     const message = change?.messages?.[0];
 
     if (message && message.from && message.text?.body) {
-      return this.whatsappAuthService.handleInboundWebhook(
+      return this.whatsAppAuthService.verifyIncomingMessage(
         message.from,
         message.text.body,
-        signature,
       );
     }
 
     // Cas test simplifié / émulation directe
     if (body.senderPhone && body.messageText) {
-      return this.whatsappAuthService.handleInboundWebhook(
+      return this.whatsAppAuthService.verifyIncomingMessage(
         body.senderPhone,
         body.messageText,
-        signature,
       );
     }
 
@@ -174,46 +173,9 @@ export class AuthController {
     return this.authService.getMe(userId);
   }
 
-  @Post('login/otp')
-  @HttpCode(HttpStatus.OK)
-  async loginWithOTP(@Body() body: { phone: string; otp: string }, @Res({ passthrough: true }) res: Response) {
-    const tokens = await this.authService.validatePhoneOTP(body.phone, body.otp);
-    
-    // Refresh token in HttpOnly Cookie
-    res.cookie('refresh_token', tokens.refreshToken, {
-      httpOnly: true,
-      secure: process.env.NODE_ENV === 'production',
-      sameSite: 'strict',
-      maxAge: 7 * 24 * 60 * 60 * 1000,
-    });
-
-    return { accessToken: tokens.accessToken };
-  }
-
-  @Post('login/email')
-  @HttpCode(HttpStatus.OK)
-  async loginWithEmail(@Body() body: { email: string; pass: string }, @Res({ passthrough: true }) res: Response) {
-    const tokens = await this.authService.validateEmailPassword(body.email, body.pass);
-    
-    res.cookie('refresh_token', tokens.refreshToken, {
-      httpOnly: true,
-      secure: process.env.NODE_ENV === 'production',
-      sameSite: 'strict',
-      maxAge: 7 * 24 * 60 * 60 * 1000,
-    });
-
-    return { accessToken: tokens.accessToken };
-  }
-
   // ==========================================
   // ENDPOINTS CR-003 WHATSAPP AUTH (D-12)
   // ==========================================
-
-  @Post('challenge/initiate')
-  @HttpCode(HttpStatus.OK)
-  async initiateChallenge(@Body() body: { phone: string; purpose?: any }) {
-    return this.whatsAppAuthService.initiateChallenge(body);
-  }
 
   @Get('challenge/:id/status')
   async getChallengeStatus(@Param('id') challengeId: string) {
@@ -224,12 +186,6 @@ export class AuthController {
   @HttpCode(HttpStatus.OK)
   async simulateVerify(@Body() body: { challengeId: string }) {
     return this.whatsAppAuthService.simulateChallengeVerification(body.challengeId);
-  }
-
-  @Post('webhook/whatsapp')
-  @HttpCode(HttpStatus.OK)
-  async handleWhatsAppWebhook(@Body() body: { senderPhone: string; messageText: string }) {
-    return this.whatsAppAuthService.verifyIncomingMessage(body.senderPhone, body.messageText);
   }
 
   @Post('register-whatsapp')
