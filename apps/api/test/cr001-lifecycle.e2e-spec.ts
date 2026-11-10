@@ -11,8 +11,8 @@ import { PayoutService } from '../src/payments/payout.service';
 import { ReportsService } from '../src/dashboard/reports.service';
 import { PrismaService } from '../src/prisma/prisma.service';
 import { AuditService } from '../src/audit/audit.service';
-import { JwtService } from '@nestjs/jwt';
 import { DocumentType, StockLevel, PaymentMethod, PaymentStatus, OrderStatus, ApplicationStatus } from '@pleingaz/database';
+import { JwtService } from '@nestjs/jwt';
 import * as crypto from 'crypto';
 
 jest.mock('@nestjs/bullmq', () => ({
@@ -194,7 +194,7 @@ describe('Recette E2E Globale CR-001 (Cycle Complet Décisions D-01 à D-06)', (
         ReportsService,
         { provide: PrismaService, useValue: prismaMock },
         { provide: AuditService, useValue: auditMock },
-        { provide: JwtService, useValue: { sign: jest.fn().mockReturnValue('mock-jwt-token') } },
+        { provide: JwtService, useValue: { sign: jest.fn().mockReturnValue('mock_jwt') } },
         { provide: 'BullQueue_stock-reservations', useValue: { add: jest.fn().mockResolvedValue(true) } },
         { provide: 'BullQueue_orders', useValue: { add: jest.fn().mockResolvedValue(true) } },
         { provide: 'BullQueue_notifications', useValue: { add: jest.fn().mockResolvedValue(true) } },

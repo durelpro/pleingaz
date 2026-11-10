@@ -39,7 +39,7 @@ export class Cr003Controller {
       quantity?: number;
       amountTotal?: number;
     },
-  ) {
+  ): Promise<any> {
     return this.cr003Service.createCounterSale(body);
   }
 

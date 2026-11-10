@@ -311,38 +311,14 @@ Les ADR D1 à D4 sont proposés ; les ADR D5 à D10 résultent de **CR-001** ; l
 | **D8** | KYC Distributeur 3 pièces exclusives (CR-001 D-04) | **VALIDÉ** | S3 privé chiffré, URL signées 15 min, stripping EXIF systématique, checklist admin. |
 | **D9** | Rôle Livreur & Code confirmation (CR-001 D-05) | **VALIDÉ** | 9e rôle RBAC `COURIER`, PWA livreur légère, attribution manuelle, suivi caisse espèces. |
 | **D10**| Maker-Checker & Grand Livre immuable (CR-001 D-06) | **VALIDÉ** | Insert-Only `LedgerEntry`, débit=crédit, double signature reversements, TOTP obligatoire. |
-| **D11**| Publication immédiate contrôlée (CR-002 D-07) | **VALIDÉ** | Statut `LISTED`, mention de transparence, stock non actualisé, commandes désactivées. |
-| **D12**| Zéro compte Particulier / Utilisateur créé (CR-002 D-08)| **VALIDÉ** | Quarantaine algorithmique `ImportRecord`, `owner_user_id = NULL`, `claim_status = UNCLAIMED`. |
-| **D13**| Revendication progressive & Anti-SIM Swap (CR-002 D-09) | **VALIDÉ** | Vérification OTP + revue humaine admin, cycle de vie `VerificationLevel`, protection `field_locks`. |
-| **D14**| Pipeline Staging, Dry-run & Idempotence (CR-002 D-10)   | **VALIDÉ** | `UNIQUE(source, source_ref)`, validation TOTP + accord PLEINGAZ, rollback audité. |
-| **D15**| Authentification obligatoire & Espaces séparés (CR-003 D-11) | **VALIDÉ** | Portails étanches (`/acheteur`, `/distributeur`, `/livreur`), URL staff masquée, 404 inter-espaces, token audience-bound. |
-| **D16**| Inscription & Connexion WhatsApp gratuite (CR-003 D-12) | **VALIDÉ** | Preuve entrante (`VerificationChannel`), 2 numéros E.164 obligatoires, SimulatedChannel. |
-| **D17**| Charte graphique inchangée & Design System (CR-003 D-13) | **VALIDÉ** | Respect strict couleurs (#FF0000, #FFB000) et Montserrat, ratios WCAG AA, mobile-first. |
-| **D18**| Espace acheteur & Limite 5 bouteilles (CR-003 D-14) | **VALIDÉ** | Dashboard épuré, quota 5 bouteilles / fenêtre 30 jours décompté atomiquement, historique C-01. |
-| **D19**| Gestionnaire de compte sans usurpation (CR-003 D-15) | **VALIDÉ** | 10e rôle `ACCOUNT_MANAGER`, action sous dossier `AccountCase` obligatoire, zéro modification directe. |
-| **D20**| Registre complet & Vente au comptoir (CR-003 D-16) | **VALIDÉ** | Enregistrement `CounterSale` distributeur, confirmation acheteur, décompte quota. |
-| **D21**| Double confirmation livraison & Tarifs (CR-003 D-17) | **VALIDÉ** | Bouton "J'ai livré" + "J'ai reçu", tarif PLEINGAZ fixe 1 000 F, prix libres bornés tiers. |
-| **D22**| Rubrique "Infos" ciblée sur chaque espace (CR-003 D-18) | **VALIDÉ** | Annonces administratives dynamiques, ciblage rôles/zones, accusé "J'ai compris". |
-
-## 13. Pipeline d'Importation Réseau et Endpoints (CR-002)
-
-### 13.1 Architecture du Pipeline
-1. **Extraction / Décompression sécurisée** : Dézippage des archives `.kmz` en mémoire avec quotas stricts (taille max décompressée 25 Mo, anti-zip-bomb), extraction du document `doc.kml`.
-2. **Parser XML / SAX robuste** : Extraction des balises `<Placemark>`, `<name>`, `<description>`, `<coordinates>`, `<ExtendedData>`. Nettoyage anti-XSS et neutralisation des délimiteurs de prompt injection.
-3. **Normalisation téléphonique et géocodage** : Normalisation E.164 (+237 pour le Cameroun), validation des coordonnées dans l'enveloppe géographique nationale.
-4. **Classification heuristique et quarantaine (D-08)** : Détection des particuliers/ménages (`Ménage`, `Domicile`, noms propres sans enseigne) placés en `QUARANTINE_INDIVIDUAL`.
-5. **Détection des doublons** : Rapprochement géodésique (< 50 mètres) et par numéro de téléphone normalisé.
-6. **Application transactionnelle idempotente** : Insertion/mise à jour via `source = 'MY_MAPS_IMPORT'` et `source_ref = <kml_id>`, préservation absolue des champs verrouillés dans `field_locks`.
-
-### 13.2 Spécification des Endpoints Dédiés
-- `POST /api/v1/admin/imports/upload` : Téléversement KML/KMZ, calcul hash SHA-256, initialisation du lot `ImportBatch`.
-- `POST /api/v1/admin/imports/:id/dry-run` : Exécution de simulation, calcul des compteurs (validés, quarantaines, doublons).
-- `POST /api/v1/admin/imports/:id/approve` : Approbation par `ADMIN`/`SUPER_ADMIN` (contrôle TOTP + saisie de la référence d'accord écrit PLEINGAZ).
-- `POST /api/v1/admin/imports/:id/apply` : Application définitive en base, création des points `Store` en statut `LISTED`.
-- `POST /api/v1/admin/imports/:id/rollback` : Révocation du lot, archivage logique des boutiques créées sans commande liée.
-- `POST /api/v1/stores/:id/claim/request-otp` : Envoi d'un OTP au numéro officiel d'un point de vente `UNCLAIMED`.
-- `POST /api/v1/stores/:id/claim/verify-otp` : Soumission de la revendication après validation OTP.
-- `POST /api/v1/admin/stores/claims/:id/review` : Examen administratif (approbation avec transition vers `BASIC_VERIFIED` ou rejet motivé).
+| **D11**| Authentification obligatoire & Espaces séparés (CR-003 D-11) | **VALIDÉ** | Portails étanches (`/acheteur`, `/distributeur`, `/livreur`), URL staff masquée, 404 inter-espaces, token audience-bound. |
+| **D12**| Inscription & Connexion WhatsApp gratuite (CR-003 D-12) | **VALIDÉ** | Preuve entrante (`VerificationChannel`), 2 numéros E.164 obligatoires, SimulatedChannel. |
+| **D13**| Charte graphique inchangée & Design System (CR-003 D-13) | **VALIDÉ** | Respect strict couleurs (#FF0000, #FFB000) et Montserrat, ratios WCAG AA, mobile-first. |
+| **D14**| Espace acheteur & Limite 5 bouteilles (CR-003 D-14) | **VALIDÉ** | Dashboard épuré, quota 5 bouteilles / fenêtre 30 jours décompté atomiquement, historique C-01. |
+| **D15**| Gestionnaire de compte sans usurpation (CR-003 D-15) | **VALIDÉ** | 10e rôle `ACCOUNT_MANAGER`, action sous dossier `AccountCase` obligatoire, zéro modification directe. |
+| **D16**| Registre complet & Vente au comptoir (CR-003 D-16) | **VALIDÉ** | Enregistrement `CounterSale` distributeur, confirmation acheteur, décompte quota. |
+| **D17**| Double confirmation livraison & Tarifs (CR-003 D-17) | **VALIDÉ** | Bouton "J'ai livré" + "J'ai reçu", tarif PLEINGAZ fixe 1 000 F, prix libres bornés tiers. |
+| **D18**| Rubrique "Infos" ciblée sur chaque espace (CR-003 D-18) | **VALIDÉ** | Annonces administratives dynamiques, ciblage rôles/zones, accusé "J'ai compris". |
 
 
 

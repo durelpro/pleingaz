@@ -37,10 +37,7 @@ Ce document prouve que chaque exigence atomique des 5 fichiers sources (Vision, 
 - **D-03 : Tous les comptes rendus dans l'administration, zéro donnée fictive** : Validée. 15 rapports du Control Center dans l'administration uniquement, alimentés par la base réelle, états vides explicites, exclusion des seeds démo en prod. *Défaut appliqué, à confirmer : distributeur limité à un relevé personnel en lecture seule.*
 - **D-04 : Documents du distributeur : trois seulement** : Validée. CNI, photo portrait, photo boutique uniquement. Suppression totale de registre de commerce, NIU ou documents administratifs. *Défaut appliqué, à confirmer : recto et verso obligatoires pour la CNI.*
 - **D-05 : Livreurs sur la plateforme** : Validée. Rôle LIVREUR (COURIER) à part entière, 9 rôles au total, interface mobile dédiée, rémunération et gestion sous contrôle admin. *Défaut appliqué, à confirmer : livreurs créés et validés par l'admin, cumul possible avec acheteur, pièces CNI + portrait.*
-- **D-07 : Publication immédiate sans mentir sur la vérification (CR-002)** : Validée. Points issus de Google My Maps publiés d'emblée au niveau `LISTED`, mention d'information en cours de vérification, commande en ligne bloquée tant que non réclamé, zéro stock inventé.
-- **D-08 : Personnes et acheteurs : aucune publication (CR-002)** : Validée. Quarantaine hermétique des particuliers et des ambigus, aucun compte créé, accord formel écrit de PLEINGAZ exigé, données privées dans `data/private/` ignoré.
-- **D-09 : Complétion ultérieure par les distributeurs (CR-002)** : Validée. Réclamation par OTP avec validation admin obligatoire contre le SIM-swap, checklist progressive, verrouillage `field_locks` contre l'écrasement.
-- **D-10 : Contrôle administrateur de l'import (CR-002)** : Validée. Flux staging -> dry-run -> approbation TOTP -> application, idempotence stricte par `UNIQUE(source, source_ref)`, possibilité de rollback complet.
+- **D-06 : Finances contrôlées par l'administrateur** : Validée. Encaissement centralisé en ligne par PLEINGAZ, espèces = créances, grand livre immuable à double entrée, séparation des tâches maker-checker. *Défaut appliqué, à confirmer : exécution manuelle des reversements au MVP avec preuve, seuil de double signature.*
 - **D-11 : Accès authentifié obligatoire et espaces étanches par profil (CR-003)** : Validée. Aucune action métier sans compte, espaces `/acheteur`, `/distributeur`, `/livreur` et staff étanches avec retour HTTP 404 inter-espaces, token d'audience `aud` strict, accès staff masqué.
 - **D-12 : Inscription et connexion gratuites par WhatsApp (CR-003)** : Validée. Preuve entrante WhatsApp (Option A), 2 numéros E.164 obligatoires (`whatsappPhone` et `callPhone`), hash Argon2id, TTL 10 min, purge sous 24h, zéro mot de passe.
 - **D-13 : Refonte créative de l'expérience, charte graphique inchangée (CR-003)** : Validée. Respect strict des couleurs officielles (`#FF0000`/`#DC2626`, `#FFB000`, Montserrat), design system ultra mobile-first, accessibilité WCAG AA, prototypes légers < 50 Ko.
@@ -106,35 +103,6 @@ Ce document prouve que chaque exigence atomique des 5 fichiers sources (Vision, 
 | X-06.08 | Tableau de bord financier sur données réelles avec alertes sur écarts et créances | LedgerAccount | Admin Tableau de bord | 05a §5, 02 §1.4 | 6 | MVP | 06c M34 (CR-001 D-06) |
 | X-06.09 | Sécurité financière : TOTP obligatoire, sessions courtes, audit, contre-mesures menaces | AuditLog | Sécurité Admin | 06a §1, 04 §4 | 2 | MVP | 06c M34 (CR-001 D-06) |
 | X-06.10 | Cohérence transversale : machines à états Payout/Refund, immutabilité 03c, tests 06b | N/A | N/A | 03b §5, 06b §3 | 6 | MVP | 06c M34 (CR-001 D-06) |
-| X-07.01 | Publication immédiate sans dépôt de dossier préalable pour points importés | Store | Recherche & Carte | 13 §2, 04 §4 | 4 | MVP | 06c M36 (CR-002 D-07) |
-| X-07.02 | Échelonnement vérification : LISTED, DOCUMENTS_VERIFIED, LOCATION_CONFIRMED, FULLY_VERIFIED | Store | Recherche & Carte | 13 §2, 03b §2 | 4 | MVP | 06c M36 (CR-002 D-07) |
-| X-07.03 | Mention d'information en cours de vérification, badge vérifié strictement réservé à FULLY_VERIFIED | Store | Fiche Boutique | 13 §2, 02 §1.2 | 4 | MVP | 06c M36 (CR-002 D-07) |
-| X-07.04 | État stock non déclaré : affichage information non actualisée, zéro stock inventé | Inventory | Fiche Boutique | 13 §2, 03 §1 | 4 | MVP | 06c M36 (CR-002 D-07) |
-| X-07.05 | Coordonnées GPS issues du fichier (location_source=PLEINGAZ_MAP), location_confirmed_at=NULL | Store | Carte Leaflet | 13 §2, 04 §7 | 4 | MVP | 06c M36 (CR-002 D-07) |
-| X-07.06 | Commande en ligne verrouillée tant que non réclamé et sans stock (boutons Appeler/Itinéraire) | Store | Fiche Boutique | 13 §2, 02 §1.2 | 4 | MVP | 06c M36 (CR-002 D-07) |
-| X-07.07 | Recherche multi-critères : points LISTED visibles avec icône distincte après stocks récents | Store | Recherche | 13 §2, 04 §4 | 4 | MVP | 06c M36 (CR-002 D-07) |
-| X-07.08 | Typologie réseau : network_tier (WHOLESALER, SEMI_WHOLESALER) supervision admin | Store | Admin Réseau | 13 §2, 02 §1.4 | 4 | MVP | 06c M36 (CR-002 D-07) |
-| X-08.01 | Classification stricte pré-import : pros éligibles vs particuliers en quarantaine | ImportRecord, Store | Admin Import | 13 §2, 07 §1 | 4 | MVP | 06c M37 (CR-002 D-08) |
-| X-08.02 | Quarantaine hermétique particuliers et ambigus : zéro publication, zéro compte créé | ImportRecord | Admin Quarantaine | 13 §2, 07 §3 | 4 | MVP | 06c M37 (CR-002 D-08) |
-| X-08.03 | Zéro création compte utilisateur automatique : Store.owner_id=NULL, claim_status=UNCLAIMED | Store | N/A | 13 §2, 03 §1 | 4 | MVP | 06c M37 (CR-002 D-08) |
-| X-08.04 | Case accord écrit PLEINGAZ obligatoire horodatée dans AuditLog pour valider import | ImportBatch, AuditLog | Admin Import | 13 §2, 06a §1 | 4 | MVP | 06c M37 (CR-002 D-08) |
-| X-08.05 | Fichiers sources et dérivés cantonnés à data/private/ strictement ignoré par Git | N/A | N/A | 13 §5, 06a §1 | 4 | MVP | 06c M37 (CR-002 D-08) |
-| X-08.06 | Rapports d'import sans données personnelles : comptages et hachages techniques | ImportBatch | Admin Rapports | 13 §5, 07 §1 | 4 | MVP | 06c M37 (CR-002 D-08) |
-| X-09.01 | Machine claim_status : UNCLAIMED -> INVITED -> CLAIM_PENDING_REVIEW -> CLAIMED | Store, StoreClaim | Espace Distributeur | 13 §2, 03b §2 | 4 | MVP | 06c M38 (CR-002 D-09) |
-| X-09.02 | Authentification OTP téléphone dossier et validation admin obligatoire anti-SIM swap | StoreClaim, User | Admin Réclamations | 13 §2, 06a §1 | 4 | MVP | 06c M38 (CR-002 D-09) |
-| X-09.03 | Préparation invitations WhatsApp click-to-chat prérempli, zéro envoi automatique (R10) | Store | Admin Invitations | 13 §2, 05b §1 | 4 | MVP | 06c M38 (CR-002 D-09) |
-| X-09.04 | Checklist de complétion progressive débloquant capacités et score de complétude | Store | Espace Distributeur | 13 §2, 02 §1.3 | 4 | MVP | 06c M38 (CR-002 D-09) |
-| X-09.05 | Redirection anti-doublon lors de l'inscription vers réclamation de boutique importée | Store | Inscription Distributeur | 13 §2, 02 §1.3 | 4 | MVP | 06c M38 (CR-002 D-09) |
-| X-09.06 | Procédure explicite d'exercice des droits de rectification et retrait sous 72h | Store, AuditLog | Admin Support | 13 §2, 07 §5 | 4 | MVP | 06c M38 (CR-002 D-09) |
-| X-09.07 | Verrouillage field_locks protégeant les données distributeur contre ré-import | Store | N/A | 13 §2, 03c §1 | 4 | MVP | 06c M38 (CR-002 D-09) |
-| X-10.01 | Flux import : fichier -> staging -> DRY-RUN -> revue -> approbation TOTP -> application | ImportBatch, ImportRecord | Admin Import | 13 §2, 04 §4 | 4 | MVP | 06c M39 (CR-002 D-10) |
-| X-10.02 | Modèles d'audit d'import : ImportBatch (SHA-256, métriques) et ImportRecord (staging) | ImportBatch, ImportRecord | Admin Import | 13 §2, 03 §1 | 4 | MVP | 06c M39 (CR-002 D-10) |
-| X-10.03 | Idempotence absolue par clé unique UNIQUE(source, source_ref), rejeu sans effet | Store | N/A | 13 §2, 03c §1 | 4 | MVP | 06c M39 (CR-002 D-10) |
-| X-10.04 | Rollback transactionnel dépubliant l'ensemble du lot d'importation sans orphelins | ImportBatch, Store | Admin Import | 13 §2, 03b §2 | 4 | MVP | 06c M39 (CR-002 D-10) |
-| X-10.05 | Permissions granulaires : distributor:bulk_import, bulk_approve, unpublish, rollback | Role, Permission | Admin RBAC | 13 §2, 02 §3.1 | 2 | MVP | 06c M39 (CR-002 D-10) |
-| X-10.06 | Traçabilité exhaustive : toute action relative à un lot consignée dans AuditLog | AuditLog | Admin Audit | 13 §2, 06a §1 | 2 | MVP | 06c M39 (CR-002 D-10) |
-| X-10.07 | Sécurité du contenu : assainissement HTML strict, neutralisation injections IA | N/A | N/A | 13 §5, 06a §2 | 4 | MVP | 06c M39 (CR-002 D-10) |
-| X-10.08 | Ségrégation stricte des données réelles (is_demo=false) exclues des seeds démo | Store | N/A | 13 §2, 03c §1 | 4 | MVP | 06c M39 (CR-002 D-10) |
 | X-11.01 | Zéro action sans compte et espaces étanches avec isolation 404 inter-espaces | User, Session | Tous Espaces | 14b §1, 02 §1 | 2 | MVP | 06c M37 (CR-003 D-11) |
 | X-12.01 | Auth WhatsApp entrante gratuite (Option A), 2 numéros E.164, Argon2id, TTL 10m | VerificationChallenge, User | Portails Auth | 14a §1, 04 §4 | 2 | MVP | 06c M36 (CR-003 D-12) |
 | X-13.01 | Charte officielle préservée (#FF0000, #FFB000), WCAG AA, prototypes < 50 Ko | N/A | Web & PWA | 14c §1, 04 §6 | 2 | MVP | 06c M43 (CR-003 D-13) |
@@ -143,6 +111,7 @@ Ce document prouve que chaque exigence atomique des 5 fichiers sources (Vision, 
 | X-16.01 | Visibilité totale transactions admin, vente comptoir CounterSale, contrôle quota | CounterSale, LedgerEntry | Control Center | 14f §1, 05a §1 | 6 | MVP | 06c M41 (CR-003 D-16) |
 | X-17.01 | Double confirmation contradictoire livraison, tarif 1 000 F PLEINGAZ, PWA livreur | Delivery, Courier | Espace Livreur | 14d §1, 05a §1 | 5 | MVP | 06c M39 (CR-003 D-17) |
 | X-18.01 | Rubrique Infos ciblée par rôle/zone avec accusé 'J'ai compris', Maker-Checker | InfoNotice, InfoNoticeRead | Tous Espaces | 14g §1, 05b §1 | 2 | MVP | 06c M42 (CR-003 D-18) |
+
 
 ---
 

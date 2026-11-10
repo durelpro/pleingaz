@@ -4,15 +4,14 @@ import { AuthController } from './auth.controller';
 import { PassportModule } from '@nestjs/passport';
 import { JwtModule } from '@nestjs/jwt';
 import { JwtStrategy } from './strategies/jwt.strategy';
+import { getRequiredJwtSecret, JWT_EXPIRATION_ACCESS } from './constants/jwt.config';
 
 import { RolesGuard } from './guards/roles.guard';
 import { PermissionsGuard } from './guards/permissions.guard';
 import { JwtAuthGuard } from './guards/jwt-auth.guard';
 import { OptionalJwtAuthGuard } from './guards/optional-jwt-auth.guard';
 
-import { getRequiredJwtSecret, JWT_EXPIRATION_ACCESS } from './constants/jwt.config';
-
-import { PortalAudienceGuard } from './guards/portal-audience.guard';
+import { WhatsAppAuthService } from './whatsapp-auth.service';
 
 @Module({
   imports: [
@@ -24,25 +23,8 @@ import { PortalAudienceGuard } from './guards/portal-audience.guard';
       }),
     }),
   ],
-  providers: [
-    AuthService,
-    WhatsAppAuthService,
-    JwtStrategy,
-    RolesGuard,
-    PermissionsGuard,
-    JwtAuthGuard,
-    OptionalJwtAuthGuard,
-    PortalAudienceGuard,
-  ],
+  providers: [AuthService, WhatsAppAuthService, JwtStrategy, RolesGuard, PermissionsGuard, JwtAuthGuard, OptionalJwtAuthGuard],
   controllers: [AuthController],
-  exports: [
-    AuthService,
-    WhatsAppAuthService,
-    RolesGuard,
-    PermissionsGuard,
-    JwtAuthGuard,
-    OptionalJwtAuthGuard,
-    PortalAudienceGuard,
-  ],
+  exports: [AuthService, WhatsAppAuthService, RolesGuard, PermissionsGuard, JwtAuthGuard, OptionalJwtAuthGuard],
 })
 export class AuthModule {}

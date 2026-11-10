@@ -14,3 +14,15 @@ export class WebhookPayloadDto {
   externalReference?: string;
   signature?: string;
 }
+
+export class SubmitManualTransferDto {
+  orderId: string;
+  method: PaymentMethod;
+  senderPhone: string;
+  transactionRef?: string;
+  amount?: number;
+}
+
+export class ConfirmManualPaymentDto {
+  notes?: string;
+}

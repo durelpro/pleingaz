@@ -1,6 +1,6 @@
-import { Controller, Post, Get, Body, HttpCode, HttpStatus, Res, UseGuards, Req, Headers } from '@nestjs/common';
+import { Controller, Post, Get, Body, Param, HttpCode, HttpStatus, Res, UseGuards, Req, Headers } from '@nestjs/common';
 import { AuthService, PortalType } from './auth.service';
-import { WhatsAppAuthService } from './services/whatsapp-auth.service';
+import { WhatsAppAuthService } from './whatsapp-auth.service';
 import { Response, Request } from 'express';
 import { JwtAuthGuard } from './guards/jwt-auth.guard';
 import { CurrentUser } from './decorators/current-user.decorator';
@@ -9,7 +9,7 @@ import { CurrentUser } from './decorators/current-user.decorator';
 export class AuthController {
   constructor(
     private readonly authService: AuthService,
-    private readonly whatsappAuthService: WhatsAppAuthService,
+    private readonly whatsAppAuthService: WhatsAppAuthService,
   ) {}
 
   /**
@@ -96,7 +96,8 @@ export class AuthController {
     },
     @Req() req: Request,
   ) {
-    const ipAddress = (req.headers['x-forwarded-for'] as string) || req.socket?.remoteAddress;
+    const forwarded = req.headers ? req.headers['x-forwarded-for'] : undefined;
+    const ipAddress = (Array.isArray(forwarded) ? forwarded[0] : (forwarded as string | undefined)) || req.socket?.remoteAddress;
     return this.authService.initiateWhatsAppChallenge(body.phone, body.purpose || 'LOGIN', ipAddress);
   }
 
@@ -146,19 +147,17 @@ export class AuthController {
     const message = change?.messages?.[0];
 
     if (message && message.from && message.text?.body) {
-      return this.whatsappAuthService.handleInboundWebhook(
+      return this.whatsAppAuthService.verifyIncomingMessage(
         message.from,
         message.text.body,
-        signature,
       );
     }
 
     // Cas test simplifié / émulation directe
     if (body.senderPhone && body.messageText) {
-      return this.whatsappAuthService.handleInboundWebhook(
+      return this.whatsAppAuthService.verifyIncomingMessage(
         body.senderPhone,
         body.messageText,
-        signature,
       );
     }
 
@@ -172,5 +171,101 @@ export class AuthController {
   @UseGuards(JwtAuthGuard)
   async getMe(@CurrentUser('id') userId: string): Promise<any> {
     return this.authService.getMe(userId);
+  }
+
+  // ==========================================
+  // ENDPOINTS CR-003 WHATSAPP AUTH (D-12)
+  // ==========================================
+
+  @Get('challenge/:id/status')
+  async getChallengeStatus(@Param('id') challengeId: string) {
+    return this.whatsAppAuthService.getChallengeStatus(challengeId);
+  }
+
+  @Post('challenge/simulate-verify')
+  @HttpCode(HttpStatus.OK)
+  async simulateVerify(@Body() body: { challengeId: string }) {
+    return this.whatsAppAuthService.simulateChallengeVerification(body.challengeId);
+  }
+
+  @Post('register-whatsapp')
+  @HttpCode(HttpStatus.CREATED)
+  async registerWithWhatsApp(
+    @Body() body: any,
+    @Res({ passthrough: true }) res: Response,
+  ) {
+    const result = await this.whatsAppAuthService.registerWithWhatsApp(body);
+
+    res.cookie('refresh_token', result.tokens.refreshToken, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === 'production',
+      sameSite: 'strict',
+      maxAge: 7 * 24 * 60 * 60 * 1000,
+    });
+
+    return {
+      message: result.message,
+      user: result.user,
+      accessToken: result.tokens.accessToken,
+    };
+  }
+
+  @Post('login-whatsapp')
+  @HttpCode(HttpStatus.OK)
+  async loginWithWhatsApp(
+    @Body() body: any,
+    @Res({ passthrough: true }) res: Response,
+  ) {
+    const result = await this.whatsAppAuthService.loginWithWhatsApp(body);
+
+    res.cookie('refresh_token', result.tokens.refreshToken, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === 'production',
+      sameSite: 'strict',
+      maxAge: 7 * 24 * 60 * 60 * 1000,
+    });
+
+    return {
+      message: result.message,
+      user: result.user,
+      accessToken: result.tokens.accessToken,
+    };
+  }
+
+  /**
+   * Demande de réinitialisation de mot de passe par WhatsApp (100% gratuit)
+   */
+  @Post('forgot-password/initiate')
+  @HttpCode(HttpStatus.OK)
+  async forgotPasswordInitiate(
+    @Body() body: { phone: string },
+    @Req() req: Request,
+  ) {
+    const forwarded = req.headers ? req.headers['x-forwarded-for'] : undefined;
+    const ipAddress =
+      (Array.isArray(forwarded)
+        ? forwarded[0]
+        : (forwarded as string | undefined)) || req.socket?.remoteAddress;
+    return this.whatsAppAuthService.initiateChallenge({
+      phone: body.phone,
+      purpose: 'PASSWORD_RESET',
+      ipAddress,
+    });
+  }
+
+  /**
+   * Validation du code WhatsApp et réinitialisation du mot de passe
+   */
+  @Post('forgot-password/reset')
+  @HttpCode(HttpStatus.OK)
+  async forgotPasswordReset(
+    @Body()
+    body: {
+      phone: string;
+      code: string;
+      newPassword?: string;
+    },
+  ) {
+    return this.whatsAppAuthService.resetPasswordWithWhatsApp(body);
   }
 }

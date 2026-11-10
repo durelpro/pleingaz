@@ -13,10 +13,3 @@ export class CreateOrderDto {
   deliveryLng?: number;
   paymentMethod: 'CASH' | 'MTN' | 'ORANGE';
 }
-
-export class NotifyPaymentDto {
-  method: 'CASH' | 'MTN_MOMO' | 'ORANGE_MONEY';
-  customerTxRef?: string;
-  amount?: number;
-}
-

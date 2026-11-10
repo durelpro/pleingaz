@@ -170,8 +170,8 @@ describe('Cr003Service - Tests Souverains D-11 à D-18', () => {
 
       expect(res.success).toBe(true);
       expect(res.sale.receiptNumber).toMatch(/^CS-\d+/);
-      expect(res.sale.amountTotal).toBe(6500);
-      expect(res.sale.quotaValidated).toBe(true);
+      expect(res.sale.totalAmount).toBe(6500);
+      expect(res.sale.quotaChecked).toBe(true);
       expect(res.newQuota.consumed).toBe(1);
       expect(res.newQuota.remaining).toBe(4);
     });
@@ -202,7 +202,7 @@ describe('Cr003Service - Tests Souverains D-11 à D-18', () => {
           userId: 'user-1',
         },
         update: {
-          readAt: expect.any(Date),
+          acknowledgedAt: expect.any(Date),
         },
       });
     });

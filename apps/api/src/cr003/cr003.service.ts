@@ -51,7 +51,7 @@ export class Cr003Service {
 
     let counterBottles = 0;
     for (const sale of counterSales) {
-      counterBottles += sale.quantity;
+      counterBottles += (sale.bottleCount ?? (sale as any).quantity ?? 1);
     }
 
     const totalConsumed = orderBottles + counterBottles;
@@ -137,7 +137,11 @@ export class Cr003Service {
     amountTotal?: number;
     totalAmount?: number;
     paymentMethod?: string;
-  }) {
+  }): Promise<{
+    success: boolean;
+    sale: any;
+    newQuota: { consumed: number; remaining: number };
+  }> {
     const qty = Number(data.quantity) || 1;
     const rawPhone = data.customerPhone || data.buyerPhone || (data as any).phone || '+237699123456';
     const phone = rawPhone.trim();
@@ -173,14 +177,11 @@ export class Cr003Service {
       data: {
         receiptNumber,
         storeId: store.id,
-        sellerId: store.ownerId,
         customerPhone: phone,
-        customerUserId: existingUser?.id ?? null,
-        bottleType: bottle,
-        quantity: qty,
-        amountTotal: total,
-        paymentMethod: method,
-        quotaValidated: true,
+        bottleCount: qty,
+        totalAmount: total,
+        paymentMethod: (method as any),
+        quotaChecked: true,
       },
     });
 
@@ -219,7 +220,7 @@ export class Cr003Service {
           userId: user.id,
         },
       },
-      update: { readAt: new Date() },
+      update: { acknowledgedAt: new Date() },
       create: {
         noticeId,
         userId: user.id,
@@ -252,9 +253,6 @@ export class Cr003Service {
     const counterSales = await this.prisma.counterSale.findMany({
       include: {
         store: true,
-        customerUser: {
-          include: { customerProfile: true },
-        },
       },
       orderBy: { createdAt: 'desc' },
       take: 50,
@@ -284,16 +282,16 @@ export class Cr003Service {
         reference: cs.receiptNumber,
         type: 'COUNTER' as const,
         typeLabel: 'Vente Directe au Comptoir (D-16)',
-        customerName: cs.customerUser?.customerProfile ? `${cs.customerUser.customerProfile.firstName} ${cs.customerUser.customerProfile.lastName}` : 'Acheteur en Boutique',
+        customerName: 'Acheteur en Boutique',
         customerPhone: cs.customerPhone,
         storeName: cs.store.name,
         location: `${cs.store.city} (${cs.store.neighborhood})`,
-        product: cs.bottleType,
-        quantity: cs.quantity,
-        amount: cs.amountTotal,
+        product: 'Bouteille 12.5 kg PLEINGAZ',
+        quantity: cs.bottleCount,
+        amount: cs.totalAmount,
         paymentMethod: cs.paymentMethod,
         status: 'COMPLETED',
-        quotaValidated: cs.quotaValidated,
+        quotaValidated: cs.quotaChecked,
         createdAt: cs.createdAt,
       })),
     ];

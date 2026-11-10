@@ -12,12 +12,3 @@ export class ReviewApplicationDto {
   decision: 'APPROVE' | 'REJECT';
   reason?: string;
 }
-
-export class UpdatePaymentSettingsDto {
-  momoReceiverNumber?: string;
-  momoAccountName?: string;
-  orangeReceiverNumber?: string;
-  orangeAccountName?: string;
-  acceptCash?: boolean;
-}
-

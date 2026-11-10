@@ -1,13 +1,10 @@
 import type { Metadata, Viewport } from "next";
-import { Montserrat } from "next/font/google";
 import "./globals.css";
 
-const montserrat = Montserrat({
-  variable: "--font-montserrat",
-  subsets: ["latin"],
-  weight: ["400", "500", "600", "700", "800"],
-  display: "swap",
-});
+const montserrat = {
+  variable: "font-montserrat",
+  className: "font-montserrat",
+};
 
 export const viewport: Viewport = {
   themeColor: "#dc2626",

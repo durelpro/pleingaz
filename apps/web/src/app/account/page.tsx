@@ -1,25 +1,10 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import {
-  Flame,
-  AlertTriangle,
-  Zap,
-  ShoppingBag,
-  Store,
-  CheckCircle2,
-  Phone,
-  Clock,
-  ShieldCheck,
-  LogOut,
-  Info,
-  Truck,
-  ArrowRight,
-  PackageCheck
-} from 'lucide-react';
-import { motion, AnimatePresence } from 'framer-motion';
+import { Flame, Award, ShoppingBag, MapPin, ArrowRight, ShieldCheck, LogOut, CheckCircle2, AlertOctagon, RefreshCw, PhoneCall } from 'lucide-react';
 import Link from 'next/link';
+import { InfoNoticesDrawer } from '@/components/common/InfoNoticesDrawer';
 
 interface BuyerQuota {
   phone: string;
@@ -40,48 +25,75 @@ interface Notice {
 export default function BuyerDashboardPage() {
   const router = useRouter();
   const [user, setUser] = useState<any>(null);
-  const [quota, setQuota] = useState<BuyerQuota>({
-    phone: '+237699123456',
-    consumed: 2,
+  const [quota, setQuota] = useState<{
+    usedCount: number;
+    remainingCount: number;
+    limit: number;
+    earliestReleaseDate: string | null;
+  }>({
+    usedCount: 1,
+    remainingCount: 4,
     limit: 5,
-    remaining: 3,
-    allowed: true,
-    windowDays: 30,
+    earliestReleaseDate: null,
   });
-  const [notice, setNotice] = useState<Notice | null>(null);
-  const [deliveryConfirmed, setDeliveryConfirmed] = useState(false);
+  const [notice, setNotice] = useState<any>(null);
   const [loading, setLoading] = useState(true);
 
-  const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001';
+  const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001';
+
+  const handleLogout = () => {
+    localStorage.removeItem('pleingaz_token');
+    localStorage.removeItem('pleingaz_user');
+    router.push('/login');
+  };
 
   useEffect(() => {
-    // 1. Récupération utilisateur
-    if (typeof window !== 'undefined') {
-      const stored = localStorage.getItem('pleingaz_user');
-      if (stored) {
-        try {
-          setUser(JSON.parse(stored));
-        } catch (e) {
-          setUser({ firstName: 'Marie', lastName: 'Tchouassi', phone: '+237699123456' });
-        }
-      } else {
-        setUser({ firstName: 'Marie', lastName: 'Tchouassi', phone: '+237699123456' });
+    const storedUser = localStorage.getItem('pleingaz_user');
+    const token = localStorage.getItem('pleingaz_token');
+
+    if (!token && !storedUser) {
+      setUser({
+        firstName: 'Paul',
+        lastName: 'Kamga',
+        phone: '+237699112233',
+        whatsappPhone: '+237699112233',
+        loyaltyPoints: 100,
+      });
+      setLoading(false);
+      return;
+    }
+
+    if (storedUser) {
+      try {
+        const parsed = JSON.parse(storedUser);
+        setUser(parsed);
+        // Interroger l'API pour récupérer le quota exact sur 30 jours
+        fetch(`${apiUrl}/api/v1/counter-sales/check-quota`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ customerPhone: parsed.whatsappPhone || parsed.phone }),
+        })
+          .then((res) => (res.ok ? res.json() : null))
+          .then((q) => {
+            if (q) setQuota(q);
+          })
+          .catch(() => {});
+      } catch (e) {
+        setUser({ firstName: 'Acheteur', loyaltyPoints: 100 });
       }
     }
 
-    // 2. Chargement du quota dynamique CR-003 (D-14)
-    const targetPhone = '+237699123456';
-    fetch(`${API_URL}/api/v1/cr003/buyer/quota?phone=${encodeURIComponent(targetPhone)}`)
-      .then((res) => (res.ok ? res.json() : null))
-      .then((data) => {
-        if (data) setQuota(data);
+    if (token) {
+      fetch(`${apiUrl}/auth/me`, {
+        headers: { Authorization: `Bearer ${token}` },
       })
       .catch(() => {
         // Garder le quota par défaut
       });
+    }
 
     // 3. Chargement des annonces officielles (D-18)
-    fetch(`${API_URL}/api/v1/cr003/notices`)
+    fetch(`${apiUrl}/api/v1/cr003/notices`)
       .then((res) => (res.ok ? res.json() : null))
       .then((notices) => {
         if (Array.isArray(notices) && notices.length > 0) {
@@ -90,13 +102,13 @@ export default function BuyerDashboardPage() {
       })
       .catch(() => {})
       .finally(() => setLoading(false));
-  }, [API_URL]);
+  }, [apiUrl]);
 
   // Acquittement de l'annonce officielle (D-18)
   const handleAckNotice = async () => {
     if (!notice) return;
     try {
-      await fetch(`${API_URL}/api/v1/cr003/notices/ack`, {
+      await fetch(`${apiUrl}/api/v1/cr003/notices/ack`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -108,36 +120,32 @@ export default function BuyerDashboardPage() {
     setNotice(null);
   };
 
-  const handleLogout = () => {
-    if (typeof window !== 'undefined') {
-      localStorage.removeItem('pleingaz_token');
-      localStorage.removeItem('pleingaz_user');
-    }
-    router.push('/login');
-  };
+  const points = user?.loyaltyPoints ?? 100;
+  const quotaPercent = Math.min(100, (quota.usedCount / quota.limit) * 100);
 
   return (
-    <div className="min-h-screen bg-neutral-950 text-white pb-24">
-      {/* Top Navbar */}
-      <header className="sticky top-0 z-40 bg-neutral-900/90 backdrop-blur-md border-b border-neutral-800 px-4 py-3">
-        <div className="max-w-lg mx-auto flex items-center justify-between">
-          <div className="flex items-center gap-2">
-            <div className="w-8 h-8 rounded-lg bg-red-600 flex items-center justify-center text-white shadow-md shadow-red-600/30">
-              <Flame className="w-5 h-5 fill-white" />
-            </div>
-            <span className="font-extrabold text-lg tracking-tight text-white uppercase">
-              PLEINGAZ
+    <div className="min-h-screen bg-gray-50 text-gray-900 pb-16">
+      {/* Top Bar avec Logo & Tiroir Infos */}
+      <header className="bg-white border-b border-gray-200 sticky top-0 z-30 shadow-xs">
+        <div className="max-w-4xl mx-auto px-4 h-16 flex items-center justify-between">
+          <div className="flex items-center space-x-3">
+            <span className="w-9 h-9 rounded-xl bg-red-600 flex items-center justify-center text-white font-black text-xl shadow-sm">
+              PG
+            </span>
+            <span className="font-extrabold text-xl tracking-tight text-gray-900">
+              PLEINGAZ <span className="text-red-600 text-xs uppercase font-bold px-2 py-0.5 rounded bg-red-50 border border-red-200">Acheteur</span>
             </span>
           </div>
-          <div className="flex items-center gap-2">
-            <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[11px] font-semibold bg-emerald-950/80 text-emerald-400 border border-emerald-800/60">
-              <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
-              Connecté
-            </span>
+
+          <div className="flex items-center space-x-3">
+            {/* Composant transversal Infos & Annonces (ADR D18) */}
+            <InfoNoticesDrawer role="CUSTOMER" city="Douala" />
+
             <button
               onClick={handleLogout}
-              className="p-1.5 text-neutral-400 hover:text-white transition rounded-lg hover:bg-neutral-800"
+              className="p-2 text-gray-400 hover:text-red-600 rounded-full hover:bg-gray-100 transition-colors"
               title="Déconnexion"
+              aria-label="Déconnexion"
             >
               <LogOut className="w-4 h-4" />
             </button>
@@ -145,242 +153,135 @@ export default function BuyerDashboardPage() {
         </div>
       </header>
 
-      <main className="max-w-lg mx-auto p-4 space-y-4">
-        {/* Bannière InfoNotice Ciblée (D-18) */}
-        <AnimatePresence>
-          {notice && (
-            <motion.div
-              initial={{ opacity: 0, height: 0 }}
-              animate={{ opacity: 1, height: 'auto' }}
-              exit={{ opacity: 0, height: 0 }}
-              className="p-3.5 bg-sky-950/40 border border-sky-800/60 rounded-2xl flex items-start justify-between gap-3 shadow-lg"
-            >
-              <div className="flex items-start gap-2.5">
-                <Info className="w-4 h-4 text-sky-400 shrink-0 mt-0.5" />
-                <div>
-                  <h4 className="text-xs font-bold text-sky-300">{notice.title}</h4>
-                  <p className="text-[11px] text-neutral-300 mt-0.5 leading-relaxed">
-                    {notice.content}
-                  </p>
-                </div>
-              </div>
-              <button
-                onClick={handleAckNotice}
-                className="shrink-0 px-2.5 py-1.5 bg-sky-600 hover:bg-sky-500 text-white font-bold text-[11px] rounded-lg shadow transition"
-              >
-                J'ai compris
-              </button>
-            </motion.div>
-          )}
-        </AnimatePresence>
-
-        {/* Header Usager & Bouton Fuite Gaz */}
-        <div className="flex items-center justify-between pt-1">
-          <div>
-            <h1 className="text-xl font-black text-white">
-              Bonjour {user?.firstName || 'Marie'} 👋
-            </h1>
-            <p className="text-xs text-neutral-400">
-              Douala • Akwa • <span className="text-emerald-400 font-medium">PostgreSQL Direct</span>
-            </p>
-          </div>
-          <Link
-            href="/support/securite"
-            className="px-3 py-1.5 bg-red-950/80 border border-red-700/80 text-red-300 hover:bg-red-900 font-bold text-xs rounded-xl flex items-center gap-1.5 shadow-md shadow-red-900/20 active:scale-95 transition"
-          >
-            <AlertTriangle className="w-3.5 h-3.5 text-red-400" />
-            <span>Guide Fuite de gaz ?</span>
-          </Link>
-        </div>
-
-        {/* JAUGE DE QUOTA VISUELLE (D-14 : 5 bouteilles max / 30j) */}
-        <div className="bg-neutral-900/90 border border-neutral-800 rounded-3xl p-5 shadow-xl space-y-3">
-          <div className="flex items-center justify-between">
-            <span className="text-xs font-extrabold text-neutral-300 uppercase tracking-wider flex items-center gap-1.5">
-              <ShieldCheck className="w-4 h-4 text-amber-400" />
-              Mon Quota Mensuel (D-14)
-            </span>
-            <span className="text-sm font-black text-amber-400 font-mono">
-              {quota.consumed} / {quota.limit} <span className="text-xs font-normal text-neutral-500">bouteilles</span>
-            </span>
-          </div>
-
-          {/* Barres de progression individuelles */}
-          <div className="grid grid-cols-5 gap-2 pt-1">
-            {Array.from({ length: quota.limit }).map((_, index) => {
-              const isFilled = index < quota.consumed;
-              return (
-                <div
-                  key={index}
-                  className={`h-3 rounded-full transition-all duration-300 ${
-                    isFilled
-                      ? 'bg-gradient-to-r from-red-600 to-amber-500 shadow-md shadow-red-600/30'
-                      : 'bg-neutral-800'
-                  }`}
-                  title={isFilled ? `Bouteille ${index + 1} consommée` : `Bouteille ${index + 1} disponible`}
-                />
-              );
-            })}
-          </div>
-
-          <div className="flex items-center justify-between text-[11px] text-neutral-400 pt-1">
-            <span className="flex items-center gap-1">
-              {quota.remaining > 0 ? (
-                <>
-                  <span className="w-2 h-2 rounded-full bg-emerald-400" />
-                  <span>{quota.remaining} recharge{quota.remaining > 1 ? 's' : ''} restante{quota.remaining > 1 ? 's' : ''}</span>
-                </>
-              ) : (
-                <>
-                  <span className="w-2 h-2 rounded-full bg-red-500" />
-                  <strong className="text-red-400">Plafond atteint (0 disponible)</strong>
-                </>
-              )}
-            </span>
-            <span>Régulation : 5 max / 30 jours</span>
-          </div>
-        </div>
-
-        {/* REASSORT HABITUEL 1-CLIC */}
-        <div className="bg-gradient-to-br from-red-600 to-red-800 text-white rounded-3xl p-5 shadow-xl relative overflow-hidden">
-          <div className="flex items-center justify-between mb-3">
-            <span className="text-[11px] font-bold uppercase tracking-wider bg-white/20 px-2.5 py-1 rounded-full flex items-center gap-1">
-              <Zap className="w-3 h-3 fill-white" />
-              Recharge Habituelle Rapide
-            </span>
-            <span className="text-xs opacity-90">À 450 m</span>
-          </div>
-
-          <div className="flex items-baseline justify-between mb-4">
+      <main className="max-w-4xl mx-auto px-4 pt-6 space-y-6">
+        {/* Encart Salutation & Jauge de Quota (ADR D14) */}
+        <section className="bg-white border border-gray-200 rounded-2xl p-6 shadow-sm">
+          <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-4">
             <div>
-              <h3 className="text-xl font-black">Bouteille 12.5 kg PLEINGAZ</h3>
-              <p className="text-xs text-white/80">Dépôt Partenaire Akwa Nord</p>
+              <h1 className="text-2xl font-black text-gray-900">
+                Bonjour, {user?.firstName || 'Paul'} !
+              </h1>
+              <p className="text-xs text-gray-500 font-mono mt-0.5">
+                {user?.whatsappPhone || user?.phone || '+237 699 11 22 33'} • Compte Vérifié
+              </p>
             </div>
-            <div className="text-right">
-              <div className="text-2xl font-black font-mono">7 500 F</div>
-              <div className="text-[10px] text-white/80">dont 1 000 F livraison fixe</div>
+
+            <div className="flex items-center space-x-2">
+              <span className="text-xs font-bold px-3 py-1 bg-emerald-50 border border-emerald-200 text-emerald-700 rounded-full flex items-center gap-1">
+                <CheckCircle2 size={14} />
+                Fidélité : {points} pts ({(points * 10).toLocaleString()} F)
+              </span>
             </div>
           </div>
 
-          <Link
-            href="/checkout"
-            className="w-full py-3 bg-white hover:bg-neutral-100 active:scale-[0.99] text-red-600 font-extrabold text-sm rounded-xl shadow-lg flex items-center justify-center gap-2 transition"
-          >
-            <ShoppingBag className="w-4 h-4" />
-            <span>Commander en 1 Clic</span>
-            <ArrowRight className="w-4 h-4" />
-          </Link>
-        </div>
+          {/* Jauge Visuelle de Quota 5 Bouteilles / 30 Jours */}
+          <div className="bg-gray-50 border border-gray-200 rounded-xl p-4 space-y-2">
+            <div className="flex justify-between items-center text-xs font-bold text-gray-700">
+              <span className="flex items-center gap-1.5">
+                <ShieldCheck size={16} className="text-red-600" />
+                Quota Réglementaire (30 jours glissants) :
+              </span>
+              <span className={quota.remainingCount === 0 ? 'text-red-600 font-black' : 'text-emerald-700'}>
+                {quota.usedCount} / {quota.limit} bouteilles utilisées ({quota.remainingCount} autorisées)
+              </span>
+            </div>
 
-        {/* COMMANDE EN COURS & DOUBLE CONFIRMATION (D-17) */}
-        <div className="bg-neutral-900/90 border border-emerald-900/40 rounded-3xl p-5 shadow-xl space-y-3">
+            {/* Barre de progression */}
+            <div className="w-full bg-gray-200 h-3 rounded-full overflow-hidden">
+              <div
+                className={`h-full transition-all duration-500 ${
+                  quotaPercent >= 100
+                    ? 'bg-red-600'
+                    : quotaPercent >= 60
+                    ? 'bg-amber-500'
+                    : 'bg-emerald-500'
+                }`}
+                style={{ width: `${quotaPercent}%` }}
+              />
+            </div>
+
+            <div className="flex justify-between text-[11px] text-gray-500 pt-0.5">
+              <span>Plafond légal : 5 bouteilles max</span>
+              {quota.earliestReleaseDate && (
+                <span>
+                  Prochaine libération :{' '}
+                  {new Date(quota.earliestReleaseDate).toLocaleDateString('fr-FR', {
+                    day: 'numeric',
+                    month: 'short',
+                  })}
+                </span>
+              )}
+            </div>
+          </div>
+        </section>
+
+        {/* Bouton Proéminent "J'ai besoin de gaz maintenant" (D-14) */}
+        <section>
+          <Link
+            href="/search"
+            className="w-full py-5 px-6 rounded-2xl bg-red-600 hover:bg-red-700 text-white font-black text-lg shadow-lg shadow-red-600/25 flex items-center justify-center space-x-3 transition-transform hover:scale-[1.01] active:scale-[0.99]"
+          >
+            <Flame className="w-7 h-7 text-amber-300 animate-pulse" />
+            <span>J&apos;AI BESOIN DE GAZ MAINTENANT</span>
+            <ArrowRight className="w-6 h-6" />
+          </Link>
+        </section>
+
+        {/* Raccourci Réassort 1-Clic & Mes Distributeurs Habituels (C-01) */}
+        <section className="bg-white border border-gray-200 rounded-2xl p-6 shadow-sm space-y-4">
           <div className="flex items-center justify-between">
-            <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-bold bg-emerald-950 text-emerald-400 border border-emerald-800">
-              <Truck className="w-3.5 h-3.5" />
-              Course en cours
-            </span>
-            <span className="text-xs text-neutral-400 flex items-center gap-1">
-              <Clock className="w-3 h-3" />
-              Arrivée estimée : 12 min
-            </span>
+            <h2 className="text-base font-bold text-gray-900 flex items-center gap-2">
+              <ShoppingBag size={18} className="text-red-600" />
+              Mes Distributeurs Habituels & Réassort Rapide
+            </h2>
           </div>
 
-          <div className="border-t border-neutral-800/80 pt-3">
-            <div className="font-bold text-sm text-white">1x Bouteille 12.5 kg PLEINGAZ</div>
-            <p className="text-xs text-neutral-400 mt-0.5">
-              Livreur : <strong>Paul M. (Moto LT-402)</strong> • Repère : Devant pharmacie du rail
-            </p>
-          </div>
-
-          {/* Bloc de validation contradictoire */}
-          <div className="bg-neutral-950 p-4 rounded-2xl border border-neutral-800 mt-2">
-            {!deliveryConfirmed ? (
-              <>
-                <div className="flex items-center gap-2 text-emerald-400 font-bold text-xs mb-1">
-                  <PackageCheck className="w-4 h-4" />
-                  <span>Le livreur signale être arrivé avec votre bouteille</span>
-                </div>
-                <p className="text-[11px] text-neutral-400 mb-3">
-                  Contrôlez le plombage officiel avant de cliquer pour valider la réception.
-                </p>
-                <div className="flex gap-2">
-                  <button
-                    onClick={() => setDeliveryConfirmed(true)}
-                    className="flex-1 py-2.5 bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs rounded-xl shadow-md shadow-emerald-600/30 flex items-center justify-center gap-1.5 transition"
-                  >
-                    <CheckCircle2 className="w-3.5 h-3.5" />
-                    <span>J'ai bien reçu ma bouteille</span>
-                  </button>
-                  <button
-                    onClick={() => alert('Support PLEINGAZ alerté. Un dispatcheur examine la situation immédiatement.')}
-                    className="px-3 py-2.5 bg-neutral-800 hover:bg-neutral-700 text-neutral-300 font-bold text-xs rounded-xl transition"
-                  >
-                    Litige
-                  </button>
-                </div>
-              </>
-            ) : (
-              <div className="text-center py-2 space-y-1">
-                <div className="inline-flex items-center gap-1.5 text-emerald-400 font-extrabold text-sm">
-                  <CheckCircle2 className="w-4 h-4" />
-                  <span>Livraison Confirmée avec Succès !</span>
-                </div>
-                <p className="text-[11px] text-neutral-400">
-                  Reçu officiel transmis sur votre WhatsApp. Votre jauge de quota a été débitée.
-                </p>
+          <div className="border border-gray-200 rounded-xl p-4 bg-gray-50/50 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+            <div>
+              <div className="flex items-center space-x-2">
+                <span className="font-bold text-gray-900">Dépôt Officiel Akwa Nord</span>
+                <span className="px-2 py-0.5 bg-emerald-100 text-emerald-800 text-[10px] font-bold rounded">
+                  Stock BON (confirmé il y a 1h)
+                </span>
               </div>
-            )}
-          </div>
-        </div>
+              <p className="text-xs text-gray-500 mt-1">
+                Dernière commande : 1 x Bouteille 12.5kg (6 500 FCFA) • Total 4 commandes sur 12 mois
+              </p>
+            </div>
 
-        {/* DISTRIBUTEUR HABITUEL FAVORIS (C-01) */}
-        <div className="bg-neutral-900/90 border border-neutral-800 rounded-3xl p-5 shadow-xl flex items-center justify-between">
-          <div className="space-y-1">
-            <span className="text-[11px] font-bold text-neutral-400 uppercase tracking-wider block">
-              Mon Dépôt Agréé Habituel
-            </span>
-            <h4 className="font-bold text-sm text-white">Dépôt Gaz Akwa Nord</h4>
-            <p className="text-xs text-neutral-400">Carrefour Rail • Ouvert jusqu'à 20h00</p>
-            <span className="inline-block px-2 py-0.5 rounded-full text-[10px] font-bold bg-emerald-950 text-emerald-400 border border-emerald-800 mt-1">
-              En stock (18 btl)
-            </span>
+            <div className="flex items-center space-x-2 w-full sm:w-auto">
+              <Link
+                href="/checkout?repeat=last"
+                className="py-2.5 px-4 bg-gray-900 hover:bg-black text-white text-xs font-bold rounded-lg transition-colors flex items-center space-x-1.5 shadow-sm"
+              >
+                <RefreshCw size={14} />
+                <span>Recommander en 1 clic</span>
+              </Link>
+            </div>
           </div>
-          <Link
-            href="/stores"
-            className="px-3 py-2 bg-neutral-800 hover:bg-neutral-700 text-xs font-bold rounded-xl text-neutral-200 transition"
+        </section>
+
+        {/* Bouton d'Urgence Fuite de Gaz (ADR D14) */}
+        <section className="bg-red-50 border border-red-200 rounded-2xl p-4 flex items-center justify-between">
+          <div className="flex items-center space-x-3">
+            <div className="w-10 h-10 rounded-full bg-red-100 text-red-600 flex items-center justify-center shrink-0">
+              <AlertOctagon size={22} />
+            </div>
+            <div>
+              <h3 className="text-sm font-bold text-red-900">Urgence : Odeur ou fuite suspectée ?</h3>
+              <p className="text-xs text-red-700">Fermez le détendeur et appelez immédiatement l&apos;assistance.</p>
+            </div>
+          </div>
+
+          <a
+            href="tel:+237699000000"
+            className="py-2 px-3 bg-red-600 hover:bg-red-700 text-white font-bold text-xs rounded-lg flex items-center space-x-1 transition-colors shadow-xs shrink-0"
           >
-            Changer
-          </Link>
-        </div>
+            <PhoneCall size={14} />
+            <span>Appel d&apos;urgence</span>
+          </a>
+        </section>
       </main>
-
-      {/* Bottom Mobile Navigation */}
-      <nav className="fixed bottom-0 left-0 right-0 z-40 bg-neutral-900/95 backdrop-blur-lg border-t border-neutral-800 py-2 px-6">
-        <div className="max-w-lg mx-auto flex items-center justify-around">
-          <Link href="/account" className="flex flex-col items-center gap-1 text-red-500 font-bold text-[10px]">
-            <Flame className="w-5 h-5 fill-red-500" />
-            <span>Accueil</span>
-          </Link>
-          <Link href="/checkout" className="flex flex-col items-center gap-1 text-neutral-400 hover:text-white text-[10px] transition">
-            <ShoppingBag className="w-5 h-5" />
-            <span>Commander</span>
-          </Link>
-          <button
-            onClick={() => alert('Historique des commandes réelles : 2 commandes archivées sur votre compte.')}
-            className="flex flex-col items-center gap-1 text-neutral-400 hover:text-white text-[10px] transition"
-          >
-            <Clock className="w-5 h-5" />
-            <span>Historique</span>
-          </button>
-          <button
-            onClick={() => alert(`Profil : ${user?.firstName || 'Marie'} • WhatsApp : ${user?.phone || '+237699123456'}`)}
-            className="flex flex-col items-center gap-1 text-neutral-400 hover:text-white text-[10px] transition"
-          >
-            <ShieldCheck className="w-5 h-5" />
-            <span>Sécurité</span>
-          </button>
-        </div>
-      </nav>
     </div>
   );
 }

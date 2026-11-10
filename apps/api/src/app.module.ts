@@ -19,7 +19,6 @@ import { NotificationsModule } from './notifications/notifications.module';
 import { ChatModule } from './chat/chat.module';
 import { AiModule } from './ai/ai.module';
 import { DashboardModule } from './dashboard/dashboard.module';
-import { ImportsModule } from './imports/imports.module';
 import { Cr003Module } from './cr003/cr003.module';
 
 @Module({
@@ -45,7 +44,6 @@ import { Cr003Module } from './cr003/cr003.module';
     ChatModule,
     AiModule,
     DashboardModule,
-    ImportsModule,
     Cr003Module,
     BullModule.forRoot({
       connection: {

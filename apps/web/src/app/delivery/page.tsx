@@ -1,245 +1,281 @@
 'use client';
 
-import { useState } from 'react';
-import {
-  Truck,
-  CheckCircle2,
-  PackageSearch,
-  PackageOpen,
-  Download,
-  ShieldCheck,
-  AlertTriangle,
-  User,
-  Phone,
-  MapPin,
-  Clock,
-  Sparkles,
-  ArrowRight
-} from 'lucide-react';
-import { motion, AnimatePresence } from 'framer-motion';
+import React, { useState } from 'react';
+import { Truck, CheckCircle2, PhoneCall, MessageSquare, AlertCircle, ShieldCheck, DollarSign, MapPin, Navigation, ArrowRight, Lock } from 'lucide-react';
 import Link from 'next/link';
+import { InfoNoticesDrawer } from '@/components/common/InfoNoticesDrawer';
 
-export default function DeliveryTracker() {
-  const [activeRole, setActiveRole] = useState<'COURIER' | 'CUSTOMER'>('COURIER');
-  const [courierDelivered, setCourierDelivered] = useState(false);
-  const [customerReceived, setCustomerReceived] = useState(false);
-  const [disputeTriggered, setDisputeTriggered] = useState(false);
+export default function DeliveryCourierPage() {
+  const [isAvailable, setIsAvailable] = useState(true);
+  const [cashCollected, setCashCollected] = useState(13000); // Espèces en main
+  const cashLimit = 50000; // Plafond légal 50 000 FCFA (ADR D9)
 
-  const isFullyDelivered = courierDelivered && customerReceived;
+  const [deliveryState, setDeliveryState] = useState<'IN_PROGRESS' | 'COMPLETED'>('IN_PROGRESS');
+  const [clientSecretCode, setClientSecretCode] = useState('');
+  const [codeError, setCodeError] = useState<string | null>(null);
+  const [validating, setValidating] = useState(false);
+
+  const [todayEarnings, setTodayEarnings] = useState(6000); // 6 courses x 1000 FCFA
+  const [completedCount, setCompletedCount] = useState(6);
+
+  // Validation contradictoire par code confidentiel (ADR D9, D17)
+  const handleConfirmDelivery = () => {
+    setCodeError(null);
+
+    if (!clientSecretCode.trim()) {
+      setCodeError('Veuillez demander et saisir le code confidentiel à 4 chiffres remis par le client.');
+      return;
+    }
+
+    // Le code attendu pour la course de démonstration est 4815 ou tout code à 4 chiffres
+    if (clientSecretCode.trim().length !== 4) {
+      setCodeError('Le code secret client doit comporter exactement 4 chiffres.');
+      return;
+    }
+
+    setValidating(true);
+    setTimeout(() => {
+      setDeliveryState('COMPLETED');
+      setTodayEarnings((prev) => prev + 1000); // Tarif fixe 1 000 FCFA (D-17)
+      setCompletedCount((prev) => prev + 1);
+      setCashCollected((prev) => prev + 6500); // 6 500 F encaissés en cash
+      setValidating(false);
+    }, 600);
+  };
+
+  const handleResetDemoMission = () => {
+    setDeliveryState('IN_PROGRESS');
+    setClientSecretCode('');
+    setCodeError(null);
+  };
+
+  const cashPercent = Math.min(100, (cashCollected / cashLimit) * 100);
 
   return (
-    <div className="min-h-screen bg-neutral-950 text-white py-10 px-4">
-      <div className="max-w-xl mx-auto space-y-6">
-
-        {/* Header & Switch de Perspective (D-17 Démonstrateur) */}
-        <div className="text-center space-y-2">
-          <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-black bg-red-950/80 border border-red-800 text-red-300 uppercase tracking-wider">
-            <Truck size={14} className="text-red-500" />
-            Double Confirmation Contradictoire (D-17)
-          </div>
-          <h1 className="text-2xl sm:text-3xl font-black text-white">
-            Suivi Mission & Livraison
-          </h1>
-          <p className="text-xs text-neutral-400">
-            Forfait fixe PLEINGAZ : <strong>1 000 FCFA</strong> • Commande #ORD-20261030-99F2
-          </p>
-
-          {/* Toggle Rôle Démonstrateur */}
-          <div className="inline-flex p-1 bg-neutral-900 border border-neutral-800 rounded-2xl mt-2">
-            <button
-              onClick={() => setActiveRole('COURIER')}
-              className={`px-4 py-1.5 rounded-xl text-xs font-bold transition-all ${
-                activeRole === 'COURIER'
-                  ? 'bg-red-600 text-white shadow-md shadow-red-600/30'
-                  : 'text-neutral-400 hover:text-white'
-              }`}
-            >
-              Vue Livreur (Paul M.) 🛵
-            </button>
-            <button
-              onClick={() => setActiveRole('CUSTOMER')}
-              className={`px-4 py-1.5 rounded-xl text-xs font-bold transition-all ${
-                activeRole === 'CUSTOMER'
-                  ? 'bg-red-600 text-white shadow-md shadow-red-600/30'
-                  : 'text-neutral-400 hover:text-white'
-              }`}
-            >
-              Vue Client (Marie T.) 👤
-            </button>
-          </div>
-        </div>
-
-        {/* Détails de la mission */}
-        <div className="p-5 rounded-3xl bg-neutral-900 border border-neutral-800 shadow-xl space-y-3">
-          <div className="flex items-center justify-between">
-            <span className="text-xs font-extrabold text-neutral-400 uppercase tracking-wider">
-              Course en cours
+    <div className="min-h-screen bg-gray-100 text-gray-900 pb-20">
+      {/* Top Navbar Livreur */}
+      <header className="bg-gray-900 text-white border-b border-gray-800 sticky top-0 z-30 shadow-md">
+        <div className="max-w-xl mx-auto px-4 h-16 flex items-center justify-between">
+          <div className="flex items-center space-x-3">
+            <span className="w-10 h-10 rounded-xl bg-emerald-600 flex items-center justify-center text-white font-black text-xl shadow-xs">
+              🛵
             </span>
-            <span className="text-xs font-bold text-amber-400">
-              Tarif Livraison : 1 000 FCFA (Fixe D-17)
-            </span>
-          </div>
-
-          <div className="border-t border-neutral-800 pt-2 flex items-center justify-between">
             <div>
-              <div className="font-bold text-sm text-white">1x Bouteille 12.5 kg PLEINGAZ</div>
-              <div className="text-xs text-neutral-400 flex items-center gap-1 mt-0.5">
-                <MapPin size={13} className="text-red-500" />
-                <span>Akwa Nord, face pharmacie du rail</span>
+              <div className="flex items-center space-x-2">
+                <span className="font-extrabold text-sm text-white">Paul M. (Moto #LT-402)</span>
               </div>
-            </div>
-            <div className="text-right">
-              <span className="text-base font-black text-white font-mono">7 500 F</span>
-              <span className="text-[10px] text-neutral-500 block">Total TTC</span>
+              <button
+                onClick={() => setIsAvailable(!isAvailable)}
+                className={`text-[11px] font-bold flex items-center space-x-1 ${
+                  isAvailable ? 'text-emerald-400' : 'text-gray-400'
+                }`}
+              >
+                <span className={`w-2 h-2 rounded-full ${isAvailable ? 'bg-emerald-400 animate-pulse' : 'bg-gray-500'}`} />
+                <span>{isAvailable ? 'En service (Disponible)' : 'En pause'}</span>
+              </button>
             </div>
           </div>
 
-          {/* Coordonnées Client : Masquage après livraison (D-11 / RGPD) */}
-          <div className="p-3 bg-neutral-950 rounded-2xl border border-neutral-800 text-xs">
-            <div className="text-neutral-400 font-bold mb-1">Destinataire :</div>
-            {isFullyDelivered ? (
-              <span className="text-neutral-500 italic">
-                🔒 Coordonnées masquées après livraison clôturée (Protection vie privée).
-              </span>
-            ) : (
-              <div className="flex items-center justify-between">
-                <span>Marie Tchouassi</span>
-                <span className="text-neutral-400 font-mono">+237 699 123 456</span>
-              </div>
-            )}
-          </div>
-        </div>
-
-        {/* ÉTATS DE LA DOUBLE VALIDATION */}
-        <div className="p-6 rounded-3xl bg-neutral-900 border border-neutral-800 shadow-2xl space-y-6">
-          <h2 className="text-base font-black text-white flex items-center gap-2">
-            <ShieldCheck size={18} className="text-emerald-400" />
-            Statut des Validations Contradictoires
-          </h2>
-
-          <div className="grid grid-cols-2 gap-4">
-            {/* Statut Livreur */}
-            <div className={`p-4 rounded-2xl border text-center space-y-2 transition-all ${
-              courierDelivered
-                ? 'bg-emerald-950/40 border-emerald-500/50 text-emerald-300'
-                : 'bg-neutral-950 border-neutral-800 text-neutral-400'
-            }`}>
-              <div className="text-xs font-bold">1. Validation Livreur</div>
-              <div className="text-2xl">
-                {courierDelivered ? '✅' : '⏳'}
-              </div>
-              <span className="text-[11px] block font-semibold">
-                {courierDelivered ? 'Bouteille déposée' : 'En attente clic livreur'}
-              </span>
-            </div>
-
-            {/* Statut Client */}
-            <div className={`p-4 rounded-2xl border text-center space-y-2 transition-all ${
-              customerReceived
-                ? 'bg-emerald-950/40 border-emerald-500/50 text-emerald-300'
-                : 'bg-neutral-950 border-neutral-800 text-neutral-400'
-            }`}>
-              <div className="text-xs font-bold">2. Validation Client</div>
-              <div className="text-2xl">
-                {customerReceived ? '✅' : '⏳'}
-              </div>
-              <span className="text-[11px] block font-semibold">
-                {customerReceived ? 'Réception confirmée' : 'En attente clic client'}
-              </span>
-            </div>
-          </div>
-
-          {/* Action selon le rôle actif */}
-          {activeRole === 'COURIER' && (
-            <div className="pt-2">
-              {!courierDelivered ? (
-                <button
-                  onClick={() => setCourierDelivered(true)}
-                  className="w-full py-3.5 px-4 bg-emerald-600 hover:bg-emerald-500 text-white font-black text-sm rounded-2xl shadow-lg shadow-emerald-600/30 flex items-center justify-center gap-2 transition"
-                >
-                  <CheckCircle2 size={18} />
-                  <span>J'ai remis la bouteille au client</span>
-                </button>
-              ) : (
-                <div className="text-center p-3 bg-neutral-950 rounded-2xl text-xs text-neutral-400 border border-neutral-800">
-                  Votre confirmation est enregistrée. En attente de la validation du client pour débloquer votre solde de course (+1 000 F).
-                </div>
-              )}
-            </div>
-          )}
-
-          {activeRole === 'CUSTOMER' && (
-            <div className="pt-2 space-y-3">
-              {!customerReceived ? (
-                <div className="space-y-2">
-                  <button
-                    onClick={() => setCustomerReceived(true)}
-                    className="w-full py-3.5 px-4 bg-emerald-600 hover:bg-emerald-500 text-white font-black text-sm rounded-2xl shadow-lg shadow-emerald-600/30 flex items-center justify-center gap-2 transition"
-                  >
-                    <CheckCircle2 size={18} />
-                    <span>J'ai bien reçu ma bouteille (Plombage intact)</span>
-                  </button>
-
-                  <button
-                    onClick={() => setDisputeTriggered(true)}
-                    className="w-full py-2.5 text-xs text-red-400 hover:text-red-300 transition font-bold"
-                  >
-                    Signaler un litige / Bouteille non conforme
-                  </button>
-                </div>
-              ) : (
-                <div className="text-center p-3 bg-neutral-950 rounded-2xl text-xs text-neutral-400 border border-neutral-800">
-                  Vous avez validé la bonne réception de votre bouteille. Reçu transmis sur votre WhatsApp.
-                </div>
-              )}
-            </div>
-          )}
-
-          {/* Bannière de Clôture Totale */}
-          {isFullyDelivered && (
-            <motion.div
-              initial={{ opacity: 0, scale: 0.95 }}
-              animate={{ opacity: 1, scale: 1 }}
-              className="p-5 bg-gradient-to-r from-emerald-950 to-neutral-900 border border-emerald-500/50 rounded-2xl text-center space-y-2 shadow-xl"
+          <div className="flex items-center space-x-2">
+            <InfoNoticesDrawer role="COURIER" city="Douala" />
+            <Link
+              href="/"
+              className="text-xs text-gray-400 hover:text-white px-2 py-1 rounded transition-colors"
             >
-              <div className="inline-flex items-center gap-2 text-emerald-400 font-black text-base">
-                <CheckCircle2 size={20} />
-                <span>Mission Clôturée à 100% (DELIVERED)</span>
-              </div>
-              <p className="text-xs text-neutral-300">
-                Écritures comptables générées dans le Grand Livre. Reversement de 1 000 FCFA crédité au livreur.
-              </p>
-              <div className="pt-2">
-                <button
-                  onClick={() => alert('Téléchargement de la facture officielle PLEINGAZ PDF (Conforme D-06)...')}
-                  className="px-4 py-2 bg-white text-neutral-900 font-extrabold text-xs rounded-xl shadow-md flex items-center justify-center gap-1.5 mx-auto hover:bg-neutral-100 transition"
-                >
-                  <Download size={14} />
-                  <span>Télécharger la facture PDF</span>
-                </button>
-              </div>
-            </motion.div>
-          )}
+              Quitter
+            </Link>
+          </div>
+        </div>
+      </header>
 
-          {disputeTriggered && (
-            <div className="p-4 bg-red-950/60 border border-red-700/60 rounded-2xl text-xs text-red-200 flex items-start gap-2">
-              <AlertTriangle size={16} className="text-red-400 shrink-0 mt-0.5" />
+      <main className="max-w-xl mx-auto px-4 pt-4 space-y-4">
+        {/* Résumé des Gains & Caisse Cash on Delivery */}
+        <div className="grid grid-cols-2 gap-3">
+          {/* Gains Nets */}
+          <div className="bg-gray-900 text-white p-4 rounded-2xl shadow-sm space-y-1">
+            <span className="text-[10px] uppercase font-bold tracking-wider text-gray-400">Gains du jour</span>
+            <div className="text-2xl font-black text-emerald-400">
+              {todayEarnings.toLocaleString()} <span className="text-xs font-bold text-gray-300">FCFA</span>
+            </div>
+            <p className="text-[11px] text-gray-400">
+              {completedCount} courses (1 000 F / course fixe)
+            </p>
+          </div>
+
+          {/* Suivi Espèces en Caisse (Plafond 50 000 F - ADR D9) */}
+          <div className="bg-white border border-gray-200 p-4 rounded-2xl shadow-sm space-y-1.5">
+            <div className="flex justify-between items-center text-[10px] font-bold text-gray-500 uppercase tracking-wider">
+              <span>Espèces en main</span>
+              <span className={cashCollected >= 45000 ? 'text-red-600 font-extrabold' : 'text-gray-700'}>
+                {cashCollected.toLocaleString()} / 50 000 F
+              </span>
+            </div>
+            <div className="w-full bg-gray-200 h-2 rounded-full overflow-hidden">
+              <div
+                className={`h-full transition-all duration-300 ${
+                  cashPercent >= 90 ? 'bg-red-600' : cashPercent >= 70 ? 'bg-amber-500' : 'bg-emerald-500'
+                }`}
+                style={{ width: `${cashPercent}%` }}
+              />
+            </div>
+            <p className="text-[10px] text-gray-500">
+              {cashCollected >= 45000
+                ? '⚠️ Versement proche du seuil 50k FCFA'
+                : 'Caisse en règle envers PLEINGAZ'}
+            </p>
+          </div>
+        </div>
+
+        {/* MISSION ACTIVE AVEC DOUBLE CONFIRMATION CONTRADICTOIRE (D-17) */}
+        {deliveryState === 'IN_PROGRESS' ? (
+          <div className="bg-white border-2 border-emerald-500 rounded-2xl p-5 shadow-md space-y-4">
+            <div className="flex justify-between items-center border-b border-gray-100 pb-3">
+              <span className="px-2.5 py-1 bg-emerald-100 text-emerald-800 text-xs font-black uppercase rounded-full">
+                Course Active #PG-9482
+              </span>
+              <span className="font-extrabold text-red-600 text-sm">
+                +1 000 FCFA Net
+              </span>
+            </div>
+
+            {/* Étape 1 : Récupération au Dépôt */}
+            <div className="bg-gray-50 border border-gray-200 rounded-xl p-3.5 space-y-1">
+              <span className="text-[10px] font-bold text-gray-500 uppercase tracking-wide flex items-center gap-1">
+                <span className="w-4 h-4 rounded-full bg-gray-900 text-white text-[10px] flex items-center justify-center font-bold">1</span>
+                Prise en charge au Dépôt agréé
+              </span>
+              <h3 className="font-extrabold text-sm text-gray-900">Dépôt PLEINGAZ Akwa Nord</h3>
+              <p className="text-xs text-gray-600">
+                1 x Bouteille 12.5 kg scellée d&apos;usine • Prête à l&apos;enlèvement
+              </p>
+            </div>
+
+            {/* Étape 2 : Livraison au Client & Repère Textuel Précis */}
+            <div className="bg-amber-50/60 border border-amber-200 rounded-xl p-3.5 space-y-2">
+              <span className="text-[10px] font-bold text-amber-900 uppercase tracking-wide flex items-center gap-1">
+                <span className="w-4 h-4 rounded-full bg-amber-600 text-white text-[10px] flex items-center justify-center font-bold">2</span>
+                Lieu de livraison chez le client
+              </span>
+
               <div>
-                <strong className="block text-red-300 font-bold mb-0.5">Dossier de litige ouvert :</strong>
-                La course est suspendue. Un superviseur logistique PLEINGAZ contacte le client et le livreur dans les 10 minutes.
+                <h3 className="font-extrabold text-sm text-gray-900">Marie T. (Akwa Nord)</h3>
+                <div className="flex items-start space-x-1.5 text-xs text-red-700 font-bold mt-1 bg-white p-2 rounded-lg border border-amber-200">
+                  <MapPin className="w-4 h-4 shrink-0 text-red-600 mt-0.5" />
+                  <span>Repère visuel : En face de la Pharmacie du Rail, portail noir barbelé</span>
+                </div>
+              </div>
+
+              {/* Boutons d'Appel Direct et WhatsApp */}
+              <div className="flex gap-2 pt-1">
+                <a
+                  href="tel:+237677112233"
+                  className="flex-1 py-2.5 px-3 bg-white border border-gray-300 hover:bg-gray-50 text-gray-800 text-xs font-bold rounded-lg flex items-center justify-center space-x-1.5 shadow-xs transition-colors"
+                >
+                  <PhoneCall size={14} className="text-gray-700" />
+                  <span>Appeler cliente</span>
+                </a>
+                <a
+                  href="https://wa.me/237699112233?text=Bonjour,%20je%20suis%20votre%20livreur%20PLEINGAZ,%20je%20suis%20en%20route"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="flex-1 py-2.5 px-3 bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold rounded-lg flex items-center justify-center space-x-1.5 shadow-xs transition-colors"
+                >
+                  <MessageSquare size={14} />
+                  <span>WhatsApp</span>
+                </a>
               </div>
             </div>
-          )}
-        </div>
 
-        {/* Footer retour */}
-        <div className="text-center pt-4">
-          <Link href="/account" className="text-xs text-neutral-500 hover:text-white transition">
-            ← Revenir au tableau de bord
-          </Link>
-        </div>
+            {/* Clôture Contradictoire avec Saisie du Code Confidentiel Client (ADR D9, D17) */}
+            <div className="border-t border-gray-100 pt-3 space-y-3">
+              <div>
+                <label className="text-xs font-black text-gray-900 flex items-center gap-1.5 mb-1">
+                  <Lock size={15} className="text-red-600" />
+                  Saisir le Code Confidentiel à 4 chiffres (fourni par la cliente) :
+                </label>
+                <input
+                  type="text"
+                  maxLength={4}
+                  placeholder="Ex: 4815"
+                  value={clientSecretCode}
+                  onChange={(e) => setClientSecretCode(e.target.value.replace(/\D/g, ''))}
+                  className="w-full text-center text-2xl font-mono font-black tracking-widest py-3 bg-gray-50 border-2 border-gray-300 focus:border-red-600 focus:bg-white rounded-xl focus:outline-none transition-all"
+                />
+                <span className="text-[11px] text-gray-500 text-center block mt-1">
+                  Remise sécurisée : La cliente doit vous donner son code secret lors du dépôt de la bouteille.
+                </span>
+              </div>
 
-      </div>
+              {codeError && (
+                <div className="p-2.5 bg-red-50 border border-red-200 text-red-800 text-xs rounded-xl flex items-center space-x-1.5">
+                  <AlertCircle size={15} className="shrink-0 text-red-600" />
+                  <span>{codeError}</span>
+                </div>
+              )}
+
+              <button
+                type="button"
+                onClick={handleConfirmDelivery}
+                disabled={validating}
+                className="w-full py-4 bg-red-600 hover:bg-red-700 text-white font-black text-sm rounded-xl shadow-lg shadow-red-600/30 flex items-center justify-center space-x-2 transition-transform hover:scale-[1.01]"
+              >
+                {validating ? (
+                  <span>Validation contradictoire en cours...</span>
+                ) : (
+                  <>
+                    <CheckCircle2 size={18} />
+                    <span>J&apos;AI LIVRÉ LA BOUTEILLE (CLÔTURE)</span>
+                  </>
+                )}
+              </button>
+            </div>
+          </div>
+        ) : (
+          /* Mission Clôturée avec Succès */
+          <div className="bg-white border border-emerald-300 rounded-2xl p-6 text-center space-y-4 shadow-sm">
+            <div className="w-14 h-14 bg-emerald-100 text-emerald-600 rounded-full flex items-center justify-center mx-auto">
+              <CheckCircle2 size={32} />
+            </div>
+
+            <h2 className="text-xl font-black text-gray-900">Course #PG-9482 Terminée !</h2>
+            <p className="text-xs text-gray-600 max-w-sm mx-auto">
+              La remise a été validée contradictoirement. Votre compte livreur est crédité de <strong>1 000 FCFA</strong>. Les coordonnées de la cliente ont été masquées pour la confidentialité (D-17).
+            </p>
+
+            <button
+              onClick={handleResetDemoMission}
+              className="py-3 px-6 bg-gray-900 hover:bg-black text-white font-bold text-xs rounded-xl shadow-md transition-colors"
+            >
+              Rechercher une nouvelle course disponible
+            </button>
+          </div>
+        )}
+
+        {/* Historique Rapide des Dernières Remises */}
+        <div className="bg-white border border-gray-200 rounded-2xl p-4 shadow-sm space-y-3">
+          <h3 className="font-extrabold text-xs text-gray-700 uppercase tracking-wider">
+            Historique du Jour
+          </h3>
+
+          <div className="space-y-2 text-xs">
+            <div className="flex justify-between items-center p-2.5 bg-gray-50 rounded-lg">
+              <div>
+                <span className="font-bold text-gray-900 block">Bonapriso • Recharge 12.5kg</span>
+                <span className="text-gray-500 text-[10px]">Livré à 10:42 • Code validé</span>
+              </div>
+              <span className="font-extrabold text-emerald-700">+1 000 FCFA</span>
+            </div>
+
+            <div className="flex justify-between items-center p-2.5 bg-gray-50 rounded-lg">
+              <div>
+                <span className="font-bold text-gray-900 block">Akwa Nord • Bouteille 6kg</span>
+                <span className="text-gray-500 text-[10px]">Livré à 09:15 • Code validé</span>
+              </div>
+              <span className="font-extrabold text-emerald-700">+1 000 FCFA</span>
+            </div>
+          </div>
+        </div>
+      </main>
     </div>
   );
 }

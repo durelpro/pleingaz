@@ -114,18 +114,14 @@ Le pilote est le premier test grandeur nature sur une cible restreinte pour ajus
 - M33 Livreurs sur la plateforme et attribution manuelle
 - M34 Grand livre immuable et reversements avec approbation à deux
 - M35 Administration à données réelles et comptes rendus Control Center
-- M36 Import du réseau existant Google My Maps et publication immédiate contrôlée (D-07)
-- M37 Classification stricte pré-import et quarantaine des particuliers (D-08)
-- M38 Réclamation (claim) et complétion progressive par les distributeurs (D-09)
-- M39 Contrôle administrateur de l'import, dry-run, approbation et rollback (D-10)
-- M40 Authentification obligatoire, portails étanches et règle aucune trace (CR-003 D-11)
-- M41 Inscription, connexion et preuve entrante WhatsApp gratuite (CR-003 D-12)
-- M42 Charte graphique inchangée et direction créative mobile-first (CR-003 D-13)
-- M43 Espace acheteur, historique par distributeur et limite 5 bouteilles (CR-003 D-14)
-- M44 Gestionnaire de compte sans usurpation et dossiers AccountCase (CR-003 D-15)
-- M45 Registre unique des transactions et mode vente au comptoir (CR-003 D-16)
-- M46 Double confirmation de livraison et tarification duale 1 000 F (CR-003 D-17)
-- M47 Rubrique Infos et annonces administratives ciblées (CR-003 D-18)
+- M36 Authentification obligatoire, portails étanches et règle aucune trace (CR-003 D-11)
+- M37 Inscription, connexion et preuve entrante WhatsApp gratuite (CR-003 D-12)
+- M38 Charte graphique inchangée et direction créative mobile-first (CR-003 D-13)
+- M39 Espace acheteur, historique par distributeur et limite 5 bouteilles (CR-003 D-14)
+- M40 Gestionnaire de compte sans usurpation et dossiers AccountCase (CR-003 D-15)
+- M41 Registre unique des transactions et mode vente au comptoir (CR-003 D-16)
+- M42 Double confirmation de livraison et tarification duale 1 000 F (CR-003 D-17)
+- M43 Rubrique Infos et annonces administratives ciblées (CR-003 D-18)
 - H01 Fonctionnalité hors MVP 1
 - H02 Fonctionnalité hors MVP 2
 - H03 Fonctionnalité hors MVP 3
@@ -145,8 +141,6 @@ Le pilote est le premier test grandeur nature sur une cible restreinte pour ajus
 - H17 Analyses avancées, prévisions IA et cartes de chaleur
 - H18 Automatisation des reversements via API Payout
 - H19 Marketplace et vente de produits tiers (Hors périmètre)
-- H20 Fusion assistée des doublons géographiques complexes
-- H21 Import périodique et synchronisation automatique de fichiers réseau
 
 ## Phase 2B
 - Pages existantes (About, Products, Services, FAQ, Blog, Contact, points de vente)

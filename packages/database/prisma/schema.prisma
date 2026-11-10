@@ -16,8 +16,8 @@ datasource db {
 model User {
   id              String           @id @default(uuid())
   phone           String           @unique
-  whatsappPhone   String?          @unique
-  callPhone       String?
+  whatsappPhone   String?          @unique // E.164 D-12
+  callPhone       String?          // E.164 D-12
   email           String?          @unique
   passwordHash    String?          // Argon2id hash
   isPhoneVerified Boolean          @default(false)
@@ -34,17 +34,12 @@ model User {
   auditLogs       AuditLog[]       @relation("UserAuditLogs")
   demandAlerts    DemandAlert[]
 
-  // CR-002: Imports et Revendications Réseau
-  storeClaimsSubmitted  StoreClaim[]     @relation("ClaimSubmittedBy")
-  storeClaimsReviewed   StoreClaim[]     @relation("ClaimReviewedBy")
-  importBatchesCreated  ImportBatch[]    @relation("ImportBatchCreatedBy")
-  importBatchesApproved ImportBatch[]    @relation("ImportBatchApprovedBy")
-
-  // CR-003 : Nouveaux flux authentifiés et assistés
+  // CR-003: Relations
   verificationChallenges VerificationChallenge[]
-  managedCases           AccountCase[]           @relation("ManagedAccountCases")
-  subjectCases           AccountCase[]           @relation("SubjectAccountCases")
-  counterSalesAsCustomer CounterSale[]           @relation("CounterSaleCustomer")
+  managedAccountCases    AccountCase[]           @relation("ManagedAccountCases")
+  subjectAccountCases    AccountCase[]           @relation("SubjectAccountCases")
+  adminAccountCases      AccountCase[]           @relation("AdminApprovedAccountCases")
+  infoNoticesCreated     InfoNotice[]            @relation("NoticeCreatedBy")
   infoNoticeReads        InfoNoticeRead[]
 
   // Commandes & Livraisons
@@ -239,26 +234,12 @@ model StoreDocument {
   updatedAt      DateTime               @updatedAt
 }
 
-enum VerificationLevel {
-  LISTED
-  CLAIMED_PENDING
-  BASIC_VERIFIED
-  FULLY_VERIFIED
-}
-
-enum ClaimStatus {
-  UNCLAIMED
-  PENDING_VERIFICATION
-  CLAIMED
-  REJECTED
-}
-
 model Store {
   id              String                  @id @default(uuid())
   applicationId   String?                 @unique
   application     DistributorApplication? @relation(fields: [applicationId], references: [id])
-  ownerId         String?
-  owner           User?                   @relation(fields: [ownerId], references: [id])
+  ownerId         String
+  owner           User                    @relation(fields: [ownerId], references: [id])
 
   name            String
   city            String
@@ -270,116 +251,26 @@ model Store {
   whatsappNumber  String?
   openingHours    Json?
 
-  isVerifiedBadge Boolean                @default(false)
+  isVerifiedBadge Boolean                @default(true)
   isVisible       Boolean                @default(true)
   deliveryAvailable Boolean              @default(false)
-
-  // CR-002: Réseau & Cycle de vie
-  verificationLevel   VerificationLevel   @default(FULLY_VERIFIED)
-  claimStatus         ClaimStatus         @default(CLAIMED)
-  source              String?             // e.g. "MY_MAPS_IMPORT", "MANUAL", "KYC_ONBOARDING"
-  sourceRef           String?             // e.g. "kml_pm_1_..."
-  fieldLocks          Json?               // liste des champs protégés contre écrasement réimport
-  onlineOrderingEnabled Boolean           @default(true) // false pour points LISTED non revendiqués
-
-  importBatchId       String?
-  importBatch         ImportBatch?        @relation(fields: [importBatchId], references: [id])
 
   reliabilityScore Float                 @default(100)
   badges          Json?
 
   // Numéros réels de réception des règlements MoMo
   momoReceiverNumber   String?
-  momoAccountName      String?
   orangeReceiverNumber String?
-  orangeAccountName    String?
-  acceptCash           Boolean                @default(true)
 
   inventories     Inventory[]
   orders          Order[]
   stockReservations StockReservation[]
   reports         Report[]
-  claims          StoreClaim[]
-  importRecords   ImportRecord[]
   counterSales    CounterSale[]
 
   createdAt       DateTime               @default(now())
   updatedAt       DateTime               @updatedAt
-
-  @@unique([source, sourceRef])
 }
-
-model ImportBatch {
-  id                   String         @id @default(uuid())
-  fileName             String
-  fileHashSha256       String
-  status               String         @default("STAGED") // STAGED, DRY_RUN_COMPLETED, PENDING_APPROVAL, APPROVED, APPLIED, REJECTED, ROLLED_BACK
-  totalPlacemarks      Int            @default(0)
-  importedCount        Int            @default(0)
-  quarantinedCount     Int            @default(0)
-  rawSummary           Json?
-  pleingazAgreementRef String?
-  createdById          String?
-  createdBy            User?          @relation("ImportBatchCreatedBy", fields: [createdById], references: [id])
-  approvedById         String?
-  approvedBy           User?          @relation("ImportBatchApprovedBy", fields: [approvedById], references: [id])
-  approvedAt           DateTime?
-  appliedAt            DateTime?
-  rolledBackAt         DateTime?
-
-  stores               Store[]
-  records              ImportRecord[]
-
-  createdAt            DateTime       @default(now())
-  updatedAt            DateTime       @updatedAt
-}
-
-model ImportRecord {
-  id               String       @id @default(uuid())
-  batchId          String
-  batch            ImportBatch  @relation(fields: [batchId], references: [id], onDelete: Cascade)
-  storeId          String?
-  store            Store?       @relation(fields: [storeId], references: [id], onDelete: SetNull)
-
-  sourceRef        String
-  rawName          String
-  rawDescription   String?
-  rawCoordinates   String
-  classifiedType   String
-  status           String       @default("STAGED") // STAGED, VALIDATED, QUARANTINE_INDIVIDUAL, QUARANTINE_DUPLICATE, QUARANTINE_INVALID_GEO, IMPORTED, IGNORED
-  quarantineReason String?
-  rawPayload       Json?
-
-  createdAt        DateTime     @default(now())
-  updatedAt        DateTime     @updatedAt
-
-  @@index([batchId, status])
-}
-
-model StoreClaim {
-  id              String       @id @default(uuid())
-  storeId         String
-  store           Store        @relation(fields: [storeId], references: [id], onDelete: Cascade)
-  userId          String
-  user            User         @relation("ClaimSubmittedBy", fields: [userId], references: [id], onDelete: Cascade)
-
-  status          String       @default("SUBMITTED") // SUBMITTED, PHONE_OTP_PENDING, PHONE_OTP_VERIFIED, UNDER_ADMIN_REVIEW, APPROVED, REJECTED, CANCELLED
-  applicantPhone  String
-  otpHash         String?
-  otpExpiresAt    DateTime?
-  otpVerifiedAt   DateTime?
-
-  reviewedById    String?
-  reviewedBy      User?        @relation("ClaimReviewedBy", fields: [reviewedById], references: [id])
-  reviewedAt      DateTime?
-  reviewNotes     String?
-
-  createdAt       DateTime     @default(now())
-  updatedAt       DateTime     @updatedAt
-
-  @@index([storeId, status])
-}
-
 
 // ==========================================
 // 3. CATALOGUE EXCLUSIF PLEINGAZ (D-01)
@@ -844,10 +735,6 @@ model Payment {
   idempotencyKey  String        @unique
   providerTxId    String?       @unique
 
-  customerTxRef   String?       // Référence SMS/transfert renseignée par le client
-  confirmedByUserId String?     // ID du gérant/distributeur ayant vérifié et confirmé les fonds
-  confirmedAt     DateTime?     // Date/heure exacte de confirmation par le titulaire du compte
-
   lastWebhookData Json?
 
   createdAt       DateTime      @default(now())
@@ -1153,14 +1040,12 @@ model AccountCase {
   targetUser      User             @relation("SubjectAccountCases", fields: [targetUserId], references: [id])
   
   approvedById    String?          // Rôle ADMIN
+  approvedBy      User?            @relation("AdminApprovedAccountCases", fields: [approvedById], references: [id])
   adminNotes      String?
   appliedAt       DateTime?
   closedAt        DateTime?
   createdAt       DateTime         @default(now())
   updatedAt       DateTime         @updatedAt
-
-  @@index([status, agentId])
-  @@index([targetUserId])
 }
 
 model CounterSale {
@@ -1169,44 +1054,33 @@ model CounterSale {
   storeId         String
   store           Store            @relation(fields: [storeId], references: [id])
   
-  sellerId        String           // DISTRIBUTOR_MANAGER ou STAFF
-  
   customerPhone   String           // E.164
-  customerUserId  String?
-  customerUser    User?            @relation("CounterSaleCustomer", fields: [customerUserId], references: [id])
+  bottleCount     Int              @default(1)
+  totalAmount     Int              // FCFA
+  paymentMethod   PaymentMethod    @default(CASH)
   
-  bottleType      String           // ex: Tradex 12.5 kg
-  quantity        Int              @default(1)
-  amountTotal     Int              // FCFA
-  paymentMethod   String           @default("CASH") // CASH, MOMO
-  
-  quotaValidated  Boolean          @default(true)
-  ledgerEntryId   String?
+  quotaChecked    Boolean          @default(true)
+  metadata        Json?
   
   createdAt       DateTime         @default(now())
-
-  @@index([storeId, createdAt])
-  @@index([customerPhone])
 }
 
 model InfoNotice {
   id              String           @id @default(uuid())
   title           String
   content         String
-  category        String           @default("INFO") // INFO, WARNING, CRITICAL
-  targetRole      String?          // CUSTOMER, DISTRIBUTOR, COURIER, ALL
-  targetCity      String?          // Douala, Yaoundé, ALL
+  category        String           @default("INFO") // INFO, ALERT, PROMO, REGULATION
+  targetRole      String           @default("ALL") // ALL, CUSTOMER, DISTRIBUTOR, COURIER
+  targetCity      String           @default("ALL")
   isActive        Boolean          @default(true)
-  requiresAck     Boolean          @default(true)
-  startsAt        DateTime         @default(now())
-  expiresAt       DateTime?
+  requiresAck     Boolean          @default(false)
   
   createdById     String
-  approvedById    String?
+  createdBy       User             @relation("NoticeCreatedBy", fields: [createdById], references: [id])
+  
+  reads           InfoNoticeRead[]
   createdAt       DateTime         @default(now())
   updatedAt       DateTime         @updatedAt
-
-  reads           InfoNoticeRead[]
 }
 
 model InfoNoticeRead {
@@ -1215,8 +1089,7 @@ model InfoNoticeRead {
   notice          InfoNotice       @relation(fields: [noticeId], references: [id], onDelete: Cascade)
   userId          String
   user            User             @relation(fields: [userId], references: [id], onDelete: Cascade)
-  readAt          DateTime         @default(now())
+  acknowledgedAt  DateTime         @default(now())
 
   @@unique([noticeId, userId])
 }
-

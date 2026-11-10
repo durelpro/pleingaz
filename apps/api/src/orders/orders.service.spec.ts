@@ -34,7 +34,11 @@ describe('OrdersService (Commandes B2C & Réservations Éphémères 15 min)', ()
       order: {
         create: jest.fn(),
         findUnique: jest.fn(),
+        findMany: jest.fn().mockResolvedValue([]),
         update: jest.fn(),
+      },
+      platformSettings: {
+        findUnique: jest.fn().mockResolvedValue({ buyerBottleLimit: 5 }),
       },
       delivery: {
         create: jest.fn(),

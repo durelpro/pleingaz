@@ -1,6 +1,5 @@
 'use client';
 
-import { useState } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import {
@@ -19,101 +18,62 @@ import {
   Clock,
   Gauge,
   CookingPot,
-  X,
-  ShoppingCart,
-  MessageCircle,
-  Check,
 } from 'lucide-react';
-import { motion, AnimatePresence } from 'framer-motion';
+import { motion } from 'framer-motion';
+import { InfoNoticesDrawer } from '@/components/common/InfoNoticesDrawer';
 
 const officialCatalog = [
   {
     id: 'prod-pg-125',
     sku: 'PG-BOT-125',
-    name: 'Recharge Gaz Butane PLEINGAZ 12.5 kg',
-    subtitle: 'Signature "Always Full" • Échange Standard Homologué',
+    name: 'Bouteille PLEINGAZ 12.5 kg',
+    subtitle: 'Signature "Always Full" • Recharge Officielle',
     image: '/products/bouteille-pleingaz-12-5kg.jpg',
-    category: 'Bouteilles & Recharges',
+    category: 'Gaz Domestique',
     price: 6500,
-    badge: '🔥 Bouteille Phare Homologuée',
-    desc: 'Échange standard de bouteille 12.5 kg vide contre une bouteille pleine scellée en usine. Gaz butane purifié haute performance.',
-    inStock: true,
-  },
-  {
-    id: 'prod-pg-125-pack',
-    sku: 'PG-BOT-125-PACK',
-    name: 'Pack Bouteille Complète 12.5 kg (Consigne + Gaz)',
-    subtitle: 'Premier Achat • Bouteille Neuve Garantie',
-    image: '/products/bouteille-pleingaz-12-5kg.jpg',
-    category: 'Bouteilles & Recharges',
-    price: 26500,
-    badge: '📦 Pack Premier Équipement',
-    desc: 'Comprend la bouteille de gaz neuve PLEINGAZ 12.5 kg rouge et blanche scellée d’usine avec sa charge complète de gaz.',
-    inStock: true,
-  },
-  {
-    id: 'prod-pg-rec-verre',
-    sku: 'PG-REC-002',
-    name: 'Table de Cuisson Verre Trempé Prestige PLEINGAZ',
-    subtitle: 'Double Brûleur Turbo • Motifs Floraux Sérigraphiés',
-    image: '/products/rechaud-gaz-2-feux-verre-luxe.jpg',
-    category: 'Tables de Cuisson',
-    price: 24500,
-    badge: '✨ Design Cuisine Moderne',
-    desc: 'Surface en verre trempé haute résistance aux chocs thermiques et rayures, allumage automatique piezo et flammes bleues concentrées.',
-    inStock: true,
-  },
-  {
-    id: 'prod-pg-rec-noir',
-    sku: 'PG-REC-001',
-    name: 'Réchaud à Gaz 2 Feux Métal Émaillé Noir PLEINGAZ',
-    subtitle: 'Double Brûleur Fonte Haute Température',
-    image: '/products/rechaud-gaz-2-feux-noir.jpg',
-    category: 'Tables de Cuisson',
-    price: 16500,
-    badge: '⚡ Robuste & Économique',
-    desc: 'Structure ultra-robuste en acier émaillé noir anti-rouille, brûleurs en fonte démontables et molettes de réglage progressif.',
+    badge: '🔥 Produit Phare Homologué',
+    desc: 'Bouteille officielle rouge et blanche scellée d’usine avec gaz butane purifié haute combustion.',
     inStock: true,
   },
   {
     id: 'prod-pg-det',
     sku: 'PG-ACC-DET',
-    name: 'Détendeur de Sécurité Basse Pression avec Manomètre',
-    subtitle: 'Indicateur de Pression & Niveau de Gaz Réel (30 mbar)',
+    name: 'Détendeur Sécurité avec Manomètre',
+    subtitle: 'Contrôle de Pression & Niveau de Gaz Réel',
     image: '/products/detendeur-securite-manometre.jpg',
-    category: 'Sécurité & Accessoires',
+    category: 'Sécurité Gaz',
     price: 6000,
-    badge: '🛡️ Sécurité Vitale Anti-Fuite',
-    desc: 'Cadran gradué avec aiguille de contrôle du stock de gaz restant, clapet de coupure automatique instantané en cas de fuite.',
+    badge: '🛡️ Sécurité Vitale Fuite',
+    desc: 'Cadran de mesure de pression intégré, valve de blocage immédiate en cas d’anomalie ou de fuite.',
     inStock: true,
   },
   {
-    id: 'prod-pg-060',
-    sku: 'PG-BOT-060',
-    name: 'Recharge Gaz Butane PLEINGAZ 6 kg',
-    subtitle: 'Format Compact Léger • Idéal Petits Espaces',
-    image: '/products/bouteille-pleingaz-12-5kg.jpg',
-    category: 'Bouteilles & Recharges',
-    price: 3120,
-    badge: '🏷️ Tarif Homologué 3 120 F',
-    desc: 'Recharge pour bouteille 6 kg PLEINGAZ. Légère, facilement transportable, idéale pour petits ménages ou cuissons rapides.',
+    id: 'prod-pg-rec-noir',
+    sku: 'PG-REC-001',
+    name: 'Réchaud 2 Feux Fonte Émaillée',
+    subtitle: 'Double Brûleur Haute Température • Flamme Bleue',
+    image: '/products/rechaud-gaz-2-feux-noir.jpg',
+    category: 'Équipements Cuisson',
+    price: 16500,
+    badge: '⚡ Économie de Gaz Maximale',
+    desc: 'Robuste structure en métal émaillé anti-rouille, flammes concentrées pour une cuisson rapide.',
+    inStock: true,
+  },
+  {
+    id: 'prod-pg-rec-verre',
+    sku: 'PG-REC-002',
+    name: 'Table de Cuisson Verre Trempé Luxe',
+    subtitle: 'Finition Prestige Sérigraphiée • Double Brûleur',
+    image: '/products/rechaud-gaz-2-feux-verre-luxe.jpg',
+    category: 'Gamme Prestige',
+    price: 24500,
+    badge: '✨ Design Cuisine Moderne',
+    desc: 'Surface en verre trempé résistant aux chocs et rayures, allumage piezo intégré et pieds stables.',
     inStock: true,
   },
 ];
 
 export default function Home() {
-  const [activeCategory, setActiveCategory] = useState<'TOUS' | 'BOUTEILLES' | 'CUISSON' | 'SECURITE'>('TOUS');
-  const [selectedProduct, setSelectedProduct] = useState<any | null>(null);
-  const [bottleChoice, setBottleChoice] = useState<'RECHARGE' | 'PACK'>('RECHARGE');
-  const [orderMode, setOrderMode] = useState<'DEPOT' | 'LIVRAISON'>('DEPOT');
-
-  const filteredCatalog = officialCatalog.filter((item) => {
-    if (activeCategory === 'BOUTEILLES') return item.category === 'Bouteilles & Recharges';
-    if (activeCategory === 'CUISSON') return item.category === 'Tables de Cuisson';
-    if (activeCategory === 'SECURITE') return item.category === 'Sécurité & Accessoires';
-    return true;
-  });
-
   return (
     <div className="min-h-screen bg-[#0d0707] text-white selection:bg-[#E51A24] selection:text-white relative overflow-x-hidden">
       
@@ -144,37 +104,33 @@ export default function Home() {
             </span>
           </Link>
 
-          <nav className="hidden lg:flex items-center gap-7 text-sm font-semibold text-neutral-300">
+          <nav className="hidden lg:flex items-center gap-6 text-sm font-semibold text-neutral-300">
             <Link href="/search?auto=true" className="hover:text-red-500 transition-colors flex items-center gap-1.5 group">
               <MapPin size={17} className="text-red-500 group-hover:scale-110 transition-transform" />
               <span>Où Trouver du Gaz ?</span>
             </Link>
-            <Link href="/stores" className="hover:text-red-500 transition-colors">
-              Points de Vente Agréés
+            <Link href="/stores" className="hover:text-[#E51A24] transition-colors">
+              Points de Vente (71)
             </Link>
-            <Link href="/distributor/apply" className="hover:text-red-500 transition-colors flex items-center gap-1.5">
-              <Store size={16} className="text-amber-400" />
-              <span>Espace Distributeur</span>
+            <Link href="/tarifs" className="hover:text-[#E51A24] transition-colors">
+              Tarifs
             </Link>
-            <Link href="/delivery" className="hover:text-red-500 transition-colors flex items-center gap-1.5">
-              <Truck size={16} className="text-emerald-400" />
-              <span>Espace Livreur</span>
+            <Link href="/support/securite" className="hover:text-amber-400 transition-colors flex items-center gap-1.5">
+              <span>Sécurité Gaz</span>
+            </Link>
+            <Link href="/faq" className="hover:text-[#E51A24] transition-colors">
+              FAQ
             </Link>
           </nav>
 
           <div className="flex items-center gap-3">
+            <InfoNoticesDrawer role="CUSTOMER" city="Douala" />
             <Link
-              href="/account"
-              className="px-4 py-2.5 rounded-xl text-xs font-bold border border-white/15 hover:bg-white/10 hover:border-red-600/40 transition-all text-neutral-200"
+              href="/acheteur"
+              className="px-5 py-2.5 rounded-xl text-xs font-black bg-gradient-to-r from-[#E51A24] to-[#c7101a] text-white shadow-lg shadow-[#E51A24]/30 hover:shadow-[#E51A24]/60 hover:scale-105 active:scale-95 transition-all flex items-center gap-1.5"
             >
-              Mon Espace
-            </Link>
-            <Link
-              href="/search?auto=true"
-              className="px-4 py-2.5 rounded-xl text-xs font-bold bg-gradient-to-r from-red-600 to-red-700 text-white shadow-lg shadow-red-600/30 hover:shadow-red-600/60 hover:scale-105 active:scale-95 transition-all flex items-center gap-1.5"
-            >
-              <Sparkles size={15} />
-              <span>Commander</span>
+              <span>Je suis acheteur</span>
+              <ArrowRight size={14} />
             </Link>
           </div>
         </div>
@@ -286,215 +242,74 @@ export default function Home() {
           </p>
         </div>
 
-        {/* Onglets Filtres par Catégorie */}
-        <div className="flex flex-wrap items-center justify-center gap-2.5 pt-2">
-          {[
-            { id: 'TOUS', label: 'Toute la Gamme (6)', icon: Sparkles },
-            { id: 'BOUTEILLES', label: 'Bouteilles & Recharges', icon: Flame },
-            { id: 'CUISSON', label: 'Tables de Cuisson', icon: CookingPot },
-            { id: 'SECURITE', label: 'Sécurité & Accessoires', icon: ShieldCheck },
-          ].map((tab) => {
-            const Icon = tab.icon;
-            const isActive = activeCategory === tab.id;
-            return (
-              <button
-                key={tab.id}
-                onClick={() => setActiveCategory(tab.id as any)}
-                className={`px-4 py-2.5 rounded-2xl text-xs sm:text-sm font-black transition-all flex items-center gap-2 border ${
-                  isActive
-                    ? 'bg-[#E51A24] text-white border-red-500 shadow-lg shadow-[#E51A24]/30 scale-105'
-                    : 'bg-white/5 hover:bg-white/10 text-neutral-300 border-white/10 hover:border-white/20'
-                }`}
-              >
-                <Icon size={16} />
-                <span>{tab.label}</span>
-              </button>
-            );
-          })}
-        </div>
-
-        {/* Grille Dynamique des Produits Officiels */}
-        <motion.div layout className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-          <AnimatePresence>
-            {filteredCatalog.map((prod, idx) => (
-              <motion.div
-                key={prod.id}
-                layout
-                initial={{ opacity: 0, scale: 0.95 }}
-                animate={{ opacity: 1, scale: 1 }}
-                exit={{ opacity: 0, scale: 0.95 }}
-                transition={{ duration: 0.25 }}
-                whileHover={{ y: -8 }}
-                className="bg-gradient-to-b from-white/[0.07] to-white/[0.02] border border-white/10 hover:border-[#E51A24]/50 rounded-3xl p-5 flex flex-col justify-between transition-all duration-300 shadow-xl group relative overflow-hidden"
-              >
-                {/* Top Badge */}
-                <div className="flex items-center justify-between gap-2 mb-3 z-10">
-                  <span className="text-[11px] font-black px-2.5 py-1 rounded-full bg-[#E51A24]/20 border border-[#E51A24]/40 text-red-300">
-                    {prod.badge}
-                  </span>
-                  <span className="text-[11px] font-bold text-neutral-400">
-                    {prod.category}
-                  </span>
-                </div>
-
-                {/* Product Real Image with Smooth Hover Effect */}
-                <div className="relative w-full h-56 rounded-2xl overflow-hidden bg-neutral-900/60 border border-white/5 flex items-center justify-center p-3 mb-4 group-hover:bg-neutral-900/80 transition-colors">
-                  <div className="relative w-full h-full">
-                    <Image
-                      src={prod.image}
-                      alt={prod.name}
-                      fill
-                      sizes="(max-w-768px) 100vw, 33vw"
-                      className="object-contain group-hover:scale-108 transition-transform duration-500"
-                    />
-                  </div>
-                </div>
-
-                {/* Product Info */}
-                <div className="space-y-2 mb-4">
-                  <h3 className="font-black text-lg text-white group-hover:text-red-400 transition-colors">
-                    {prod.name}
-                  </h3>
-                  <p className="text-xs text-amber-300/90 font-medium">
-                    {prod.subtitle}
-                  </p>
-                  <p className="text-xs text-neutral-400 line-clamp-2 leading-relaxed">
-                    {prod.desc}
-                  </p>
-                </div>
-
-                {/* Price & Action */}
-                <div className="pt-3 border-t border-white/10 flex items-center justify-between">
-                  <div>
-                    <span className="text-[10px] text-neutral-400 block font-bold uppercase">Prix Officiel</span>
-                    <span className="text-xl font-black text-white">
-                      {prod.price.toLocaleString('fr-FR')} <span className="text-xs text-[#E51A24]">FCFA</span>
-                    </span>
-                  </div>
-
-                  <button
-                    onClick={() => {
-                      setSelectedProduct(prod);
-                      setBottleChoice(prod.sku.includes('PACK') ? 'PACK' : 'RECHARGE');
-                    }}
-                    className="px-4 py-2.5 rounded-xl bg-gradient-to-r from-[#E51A24] to-[#b30d15] text-white text-xs font-black shadow-md hover:shadow-lg hover:shadow-[#E51A24]/30 hover:scale-105 active:scale-95 transition-all flex items-center gap-1.5"
-                  >
-                    <span>Commander</span>
-                    <ArrowRight size={14} />
-                  </button>
-                </div>
-              </motion.div>
-            ))}
-          </AnimatePresence>
-        </motion.div>
-
-        {/* Tableau Récapitulatif : Barème Officiel Homologué PLEINGAZ Cameroun */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true }}
-          className="mt-12 p-6 sm:p-8 rounded-3xl bg-neutral-900/70 border border-white/10 shadow-2xl relative overflow-hidden"
-        >
-          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
-            <div>
-              <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-[#E51A24]/15 border border-[#E51A24]/30 text-red-300 text-xs font-bold uppercase tracking-wider mb-2">
-                <ShieldCheck size={14} className="text-[#E51A24]" />
-                Transparence & Prix Publics Homologués
-              </div>
-              <h3 className="text-xl sm:text-2xl font-black text-white">
-                Barème Officiel National PLEINGAZ (Cameroun)
-              </h3>
-              <p className="text-neutral-400 text-xs sm:text-sm">
-                Conformément à la réglementation camerounaise, les prix du gaz sont strictement encadrés et identiques dans tous les dépôts agréés.
-              </p>
-            </div>
-            <Link
-              href="/search?auto=true"
-              className="px-5 py-3 rounded-xl bg-white text-neutral-950 font-black text-xs hover:bg-neutral-100 transition-all flex items-center gap-2 shrink-0 self-start sm:self-auto"
+        {/* Grille des 4 Produits avec Photos Réelles */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+          {officialCatalog.map((prod, idx) => (
+            <motion.div
+              key={prod.id}
+              initial={{ opacity: 0, y: 30 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              transition={{ delay: idx * 0.1 }}
+              whileHover={{ y: -8 }}
+              className="bg-gradient-to-b from-white/[0.07] to-white/[0.02] border border-white/10 hover:border-[#E51A24]/50 rounded-3xl p-5 flex flex-col justify-between transition-all duration-300 shadow-xl group relative overflow-hidden"
             >
-              <span>Vérifier la disponibilité locale</span>
-              <ArrowRight size={14} className="text-[#E51A24]" />
-            </Link>
-          </div>
+              {/* Top Badge */}
+              <div className="flex items-center justify-between gap-2 mb-3 z-10">
+                <span className="text-[11px] font-black px-2.5 py-1 rounded-full bg-[#E51A24]/20 border border-[#E51A24]/40 text-red-300">
+                  {prod.badge}
+                </span>
+                <span className="text-[11px] font-bold text-neutral-400">
+                  {prod.category}
+                </span>
+              </div>
 
-          <div className="overflow-x-auto">
-            <table className="w-full text-left text-xs sm:text-sm">
-              <thead>
-                <tr className="border-b border-white/10 text-neutral-400 font-bold uppercase text-[11px] tracking-wider">
-                  <th className="pb-3 pr-4">Format / Désignation</th>
-                  <th className="pb-3 px-4">Usage Recommandé</th>
-                  <th className="pb-3 px-4 text-emerald-400 font-black">Recharge Gaz (Échange)</th>
-                  <th className="pb-3 pl-4 text-white font-black">Pack Bouteille (Consigne + Gaz)</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-white/5 text-neutral-200">
-                <tr className="hover:bg-white/[0.02] transition-colors">
-                  <td className="py-3.5 pr-4 font-black text-white flex items-center gap-2">
-                    <span className="w-2 h-2 rounded-full bg-[#E51A24]"></span>
-                    Bouteille PLEINGAZ 6 kg
-                  </td>
-                  <td className="py-3.5 px-4 text-neutral-400">Étudiants, petits foyers, camping</td>
-                  <td className="py-3.5 px-4 font-black text-emerald-400">3 120 FCFA</td>
-                  <td className="py-3.5 pl-4 font-black text-white">16 120 FCFA</td>
-                </tr>
-                <tr className="hover:bg-white/[0.02] transition-colors bg-white/[0.02]">
-                  <td className="py-3.5 pr-4 font-black text-white flex items-center gap-2">
-                    <span className="w-2 h-2 rounded-full bg-[#E51A24]"></span>
-                    Bouteille PLEINGAZ 12.5 kg (Phare)
-                  </td>
-                  <td className="py-3.5 px-4 text-neutral-400">Familles, usage domestique quotidien</td>
-                  <td className="py-3.5 px-4 font-black text-emerald-400">6 500 FCFA <span className="text-[10px] text-red-300 font-bold ml-1 bg-[#E51A24]/20 px-1.5 py-0.5 rounded">Tarif Homologué</span></td>
-                  <td className="py-3.5 pl-4 font-black text-white">26 500 FCFA</td>
-                </tr>
-                <tr className="hover:bg-white/[0.02] transition-colors">
-                  <td className="py-3.5 pr-4 font-black text-white flex items-center gap-2">
-                    <span className="w-2 h-2 rounded-full bg-[#E51A24]"></span>
-                    Bouteille PLEINGAZ 50 kg
-                  </td>
-                  <td className="py-3.5 px-4 text-neutral-400">Restaurants, boulangeries, hôtels</td>
-                  <td className="py-3.5 px-4 font-black text-emerald-400">26 000 FCFA</td>
-                  <td className="py-3.5 pl-4 font-black text-white">76 000 FCFA</td>
-                </tr>
-                <tr className="hover:bg-white/[0.02] transition-colors">
-                  <td className="py-3.5 pr-4 font-black text-white flex items-center gap-2">
-                    <span className="w-2 h-2 rounded-full bg-[#E51A24]"></span>
-                    Table Verre Trempé 2 Feux Prestige
-                  </td>
-                  <td className="py-3.5 px-4 text-neutral-400">Cuisine moderne, allumage auto</td>
-                  <td className="py-3.5 px-4 text-neutral-400">—</td>
-                  <td className="py-3.5 pl-4 font-black text-white">24 500 FCFA</td>
-                </tr>
-                <tr className="hover:bg-white/[0.02] transition-colors">
-                  <td className="py-3.5 pr-4 font-black text-white flex items-center gap-2">
-                    <span className="w-2 h-2 rounded-full bg-[#E51A24]"></span>
-                    Réchaud 2 Feux Métal Émaillé Noir
-                  </td>
-                  <td className="py-3.5 px-4 text-neutral-400">Robuste, anti-corrosion, double brûleur</td>
-                  <td className="py-3.5 px-4 text-neutral-400">—</td>
-                  <td className="py-3.5 pl-4 font-black text-white">16 500 FCFA</td>
-                </tr>
-                <tr className="hover:bg-white/[0.02] transition-colors">
-                  <td className="py-3.5 pr-4 font-black text-white flex items-center gap-2">
-                    <span className="w-2 h-2 rounded-full bg-[#E51A24]"></span>
-                    Détendeur Sécurité avec Manomètre (30 mbar)
-                  </td>
-                  <td className="py-3.5 px-4 text-neutral-400">Contrôle niveau de gaz & clapet anti-fuite</td>
-                  <td className="py-3.5 px-4 text-neutral-400">—</td>
-                  <td className="py-3.5 pl-4 font-black text-white">6 000 FCFA</td>
-                </tr>
-                <tr className="hover:bg-white/[0.02] transition-colors">
-                  <td className="py-3.5 pr-4 font-black text-white flex items-center gap-2">
-                    <span className="w-2 h-2 rounded-full bg-[#E51A24]"></span>
-                    Tuyau à Gaz Renforcé 1.5 m + Colliers
-                  </td>
-                  <td className="py-3.5 px-4 text-neutral-400">Flexible blindé norme de sécurité</td>
-                  <td className="py-3.5 px-4 text-neutral-400">—</td>
-                  <td className="py-3.5 pl-4 font-black text-white">3 000 FCFA</td>
-                </tr>
-              </tbody>
-            </table>
-          </div>
-        </motion.div>
+              {/* Product Real Image with Smooth Hover Effect */}
+              <div className="relative w-full h-56 rounded-2xl overflow-hidden bg-neutral-900/60 border border-white/5 flex items-center justify-center p-3 mb-4 group-hover:bg-neutral-900/80 transition-colors">
+                <div className="relative w-full h-full">
+                  <Image
+                    src={prod.image}
+                    alt={prod.name}
+                    fill
+                    sizes="(max-w-768px) 100vw, 25vw"
+                    className="object-contain group-hover:scale-108 transition-transform duration-500"
+                  />
+                </div>
+              </div>
+
+              {/* Product Info */}
+              <div className="space-y-2 mb-4">
+                <h3 className="font-black text-lg text-white group-hover:text-red-400 transition-colors">
+                  {prod.name}
+                </h3>
+                <p className="text-xs text-amber-300/90 font-medium">
+                  {prod.subtitle}
+                </p>
+                <p className="text-xs text-neutral-400 line-clamp-2 leading-relaxed">
+                  {prod.desc}
+                </p>
+              </div>
+
+              {/* Price & Action */}
+              <div className="pt-3 border-t border-white/10 flex items-center justify-between">
+                <div>
+                  <span className="text-[10px] text-neutral-400 block font-bold uppercase">Prix Officiel</span>
+                  <span className="text-xl font-black text-white">
+                    {prod.price.toLocaleString('fr-FR')} <span className="text-xs text-[#E51A24]">FCFA</span>
+                  </span>
+                </div>
+
+                <Link
+                  href="/checkout"
+                  className="px-4 py-2.5 rounded-xl bg-gradient-to-r from-[#E51A24] to-[#b30d15] text-white text-xs font-black shadow-md hover:shadow-lg hover:shadow-[#E51A24]/30 hover:scale-105 active:scale-95 transition-all flex items-center gap-1.5"
+                >
+                  <span>Commander</span>
+                  <ArrowRight size={14} />
+                </Link>
+              </div>
+            </motion.div>
+          ))}
+        </div>
       </section>
 
       {/* RÈGLES CR-001 & ENGAGEMENTS DE MARQUE */}
@@ -541,267 +356,174 @@ export default function Home() {
         </div>
       </section>
 
-      {/* PORTAILS MÉTIERS & ACCÈS DIRECTS */}
+      {/* COMMENT ÇA MARCHE EN 3 ÉTAPES (Conforme T3) */}
       <section className="max-w-6xl mx-auto px-4 py-12 space-y-8">
         <div className="text-center space-y-2">
-          <h2 className="text-3xl font-black text-white">Espaces Dédiés & Professionnels</h2>
-          <p className="text-neutral-400 text-sm">Accédez à votre cockpit selon votre rôle dans le réseau PLEINGAZ</p>
+          <span className="text-xs bg-[#E51A24]/10 text-red-400 font-bold uppercase tracking-wider px-3 py-1 rounded-full border border-[#E51A24]/20">
+            Simplicité & Rapidité
+          </span>
+          <h2 className="text-3xl font-black text-white">Comment ça marche en 3 étapes</h2>
+          <p className="text-neutral-400 text-sm">Votre recharge de gaz domestique au prix officiel garanti</p>
         </div>
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6">
-          <Link
-            href="/distributor/apply"
-            className="p-6 rounded-3xl bg-white/[0.04] border border-white/10 hover:border-red-600/60 hover:bg-white/[0.08] transition-all space-y-3 group"
-          >
-            <div className="w-11 h-11 rounded-2xl bg-red-600/20 text-red-500 flex items-center justify-center group-hover:scale-110 transition-transform">
-              <Store size={22} />
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+          <div className="p-6 rounded-3xl bg-neutral-900/60 border border-neutral-800 space-y-3">
+            <div className="w-10 h-10 rounded-2xl bg-[#E51A24]/20 text-[#E51A24] flex items-center justify-center font-black text-lg">
+              1
             </div>
-            <h3 className="font-bold text-lg text-white group-hover:text-red-500 transition-colors">
-              Espace Distributeur
-            </h3>
+            <h3 className="font-black text-base text-white">Localisez votre point de vente</h3>
             <p className="text-xs text-neutral-400 leading-relaxed">
-              Rejoignez le réseau officiel agréé, gérez vos stocks déclaratifs et servez vos clients en toute conformité.
+              Consultez les 71 dépôts et boutiques officielles géo-référencés à Douala, Yaoundé et dans les régions.
             </p>
-          </Link>
+          </div>
 
-          <Link
-            href="/delivery"
-            className="p-6 rounded-3xl bg-white/[0.04] border border-white/10 hover:border-emerald-500/60 hover:bg-white/[0.08] transition-all space-y-3 group"
-          >
-            <div className="w-11 h-11 rounded-2xl bg-emerald-500/20 text-emerald-400 flex items-center justify-center group-hover:scale-110 transition-transform">
-              <Truck size={22} />
+          <div className="p-6 rounded-3xl bg-neutral-900/60 border border-neutral-800 space-y-3">
+            <div className="w-10 h-10 rounded-2xl bg-amber-500/20 text-amber-400 flex items-center justify-center font-black text-lg">
+              2
             </div>
-            <h3 className="font-bold text-lg text-white group-hover:text-emerald-400 transition-colors">
-              Portail Livreur Partenaire
-            </h3>
+            <h3 className="font-black text-base text-white">Vérifiez le stock en direct</h3>
             <p className="text-xs text-neutral-400 leading-relaxed">
-              Cockpit mobile pour recevoir les missions de livraison, valider la double confirmation et gérer la caisse.
+              Disponibilité certifiée de votre bouteille 12.5 kg au prix réglementé de <strong>6 500 FCFA</strong>. Zéro majoration.
             </p>
-          </Link>
+          </div>
 
-          <Link
-            href="/support/securite"
-            className="p-6 rounded-3xl bg-white/[0.04] border border-white/10 hover:border-amber-500/60 hover:bg-white/[0.08] transition-all space-y-3 group"
-          >
-            <div className="w-11 h-11 rounded-2xl bg-amber-500/20 text-amber-400 flex items-center justify-center group-hover:scale-110 transition-transform">
-              <ShieldCheck size={22} />
+          <div className="p-6 rounded-3xl bg-neutral-900/60 border border-neutral-800 space-y-3">
+            <div className="w-10 h-10 rounded-2xl bg-emerald-500/20 text-emerald-400 flex items-center justify-center font-black text-lg">
+              3
             </div>
-            <h3 className="font-bold text-lg text-white group-hover:text-amber-400 transition-colors">
-              Sécurité & Guide d'Utilisation
-            </h3>
+            <h3 className="font-black text-base text-white">Retrait ou livraison coursier</h3>
             <p className="text-xs text-neutral-400 leading-relaxed">
-              Consignes essentielles de manipulation, détection des fuites, stockage sécurisé et numéros d'urgence 24/7.
+              Passez récupérer votre bouteille au comptoir ou faites-vous livrer pour un forfait fixe de 1 000 FCFA avec validation par code secret.
             </p>
-          </Link>
+          </div>
         </div>
       </section>
 
-      {/* Footer Officiel */}
-      <footer className="border-t border-red-600/20 py-10 px-4 text-center text-xs text-neutral-500 space-y-3">
-        <p className="text-neutral-400 font-semibold">
-          © 2026 PLEINGAZ S.A. (Distribué par INFOTECH S.A.) — Tous droits réservés.
-        </p>
-        <p className="max-w-2xl mx-auto text-[11px] text-neutral-500">
-          Distribution exclusive de gaz domestique au Cameroun sous barèmes officiels homologués par le Ministère du Commerce. Aucune majoration non autorisée.
-        </p>
-        <div className="pt-2">
-          <Link
-            href="/login/personnel"
-            className="text-[11px] text-neutral-500 hover:text-neutral-400 underline underline-offset-4 transition-colors"
-          >
-            Accès Professionnel & Collaborateurs
-          </Link>
+      {/* Footer Officiel Enrichi */}
+      <footer className="border-t border-[#E51A24]/20 pt-16 pb-12 px-4 bg-[#080404] text-xs text-neutral-400">
+        <div className="max-w-6xl mx-auto grid grid-cols-1 md:grid-cols-4 gap-8 pb-12 border-b border-neutral-800">
+          
+          {/* Colonne 1 : Entreprise */}
+          <div className="space-y-3">
+            <div className="flex items-center gap-2">
+              <span className="w-8 h-8 rounded-lg bg-[#E51A24] flex items-center justify-center text-white font-black text-sm">
+                PG
+              </span>
+              <span className="font-black text-base text-white tracking-tight">
+                PLEINGAZ S.A.
+              </span>
+            </div>
+            <p className="text-xs text-neutral-400 leading-relaxed">
+              Distribué au Cameroun par <strong>INFOTECH S.A.</strong> Bouteilles scellées, pesées et garanties au prix officiel national homologué par la CSPH.
+            </p>
+            <div className="text-[11px] text-neutral-500">
+              Douala, République du Cameroun
+            </div>
+          </div>
+
+          {/* Colonne 2 : Le Réseau */}
+          <div className="space-y-3">
+            <h4 className="font-bold text-sm text-white uppercase tracking-wider text-[11px]">
+              Le Réseau
+            </h4>
+            <ul className="space-y-2 text-xs">
+              <li>
+                <Link href="/search?auto=true" className="hover:text-red-400 transition-colors">
+                  Où trouver du gaz maintenant ?
+                </Link>
+              </li>
+              <li>
+                <Link href="/stores" className="hover:text-red-400 transition-colors">
+                  Points de vente agréés (71)
+                </Link>
+              </li>
+              <li>
+                <Link href="/tarifs" className="hover:text-red-400 transition-colors">
+                  Barème officiel des prix
+                </Link>
+              </li>
+              <li>
+                <Link href="/acheteur" className="hover:text-red-400 transition-colors">
+                  Espace Acheteur &amp; Jauge Quota
+                </Link>
+              </li>
+            </ul>
+          </div>
+
+          {/* Colonne 3 : Assistance & Sécurité */}
+          <div className="space-y-3">
+            <h4 className="font-bold text-sm text-white uppercase tracking-wider text-[11px]">
+              Assistance &amp; Sécurité
+            </h4>
+            <ul className="space-y-2 text-xs">
+              <li>
+                <Link href="/support/securite" className="text-amber-400 hover:text-amber-300 font-semibold transition-colors flex items-center gap-1">
+                  <span>Prévention fuite &amp; Urgence (118)</span>
+                </Link>
+              </li>
+              <li>
+                <Link href="/faq" className="hover:text-red-400 transition-colors">
+                  Foire aux questions (FAQ)
+                </Link>
+              </li>
+              <li>
+                <Link href="/support" className="hover:text-red-400 transition-colors">
+                  Service client &amp; WhatsApp
+                </Link>
+              </li>
+              <li>
+                <a href="tel:118" className="hover:text-red-400 transition-colors">
+                  Sapeurs-pompiers : Composer le 118
+                </a>
+              </li>
+            </ul>
+          </div>
+
+          {/* Colonne 4 : Informations Légales */}
+          <div className="space-y-3">
+            <h4 className="font-bold text-sm text-white uppercase tracking-wider text-[11px]">
+              Informations Légales
+            </h4>
+            <ul className="space-y-2 text-xs">
+              <li>
+                <Link href="/a-propos" className="hover:text-red-400 transition-colors">
+                  À propos d&apos;INFOTECH S.A.
+                </Link>
+              </li>
+              <li>
+                <Link href="/mentions-legales" className="hover:text-red-400 transition-colors">
+                  Mentions Légales
+                </Link>
+              </li>
+              <li>
+                <Link href="/cgu" className="hover:text-red-400 transition-colors">
+                  Conditions Générales (CGU)
+                </Link>
+              </li>
+              <li>
+                <Link href="/confidentialite" className="hover:text-red-400 transition-colors">
+                  Protection des données (ANTIC)
+                </Link>
+              </li>
+              <li>
+                <Link href="/pro" className="text-neutral-500 hover:text-neutral-300 transition-colors">
+                  Portail professionnel (Distributeurs &amp; Livreurs)
+                </Link>
+              </li>
+            </ul>
+          </div>
+
+        </div>
+
+        <div className="max-w-6xl mx-auto pt-6 flex flex-col sm:flex-row items-center justify-between gap-3 text-center sm:text-left text-[11px] text-neutral-500">
+          <p>
+            © 2026 PLEINGAZ (INFOTECH S.A.) — Tous droits réservés. Distribution exclusive au Cameroun.
+          </p>
+          <p>
+            Conforme aux normes du Ministère du Commerce &amp; de la CSPH.
+          </p>
         </div>
       </footer>
-
-      {/* Modal Interactif de Commande Rapide */}
-      <AnimatePresence>
-        {selectedProduct && (
-          <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-            {/* Backdrop */}
-            <motion.div
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-              onClick={() => setSelectedProduct(null)}
-              className="absolute inset-0 bg-black/80 backdrop-blur-md"
-            />
-
-            {/* Modal Dialog */}
-            <motion.div
-              initial={{ opacity: 0, scale: 0.9, y: 20 }}
-              animate={{ opacity: 1, scale: 1, y: 0 }}
-              exit={{ opacity: 0, scale: 0.9, y: 20 }}
-              transition={{ type: 'spring', damping: 25, stiffness: 300 }}
-              className="relative w-full max-w-lg bg-[#140a0b] border-2 border-[#E51A24]/40 rounded-3xl p-6 sm:p-8 shadow-2xl shadow-[#E51A24]/20 z-10 space-y-6 overflow-hidden"
-            >
-              {/* Close Button */}
-              <button
-                onClick={() => setSelectedProduct(null)}
-                className="absolute top-5 right-5 w-9 h-9 rounded-full bg-white/10 hover:bg-white/20 text-neutral-300 hover:text-white flex items-center justify-center transition-all"
-              >
-                <X size={18} />
-              </button>
-
-              {/* Product Header */}
-              <div className="flex items-center gap-4 pr-8">
-                <div className="relative w-20 h-20 rounded-2xl bg-black/50 border border-white/10 overflow-hidden shrink-0 p-2">
-                  <Image
-                    src={selectedProduct.image}
-                    alt={selectedProduct.name}
-                    fill
-                    className="object-contain"
-                  />
-                </div>
-                <div>
-                  <span className="text-[10px] font-black px-2.5 py-0.5 rounded-full bg-[#E51A24]/20 border border-[#E51A24]/40 text-red-300 uppercase tracking-wider inline-block mb-1">
-                    {selectedProduct.category}
-                  </span>
-                  <h3 className="text-lg font-black text-white leading-tight">
-                    {selectedProduct.name}
-                  </h3>
-                  <p className="text-xs text-neutral-400 mt-0.5">
-                    {selectedProduct.subtitle}
-                  </p>
-                </div>
-              </div>
-
-              {/* Option Bouteille : Consigne vs Recharge (si bouteille de gaz) */}
-              {selectedProduct.category === 'Bouteilles & Recharges' && (
-                <div className="space-y-2">
-                  <label className="text-xs font-bold text-neutral-300 uppercase tracking-wider block">
-                    Type d'achat :
-                  </label>
-                  <div className="grid grid-cols-2 gap-2.5">
-                    <button
-                      type="button"
-                      onClick={() => setBottleChoice('RECHARGE')}
-                      className={`p-3 rounded-2xl border text-left transition-all ${
-                        bottleChoice === 'RECHARGE'
-                          ? 'border-[#E51A24] bg-[#E51A24]/15 text-white shadow-md'
-                          : 'border-white/10 bg-white/5 text-neutral-400 hover:bg-white/10'
-                      }`}
-                    >
-                      <div className="flex items-center justify-between mb-1">
-                        <span className="text-xs font-black">Recharge Seule</span>
-                        {bottleChoice === 'RECHARGE' && <Check size={14} className="text-[#E51A24]" />}
-                      </div>
-                      <p className="text-[11px] text-neutral-300 leading-snug">
-                        Échange standard (vous avez déjà une bouteille vide)
-                      </p>
-                    </button>
-
-                    <button
-                      type="button"
-                      onClick={() => setBottleChoice('PACK')}
-                      className={`p-3 rounded-2xl border text-left transition-all ${
-                        bottleChoice === 'PACK'
-                          ? 'border-[#E51A24] bg-[#E51A24]/15 text-white shadow-md'
-                          : 'border-white/10 bg-white/5 text-neutral-400 hover:bg-white/10'
-                      }`}
-                    >
-                      <div className="flex items-center justify-between mb-1">
-                        <span className="text-xs font-black">Pack Consigne + Gaz</span>
-                        {bottleChoice === 'PACK' && <Check size={14} className="text-[#E51A24]" />}
-                      </div>
-                      <p className="text-[11px] text-neutral-300 leading-snug">
-                        Premier équipement (bouteille neuve scellée)
-                      </p>
-                    </button>
-                  </div>
-                </div>
-              )}
-
-              {/* Mode de récupération */}
-              <div className="space-y-2">
-                <label className="text-xs font-bold text-neutral-300 uppercase tracking-wider block">
-                  Mode de récupération :
-                </label>
-                <div className="grid grid-cols-2 gap-2.5">
-                  <button
-                    type="button"
-                    onClick={() => setOrderMode('DEPOT')}
-                    className={`p-3 rounded-2xl border text-left transition-all ${
-                      orderMode === 'DEPOT'
-                        ? 'border-[#E51A24] bg-[#E51A24]/15 text-white shadow-md'
-                        : 'border-white/10 bg-white/5 text-neutral-400 hover:bg-white/10'
-                    }`}
-                  >
-                    <div className="flex items-center gap-1.5 mb-1 font-black text-xs">
-                      <Store size={14} className="text-[#E51A24]" />
-                      <span>Retrait en Dépôt</span>
-                    </div>
-                    <p className="text-[11px] text-neutral-300">
-                      Gratuit, immédiat au point agréé
-                    </p>
-                  </button>
-
-                  <button
-                    type="button"
-                    onClick={() => setOrderMode('LIVRAISON')}
-                    className={`p-3 rounded-2xl border text-left transition-all ${
-                      orderMode === 'LIVRAISON'
-                        ? 'border-[#E51A24] bg-[#E51A24]/15 text-white shadow-md'
-                        : 'border-white/10 bg-white/5 text-neutral-400 hover:bg-white/10'
-                    }`}
-                  >
-                    <div className="flex items-center gap-1.5 mb-1 font-black text-xs">
-                      <Truck size={14} className="text-[#E51A24]" />
-                      <span>Livraison Express</span>
-                    </div>
-                    <p className="text-[11px] text-neutral-300">
-                      À domicile avec code secret SHA-256
-                    </p>
-                  </button>
-                </div>
-              </div>
-
-              {/* Total & Call to Action */}
-              <div className="pt-4 border-t border-white/10 flex items-center justify-between">
-                <div>
-                  <span className="text-[11px] text-neutral-400 block font-bold uppercase">Prix Homologué</span>
-                  <span className="text-2xl font-black text-white">
-                    {(
-                      selectedProduct.category === 'Bouteilles & Recharges'
-                        ? bottleChoice === 'PACK'
-                          ? selectedProduct.sku.includes('060') ? 16120 : 26500
-                          : selectedProduct.sku.includes('060') ? 3120 : 6500
-                        : selectedProduct.price
-                    ).toLocaleString('fr-FR')}{' '}
-                    <span className="text-xs text-[#E51A24]">FCFA</span>
-                  </span>
-                </div>
-
-                <Link
-                  href={`/search?auto=true&product=${encodeURIComponent(selectedProduct.name)}`}
-                  className="px-6 py-3.5 rounded-2xl bg-gradient-to-r from-[#E51A24] via-[#f02934] to-[#c7101a] text-white font-black text-xs sm:text-sm shadow-xl shadow-[#E51A24]/40 hover:scale-105 active:scale-95 transition-all flex items-center gap-2"
-                >
-                  <MapPin size={16} />
-                  <span>Trouver un Dépôt</span>
-                </Link>
-              </div>
-
-              {/* Direct WhatsApp Option */}
-              <div className="text-center pt-1">
-                <Link
-                  href={`https://wa.me/237680000075?text=${encodeURIComponent(
-                    `Bonjour PLEINGAZ, je souhaite commander : ${selectedProduct.name} (${
-                      selectedProduct.category === 'Bouteilles & Recharges' && bottleChoice === 'PACK'
-                        ? 'Pack Bouteille Complète'
-                        : 'Recharge'
-                    }) avec option ${orderMode === 'LIVRAISON' ? 'Livraison à domicile' : 'Retrait en Dépôt'}.`
-                  )}`}
-                  target="_blank"
-                  className="text-xs text-neutral-400 hover:text-emerald-400 transition-colors inline-flex items-center gap-1.5"
-                >
-                  <MessageCircle size={14} className="text-emerald-400" />
-                  <span>Assistance directe via WhatsApp officiel (+237 680 00 00 75)</span>
-                </Link>
-              </div>
-            </motion.div>
-          </div>
-        )}
-      </AnimatePresence>
     </div>
   );
 }
