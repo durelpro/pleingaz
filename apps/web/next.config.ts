@@ -14,19 +14,23 @@ const nextConfig: NextConfig = {
   },
 };
 
+const hasSentry = !!process.env.SENTRY_AUTH_TOKEN;
+
 const pwaConfig = withPWA({
   dest: 'public',
-  disable: process.env.NODE_ENV === 'development',
+  disable: process.env.NODE_ENV === 'development' || !process.env.ENABLE_PWA_BUILD,
   register: true,
   skipWaiting: true,
 })(nextConfig);
 
-export default withSentryConfig(pwaConfig, {
-  org: "pleingaz",
-  project: "pleingaz-web",
-  silent: !process.env.CI,
-  widenClientFileUpload: true,
-  reactComponentAnnotation: { enabled: true },
-  tunnelRoute: "/monitoring",
-  sourcemaps: { disable: true },
-});
+export default hasSentry
+  ? withSentryConfig(pwaConfig, {
+      org: "pleingaz",
+      project: "pleingaz-web",
+      silent: true,
+      widenClientFileUpload: true,
+      reactComponentAnnotation: { enabled: true },
+      tunnelRoute: "/monitoring",
+      sourcemaps: { disable: true },
+    })
+  : pwaConfig;
