@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import InventoryList from '@/components/distributor/InventoryList';
+import { getApiBaseUrl } from '@/lib/api-config';
 import {
   Package,
   Bike,
@@ -95,7 +96,7 @@ export default function InventoryPage() {
     setIsSubmittingCourier(true);
 
     try {
-      const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001';
+      const apiUrl = getApiBaseUrl();
       const token = typeof window !== 'undefined' ? localStorage.getItem('auth_token') : null;
 
       const res = await fetch(`${apiUrl}/deliveries/distributor/couriers`, {
@@ -167,7 +168,7 @@ export default function InventoryPage() {
     setIsSubmittingSale(true);
 
     try {
-      const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001';
+      const apiUrl = getApiBaseUrl();
       const unitPrice = counterBottleType.includes('6 kg') ? 3600 : counterBottleType.includes('50 kg') ? 28000 : 6500;
       const total = unitPrice * counterQuantity;
 

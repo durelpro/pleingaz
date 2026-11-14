@@ -4,6 +4,7 @@ import { useState, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Store, MapPin, FileText, CheckCircle, Upload, AlertCircle, X, Check, ArrowRight, ArrowLeft } from 'lucide-react';
 import dynamic from 'next/dynamic';
+import { getApiBaseUrl } from '@/lib/api-config';
 
 const MapPicker = dynamic(() => import('../map/MapPicker'), {
   ssr: false,
@@ -132,7 +133,7 @@ export default function DistributorWizard() {
       if (files.portraitPhoto) payload.append('portraitPhoto', files.portraitPhoto);
       if (files.shopPhoto) payload.append('shopPhoto', files.shopPhoto);
 
-      const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001';
+      const apiUrl = getApiBaseUrl();
       const res = await fetch(`${apiUrl}/distributor/public-apply`, {
         method: 'POST',
         body: payload,

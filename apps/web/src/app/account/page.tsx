@@ -6,6 +6,7 @@ import { Flame, Award, ShoppingBag, MapPin, ArrowRight, ShieldCheck, LogOut, Che
 import Link from 'next/link';
 import { InfoNoticesDrawer } from '@/components/common/InfoNoticesDrawer';
 import { QuotaGauge, InfoNoticeBanner } from '@/components/cr003';
+import { getApiBaseUrl } from '@/lib/api-config';
 
 interface BuyerQuota {
   phone: string;
@@ -40,7 +41,7 @@ export default function BuyerDashboardPage() {
   const [notice, setNotice] = useState<any>(null);
   const [loading, setLoading] = useState(true);
 
-  const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001';
+  const apiUrl = getApiBaseUrl();
 
   const handleLogout = () => {
     localStorage.removeItem('pleingaz_token');

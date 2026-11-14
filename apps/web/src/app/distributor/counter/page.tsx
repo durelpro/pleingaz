@@ -3,6 +3,7 @@
 import React, { useState } from 'react';
 import { Store, ShieldCheck, CheckCircle2, AlertTriangle, ArrowRight, Printer, RefreshCw, UserCheck } from 'lucide-react';
 import Link from 'next/link';
+import { getApiBaseUrl } from '@/lib/api-config';
 
 export default function CounterSalePage() {
   const [customerPhone, setCustomerPhone] = useState('');
@@ -33,7 +34,7 @@ export default function CounterSalePage() {
   };
 
   const totalAmount = priceMap[productType] * bottleCount;
-  const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001';
+  const apiUrl = getApiBaseUrl();
 
   // 1. Vérification du quota acheteur (D-14, D-16)
   const handleCheckQuota = async () => {

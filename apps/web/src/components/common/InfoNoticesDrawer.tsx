@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { Bell, X, CheckCircle, AlertTriangle, Info, Megaphone } from 'lucide-react';
+import { getApiBaseUrl } from '@/lib/api-config';
 
 interface NoticeItem {
   id: string;
@@ -21,7 +22,7 @@ export function InfoNoticesDrawer({ role = 'CUSTOMER', city = 'Douala' }: { role
   const [unacknowledgedCount, setUnacknowledgedCount] = useState(0);
   const [loading, setLoading] = useState(false);
 
-  const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001';
+  const apiUrl = getApiBaseUrl();
 
   const fetchNotices = async () => {
     try {

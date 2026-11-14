@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react';
 import { Search, MapPin, Flame, Store, Navigation, Phone, ShieldCheck, Sparkles, AlertCircle, ArrowRight, Clock } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import Link from 'next/link';
+import { getApiBaseUrl } from '@/lib/api-config';
 
 export default function SearchPage() {
   const [query, setQuery] = useState('');
@@ -49,7 +50,7 @@ export default function SearchPage() {
     if (label) setLocationName(label);
 
     try {
-      const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001';
+      const apiUrl = getApiBaseUrl();
       const res = await fetch(`${apiUrl}/search/nearby?latitude=${lat}&longitude=${lng}`);
       
       if (!res.ok) {
